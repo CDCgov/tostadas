@@ -1,0 +1,28 @@
+FL0004:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+IL0005:  Sample found in Fasta file,
+	 SRA Submission: 
+	Illumina Paired
+NY0006:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+NY0007:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+TX0001:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+no_SRA:  Sample found in Fasta file,
+	 Not SRA Submission
+no_Req_Data:  Sample not found in Fasta file, Missing Required Data: Sample Fasta, *author, *isolate
+	 SRA Submission: 
+	Illumina Paired Missing Data: illumina_sequencing_instrument, illumina_library_strategy, illumina_library_source, illumina_library_selection
+not_Valid_Single:  Sample found in Fasta file,
+	 Not SRA Submission
+not_Valid_Single_double:  Sample found in Fasta file,
+	 Not SRA Submission
+not_Valid_Nano_and_illumina:  Sample found in Fasta file,
+	 Not SRA Submission
+
+Samples that passed Validation: 5 / 10

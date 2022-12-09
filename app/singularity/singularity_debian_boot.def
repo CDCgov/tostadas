@@ -1,0 +1,62 @@
+Bootstrap: debootstrap
+OSVersion: stable
+MirrorURL: http://ftp.us.debian.org/debian/
+
+# specifies the necessary files to be passed into the container
+%files 
+    environment.yml
+
+# these are the commands to run to prep the container
+%post
+    # update apt tool 
+    apt-get update && apt-get -y upgrade
+
+    # use apt tool toinstall necessary core packages 
+    apt-get -y install build-essential wget bzip2 ca-certificates libglib2.0-0 libxext6 \
+    libsm6 libxrender1 git
+
+    # clean up residual files from installs above
+    rm -rf /var/lib/apt/lists/*
+    apt-get clean
+
+    # get the conda .sh and run it to install it
+    wget https://repo.anaconda.com/miniconda/Miniconda3-py38_4.8.3-Linux-x86_64.sh
+    chmod +x Miniconda3-py38_4.8.3-Linux-x86_64.sh
+    ./Miniconda3-py38_4.8.3-Linux-x86_64.sh -b -p /opt/miniconda3
+    export PATH="/opt/miniconda3/bin:$PATH"
+
+    # add channels to conda 
+    conda config --file /.condarc --add channels defaults
+    conda config --file /.condarc --add channels conda-forge
+    conda config --file /.condarc --add channels bioconda
+
+    # update conda
+    conda update conda
+
+    # create new conda env 
+    # conda install python=3.9
+    conda install mamba -c conda-forge
+    mamba env create -f environment.yml
+
+    # change the singularity environment variable to the conda env (start env by default)
+    echo ". /opt/miniconda3/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT
+    echo "conda activate tostadas" >> $SINGULARITY_ENVIRONMENT
+
+    # check if it worked
+    . /opt/miniconda3/etc/profile.d/conda.sh
+    conda activate tostadas
+    printf "\n\n******** LIST OF PACKAGES IN TOSTADAS ENV ********\n\n"
+    conda list
+    printf "\n\n******** LIST OF ENVS ********\n\n"
+    conda info --envs
+
+# specify/change necessary env vars
+%environment
+    export PATH=$PATH:/opt/conda/bin
+    export PATH=$PATH:/opt/conda/bin/conda
+    export PATH=$PATH:/opt/conda/envs
+    export PATH=$PATH:/opt/conda/envs/tostadas
+    export PATH=$PATH:/opt/conda/envs/tostadas/bin
+
+%runscript
+      exec /usr/bin/python "$@"

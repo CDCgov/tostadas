@@ -1,0 +1,58 @@
+FL0004:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+	 Valid:	False
+
+IL0005:  Sample found in Fasta file,
+	 SRA Submission: 
+	Illumina Paired
+	 Valid:	True
+
+NY0006:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+	 Valid:	False
+
+NY0007:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+	 Valid:	False
+
+TX0001:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+	 Valid:	False
+
+no_SRA:  Sample found in Fasta file,
+	 Not SRA Submission
+	 Valid:	True
+
+no_Req_Data:  Sample found in Fasta file, Invalid Date should be YYYY-MM Missing Required Data: *author, *isolate, *organism, country, *collection_date
+	 SRA Submission: 
+	Illumina Paired Missing Data: illumina_sequencing_instrument, illumina_library_strategy, illumina_library_source, illumina_library_selection
+	 Valid:	False
+
+not_Valid_Single:  Sample found in Fasta file,
+	 SRA Submission: 
+	Illumina Single  Missing Data: illumina_sequencing_instrument, illumina_library_strategy, illumina_library_source, illumina_library_selection
+	 Valid:	False
+
+not_Missing_Double:  Sample found in Fasta file,
+	 SRA Submission Error Fastq files Not Found or Provided
+	 Valid:	True
+
+not_Valid_Nano_and_illumina:  Sample found in Fasta file,
+	 SRA Submission: 
+	Nanopore Mising Data: nanopore_sequencing_instrument, nanopore_library_strategy, nanopore_library_source, nanopore_library_selection, nanopore_library_layout
+	 Valid:	False
+
+not_found_in_fasta:  Sample not found in Fasta file, Missing Required Data: Sample Fasta
+	 SRA Submission Error Fastq files Not Found or Provided
+	 Valid:	False
+
+not_Valid_Nanopore:  Sample found in Fasta file,
+	 SRA Submission: 
+	Nanopore Mising Data: nanopore_sequencing_instrument, nanopore_library_strategy, nanopore_library_source, nanopore_library_selection, nanopore_library_layout
+	 Valid:	False
+
+Samples that passed Validation: 3 / 12

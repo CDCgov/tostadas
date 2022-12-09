@@ -1,0 +1,3 @@
+##gff-version 3
+# Liftoff v1.6.3
+# /scicomp/home-pure/tqr4/miniconda3/envs/lift/bin/liftoff -g /scicomp/groups-pure/Projects/scbs_mpob/assets/ref.MPXV.NC063383.gff -u output.unmapped_features.txt -o temp_MPXV_metadata_Sample_Run_2_error_1661769259.0277011/liftoff/not_Valid_Nano_and_illumina.liftoff-orig.gff -dir temp_MPXV_metadata_Sample_Run_2_error_1661769259.0277011/liftoff/ -p 8 -f temp_MPXV_metadata_Sample_Run_2_error_1661769259.0277011/liftoff/ftypes.liftoff.tmp -cds temp_MPXV_metadata_Sample_Run_2_error_1661769259.0277011/fastaFiles/not_Valid_Nano_and_illumina.fasta /scicomp/groups-pure/Projects/scbs_mpob/assets/ref.MPXV.NC063383.fasta

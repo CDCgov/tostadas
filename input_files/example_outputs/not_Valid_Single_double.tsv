@@ -1,0 +1,36 @@
+	not_Valid_Single_double
+*sample_name	not_Valid_Single_double
+ncbi_sequence_name_biosample_genbank	MPXV_Not_Correct
+*author	James Heuser
+*isolate	MPXV_Not_real
+*organism	Monkeypox Virus
+*collection_date	2012-12-23 00:00:00
+country	USA
+state	Not Provided
+collected_by	Not Provided
+sample_type	Not Provided
+lat_lon	Not Provided
+purpose_of_sampling	Not Provided
+sex	Not Provided
+age	Not Provided
+race	Not Provided
+ethnicity	Not Provided
+assembly_protocol	Not Provided
+assembly_method	Not Provided
+mean_coverage	Not Provided
+ncbi_sequence_name_sra	Not Provided
+illumina_sequencing_instrument	Not Provided
+illumina_library_strategy	Not Provided
+illumina_library_source	Not Provided
+illumina_library_selection	Not Provided
+illumina_library_layout	paired
+illumina_library_protocol	Not Provided
+illumina_sra_file_path_1	Not Provided
+illumina_sra_file_path_2	/scicomp/groups-pure/Projects/scbs_mpob/data/mpx_filtered/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz
+nanopore_sequencing_instrument	Not Provided
+nanopore_library_strategy	Not Provided
+nanopore_library_source	Not Provided
+nanopore_library_selection	Not Provided
+nanopore_library_layout	Not Provided
+nanopore_library_protocol	Not Provided
+nanopore_sra_file_path_1	Not Provided

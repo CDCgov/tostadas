@@ -1,0 +1,17 @@
+FL0004:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+IL0005:  Sample found in Fasta file,
+	 SRA Submission: 
+	Illumina Paired
+NY0006:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+NY0007:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+TX0001:  Sample found in Fasta file,
+	 SRA Submission:
+	 No Fastq files for SRA Files Found, might not exist or have permission problems
+
+Samples that passed Validation: 1 / 5

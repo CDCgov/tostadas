@@ -1,0 +1,13 @@
+>Feature OH0002
+128949	132444	gene
+			ID	gene-OH0002-130
+			gene	OPG151
+			locus_tag	OH0002_130
+			coverage	1.0
+			sequence_ID	0.999
+			matches_ref_protein	False
+			valid_ORF	False
+			missing_stop_codon	True
+			valid_ORFs	0
+			extra_copy_number	0
+			copy_num_ID	gene-OH0002-130_0

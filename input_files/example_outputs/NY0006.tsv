@@ -1,0 +1,36 @@
+	NY0006
+*sample_name	NY0006
+ncbi_sequence_name_biosample_genbank	MPXV_USA_2022_NY0006
+*author	Crystal M. Gigante; Scott Hughes; Matthew H. Seabolt; Hui Zhao; Kimberly Wilkins; Andrea McCollum; Christina Hutson; Whitni Davidson; Agam Rao; Jennifer Baumgartner; Yu Li
+*isolate	MPXV_USA_2022_NY0006
+*organism	Monkeypox Virus
+*collection_date	2022-06
+country	USA
+state	NY
+collected_by	Not Provided
+sample_type	Not Provided
+lat_lon	Not Provided
+purpose_of_sampling	Not Provided
+sex	Not Provided
+age	Not Provided
+race	Not Provided
+ethnicity	Not Provided
+assembly_protocol	 ivar 0.1; samtools 1.7; bwa 0.7.17;  SPAdes 3.13.0; CLC 24
+assembly_method	Not Provided
+mean_coverage	121
+ncbi_sequence_name_sra	MPXV_NY0006
+illumina_sequencing_instrument	Illumina MiSeq
+illumina_library_strategy	WGS
+illumina_library_source	METAGENOMIC
+illumina_library_selection	RANDOM
+illumina_library_layout	paired
+illumina_library_protocol	Not Provided
+illumina_sra_file_path_1	/scicomp/instruments-pure/23-4-631_Illumina-MiSeq-M03083/220611_M03083_0092_000000000-J88KR/Alignment_1/20220613_231902/Fastq/2022-028-7666_S3_L001_R1_001.fastq.gz
+illumina_sra_file_path_2	/scicomp/instruments-pure/23-4-631_Illumina-MiSeq-M03083/220611_M03083_0092_000000000-J88KR/Alignment_1/20220613_231902/Fastq/2022-028-7666_S3_L001_R2_001.fastq.gz
+nanopore_sequencing_instrument	Not Provided
+nanopore_library_strategy	Not Provided
+nanopore_library_source	Not Provided
+nanopore_library_selection	Not Provided
+nanopore_library_layout	Not Provided
+nanopore_library_protocol	Not Provided
+nanopore_sra_file_path_1	Not Provided

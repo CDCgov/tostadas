@@ -1,0 +1,6 @@
+##gff-version 3
+#!gff-spec-version 1.21
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=10244
+UPDATETAG	RefSeq	repeat_region	1	6422	.	-	.	ID=ITR-UPDATETAG-RPT1;rpt_type=long_terminal_repeat
+UPDATETAG	RefSeq	repeat_region	190788	197209	.	+	.	ID=ITR-UPDATETAG-RPT2;rpt_type=long_terminal_repeat
+###

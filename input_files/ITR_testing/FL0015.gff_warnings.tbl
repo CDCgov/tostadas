@@ -1,0 +1,25 @@
+>Feature FL0015
+6164	4851	gene
+			ID	gene-FL0015-176
+			gene	OPG015
+			locus_tag	FL0015_176
+			coverage	1.0
+			sequence_ID	0.999
+			matches_ref_protein	False
+			valid_ORF	False
+			inframe_stop_codon	True
+			valid_ORFs	0
+			extra_copy_number	0
+			copy_num_ID	gene-FL0015-176_0
+190993	192306	gene
+			ID	gene-FL0015-004
+			gene	OPG015
+			locus_tag	FL0015_004
+			coverage	1.0
+			sequence_ID	0.999
+			matches_ref_protein	False
+			valid_ORF	False
+			inframe_stop_codon	True
+			valid_ORFs	0
+			extra_copy_number	0
+			copy_num_ID	gene-FL0015-004_0
