@@ -44,6 +44,7 @@ lift_copies:
 lift_minimap_path:
 lift_feature_database_name:
 submission_output_dir:
+submission_prod_or_test:
 submission_wait_time:
 submission_only_meta:
 submission_only_gff:

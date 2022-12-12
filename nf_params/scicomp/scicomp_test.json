@@ -46,6 +46,7 @@
     "lift_feature_database_name": "N/A",
 
     "submission_output_dir": "submission_outputs",
+    "submission_prod_or_test": "test",
     "submission_wait_time": "calc",
     "submission_only_meta": "/scicomp/home-pure/ufl1/mpxv_annotation_submission_dev/nf_test_results/validation_outputs/MPXV_metadata_Sample_Run_1/tsv_per_sample",
     "submission_only_gff": "/scicomp/home-pure/ufl1/mpxv_annotation_submission_dev/nf_test_results/liftoff_outputs/MPXV_metadata_Sample_Run_1/liftoff",
