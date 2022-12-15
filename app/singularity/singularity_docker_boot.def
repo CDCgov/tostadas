@@ -1,0 +1,26 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%files
+    environment.yml
+
+%post
+    # install mamba and create .yml file
+    /opt/conda/bin/conda install -c conda-forge mamba
+    /opt/conda/bin/mamba env create -f environment.yml
+
+    # change the singularity environment variable to the conda env (start env by default)
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT
+    echo "conda activate tostadas" >> $SINGULARITY_ENVIRONMENT
+
+    # check if it worked
+    . /opt/conda/etc/profile.d/conda.sh
+    conda activate tostadas
+    printf "\n\n******** LIST OF PACKAGES IN TOSTADAS ENV ********\n\n"
+    conda list
+    printf "\n\n******** LIST OF ENVS ********\n\n"
+    conda info --envs
+
+%runscript
+      exec /usr/bin/python "$@"
+

@@ -1,0 +1,16 @@
+---
+Genbank:
+  required_src_columns:
+  - sequence_ID
+  - organism
+  - isolate
+  - collection-date
+  - host
+  - country
+  required_cmt_columns:
+  - SeqID
+  - StructuredCommentPrefix
+  - StructuredCommentSuffix
+Gisaid: []
+BioSample: []
+SRA: []
