@@ -2,7 +2,7 @@ import argparse
 import os
 import glob
 import subprocess
-
+import yaml
 
 def get_args():
     """ All potential arguments passed in through command line
@@ -18,7 +18,8 @@ def get_args():
     parser.add_argument("--update", type=str, help='Whether to run update or not')
     parser.add_argument("--nf_output_dir", type=str, help='Name of output directory in nextflow')
     parser.add_argument("--submission_output_dir", type=str, help='Name of submission directory in nextflow')
-    parser.add_argument("--launch_dir", type=str, help='Path to directory containing main.nf')
+    parser.add_argument("--launch_dir", type=str, help='Path to directory where it is being launched ')
+    parser.add_argument("--project_dir", type=str, help='Path to directory where main.nf is located')
     parser.add_argument("--batch_name", type=str, help='Name of batch')
     parser.add_argument("--prod_or_test", type=str, help='Whether it is a production or test submission')
     return parser
@@ -82,15 +83,39 @@ class SubmitToDatabase:
         
         # create the main submission outputs directory 
         commands = {}
-        dirs_to_check = {
-            'root': f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}",
-            'terminal': f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}/terminal_outputs",
-            'commands': f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}/commands_used"
-        }
+        if not os.path.isabs(self.parameters['submission_output_dir']):
+            dirs_to_check = {
+                'root': f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}",
+                'terminal': f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}/terminal_outputs",
+                'commands': f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}/commands_used"
+            }
+        else:
+            dirs_to_check = {
+                'root': f"{self.parameters['submission_output_dir']}",
+                'terminal': f"{self.parameters['submission_output_dir']}/terminal_outputs",
+                'commands': f"{self.parameters['submission_output_dir']}/commands_used"
+            }
         for path in dirs_to_check: 
             if not os.path.isdir(dirs_to_check[path]):
-                os.mkdir(dirs_to_check[path])
+                os.makedirs(dirs_to_check[path], exist_ok=True)
         
+        # check the config path (if absolute leave it else assume that it is in conf folder within submission scripts)
+        if not os.path.isabs(self.parameters['config']):
+            self.parameters['config'] = f"{self.parameters['project_dir']}/submission_scripts/config_files/{self.parameters['config']}"
+        
+        # check that the submission config file value matches the one inside of the params config 
+        with open(self.parameters['config']) as sub_config:
+            loaded_conf = yaml.safe_load(sub_config)
+            if loaded_conf['general']['submission_directory'] != dirs_to_check['root']:
+                loaded_conf['general']['submission_directory'] = dirs_to_check['root']
+                # now write the new .yaml file with this updated value
+                path_to_new_conf = '/'.join(self.parameters['config'].split('/')[:-1]) + '/' + self.parameters['config'].split('/')[-1].split('.')[0] + '_submitdir_modified.yaml'
+                if os.path.exists(path_to_new_conf):
+                    os.remove(path_to_new_conf)
+                with open(path_to_new_conf, 'w') as new_config:
+                    yaml.dump(loaded_conf, new_config)
+                    self.parameters['config'] = path_to_new_conf
+
         # sort file lists to ensure they are in the same order, assumes you have alpha prefix
         meta_files = sorted(meta_files)
         fasta_files = sorted(fasta_files)
@@ -109,25 +134,44 @@ class SubmitToDatabase:
                 raise ValueError(f"ERROR: Must specify either test/prod for the submission_prod_or_test flag... passed in value is {self.parameters['prod_or_test']}")
 
             # write the text file with information
-            with open(f"{dirs_to_check['commands']}/submit_info_{sample_name}.txt", 'w') as f:
-                f.write(f"{meta}\n")
-                f.write(f"{fasta}\n")
-                f.write(f"{gff}\n")
-                f.write(f"{command}\n")
+            with open(f"{dirs_to_check['commands']}/{sample_name}_initial_submit_info.txt", 'w') as f:
+                f.write(f"PATH TO META FILE: {meta}\n")
+                f.write(f"PATH TO FASTA FILE: {fasta}\n")
+                f.write(f"PATH TO GFF FILE: {gff}\n")
+                f.write(f"ACTUAL COMMAND USED: {command}\n")
             f.close()
             # store the final command within dictionary
             commands[sample_name] = command
 
         # cycle through the commands stored and initiate subprocesses for these + write terminal output to file
         for key in commands.keys():
-            file_ = open(f"{dirs_to_check['terminal']}/terminal_output_{key}.txt", "w+")
+            file_ = open(f"{dirs_to_check['terminal']}/{key}_initial_terminal_output.txt", "w+")
             subprocess.run(commands[key], shell=True, stdout=file_)
             file_.close()
 
     def update_submission(self):
         """ Calls update submission
         """
+        if not os.path.isabs(self.parameters['nf_output_dir']):
+            self.parameters['nf_output_dir'] = f"{self.parameters['launch_dir']}/{self.parameters['nf_output_dir']}"
+
+        if not os.path.isabs(self.parameters['submission_output_dir']):
+            terminal_dir = f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}/terminal_outputs",
+            command_dir = f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}/commands_used"
+        else:
+            terminal_dir = f"{self.parameters['submission_output_dir']}/terminal_outputs", 
+            command_dir = f"{self.parameters['submission_output_dir']}/commands_used"
+
+        with open(f"{command_dir}/submit_info_for_update.txt", 'w') as f:
+            f.write(f"ACTUAL COMMAND USED: python {self.parameters['submission_script']} update_submissions\n")
+            f.close()
+
         os.system(f"python {self.parameters['submission_script']} update_submissions")
+        """
+        with open(f"{terminal_dir}/test.txt", "w+") as f:
+            subprocess.run(f"python {self.parameters['submission_script']} update_submissions", shell=true, stdout=f)
+        f.close()
+        """
 
 if __name__ == "__main__":
     submit_to_database = SubmitToDatabase()

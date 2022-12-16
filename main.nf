@@ -40,7 +40,6 @@ def helpMessage() {
 
          --val_date_format_flag                 Flag corresponding to format for date, possible options are 's', 'o', 'v'. Please consult documentation for more info.
          --val_keep_pi                          Flag to keep personal information or not (accepts bool: true/false)
-         --val_meta_file_name                   Name of the metadata file name (without extension) (accepts string)
 
          --lift_print_version_exit              Flag to print out the version of liftoff and exit (accepts bool: true/false)
          --lift_print_help_exit                 Flag to print out the help message for liftoff and exit (accepts bool: true/false)
@@ -65,6 +64,8 @@ def helpMessage() {
          --submission_only_gff                  Path to the reformatted gff directory if calling submission entrypoint (accepts string)
          --submission_only_fasta                Path to the split fasta files directory if calling submission entrypoint (accepts string)
          --submission_config                    Path to the configuration file used for the submission process (accepts string)
+         --submission_prod_or_test              Denotes whether to submit as a test or production (accepts string: test/prod)
+         --batch_name                           Prefixes the sample names to group together certain samples during submission
 
        Optional arguments:
         --submission_wait_time                  Overwrites the default calculation of (3 * 60 * num samples) in seconds for wait time after initial submission

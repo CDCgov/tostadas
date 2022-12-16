@@ -115,7 +115,7 @@ process VADR {
 */
 process SUBMISSION {
 
-    publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     label 'main'
     
@@ -135,15 +135,16 @@ process SUBMISSION {
         val lifted_fasta_path
         val lifted_gff_path
         val entry_flag
+
     script:
         """
         python3 $projectDir/bin/run_submission.py --validated_meta_path $validated_meta_path --lifted_fasta_path $lifted_fasta_path \
         --lifted_gff_path $lifted_gff_path --launch_dir $launchDir --entry_flag $entry_flag --submission_script $params.submission_script \
         --meta_path $params.meta_path --config $params.submission_config --nf_output_dir $params.output_dir --submission_output_dir $params.submission_output_dir --update false \
-        --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test
+        --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test --project_dir $projectDir
         """
+
     output:
-        file "*"
         val true
 }
 
@@ -163,6 +164,7 @@ process UPDATE_SUBMISSION {
         val signal
     script:
         """
-         python3 $projectDir/bin/run_submission.py --update true --submission_script $params.submission_script
+         python3 $projectDir/bin/run_submission.py --update true --submission_script $params.submission_script --submission_output_dir $params.submission_output_dir \
+         --nf_output_dir $params.output_dir --launch_dir $launchDir 
         """
 } 
