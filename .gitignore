@@ -89,5 +89,5 @@ tests/__pycache__
 
 /tests/nf_test_results
 
-#/input_files/
-#/input_files
+/input_files/
+/input_files
