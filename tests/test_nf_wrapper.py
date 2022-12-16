@@ -182,7 +182,7 @@ class Get_Info():
                     self.check_outputs['meta'].append(self.paths['meta_file_name'][x])
 
                     # get the command with only annotation
-                    self.commands.append(f"nextflow run {self.main_nf} -profile test,{y} -entry only_annotation --meta_path {self.root}/{self.paths['meta_paths'][x]}" + \
+                    self.commands.append(f"nextflow run {self.main_nf} -profile test,{y} -entry only_liftoff --meta_path {self.root}/{self.paths['meta_paths'][x]}" + \
                         f" --fasta_path {self.root}/{self.paths['fasta_paths'][x]} --val_meta_file_name {self.paths['meta_file_name'][x]} --scicomp {self.parameters['scicomp']}")
                     self.check_outputs['num'].append(4)
                     self.check_outputs['meta'].append(self.paths['meta_file_name'][x])
