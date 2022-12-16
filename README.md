@@ -39,9 +39,7 @@
 
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
+:heavy_minus_sign: :heavy_minus_sign:
 
 ## Pipeline Summary
 
@@ -56,9 +54,7 @@ Submission workflow generates the necessary files for Genbank submission, genera
 
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
+:heavy_minus_sign: :heavy_minus_sign:
 
 ## Environment Setup 
 The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
@@ -94,9 +90,7 @@ Access the link provided for help with installing [nextflow](https://www.nextflo
 
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
+:heavy_minus_sign: :heavy_minus_sign: 
 
 ## Quick Start
 
@@ -118,9 +112,7 @@ nextflow run main.nf -profile test,conda
 
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
+:heavy_minus_sign: :heavy_minus_sign:
 
 ## Usage
 #### This section walks through the available parameters to customize your workflow.
@@ -254,9 +246,7 @@ nextflow run main.nf -profile <param set>,<env> -entry <insert option from table
 
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
+:heavy_minus_sign: :heavy_minus_sign:
 
 ## Outputs
 The following section walks through the outputs from the pipeline.
@@ -309,9 +299,7 @@ The pipeline outputs inlcude:
 
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
+:heavy_minus_sign: :heavy_minus_sign:
 
 ## Parameters:
 Default parameters are given in the nextflow.config file. This table lists the parameters that can be changed to a value, path or true/false. 
@@ -401,9 +389,7 @@ When changing these parameters pay attention to the required inputs and make sur
 
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
 :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
+:heavy_minus_sign: :heavy_minus_sign:
 
 ## Helpful Links:     
    :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/
