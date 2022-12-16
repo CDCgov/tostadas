@@ -37,10 +37,6 @@
     - [Liftoff Workflow Params](#specify-liftoff-workflow-params)
   - [Helpful Links](#helpful-links)
 
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign:
-
 ## Pipeline Summary
 
 ### Metadata Validation
@@ -51,10 +47,6 @@ The liftoff workflow annotates input fasta-formatted genomes and produces accomp
 
 ### Submission 
 Submission workflow generates the necessary files for Genbank submission, generates a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
-
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign:
 
 ## Environment Setup 
 The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
@@ -88,10 +80,6 @@ mamba install -c bioconda nextflow
 ```
 Access the link provided for help with installing [nextflow](https://www.nextflow.io/docs/latest/getstarted.html)
 
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: 
-
 ## Quick Start
 
 ### The configs are set-up to run the default params with the test option
@@ -109,10 +97,6 @@ nextflow run main.nf -profile test,conda
 ```
 
 #### (D) The outputs of the pipeline will appear in the "nf_test_results" folder with in the project directory (unless you changed that parameter in nextflow.config).
-
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign:
 
 ## Usage
 #### This section walks through the available parameters to customize your workflow.
@@ -244,10 +228,6 @@ Table of entrypoints available for the nextflow pipeline:
 nextflow run main.nf -profile <param set>,<env> -entry <insert option from table above>
 ```
 
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign:
-
 ## Outputs
 The following section walks through the outputs from the pipeline.
 
@@ -296,10 +276,6 @@ The pipeline outputs inlcude:
 * submission log file
     * This output is found in the submission_outputs file in your specified output_directory
     * If the file can not be found you can run the only_update_submission entrypoint for the pipeline 
-
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign:
 
 ## Parameters:
 Default parameters are given in the nextflow.config file. This table lists the parameters that can be changed to a value, path or true/false. 
@@ -386,10 +362,6 @@ When changing these parameters pay attention to the required inputs and make sur
 | --submission_config      | Configuration file for submission to public repos       |        Yes (path as string)      |
 | --submission_wait_time **|Calculated based on sample number(3 * 60secs * sample_num)| integer (seconds)|
 | --batch_name | Name of the batch to prefix samples with during submission | Yes (name as string)
-
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign: :heavy_minus_sign:
-:heavy_minus_sign: :heavy_minus_sign:
 
 ## Helpful Links:     
    :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/
