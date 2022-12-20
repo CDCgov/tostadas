@@ -1,12 +1,12 @@
 # TOSTADAS &#8594; <span style="color:blue"><u>**T**</u></span>oolkit for <span style="color:blue"><u>**O**</u></span>pen <span style="color:blue"><u>**S**</u></span>equence <span style="color:blue"><u>**T**</u></span>riage, <span style="color:blue"><u>**A**</u></span>nnotation and <span style="color:blue"><u>**DA**</u></span>tabase <span style="color:blue"><u>**S**</u></span>ubmission :microscope: :computer:
 
-## MPOX ANNOTATION AND SUBMISSION PIPELINE
+## PATHOGEN ANNOTATION AND SUBMISSION PIPELINE
 
 <!-- [![GitHub Downloads](https://img.shields.io/github/downloads/CDCgov/tostadas/total.svg?style=social&logo=github&label=Download)](https://github.com/CDCgov/tostadas/releases) -->
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
 ## Overview
-  The MPOX Annotation and Submission pipeline facilitates the running of several Python scripts, which validate metadata (QC), annotate assembled genomes, and submit to NCBI. 
+  The Pathogen Annotation and Submission pipeline facilitates the running of several Python scripts, which validate metadata (QC), annotate assembled genomes, and submit to NCBI. Current implementation is fine-tuned to MPOX but future enhancements will made the pipeline pathogen agnostic. 
 
 ## Table of Contents
 - [Overview](#overview)
@@ -96,7 +96,7 @@ This is the default directory set in the nextflow.config file to allow for runni
 nextflow run main.nf -profile test,conda
 ```
 
-#### (D) The outputs of the pipeline will appear in the "nf_test_results" folder with in the project directory (unless you changed that parameter in nextflow.config).
+#### (D) The outputs of the pipeline will appear in the "nf_test_results" folder with in the project directory (update this in the nextflow.config for a different output path).
 
 ## Usage
 #### This section walks through the available parameters to customize your workflow.
@@ -140,14 +140,12 @@ The submission piece of the pipeline allows the user to create a config file to 
 
 (A) Create Appropriate Accounts:
 * NCBI: If uploading to NCBI, an account is required along with a center account approved for submitting via FTP. Contact the following for account creation:gb-admin@ncbi.nlm.nih.gov.
-* GISAID: A GISAID account is required for submission to GISAID, you can register for an account at https://www.gisaid.org/. Test submissions are first required before a final submission can be made. When your first test submission is complete contact GISAID at hcov-19@gisaid.org to recieve a personal CID.
+* GISAID: A GISAID account is required for submission to GISAID, you can register for an account at https://www.gisaid.org/. Test submissions are first required before a final submission can be made. When your first test submission is complete contact GISAID at hcov-19@gisaid.org to recieve a personal CID. GISAID support is not yet implemented but it may be added in the future.
 
 (B) Config File Set-up:
 * The submission_config file is located in submission_scripts/config_files directory
 * The script automatically defaults to the default_config.yaml to change the submission config to your own, you must run ```--submission_config <file path to custom config>```  as a flag, or change this parameter in the standard_params.config file.
 * The template for the submission .yaml file can be found in submission scripts/config_files within the repo. This is where you can edit the various parameters you want to include in your submission. Then you must set the file path accordingly in the nextflow.config file or with the ```--submission_config``` flag to overwrite the old .yaml file (as mentioned above).
-
-
 
 #### Running The Pipeline with Conda:
 (A) The typical command to run the pipeline based on your custom parameters defined/saved in the standard_params.config and created conda environment is as follows:
@@ -185,8 +183,7 @@ USING CONDA
  ```bash
 nextflow run main.nf -profile <param set>,<env> --submission_wait_time 360
  ```
-
-
+ 
 (C) Outputs will be generated in the nf_test_results folder (if running the test parameter set) unless otherwise specified in your standard_params.config file as output_dir param. 
 
 #### Running The Pipeline with Docker:
@@ -219,7 +216,7 @@ Table of entrypoints available for the nextflow pipeline:
 | only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow               |
 | only_update_submission  | Updates NCBI submissions                                 |
 
-* Documentation for using entrypoints with NF can be found at [Nextflow_Entrypoints](https://www.nextflow.io/blog/2020/cli-docs-release.html) under section 5:. 
+* Documentation for using entrypoints with NF can be found at [Nextflow_Entrypoints](https://www.nextflow.io/blog/2020/cli-docs-release.html) under section 5. 
 
 
 (D) The following command can be used to specify entrypoints for the workflow:
