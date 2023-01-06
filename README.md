@@ -43,7 +43,7 @@
 The validation workflow checks if metadata conforms to NCBI standards and matches the input fasta file. The script also splits a multi-sample xlsx file into a separate .tsv file for each individual.
 
 ### Liftoff
-The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. 
+The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes.
 
 ### Submission 
 Submission workflow generates the necessary files for Genbank submission, generates a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
@@ -136,9 +136,9 @@ Now that your file paths are set within your standard.yml or standard_params.con
  * Apart from this main bifurcation, there exists entrypoints that you can use to access specific processes. These are listed in the table below.
 
 #### Running Submission:
-The submission piece of the pipeline allows the user to create a config file to select which databases they would like to upload to and allows for any possible metadata fields by using a YAML to pair the database's metadata fields which your personal metadata field columns. The requirements for this portion of the pipeline to run are listed below. 
+The submission piece of the pipeline uses the processes that are directly integrated from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline. It has been developed to allow the user to create a config file to select which databases they would like to upload to and allows for any possible metadata fields by using a YAML to pair the database's metadata fields which your personal metadata field columns. The requirements for this portion of the pipeline to run are listed below.
 
-(A) Create Appropriate Accounts:
+(A) Create Appropriate Accounts as needed for the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline integrated into TOSTADAS:
 * NCBI: If uploading to NCBI, an account is required along with a center account approved for submitting via FTP. Contact the following for account creation:gb-admin@ncbi.nlm.nih.gov.
 * GISAID: A GISAID account is required for submission to GISAID, you can register for an account at https://www.gisaid.org/. Test submissions are first required before a final submission can be made. When your first test submission is complete contact GISAID at hcov-19@gisaid.org to recieve a personal CID. GISAID support is not yet implemented but it may be added in the future.
 
@@ -360,7 +360,15 @@ When changing these parameters pay attention to the required inputs and make sur
 | --submission_wait_time **|Calculated based on sample number(3 * 60secs * sample_num)| integer (seconds)|
 | --batch_name | Name of the batch to prefix samples with during submission | Yes (name as string)
 
-## Helpful Links:     
+## Helpful Links for Resources and Software Integrated with TOSTADAS :     
    :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/
    
    :link: Nextflow Documentation: https://www.nextflow.io/docs/latest/getstarted.html
+   
+   :link  SeqSender Documentation: https://github.com/CDCgov/seqsender
+   
+   :link Liftoff Documentation: https://github.com/agshumate/Liftoff
+   
+   
+   
+  
