@@ -365,9 +365,9 @@ When changing these parameters pay attention to the required inputs and make sur
    
    :link: Nextflow Documentation: https://www.nextflow.io/docs/latest/getstarted.html
    
-   :link  SeqSender Documentation: https://github.com/CDCgov/seqsender
+   :link:  SeqSender Documentation: https://github.com/CDCgov/seqsender
    
-   :link Liftoff Documentation: https://github.com/agshumate/Liftoff
+   :link: Liftoff Documentation: https://github.com/agshumate/Liftoff
    
    
    
