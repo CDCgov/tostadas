@@ -45,6 +45,9 @@
     "lift_minimap_path": "N/A",
     "lift_feature_database_name": "N/A",
 
+    "vadr_loc": "$projectDir/vadr",
+    "vadr_outdir": "vadr_outputs",
+
     "submission_output_dir": "submission_outputs",
     "submission_prod_or_test": "test",
     "submission_wait_time": "calc",

@@ -43,6 +43,8 @@ lift_infer_transcripts:
 lift_copies:
 lift_minimap_path:
 lift_feature_database_name:
+vadr_loc:
+vadr_outdir:
 submission_output_dir:
 submission_prod_or_test:
 submission_wait_time:
