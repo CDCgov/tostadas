@@ -369,6 +369,18 @@ When changing these parameters pay attention to the required inputs and make sur
    
    :link: Liftoff Documentation: https://github.com/agshumate/Liftoff
    
+   :link: VADR Documentation:  https://github.com/ncbi/vadr.git
+   
+   :link: table2asn Documentation: https://github.com/svn2github/NCBI_toolkit/blob/master/src/app/table2asn/table2asn.cpp
+   
+  ## Acknowledgements
+  Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison\
+  Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Ankush Gupta\
+  Kyle O'Connell | Yesh Kulasekarapandian |  Cole Tindall | Lynsey Kovar | Hunter Seabolt\
+  Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva\
+  Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
+   
+   
    
    
   
