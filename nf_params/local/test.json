@@ -1,16 +1,16 @@
 {
     "$projectDir": "test",
     "help": false,
-    "fasta_path": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/input_files/trialData.fasta",
-    "ref_fasta_path": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/input_files/ref/ref.MPXV.NC063383.v7.fasta",
-    "meta_path": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/input_files/MPXV_metadata_Sample_Run_1.xlsx",
-    "ref_gff_path": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/input_files/ref/ref.MPXV.NC063383.v7.gff",
+    "fasta_path": "",
+    "ref_fasta_path": "",
+    "meta_path": "",
+    "ref_gff_path": "",
 
-    "liftoff_script": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/bin/liftoff_submission.py",
-    "validation_script": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/bin/validate_metadata.py",
-    "submission_script": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/submission_scripts/submission.py",
+    "liftoff_script": "",
+    "validation_script": "",
+    "submission_script": "",
 
-    "env_yml": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/environment.yml",
+    "env_yml": "",
     "scicomp": false,
     "run_submission": true,
     "cleanup": true,
@@ -53,10 +53,10 @@
     "submission_output_dir": "submission_outputs",
     "submission_prod_or_test": "test",
     "submission_wait_time": "calc",
-    "submission_only_meta": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/nf_test_results/validation_outputs/MPXV_metadata_Sample_Run_1/tsv_per_sample",
-    "submission_only_gff": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/nf_test_results/liftoff_outputs/MPXV_metadata_Sample_Run_1/liftoff",
-    "submission_only_fasta": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/nf_test_results/liftoff_outputs/MPXV_metadata_Sample_Run_1/fasta",
-    "submission_config": "mpxv_config_kk.yaml",
+    "submission_only_meta": "",
+    "submission_only_gff": "",
+    "submission_only_fasta": "",
+    "submission_config": "",
     
     "batch_name": "batch1"
 }
