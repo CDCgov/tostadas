@@ -30,7 +30,7 @@ process METADATA_VALIDATION {
 
     script:
     """
-    python3 $params.validation_script --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
+    python3 validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
     """
 }
 
@@ -66,7 +66,7 @@ process LIFTOFF {
 
     script:
     """
-        python3 $params.liftoff_script --fasta_path $fasta_path --meta_path $meta_path --ref_fasta_path $ref_fasta_path \
+        python3 liftoff_submission.py --fasta_path $fasta_path --meta_path $meta_path --ref_fasta_path $ref_fasta_path \
         --ref_gff_path $ref_gff_path --parallel_processes $params.lift_parallel_processes --final_liftoff_output_dir $params.final_liftoff_output_dir \
         --delete_temp_files $params.lift_delete_temp_files --minimap_path $params.lift_minimap_path --feature_database_name $params.lift_feature_database_name \
         --unmapped_features_file_name $params.lift_unmapped_features_file_name --distance_scaling_factor $params.lift_distance_scaling_factor \
@@ -138,7 +138,7 @@ process SUBMISSION {
 
     script:
         """
-        python3 $projectDir/bin/run_submission.py --validated_meta_path $validated_meta_path --lifted_fasta_path $lifted_fasta_path \
+        python3 run_submission.py --validated_meta_path $validated_meta_path --lifted_fasta_path $lifted_fasta_path \
         --lifted_gff_path $lifted_gff_path --launch_dir $launchDir --entry_flag $entry_flag --submission_script $params.submission_script \
         --meta_path $params.meta_path --config $params.submission_config --nf_output_dir $params.output_dir --submission_output_dir $params.submission_output_dir --update false \
         --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test --project_dir $projectDir
