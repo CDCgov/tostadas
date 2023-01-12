@@ -105,8 +105,8 @@ process VALIDATE_PARAMS {
             "ref_fasta_path": params.ref_fasta_path,
             "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-            "liftoff_script": params.liftoff_script,
-            "validation_script": params.validation_script,
+            //"liftoff_script": params.liftoff_script,
+            //"validation_script": params.validation_script,
             "env_yml": params.env_yml,
             "lift_minimap_path": params.lift_minimap_path,
             "lift_feature_database_name": params.lift_feature_database_name
