@@ -6,7 +6,7 @@ import yaml
 
 def get_args():
     """ All potential arguments passed in through command line
-    """
+    """ 
     parser = argparse.ArgumentParser()
     parser.add_argument("--meta_path", type=str, help='Path to the original metadata file')
     parser.add_argument("--validated_meta_path", type=str, help='Path to the metadata directory containing validated meta files ending with .tsv')

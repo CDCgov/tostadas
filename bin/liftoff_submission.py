@@ -188,7 +188,7 @@ class AnnotationPrep:
 		self.load_meta()
 		# get the length of sequences for each sample
 		self.get_seq_lens()
-
+ 
 	def split_fasta(self):
 		"""
 		Parses fasta file and writes it
