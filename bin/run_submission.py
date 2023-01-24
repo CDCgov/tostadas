@@ -117,17 +117,18 @@ class SubmitToDatabase:
 
             # check to make sure that paths align properly 
             if loaded_conf['general']['submission_directory'] != dirs_to_check['root'] or self.parameters['database'] != 'submit':
+                # make sure that the submission directory is aligned with the root dir 
                 if loaded_conf['general']['submission_directory'] != dirs_to_check['root']:
                     loaded_conf['general']['submission_directory'] = dirs_to_check['root']
                 
-                # make sure that submission config reflects passed in nextflow parameter for database submission
-                elif self.parameters['database'] != 'submit': 
-                    loaded_conf['general'][self.database_vals[self.parameters['database']]] = True
-                    # set all of the other values in config as false
-                    removed_val = self.database_vals.pop(self.parameters['database'])
-                    for val in removed_val.keys(): 
-                        loaded_conf['general'][removed_val[val]] = False
-
+                # go through and change the config to match the passed in database submission
+                if self.parameters['database'] != 'submit':
+                    for key in ['genbank', 'sra', 'gisaid', 'biosample', 'joint_sra_biosample']:
+                        if self.parameters['database'] == key:
+                            loaded_conf['general'][self.database_vals[key]] = True
+                        else:
+                            loaded_conf['general'][self.database_vals[key]] = False
+                
                 # now write the new .yaml file with this updated value
                 path_to_new_conf = '/'.join(self.parameters['config'].split('/')[:-1]) + '/' + self.parameters['config'].split('/')[-1].split('.')[0] + '_submitdir_modified.yaml'
                 if os.path.exists(path_to_new_conf):
@@ -135,7 +136,8 @@ class SubmitToDatabase:
                 with open(path_to_new_conf, 'w') as new_config:
                     yaml.dump(loaded_conf, new_config)
                     self.parameters['config'] = path_to_new_conf
-
+            
+        sub_config.close()
 
         # sort file lists to ensure they are in the same order, assumes you have alpha prefix
         meta_files = sorted(meta_files)
