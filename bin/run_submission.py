@@ -32,6 +32,13 @@ class SubmitToDatabase:
         # get the arguments from argparse
         args = get_args().parse_args()
         self.parameters = vars(args)
+        self.database_vals = {
+            'genbank': 'submit_Genbank', 
+            'sra': 'submit_SRA', 
+            'gisaid': 'submit_GISAID', 
+            'biosample': 'submit_BioSample',
+            'joint_sra_biosample': 'joint_SRA_BioSample_submission'
+        }
 
     def main(self):
         """ Main function for calling the two different cases: (1) initial submission or (2) update submission
@@ -104,11 +111,23 @@ class SubmitToDatabase:
         if not os.path.isabs(self.parameters['config']):
             self.parameters['config'] = f"{self.parameters['project_dir']}/submission_scripts/config_files/{self.parameters['config']}"
         
-        # check that the submission config file value matches the one inside of the params config 
+        # check that the submission config file value matches the one inside of the params config + make changes for database
         with open(self.parameters['config']) as sub_config:
             loaded_conf = yaml.safe_load(sub_config)
-            if loaded_conf['general']['submission_directory'] != dirs_to_check['root']:
-                loaded_conf['general']['submission_directory'] = dirs_to_check['root']
+
+            # check to make sure that paths align properly 
+            if loaded_conf['general']['submission_directory'] != dirs_to_check['root'] or self.parameters['database'] != 'submit':
+                if loaded_conf['general']['submission_directory'] != dirs_to_check['root']:
+                    loaded_conf['general']['submission_directory'] = dirs_to_check['root']
+                
+                # make sure that submission config reflects passed in nextflow parameter for database submission
+                elif self.parameters['database'] != 'submit': 
+                    loaded_conf['general'][self.database_vals[self.parameters['database']]] = True
+                    # set all of the other values in config as false
+                    removed_val = self.database_vals.pop(self.parameters['database'])
+                    for val in removed_val.keys(): 
+                        loaded_conf['general'][removed_val[val]] = False
+
                 # now write the new .yaml file with this updated value
                 path_to_new_conf = '/'.join(self.parameters['config'].split('/')[:-1]) + '/' + self.parameters['config'].split('/')[-1].split('.')[0] + '_submitdir_modified.yaml'
                 if os.path.exists(path_to_new_conf):
@@ -116,6 +135,7 @@ class SubmitToDatabase:
                 with open(path_to_new_conf, 'w') as new_config:
                     yaml.dump(loaded_conf, new_config)
                     self.parameters['config'] = path_to_new_conf
+
 
         # sort file lists to ensure they are in the same order, assumes you have alpha prefix
         meta_files = sorted(meta_files)
@@ -126,10 +146,10 @@ class SubmitToDatabase:
             # get the sample names and specify command
             sample_name = (meta.split('/')[-1]).split('.')[0]
             if self.parameters['prod_or_test'].lower().strip() == 'test':
-                command = f"python {self.parameters['submission_script']} {self.parameters['database']} --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {fasta}" + \
+                command = f"python {self.parameters['submission_script']} submit --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {fasta}" + \
                         f" --metadata {meta} --gff {gff} --config {self.parameters['config']} --{self.parameters['prod_or_test']}"
             elif self.parameters['prod_or_test'].lower().strip() == 'prod':
-                command = f"python {self.parameters['submission_script']} {self.parameters['database']} --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {fasta}" + \
+                command = f"python {self.parameters['submission_script']} submit --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {fasta}" + \
                         f" --metadata {meta} --gff {gff} --config {self.parameters['config']}"
             else: 
                 raise ValueError(f"ERROR: Must specify either test/prod for the submission_prod_or_test flag... passed in value is {self.parameters['prod_or_test']}")
@@ -173,6 +193,7 @@ class SubmitToDatabase:
             subprocess.run(f"python {self.parameters['submission_script']} update_submissions", shell=true, stdout=f)
         f.close()
         """
+
 
 if __name__ == "__main__":
     submit_to_database = SubmitToDatabase()
