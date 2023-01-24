@@ -22,6 +22,7 @@ def get_args():
     parser.add_argument("--project_dir", type=str, help='Path to directory where main.nf is located')
     parser.add_argument("--batch_name", type=str, help='Name of batch')
     parser.add_argument("--prod_or_test", type=str, help='Whether it is a production or test submission')
+    parser.add_argument("--database", type=str, help='Which database to submit samples to')
     return parser
 
 class SubmitToDatabase:
@@ -125,10 +126,10 @@ class SubmitToDatabase:
             # get the sample names and specify command
             sample_name = (meta.split('/')[-1]).split('.')[0]
             if self.parameters['prod_or_test'].lower().strip() == 'test':
-                command = f"python {self.parameters['submission_script']} submit --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {fasta}" + \
+                command = f"python {self.parameters['submission_script']} {self.parameters['database']} --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {fasta}" + \
                         f" --metadata {meta} --gff {gff} --config {self.parameters['config']} --{self.parameters['prod_or_test']}"
             elif self.parameters['prod_or_test'].lower().strip() == 'prod':
-                command = f"python {self.parameters['submission_script']} submit --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {fasta}" + \
+                command = f"python {self.parameters['submission_script']} {self.parameters['database']} --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {fasta}" + \
                         f" --metadata {meta} --gff {gff} --config {self.parameters['config']}"
             else: 
                 raise ValueError(f"ERROR: Must specify either test/prod for the submission_prod_or_test flag... passed in value is {self.parameters['prod_or_test']}")

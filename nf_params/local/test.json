@@ -55,5 +55,6 @@
     "submission_only_fasta": "/mnt/c/Users/ankushkgupta/Documents/CDC/tostadas-deloitte/nf_test_results/liftoff_outputs/MPXV_metadata_Sample_Run_1/fasta",
     "submission_config": "mpxv_config_kk.yaml",
     
-    "batch_name": "batch1"
+    "batch_name": "batch1",
+    "submission_database": "submit"
 }

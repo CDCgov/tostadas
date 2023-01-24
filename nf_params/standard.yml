@@ -51,3 +51,4 @@ submission_only_gff:
 submission_only_fasta:
 submission_config:
 batch_name:
+submission_database:

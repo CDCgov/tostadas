@@ -53,6 +53,6 @@
     "submission_only_fasta": "/scicomp/home-pure/ufl1/mpxv_annotation_submission_dev/nf_test_results/liftoff_outputs/MPXV_metadata_Sample_Run_1/fasta",
     "submission_config": "mpxv_config_kk.yaml",
 
-    "batch_name": "batch1"
-    
+    "batch_name": "batch1",
+    "submission_database": "submit"
 }
