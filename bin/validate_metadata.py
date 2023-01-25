@@ -294,24 +294,28 @@ class ValidateChecks:
 				# just for tracking globally that there was an irregularity with empty personal information
 				self.case_data_detected = True
 
+			# check if the ncbi sequence name sra is empty, if so, then fill it with the sample name prefixed by MPXV 
+			if str(sample_info["ncbi_sequence_name_sra"]) == "" or str(sample_info["ncbi_sequence_name_sra"]) == '':
+				sample_info['ncbi_sequence_name_sra'] = f"MPXV_{name}"
+
 			# check if the SRA submission is triggered, if it is, then run the class of functions for handling sra submission
-			if str(sample_info["ncbi_sequence_name_sra"]) != "" or str(sample_info["ncbi_sequence_name_sra"]) != '':
-				self.sra_msg = "\n\t\tSRA Submission Detected: "
-				sra_check = Check_Illumina_Nanopore_SRA (
-											sample_info=sample_info, sra_msg=self.sra_msg, parameters=self.parameters,
-											meta_nanopore_grade=self.meta_nanopore_grade, meta_illumina_grade=self.meta_illumina_grade,
-											nanopore_error_msg=self.nanopore_error_msg, illumina_error_msg=self.illumina_error_msg,
-											)
-				try:
-					assert sra_check
-				except AssertionError:
-					raise AssertionError(f'check_illumina_nanopore_sra class was not properly instantiated')
-				sra_check.handle_sra_submission_check()
-				self.sra_msg = sra_check.sra_msg
-				self.meta_nanopore_grade = sra_check.meta_nanopore_grade
-				self.nanopore_error_msg = sra_check.nanopore_error_msg
-				self.meta_illumina_grade = sra_check.meta_illumina_grade
-				self.illumina_error_msg = sra_check.illumina_error_msg
+			self.sra_msg = "\n\t\tSRA Submission Detected: "
+			sra_check = Check_Illumina_Nanopore_SRA (
+										sample_info=sample_info, sra_msg=self.sra_msg, parameters=self.parameters,
+										meta_nanopore_grade=self.meta_nanopore_grade, meta_illumina_grade=self.meta_illumina_grade,
+										nanopore_error_msg=self.nanopore_error_msg, illumina_error_msg=self.illumina_error_msg,
+										)
+			try:
+				assert sra_check
+			except AssertionError:
+				raise AssertionError(f'check_illumina_nanopore_sra class was not properly instantiated')
+				
+			sra_check.handle_sra_submission_check()
+			self.sra_msg = sra_check.sra_msg
+			self.meta_nanopore_grade = sra_check.meta_nanopore_grade
+			self.nanopore_error_msg = sra_check.nanopore_error_msg
+			self.meta_illumina_grade = sra_check.meta_illumina_grade
+			self.illumina_error_msg = sra_check.illumina_error_msg
 
 			# capture the error messages at the sample level
 			errors_class = HandleErrors(

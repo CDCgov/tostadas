@@ -26,8 +26,9 @@ process VALIDATE_PARAMS {
         assert params.submission_script
         assert params.env_yml
 
-        // check batch name 
+        // check submission related parameters
         assert params.batch_name 
+        assert params.submission_database in ['submit', 'genbank', 'sra', 'gisaid', 'biosample', 'joint_sra_biosample']
 
         // check output directory
         assert params.output_dir
