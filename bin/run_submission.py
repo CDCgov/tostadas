@@ -46,14 +46,11 @@ class SubmitToDatabase:
     def initial_submission(self):
         """ Function for initial submission
         """
-       # check if relative path or absolute path 
-        {command_dir}
-    out_dir = os.path.dirname(samplesheet_file)
-        if out_dir and not os.path.exists(out_dir):
-            os.makedirs(out_dir)
+       # check if relative path or absolute path
         #if not os.path.isabs(self.parameters['nf_output_dir']):
             #work_dir= os.mkdir("/data/nf" )
             #self.parameters['nf_output_dir'] = f"{self.parameters['nf_output_dir']}"
+            out_dir = os.makedirs(out_dir)
             if self.parameters['entry_flag'].lower() != 'true':
                 self.parameters['validated_meta_path'] = f"{/{out_dir}/self.parameters['validated_meta_path']}"
                 self.parameters['lifted_fasta_path'] = f"{/{out_dir}/self.parameters['lifted_fasta_path']}"
