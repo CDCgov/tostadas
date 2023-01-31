@@ -51,10 +51,9 @@ class SubmitToDatabase:
             #work_dir= os.mkdir("/data/nf" )
             self.parameters['nf_output_dir'] = f"{self.parameters['nf_output_dir']}"
             if self.parameters['entry_flag'].lower() != 'true':
-                out_dir = os.mkdir("out_dir")
-                self.parameters['validated_meta_path'] = f"{out_dir}/{self.parameters['validated_meta_path']}"
-                self.parameters['lifted_fasta_path'] = f"{out_dir}/{self.parameters['lifted_fasta_path']}"
-                self.parameters['lifted_gff_path'] = f"{out_dir}/{self.parameters['lifted_gff_path']}"
+                self.parameters['validated_meta_path'] = f"{self.parameters['validated_meta_path']}"
+                self.parameters['lifted_fasta_path'] = f"{self.parameters['lifted_fasta_path']}"
+                self.parameters['lifted_gff_path'] = f"{self.parameters['lifted_gff_path']}"
                 
         # get the meta file name from meta path if entry point was not used
         if self.parameters['entry_flag'].lower() == 'false':
