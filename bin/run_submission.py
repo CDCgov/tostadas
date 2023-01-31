@@ -50,8 +50,9 @@ class SubmitToDatabase:
         #if not os.path.isabs(self.parameters['nf_output_dir']):
             #work_dir= os.mkdir("/data/nf" )
             #self.parameters['nf_output_dir'] = f"{self.parameters['nf_output_dir']}"
-            out_dir = os.makedirs(out_dir)
+            
             if self.parameters['entry_flag'].lower() != 'true':
+                out_dir = os.makedirs(out_dir)
                 self.parameters['validated_meta_path'] = f"{/{out_dir}/self.parameters['validated_meta_path']}"
                 self.parameters['lifted_fasta_path'] = f"{/{out_dir}/self.parameters['lifted_fasta_path']}"
                 self.parameters['lifted_gff_path'] = f"{/{out_dir}/self.parameters['lifted_gff_path']}"
