@@ -26,12 +26,12 @@ process METADATA_VALIDATION {
 
     output:
     file "$params.val_output_dir"
-    path "nf_test_results/${params.val_output_dir}"
+    path "${params.val_output_dir}"
     val true
 
     script:
     """
-   validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir "nf_test_results/${params.val_output_dir}"
+   validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
     """
 }
 
@@ -63,7 +63,7 @@ process LIFTOFF {
 
     output:
     file "$params.final_liftoff_output_dir"
-    path "nf_test_results/${params.final_liftoff_output_dir}"
+    path "${params.final_liftoff_output_dir}"
     val true
 
     script:
