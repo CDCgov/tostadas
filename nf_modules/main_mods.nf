@@ -143,7 +143,7 @@ process SUBMISSION {
         run_submission.py --validated_meta_path $params.val_output_dir --lifted_fasta_path $params.final_liftoff_output_dir\
         --lifted_gff_path $params.final_liftoff_output_dir --entry_flag $entry_flag --submission_script $params.submission_script \
         --meta_path $params.meta_path --config $params.submission_config --nf_output_dir $params.output_dir --submission_output_dir $params.submission_output_dir --update false \
-        --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test --project_dir $projectDir --work_dir $workDir
+        --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test --project_dir $projectDir 
         """
 
     output:
