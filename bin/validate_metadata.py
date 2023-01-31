@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Adapted from Perl scripts by MH Seabolt and Python scripts by J Heuser
 # Refactored and updated by AK Gupta and KA O'Connell
 
