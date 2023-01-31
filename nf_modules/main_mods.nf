@@ -26,12 +26,12 @@ process METADATA_VALIDATION {
 
     output:
     file "$params.val_output_dir"
-    path "${params.output_dir}/${params.val_output_dir}"
+    path "nf_test_results/${params.val_output_dir}"
     val true
 
     script:
     """
-   validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir "${params.output_dir}/${params.val_output_dir}"
+   validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir "nf_test_results/${params.val_output_dir}"
     """
 }
 
@@ -63,13 +63,13 @@ process LIFTOFF {
 
     output:
     file "$params.final_liftoff_output_dir"
-    path "${params.output_dir}/${params.final_liftoff_output_dir}"
+    path "nf_test_results/${params.final_liftoff_output_dir}"
     val true
 
     script:
     """
         liftoff_submission.py --fasta_path $fasta_path --meta_path $meta_path --ref_fasta_path $ref_fasta_path \
-        --ref_gff_path $ref_gff_path --parallel_processes $params.lift_parallel_processes --final_liftoff_output_dir "${params.output_dir}/${params.final_liftoff_output_dir}" \
+        --ref_gff_path $ref_gff_path --parallel_processes $params.lift_parallel_processes --final_liftoff_output_dir $params.final_liftoff_output_dir \
         --delete_temp_files $params.lift_delete_temp_files --minimap_path $params.lift_minimap_path --feature_database_name $params.lift_feature_database_name \
         --unmapped_features_file_name $params.lift_unmapped_features_file_name --distance_scaling_factor $params.lift_distance_scaling_factor \
         --copy_threshold $params.lift_copy_threshold --coverage_threshold $params.lift_coverage_threshold --child_feature_align_threshold $params.lift_child_feature_align_threshold \
