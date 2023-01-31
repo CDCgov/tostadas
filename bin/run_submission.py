@@ -47,13 +47,17 @@ class SubmitToDatabase:
         """ Function for initial submission
         """
        # check if relative path or absolute path 
-        if not os.path.isabs(self.parameters['nf_output_dir']):
-            #work_dir= print(os.getcwd())
-            self.parameters['nf_output_dir'] = f"{self.parameters['nf_output_dir']}"
+        {command_dir}
+    out_dir = os.path.dirname(samplesheet_file)
+        if out_dir and not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        #if not os.path.isabs(self.parameters['nf_output_dir']):
+            #work_dir= os.mkdir("/data/nf" )
+            #self.parameters['nf_output_dir'] = f"{self.parameters['nf_output_dir']}"
             if self.parameters['entry_flag'].lower() != 'true':
-                self.parameters['validated_meta_path'] = f"{self.parameters['validated_meta_path']}"
-                self.parameters['lifted_fasta_path'] = f"{self.parameters['lifted_fasta_path']}"
-                self.parameters['lifted_gff_path'] = f"{self.parameters['lifted_gff_path']}"
+                self.parameters['validated_meta_path'] = f"{/{out_dir}/self.parameters['validated_meta_path']}"
+                self.parameters['lifted_fasta_path'] = f"{/{out_dir}/self.parameters['lifted_fasta_path']}"
+                self.parameters['lifted_gff_path'] = f"{/{out_dir}/self.parameters['lifted_gff_path']}"
                 
         # get the meta file name from meta path if entry point was not used
         if self.parameters['entry_flag'].lower() == 'false':
