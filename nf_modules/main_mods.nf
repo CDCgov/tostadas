@@ -26,7 +26,7 @@ process METADATA_VALIDATION {
 
     output:
     file "$params.val_output_dir"
-    path "$params.val_output_dir"
+    path "${params.output_dir}/${params.val_output_dir}"
     val true
 
     script:
@@ -63,7 +63,7 @@ process LIFTOFF {
 
     output:
     file "$params.final_liftoff_output_dir"
-    path "$params.final_liftoff_output_dir"
+    path "${params.output_dir}/${params.final_liftoff_output_dir}"
     val true
 
     script:
