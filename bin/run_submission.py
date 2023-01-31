@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import os
 import glob
@@ -6,7 +8,7 @@ import yaml
 
 def get_args():
     """ All potential arguments passed in through command line
-    """
+    """ 
     parser = argparse.ArgumentParser()
     parser.add_argument("--meta_path", type=str, help='Path to the original metadata file')
     parser.add_argument("--validated_meta_path", type=str, help='Path to the metadata directory containing validated meta files ending with .tsv')
@@ -44,14 +46,15 @@ class SubmitToDatabase:
     def initial_submission(self):
         """ Function for initial submission
         """
-        # check if relative path or absolute path 
+       # check if relative path or absolute path 
         if not os.path.isabs(self.parameters['nf_output_dir']):
-            self.parameters['nf_output_dir'] = f"{self.parameters['launch_dir']}/{self.parameters['nf_output_dir']}"
+            #work_dir= print(os.getcwd())
+            self.parameters['nf_output_dir'] = f"{self.parameters['nf_output_dir']}"
             if self.parameters['entry_flag'].lower() != 'true':
-                self.parameters['validated_meta_path'] = f"{self.parameters['launch_dir']}/{self.parameters['validated_meta_path']}"
-                self.parameters['lifted_fasta_path'] = f"{self.parameters['launch_dir']}/{self.parameters['lifted_fasta_path']}"
-                self.parameters['lifted_gff_path'] = f"{self.parameters['launch_dir']}/{self.parameters['lifted_gff_path']}"
-
+                self.parameters['validated_meta_path'] = f"{self.parameters['validated_meta_path']}"
+                self.parameters['lifted_fasta_path'] = f"{self.parameters['lifted_fasta_path']}"
+                self.parameters['lifted_gff_path'] = f"{self.parameters['lifted_gff_path']}"
+                
         # get the meta file name from meta path if entry point was not used
         if self.parameters['entry_flag'].lower() == 'false':
             meta_filename = (self.parameters['meta_path'].split('/')[-1]).split('.')[0]
