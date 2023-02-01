@@ -173,9 +173,9 @@ workflow with_submission {
         // run post annotation checks
         if ( params.run_liftoff == true ) {
             RUN_SUBMISSION ( LIFTOFF.out[1], 'dummy signal', METADATA_VALIDATION.out[1], false,
-            "$params.output_dir/$params.val_output_dir",
-            "$params.output_dir/$params.final_liftoff_output_dir",
-            "$params.output_dir/$params.final_liftoff_output_dir"
+            "$params.output_dir",
+            "$params.output_dir",
+            "$params.output_dir"
             )
         } else if ( params.run_vadr == true ) {
             RUN_SUBMISSION ( 'dummy signal', VADR.out[1], METADATA_VALIDATION.out[1], false,
