@@ -77,6 +77,10 @@ def helpMessage() {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 INITIALIZE VARS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                INITIALIZE VARS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // channels for data files
 def get_channels() {
@@ -85,11 +89,16 @@ def get_channels() {
         fasta_path_ch = Channel.fromPath(params.fasta_path)
         ref_fasta_path_ch = Channel.fromPath(params.ref_fasta_path)
         ref_gff_path_ch = Channel.fromPath(params.ref_gff_path)
+        validated_meta_path_ch= channel.fromPath(params.val_output_dir)
+        liftoff_outputs_ch= channel.fromPath(params.final_liftoff_output_dir)
         return [
             'meta': meta_path_ch, 
             'fasta': fasta_path_ch, 
             'ref_fasta': ref_fasta_path_ch, 
-            'ref_gff': ref_gff_path_ch
+            'ref_gff': ref_gff_path_ch,
+            'Vmeta': validated_meta_path_ch,
+            'liftO': liftoff_outputs_ch
+            '''
         ]
     } catch (Exception e) {
         throw new Exception("\nERROR: Could not get channel from meta_path or fasta_path or ref_fasta_path or ref_gff_path. Please make sure that a params set is selected either using -profile <standard/test> or -params-file <standard/test .yml/.json> AND these params are specified")
@@ -172,17 +181,16 @@ workflow with_submission {
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( LIFTOFF.out[1], 'dummy signal', METADATA_VALIDATION.out[1], false,
-           "$params.validated_meta_path/MPXV_metadata_Sampe_Run_1/*.tsv",
-            "$params.lifted_fasta_path/MPXV_metadata_Sampe_Run_1/*.fasta",
-            "$params.lifted_gff_path/MPXV_metadata_Sampe_Run_1/*.gff"
+            RUN_SUBMISSION ( channels['liftO'], 'dummy signal',  false,channels['Vmeta']
             )
+
         } else if ( params.run_vadr == true ) {
             RUN_SUBMISSION ( 'dummy signal', VADR.out[1], METADATA_VALIDATION.out[1], false,
             "$params.output_dir/$params.val_output_dir",
             "$params.output_dir/$params.final_liftoff_output_dir",
             "$params.output_dir/$params.final_liftoff_output_dir"
             )
+
         } else if ( params.run_vadr == true && params.run_liftoff == true ) {
             RUN_SUBMISSION ( LIFTOFF.out[1], VADR.out[1], METADATA_VALIDATION.out[1], false,
             "$params.output_dir/$params.val_output_dir",
