@@ -173,7 +173,7 @@ workflow with_submission {
         // run post annotation checks
         if ( params.run_liftoff == true ) {
             RUN_SUBMISSION ( LIFTOFF.out[1], 'dummy signal', METADATA_VALIDATION.out[1], false,
-           "${validated_meta_path}/MPXV_metadata_Sampe_Run_1/*.tsv",
+           "${validate_meta_path}/MPXV_metadata_Sampe_Run_1/*.tsv",
             "${lifted_fasta_path}/MPXV_metadata_Sampe_Run_1/*.fasta",
             "${lifted_gff_path}/MPXV_metadata_Sampe_Run_1/*.gff"
             )
