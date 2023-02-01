@@ -173,9 +173,9 @@ workflow with_submission {
         // run post annotation checks
         if ( params.run_liftoff == true ) {
             RUN_SUBMISSION ( LIFTOFF.out[1], 'dummy signal', METADATA_VALIDATION.out[1], false,
-           "$validated_meta_path/MPXV_metadata_Sampe_Run_1/*.tsv",
-            "$lifted_fasta_path/MPXV_metadata_Sampe_Run_1/*.fasta",
-            "$lifted_gff_path/MPXV_metadata_Sampe_Run_1/*.gff"
+           "$params.validated_meta_path/MPXV_metadata_Sampe_Run_1/*.tsv",
+            "$params.lifted_fasta_path/MPXV_metadata_Sampe_Run_1/*.fasta",
+            "$params.lifted_gff_path/MPXV_metadata_Sampe_Run_1/*.gff"
             )
         } else if ( params.run_vadr == true ) {
             RUN_SUBMISSION ( 'dummy signal', VADR.out[1], METADATA_VALIDATION.out[1], false,
