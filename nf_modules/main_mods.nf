@@ -25,13 +25,12 @@ process METADATA_VALIDATION {
     path fasta_path
 
     output:
-    file "$params.val_output_dir"
-    path "${params.val_output_dir}"
+    path output_Val into validate_ch
     val true
 
     script:
     """
-   validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
+    validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $output_Val
     """
 }
 
@@ -62,8 +61,7 @@ process LIFTOFF {
     path ref_gff_path
 
     output:
-    file "$params.final_liftoff_output_dir"
-    path "${params.final_liftoff_output_dir}"
+    tuple val(meta), path("lifted_fasta_path/*.fasta"), ("lifted_gff_path/*.gff") into liftoff_Sub_ch
     val true
 
     script:
@@ -133,18 +131,15 @@ process SUBMISSION {
         val lift_signal
         val vadr_signal
         val val_signal
-        val validated_meta_path
-        path "${validated_meta_path}/MPXV_metadata_Sampe_Run_1/*.tsv"
-        val lifted_fasta_path
-        path "${lifted_fasta_path}/MPXV_metadata_Sampe_Run_1/*.fasta"
-        val lifted_gff_path
-        path "${lifted_gff_path}/MPXV_metadata_Sampe_Run_1/*.gff"
+        path output_Val from validate_ch
+        path lifted_fasta_path from liftoff_Sub_ch
+        path lifted_gff_path from liftoff_Sub_ch
         val entry_flag
 
     script:
         """
-        run_submission.py --validated_meta_path "${validated_meta_path}/MPXV_metadata_Sampe_Run_1/*.tsv" --lifted_fasta_path "${lifted_fasta_path}/MPXV_metadata_Sampe_Run_1/*.fasta" \
-        --lifted_gff_path "${lifted_gff_path}/MPXV_metadata_Sampe_Run_1/*.gff" --launch_dir $launchDir --entry_flag $entry_flag --submission_script $params.submission_script \
+        run_submission.py --validated_meta_path $output_Val/*.tsv --lifted_fasta_path $lifted_fasta_path/*.fasta \
+        --lifted_gff_path $lifted_gff_path/*.gff --launch_dir $launchDir --entry_flag $entry_flag --submission_script $params.submission_script \
         --meta_path $params.meta_path --config $params.submission_config --nf_output_dir $params.output_dir --submission_output_dir $params.submission_output_dir --update false \
         --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test --project_dir $projectDir
         """
