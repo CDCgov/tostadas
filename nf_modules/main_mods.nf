@@ -61,7 +61,8 @@ process LIFTOFF {
     path ref_gff_path
 
     output:
-    tuple val(meta), path("lifted_fasta_path/*.fasta"), ("lifted_gff_path/*.gff") into liftoff_Sub_ch
+    path ("lifted_fasta_path/*.fasta") into liftoff_Sub_ch
+    path ("lifted_gff_path/*.gff") into liftoff_Sub_ch
     val true
 
     script:
