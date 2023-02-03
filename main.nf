@@ -159,15 +159,22 @@ workflow with_submission {
     take:
         cleanup_signal
     main:
-        // get channels 
-        channels = get_channels()
+        // define channels 
+        ref_fasta = Channel.fromPath(ref_fasta_path)
+        ref_gff = Channel.fromPath(ref_gff_path)
+        meta = Channel.fromPath(meta_path)
+        fasta = Channel.fromPath(fasta_path)
+        valMeta = Channel.fromPath('output_Val/*.tsv')
+        lifted_Fasta= Channel.fromPath('"lifted_fasta_path/*.fasta"')
+        Channel.fromPath('lifted_gff_path/*.gff')
+        x = 'dummy signal'
 
         // run metadata validation
-        METADATA_VALIDATION (  cleanup_signal, channels['meta'], channels['fasta'] )
+        METADATA_VALIDATION (  cleanup_signal, meta, fasta)
 
         // run annotation (in parallel)
         if ( params.run_liftoff == true ) {
-            LIFTOFF ( cleanup_signal, channels['meta'], channels['fasta'], channels['ref_fasta'], channels['ref_gff'] )
+            LIFTOFF ( cleanup_signal, meta, fasta, ref_fasta, ref_gff )
         }
         if ( params.run_vadr == true ) {
             VADR ( cleanup_signal, channels['fasta'] )
@@ -175,7 +182,7 @@ workflow with_submission {
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( 'dummy signal', false, 'dummy signal', channels['valMeta'], channels['liftOff/.*fasta'], channels['liftOff/.*gff'], 'dummy signal'
+            RUN_SUBMISSION ( x, false, x, valMeta, lifted_Fasta, lifted_Gff, x ) 
             )
 
         } else if ( params.run_vadr == true ) {
