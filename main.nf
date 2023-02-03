@@ -77,10 +77,6 @@ def helpMessage() {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 INITIALIZE VARS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                INITIALIZE VARS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // channels for data files
 def get_channels() {
@@ -98,14 +94,14 @@ def get_channels() {
             'ref_gff': ref_gff_path_ch,
             'Vmeta': validated_meta_path_ch,
             'liftO': liftoff_outputs_ch
-           
+            '''
         ]
     } catch (Exception e) {
         throw new Exception("\nERROR: Could not get channel from meta_path or fasta_path or ref_fasta_path or ref_gff_path. Please make sure that a params set is selected either using -profile <standard/test> or -params-file <standard/test .yml/.json> AND these params are specified")
     }
 }
-
-
+// define dummy channel
+ch_dummy_file = file("$projectDir/assets/dummy_file.txt", checkIfExists: true)
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                          GET NECESSARY MODULES OR SUBWORKFLOWS
@@ -181,7 +177,7 @@ workflow with_submission {
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( 
+            RUN_SUBMISSION ( 'dummy signal', false, 'dummy signal', channels['valMeta'], channels['liftOff/.*fasta'], channels['liftOff/.*gff'] 'dummy signal'
             )
 
         } else if ( params.run_vadr == true ) {
