@@ -100,8 +100,6 @@ def get_channels() {
         throw new Exception("\nERROR: Could not get channel from meta_path or fasta_path or ref_fasta_path or ref_gff_path. Please make sure that a params set is selected either using -profile <standard/test> or -params-file <standard/test .yml/.json> AND these params are specified")
     }
 }
-// define dummy channel
-ch_dummy_file = file("$projectDir/assets/dummy_file.txt", checkIfExists: true)
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                          GET NECESSARY MODULES OR SUBWORKFLOWS
