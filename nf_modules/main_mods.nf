@@ -133,7 +133,7 @@ process SUBMISSION {
         val lift_signal
         val vadr_signal
         val val_signal
-        path "output_Val/.*tsv" 
+        path "output_val/*.tsv" 
         path lifted_fasta_path 
         path lifted_gff_path 
         val entry_flag
