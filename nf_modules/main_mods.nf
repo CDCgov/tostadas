@@ -25,7 +25,7 @@ process METADATA_VALIDATION {
     path fasta_path
 
     output:
-    path output_Val into validate_ch
+    path output_val
     val true
 
     script:
@@ -61,8 +61,9 @@ process LIFTOFF {
     path ref_gff_path
 
     output:
-    path ("lifted_fasta_path/*.fasta") into liftoff_Sub_ch
-    path ("lifted_gff_path/*.gff") into liftoff_Sub_ch
+    path lifted_fasta_path/*.fasta 
+    path lifted_gff_path/*.gff
+    val true
     val true
 
     script:
@@ -132,9 +133,9 @@ process SUBMISSION {
         val lift_signal
         val vadr_signal
         val val_signal
-        path output_Val from validate_ch
-        path lifted_fasta_path from liftoff_Sub_ch
-        path lifted_gff_path from liftoff_Sub_ch
+        path output_Val 
+        path lifted_fasta_path 
+        path lifted_gff_path 
         val entry_flag
 
     script:
