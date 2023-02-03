@@ -18,9 +18,7 @@ workflow RUN_SUBMISSION {
         validated_meta_path
         lifted_fasta_path
         lifted_gff_path
-        validated_meta_path
-        lifted_fasta_path
-        lifted_gff_path
+       
         
     main:
         SUBMISSION ( lift_signal, vadr_signal, val_signal, validated_meta_path, lifted_fasta_path, lifted_gff_path,validated_meta_path, lifted_fasta_path, lifted_gff_path, entry_flag )
