@@ -160,14 +160,14 @@ workflow with_submission {
         cleanup_signal
     main:
         // define channels 
-        ref_fasta = Channel.fromPath(ref_fasta_path)
-        ref_gff = Channel.fromPath(ref_gff_path)
-        meta = Channel.fromPath(meta_path)
-        fasta = Channel.fromPath(fasta_path)
-        valMeta = Channel.fromPath('output_Val/*.tsv')
-        lifted_Fasta= Channel.fromPath('lifted_fasta_path/*.fasta')
-        lifted_Gff = Channel.fromPath('lifted_gff_path/*.gff')
-        x = 'dummy signal'
+        def ref_fasta = Channel.fromPath(ref_fasta_path)
+        def ref_gff = Channel.fromPath(ref_gff_path)
+        def meta = Channel.fromPath(meta_path)
+        def fasta = Channel.fromPath(fasta_path)
+        def valMeta = Channel.fromPath('output_Val/*.tsv')
+        def lifted_Fasta= Channel.fromPath('lifted_fasta_path/*.fasta')
+        def lifted_Gff = Channel.fromPath('lifted_gff_path/*.gff')
+        def x = 'dummy signal'
 
         // run metadata validation
         METADATA_VALIDATION (  cleanup_signal, meta, fasta)
