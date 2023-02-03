@@ -165,8 +165,8 @@ workflow with_submission {
         meta = Channel.fromPath(meta_path)
         fasta = Channel.fromPath(fasta_path)
         valMeta = Channel.fromPath('output_Val/*.tsv')
-        lifted_Fasta= Channel.fromPath('"lifted_fasta_path/*.fasta"')
-        Channel.fromPath('lifted_gff_path/*.gff')
+        lifted_Fasta= Channel.fromPath('lifted_fasta_path/*.fasta')
+        lifted_Gff = Channel.fromPath('lifted_gff_path/*.gff')
         x = 'dummy signal'
 
         // run metadata validation
