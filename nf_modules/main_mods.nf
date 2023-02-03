@@ -133,14 +133,14 @@ process SUBMISSION {
         val lift_signal
         val vadr_signal
         val val_signal
-        path "output_Val/*.tsv" 
+        path "*.tsv" 
         path lifted_fasta_path 
         path lifted_gff_path 
         val entry_flag
 
     script:
         """
-        run_submission.py --validated_meta_path "$output_Val/*.tsv" --lifted_fasta_path "$lifted_fasta_path/*.fasta \
+        run_submission.py --validated_meta_path "*.tsv" --lifted_fasta_path "$lifted_fasta_path/*.fasta \
         --lifted_gff_path $lifted_gff_path/*.gff --launch_dir $launchDir --entry_flag $entry_flag --submission_script $params.submission_script \
         --meta_path $params.meta_path --config $params.submission_config --nf_output_dir $params.output_dir --submission_output_dir $params.submission_output_dir --update false \
         --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test --project_dir $projectDir
