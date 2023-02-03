@@ -25,7 +25,7 @@ process METADATA_VALIDATION {
     path fasta_path
 
     output:
-    path "output_val/.*.tsv"
+    path "/.*.tsv"
     val true
 
     script:
