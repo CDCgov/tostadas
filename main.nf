@@ -92,9 +92,9 @@ def get_channels() {
             'fasta': fasta_path_ch, 
             'ref_fasta': ref_fasta_path_ch, 
             'ref_gff': ref_gff_path_ch,
-            'Vmeta': validated_meta_path_ch,
-            'liftO': liftoff_outputs_ch
-            '''
+            'valMeta': validated_meta_path_ch,
+            'liftOff': liftoff_outputs_ch
+            
         ]
     } catch (Exception e) {
         throw new Exception("\nERROR: Could not get channel from meta_path or fasta_path or ref_fasta_path or ref_gff_path. Please make sure that a params set is selected either using -profile <standard/test> or -params-file <standard/test .yml/.json> AND these params are specified")
