@@ -21,8 +21,8 @@ process METADATA_VALIDATION {
 
     input:
     val signal
-    val meta_path 
-    val fasta_path 
+    path meta_path 
+    path fasta_path 
 
     output:
     file "$params.val_output_dir"
@@ -55,10 +55,10 @@ process LIFTOFF {
 
     input:
     val signal
-    val meta_path 
-    val fasta_path 
-    val ref_fasta_path 
-    val ref_gff_path 
+    path meta_path 
+    path fasta_path 
+    path ref_fasta_path 
+    path ref_gff_path 
 
     output:
     file "$params.final_liftoff_output_dir"
@@ -96,7 +96,7 @@ process VADR {
 
     input:
     val signal
-    val fasta_path 
+    path fasta_path 
 
     output:
     file "$params.vadr_outdir"
@@ -131,9 +131,9 @@ process SUBMISSION {
         val lift_signal
         val vadr_signal
         val val_signal
-        val validated_meta_path 
-        val lifted_fasta_path
-        val lifted_gff_path 
+        path validated_meta_path 
+        path lifted_fasta_path
+        path lifted_gff_path 
         val entry_flag
 
    script:
