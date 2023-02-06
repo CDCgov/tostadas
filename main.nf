@@ -85,9 +85,9 @@ def get_channels() {
         ref_gff = Channel.fromPath(params.ref_gff_path)
         meta = Channel.fromPath(params.meta_path)
         fasta = Channel.fromPath(params.fasta_path)
-        valMeta = Channel.fromPath('params.val_output_dir/*.tsv')
-        lifted_Fasta= Channel.fromPath('final_liftoff_output_dir/*.fasta')
-        lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*.gff')
+        valMeta = Channel.fromPath('params.val_output_dir/*/tsv_per_sample/*.tsv')
+        lifted_Fasta= Channel.fromPath('final_liftoff_output_dir/*/fasta/*.fasta')
+        lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*/liftoff/*.gff')
     
         return [
             'meta': meta, 
@@ -162,20 +162,7 @@ workflow with_submission {
         cleanup_signal
     main:
         // define channels 
-         Channel.fromPairs (params.ref_fasta_path, params.ref_gff_path)
-	            .name ('ref_Path')
-              
-         Channel.fromPath( params.fasta_path )
-	            .name ('fasta')
-              
-         Channel.fromPath(params.meta_path)
-	            .name('meta')
-              
-         Channel.fromPairs ('final_liftoff_output_dir/*/fasta/*.fasta', 'final_liftoff_output_dir/*/liftoff/*.gff')
-	            .name('lifted_outPuts')
-              
-        Channel.fromPath ('params.val_output_dir/*/tsv_per_sample/*.tsv')
-	            .name('valMeta')
+     channels = get_channels()
 
         // run metadata validation
         METADATA_VALIDATION ( )
