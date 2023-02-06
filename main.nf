@@ -288,7 +288,7 @@ workflow only_initial_submission {
 
         // call the initial submission portion only
         SUBMISSION (
-            SUBMISSION_ENTRY_CHECK.out,
+            true,
             'dummy signal value', 
             'dummy signal value', 
             channels['valMeta'],
