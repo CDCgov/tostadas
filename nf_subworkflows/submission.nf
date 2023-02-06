@@ -25,7 +25,7 @@ workflow RUN_SUBMISSION {
         lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*/liftoff/*.gff')
         lifted_Fasta = Channel.fromPath('final_liftoff_output_dir/*/fasta/*.fasta')
     
-        SUBMISSION ()
+        SUBMISSION (true, false, true, valMeta, lifted_Fasta, lifted_Gff, true)
 
         GET_WAIT_TIME ( SUBMISSION.out, valMeta, entry_flag )
 
