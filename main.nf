@@ -88,7 +88,6 @@ def get_channels() {
         valMeta = Channel.fromPath('params.val_output_dir/**.tsv')
         lifted_Fasta= Channel.fromPath('final_liftoff_output_dir/**.fasta')
         lifted_Gff = Channel.fromPath('final_liftoff_output_dir/**.gff')
-        x = 'dummy signal'
     
         return [
             'meta': meta, 
@@ -97,8 +96,7 @@ def get_channels() {
             'ref_gff': ref_gff,
             'valMeta': valMeta,
             'lifted_Fasta': lifted_Fasta,
-            'lifted_Gff' : lifted_Gff,
-            'x' : x
+            'lifted_Gff' : lifted_Gff
         ]
     } catch (Exception e) {
         throw new Exception("\nERROR: Could not get channel from meta_path or fasta_path or ref_fasta_path or ref_gff_path. Please make sure that a params set is selected either using -profile <standard/test> or -params-file <standard/test .yml/.json> AND these params are specified")
@@ -179,7 +177,7 @@ workflow with_submission {
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( channels['x'], false, channels['x'], channels['valMeta'], channels['lifted_Fasta'], channels['lifted_Gff'], channels['x'] ) 
+            RUN_SUBMISSION ( 'dummy signal', false, 'dummy signal', channels['valMeta'], channels['lifted_Fasta'], channels['lifted_Gff'], 'dummy signal' ) 
             
 
         } else if ( params.run_vadr == true ) {
