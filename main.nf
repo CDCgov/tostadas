@@ -129,6 +129,7 @@ workflow {
     // run validation script
     if ( params.run_submission == true ) {
         WITH_SUBMISSION(
+        cleanup_signal,
         meta = Channel.fromPath(params.meta_path),
         fasta = Channel.fromPath(params.fasta_path),
         ref_fasta = Channel.fromPath(params.ref_fasta_path),
