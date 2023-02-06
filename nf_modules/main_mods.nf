@@ -61,8 +61,7 @@ process LIFTOFF {
     path ref_gff_path
 
     output:
-    path "lifted_fasta_path/*.fasta" 
-    path "lifted_gff_path/*.gff"
+    file "$params.final_liftoff_output_dir"
     val true
     val true
 
