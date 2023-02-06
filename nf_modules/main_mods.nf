@@ -114,10 +114,10 @@ process VADR {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process SUBMISSION {
-
+    label 'main'
+    
     publishDir "$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
-    label 'main'
     
     if ( params.run_conda == true ) {
         try {
