@@ -16,7 +16,7 @@ include { RUN_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
 include { RUN_UTILITY } from "$projectDir/nf_subworkflows/utility"
 
 
-workflow with_submission {
+workflow WITH_SUBMISSION {
     take:
         cleanup_signal
         meta
