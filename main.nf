@@ -171,7 +171,7 @@ workflow with_submission {
          Channel.fromPath(params.meta_path)
 	            .name('meta')
               
-         Channel.fromPairs ('final_liftoff_output_dir/*/fasta/*.fasta',final_liftoff_output_dir/*/liftoff/*.gff )
+         Channel.fromPairs ('final_liftoff_output_dir/*/fasta/*.fasta', 'final_liftoff_output_dir/*/liftoff/*.gff')
 	            .name('lifted_outPuts')
               
         Channel.fromPath ('params.val_output_dir/*/tsv_per_sample/*.tsv')
