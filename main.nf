@@ -196,7 +196,10 @@ workflow WITH_SUBMISSION {
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( 
+            RUN_SUBMISSION ( LIFTOFF.out[1], 'dummy signal', METADATA_VALIDATION.out[1], false,
+            valMeta,
+            lifted_Gff,
+            lifted_Fasta
             )
 
         } else if ( params.run_vadr == true ) {
