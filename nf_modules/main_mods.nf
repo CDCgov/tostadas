@@ -30,7 +30,7 @@ process METADATA_VALIDATION {
 
     script:
     """
-    validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val.output_dir
+    validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
     """
 }
 
