@@ -161,24 +161,24 @@ workflow with_submission {
     take:
         cleanup_signal
     main:
-        // define channels 
-     channels = get_channels()
+        // get channels 
+        channels = get_channels()
 
         // run metadata validation
-        METADATA_VALIDATION ( )
+        METADATA_VALIDATION (  cleanup_signal, channels['meta'], channels['fasta'] )
 
         // run annotation (in parallel)
         if ( params.run_liftoff == true ) {
-            LIFTOFF ( cleanup_signal )
+            LIFTOFF ( cleanup_signal, channels['meta'], channels['fasta'], channels['ref_fasta'], channels['ref_gff'] )
         }
         if ( params.run_vadr == true ) {
-            VADR ( )
+            VADR ( cleanup_signal, channels['fasta'] )
         }
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( ) 
-            
+            RUN_SUBMISSION ( 'dummy signal', false, 'dummy signal', channels['valMeta'], channels['lifted_Fasta'], channels['lifted_Gff'] 'dummy signal'
+            )
 
         } else if ( params.run_vadr == true ) {
             RUN_SUBMISSION ( 'dummy signal', VADR.out[1], METADATA_VALIDATION.out[1], false,
