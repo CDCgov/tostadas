@@ -11,13 +11,13 @@ include { GET_WAIT_TIME } from '../nf_modules/utility_mods'
 
 workflow RUN_SUBMISSION {
     take:
-        lift_signal
-        vadr_signal
-        val_signal
-        entry_flag
-        validated_meta_path
-        lifted_fasta_path
-        lifted_gff_path
+        val lift_signal
+        val vadr_signal
+        val val_signal
+        val validated_meta_path from valMeta
+        val lifted_fasta_path from lifted_Fasta
+        val lifted_gff_path from lifted_Gff
+        val entry_flag
        
         
     main:
