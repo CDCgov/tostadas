@@ -1,3 +1,4 @@
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     RUNNING SUBMISSION
@@ -9,19 +10,24 @@ include { UPDATE_SUBMISSION } from '../nf_modules/main_mods'
 include { WAIT } from '../nf_modules/utility_mods'
 include { GET_WAIT_TIME } from '../nf_modules/utility_mods'
 
+valMeta = Channel.fromPath('params.val_output_dir/*/tsv_per_sample/*.tsv')
+lifted_Fasta= Channel.fromPath('final_liftoff_output_dir/*/fasta/*.fasta')
+lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*/liftoff/*.gff')
+
 workflow RUN_SUBMISSION {
+
  take:
         lift_signal
         vadr_signal
         val_signal
-        validated_meta_path
-        lifted_fasta_path
-        lifted_gff_path
+        valMeta
+        lifted_Fasta
+        lifted_Gff
         entry_flag
     main:
-        SUBMISSION ( lift_signal, vadr_signal, val_signal, validated_meta_path, lifted_fasta_path, lifted_gff_path, entry_flag )
+        SUBMISSION ( lift_signal, vadr_signal, val_signal, valMeta, lifted_Fasta, lifted_Gff, entry_flag )
 
-        GET_WAIT_TIME ( SUBMISSION.out, validated_meta_path, entry_flag )
+        GET_WAIT_TIME ( SUBMISSION.out, valMeta, entry_flag )
 
         WAIT ( GET_WAIT_TIME.out[0], GET_WAIT_TIME.out[1] )
 
