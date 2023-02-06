@@ -178,19 +178,19 @@ workflow with_submission {
 	            .name('valMeta')
 
         // run metadata validation
-        METADATA_VALIDATION (  cleanup_signal)
+        METADATA_VALIDATION ( )
 
         // run annotation (in parallel)
         if ( params.run_liftoff == true ) {
             LIFTOFF ( cleanup_signal )
         }
         if ( params.run_vadr == true ) {
-            VADR ( cleanup_signal, channels['fasta'] )
+            VADR ( )
         }
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( 'dummy signal', false, 'dummy signal','dummy signal' ) 
+            RUN_SUBMISSION ( ) 
             
 
         } else if ( params.run_vadr == true ) {
