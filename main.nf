@@ -145,7 +145,6 @@ workflow {
 
 workflow with_submission {
     take:
-        cleanup_signal
         meta
         fasta
         ref_fasta
@@ -153,8 +152,9 @@ workflow with_submission {
         valMeta
         lifted_Gff
         lifted_Fasta
+        cleanup_signal
     main:
-        cleanup_signal = RUN_UTILITY.out
+      
         meta = Channel.fromPath(params.meta_path)
         fasta = Channel.fromPath(params.fasta_path)
         ref_fasta = Channel.fromPath(params.ref_fasta_path)
@@ -162,6 +162,7 @@ workflow with_submission {
         valMeta = Channel.fromPath('params.val_output_dir/*/tsv_per_sample/*.tsv')
         lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*/liftoff/*.gff')
         lifted_Fasta = Channel.fromPath('final_liftoff_output_dir/*/fasta/*.fasta')
+        cleanup_signal = RUN_UTILITY.out
         
         // run cleanup
         RUN_UTILITY()
