@@ -288,9 +288,9 @@ workflow only_initial_submission {
             SUBMISSION_ENTRY_CHECK.out,
             'dummy signal value', 
             'dummy signal value', 
-            params.submission_only_meta,
-            params.submission_only_fasta,
-            params.submission_only_gff,
+            channels['valMeta'],
+            channels['lifted_Fasta'],
+            channels['lifted_Gff'],
             true,
         )
 }
