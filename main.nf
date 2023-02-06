@@ -153,8 +153,7 @@ workflow with_submission {
         lifted_Gff
         lifted_Fasta
         cleanup_signal
-    main:
-      
+    main:      
         meta = Channel.fromPath(params.meta_path)
         fasta = Channel.fromPath(params.fasta_path)
         ref_fasta = Channel.fromPath(params.ref_fasta_path)
@@ -162,7 +161,6 @@ workflow with_submission {
         valMeta = Channel.fromPath('params.val_output_dir/*/tsv_per_sample/*.tsv')
         lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*/liftoff/*.gff')
         lifted_Fasta = Channel.fromPath('final_liftoff_output_dir/*/fasta/*.fasta')
-        cleanup_signal = RUN_UTILITY.out
         
         // run cleanup
         RUN_UTILITY()
@@ -180,7 +178,7 @@ workflow with_submission {
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( 'dummy signal', false, 'dummy signal', valMeta, lifted_Fasta, lifted_Gff, 'dummy signal'
+            RUN_SUBMISSION ( 
             )
 
         } else if ( params.run_vadr == true ) {
