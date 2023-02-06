@@ -265,6 +265,9 @@ workflow only_submission {
     main:
         // check that certain paths are specified
         SUBMISSION_ENTRY_CHECK ( )
+        
+        // define channels
+        channels = get_channels()
 
         // call the submission workflow
         RUN_SUBMISSION (
