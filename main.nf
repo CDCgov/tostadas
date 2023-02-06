@@ -163,6 +163,7 @@ workflow {
 
 workflow WITH_SUBMISSION {
     take:
+        cleanup_signal
         meta
         fasta
         ref_fasta
@@ -170,7 +171,6 @@ workflow WITH_SUBMISSION {
         valMeta
         lifted_Gff
         lifted_Fasta
-        cleanup_signal
     main:      
         meta = Channel.fromPath(params.meta_path)
         fasta = Channel.fromPath(params.fasta_path)
@@ -196,10 +196,7 @@ workflow WITH_SUBMISSION {
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( LIFTOFF.out[1], 'dummy signal', METADATA_VALIDATION.out[1], false,
-            valMeta,
-            lifted_Gff,
-            lifted_Fasta
+            RUN_SUBMISSION ( 
             )
 
         } else if ( params.run_vadr == true ) {
