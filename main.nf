@@ -97,7 +97,7 @@ def get_channels() {
             'ref_gff': ref_gff,
             'valMeta': valMeta,
             'lifted_Fasta': lifted_Fasta,
-            'lifted_Gff' : lifted_Gff
+            'lifted_Gff' : lifted_Gff,
             'x' : x
         ]
     } catch (Exception e) {
