@@ -109,7 +109,7 @@ include { UPDATE_SUBMISSION } from "$projectDir/nf_modules/main_mods"
 // get the subworkflows
 include { RUN_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
 include { RUN_UTILITY } from "$projectDir/nf_subworkflows/utility"
-
+ilcude { WITH_SUBMISSION } from "$projectDir/nf_subworkflows/with_submission"
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     MAIN WORKFLOW
@@ -128,7 +128,7 @@ workflow {
 
     // run validation script
     if ( params.run_submission == true ) {
-        with_submission()
+        WITH_SUBMISSION()
     } else if ( params.run_submission == false ) {
         without_submission( RUN_UTILITY.out )
     } else {
