@@ -85,9 +85,9 @@ def get_channels() {
         ref_gff = Channel.fromPath(params.ref_gff_path)
         meta = Channel.fromPath(params.meta_path)
         fasta = Channel.fromPath(params.fasta_path)
-        valMeta = Channel.fromPath('params.val_output_dir/*.tsv')
-        lifted_Fasta= Channel.fromPath('lifted_fasta_path/*.fasta')
-        lifted_Gff = Channel.fromPath('lifted_gff_path/*.gff')
+        valMeta = Channel.fromPath('params.val_output_dir/**.tsv')
+        lifted_Fasta= Channel.fromPath('final_liftoff_output_dir/**.fasta')
+        lifted_Gff = Channel.fromPath('final_liftoff_output_dir/**.gff')
         x = 'dummy signal'
     
         return [
