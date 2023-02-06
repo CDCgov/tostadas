@@ -81,20 +81,24 @@ def helpMessage() {
 // channels for data files
 def get_channels() {
     try {
-        meta_path_ch = Channel.fromPath(params.meta_path)
-        fasta_path_ch = Channel.fromPath(params.fasta_path)
-        ref_fasta_path_ch = Channel.fromPath(params.ref_fasta_path)
-        ref_gff_path_ch = Channel.fromPath(params.ref_gff_path)
-        validated_meta_path_ch= channel.fromPath(params.val_output_dir)
-        liftoff_outputs_ch= channel.fromPath(params.final_liftoff_output_dir)
+        ref_fasta = Channel.fromPath(params.ref_fasta_path)
+        ref_gff = Channel.fromPath(params.ref_gff_path)
+        meta = Channel.fromPath(params.meta_path)
+        fasta = Channel.fromPath(params.fasta_path)
+        valMeta = Channel.fromPath('output_Val/*.tsv')
+        lifted_Fasta= Channel.fromPath('lifted_fasta_path/*.fasta')
+        lifted_Gff = Channel.fromPath('lifted_gff_path/*.gff')
+        x = 'dummy signal'
+    
         return [
-            'meta': meta_path_ch, 
-            'fasta': fasta_path_ch, 
-            'ref_fasta': ref_fasta_path_ch, 
-            'ref_gff': ref_gff_path_ch,
-            'valMeta': validated_meta_path_ch,
-            'liftOff': liftoff_outputs_ch
-            
+            'meta': meta, 
+            'fasta': fasta, 
+            'ref_fasta': ref_fasta, 
+            'ref_gff': ref_gff,
+            'valMeta': valMeta,
+            'lifted_Fasta': lifted_Fasta,
+            'lifted_Gff' : lifted_Gff
+            'x' : x
         ]
     } catch (Exception e) {
         throw new Exception("\nERROR: Could not get channel from meta_path or fasta_path or ref_fasta_path or ref_gff_path. Please make sure that a params set is selected either using -profile <standard/test> or -params-file <standard/test .yml/.json> AND these params are specified")
@@ -160,21 +164,14 @@ workflow with_submission {
         cleanup_signal
     main:
         // define channels 
-        def ref_fasta = Channel.fromPath(ref_fasta_path)
-        def ref_gff = Channel.fromPath(ref_gff_path)
-        def meta = Channel.fromPath(meta_path)
-        def fasta = Channel.fromPath(fasta_path)
-        def valMeta = Channel.fromPath('output_Val/*.tsv')
-        def lifted_Fasta= Channel.fromPath('lifted_fasta_path/*.fasta')
-        def lifted_Gff = Channel.fromPath('lifted_gff_path/*.gff')
-        def x = 'dummy signal'
+       channels = get_channels()
 
         // run metadata validation
-        METADATA_VALIDATION (  cleanup_signal, meta, fasta)
+        METADATA_VALIDATION (  cleanup_signal, channels['meta'], channels['fasta'])
 
         // run annotation (in parallel)
         if ( params.run_liftoff == true ) {
-            LIFTOFF ( cleanup_signal, meta, fasta, ref_fasta, ref_gff )
+            LIFTOFF ( cleanup_signal, channels['meta'], channels['fasta'], channels['ref_fasta'], channels['ref_gff'] )
         }
         if ( params.run_vadr == true ) {
             VADR ( cleanup_signal, channels['fasta'] )
@@ -182,7 +179,7 @@ workflow with_submission {
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( x, false, x, valMeta, lifted_Fasta, lifted_Gff, x ) 
+            RUN_SUBMISSION ( channels['x'], false, channels['x'], channels['valMeta'], channels['lifted_Fasta'], channels['lifted_Gff'], channels['x'] ) 
             )
 
         } else if ( params.run_vadr == true ) {
