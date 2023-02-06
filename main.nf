@@ -282,10 +282,7 @@ workflow only_submission {
 }
 
 workflow only_initial_submission {
-    main:
-        // call the check specific to submission
-        SUBMISSION_ENTRY_CHECK ( )
-        
+    main:        
         // def channels
         channels = get_channels()
 
