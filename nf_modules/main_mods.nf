@@ -25,12 +25,12 @@ process METADATA_VALIDATION {
     path fasta_path
 
     output:
-    val output_Val
+    file "$params.val_output_dir"
     val true
 
     script:
     """
-    validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $output_Val
+    validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val.output_dir
     """
 }
 
