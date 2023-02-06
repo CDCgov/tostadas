@@ -63,7 +63,6 @@ process LIFTOFF {
     output:
     file "$params.final_liftoff_output_dir"
     val true
-    val true
 
     script:
     """
@@ -129,7 +128,7 @@ process SUBMISSION {
     }
 
     input:
-         val lift_signal
+        val lift_signal
         val vadr_signal
         val val_signal
         path validated_meta_path
