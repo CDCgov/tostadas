@@ -57,8 +57,8 @@ process LIFTOFF {
     val signal
     val meta_path from meta
     val fasta_path from fasta
-    val ref_fasta_path from ref_Path.first
-    val ref_gff_path from ref_Path.second
+    val ref_fasta_path from ref_fasta
+    val ref_gff_path from ref_gff
 
     output:
     file "$params.final_liftoff_output_dir"
@@ -132,8 +132,8 @@ process SUBMISSION {
         val vadr_signal
         val val_signal
         val validated_meta_path from valMeta
-        val lifted_fasta_path from lifted_outPuts.first
-        val lifted_gff_path from lifted_outPuts.second
+        val lifted_fasta_path from lifted_Fasta
+        val lifted_gff_path from lifted_Gff
         val entry_flag
 
    script:
