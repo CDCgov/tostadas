@@ -128,7 +128,15 @@ workflow {
 
     // run validation script
     if ( params.run_submission == true ) {
-        WITH_SUBMISSION()
+        WITH_SUBMISSION(
+        meta = Channel.fromPath(params.meta_path),
+        fasta = Channel.fromPath(params.fasta_path),
+        ref_fasta = Channel.fromPath(params.ref_fasta_path),
+        ref_gff = Channel.fromPath(params.ref_gff_path),
+        valMeta = Channel.fromPath('params.val_output_dir/*/tsv_per_sample/*.tsv'),
+        lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*/liftoff/*.gff'),
+        lifted_Fasta = Channel.fromPath('final_liftoff_output_dir/*/fasta/*.fasta')
+        )
     } else if ( params.run_submission == false ) {
         without_submission( RUN_UTILITY.out )
     } else {
