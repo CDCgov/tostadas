@@ -131,9 +131,9 @@ process SUBMISSION {
         val lift_signal
         val vadr_signal
         val val_signal
-        path validated_meta_path 
-        path lifted_fasta_path
-        path lifted_gff_path 
+        val validated_meta_path
+        val lifted_fasta_path
+        val lifted_gff_path
         val entry_flag
 
    script:
