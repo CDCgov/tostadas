@@ -152,7 +152,7 @@ workflow {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow with_submission {
+workflow WITH_SUBMISSION {
     take:
         meta
         fasta
