@@ -128,7 +128,7 @@ workflow {
 
     // run validation script
     if ( params.run_submission == true ) {
-        with_submission( RUN_UTILITY.out )
+        with_submission()
     } else if ( params.run_submission == false ) {
         without_submission( RUN_UTILITY.out )
     } else {
