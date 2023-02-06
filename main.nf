@@ -109,7 +109,7 @@ include { UPDATE_SUBMISSION } from "$projectDir/nf_modules/main_mods"
 // get the subworkflows
 include { RUN_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
 include { RUN_UTILITY } from "$projectDir/nf_subworkflows/utility"
-inlcude { WITH_SUBMISSION } from "$projectDir/nf_subworkflows/with_submission"
+include { WITH_SUBMISSION } from "$projectDir/nf_subworkflows/with_submission"
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     MAIN WORKFLOW
