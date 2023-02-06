@@ -177,7 +177,7 @@ workflow with_submission {
 
         // run post annotation checks
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION ( 'dummy signal', false, 'dummy signal', channels['valMeta'], channels['lifted_Fasta'], channels['lifted_Gff'] 'dummy signal'
+            RUN_SUBMISSION ( 'dummy signal', false, 'dummy signal', channels['valMeta'], channels['lifted_Fasta'], channels['lifted_Gff'], 'dummy signal'
             )
 
         } else if ( params.run_vadr == true ) {
