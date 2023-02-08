@@ -163,7 +163,7 @@ workflow {
 
 workflow WITH_SUBMISSION {
     take:
-        true
+        clean_up signal
         meta
         fasta
         ref_fasta
