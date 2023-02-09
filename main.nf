@@ -173,9 +173,9 @@ workflow WITH_SUBMISSION {
 
         METADATA_VALIDATION (RUN_UTILITY.out,params.meta_path,params.fasta_path)
 
-        LIFTOFF (METADATA_VALIDATION.out.meta_signal, Channel.fromPath(params.meta_path), Channel.fromPath(params.fasta_path), Channel.fromPath(params.ref_fasta_path), Channel.fromPath(params.ref_gff_path))
+        LIFTOFF (METADATA_VALIDATION.out.meta_signal,params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path)
         
-        RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,Channel.fromPath(LIFTOFF.out.lifted_Fasta),Channel.fromPath(LIFTOFF.out.lifted_Gff),'dummy signal')
+        RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,LIFTOFF.out.lifted_Fasta,LIFTOFF.out.lifted_Gff,'dummy signal')
 
         // run annotation (in parallel)
         if ( params.run_vadr == true ) {
