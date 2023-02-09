@@ -47,8 +47,7 @@ class SubmitToDatabase:
         """ Function for initial submission
         """
        # check if relative path or absolute path
-      if not os.path.isabs(self.parameters['nf_output_dir']):
-            #work_dir= print(os.getcwd())
+       if not os.path.isabs(self.parameters['nf_output_dir']):
             self.parameters['nf_output_dir'] = f"{self.parameters['nf_output_dir']}"
             if self.parameters['entry_flag'].lower() != 'true':
                 self.parameters['validated_meta_path'] = f"{self.parameters['validated_meta_path']}"
