@@ -171,7 +171,7 @@ workflow with_submission {
 
         LIFTOFF (METADATA_VALIDATION.out.meta_signal,params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path)
         
-        RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,LIFTOFF.out,LIFTOFF.out,'dummy signal')
+        RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,LIFTOFF.out.fasta,LIFTOFF.out.gff,'dummy signal')
 }
   
 workflow without_submission {
