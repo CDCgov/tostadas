@@ -21,14 +21,15 @@ process METADATA_VALIDATION {
 
     input:
     val signal
-    path meta_path 
-    path fasta_path 
+    path(meta_path) 
+    path(fasta_path) 
 
     output:
-    file "$params.val_output_dir"
-    val true
+    path("${params.val_output_dir}/*/*.tsv"), emit: tsv_Files
+    val true, emit:meta_signal
 
     script:
+   
     """
     validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
     """
@@ -55,13 +56,14 @@ process LIFTOFF {
 
     input:
     val signal
-    path meta_path 
-    path fasta_path 
+    path meta_path
+    path fasta_path
     path ref_fasta_path 
     path ref_gff_path 
 
     output:
-    file "$params.final_liftoff_output_dir"
+    path("${params.final_liftoff_output_dir}/*/liftoff/*.fasta"), emit:lifted_Fasta
+    path("${params.final_liftoff_output_dir}/*/liftoff/*.gff"), emit:lifted_Gff
     val true
 
     script:
@@ -99,7 +101,7 @@ process VADR {
     path fasta_path 
 
     output:
-    file "$params.vadr_outdir"
+    path("${params.vadr_outdir}")
     val true
 
     script:
@@ -131,9 +133,9 @@ process SUBMISSION {
         val lift_signal
         val vadr_signal
         val val_signal
-        val validated_meta_path
-        val lifted_fasta_path
-        val lifted_gff_path
+        path(validated_meta_path)
+        path(lifted_fasta_path)
+        path(lifted_gff_path)
         val entry_flag
 
    script:
