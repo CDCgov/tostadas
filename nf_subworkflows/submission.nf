@@ -12,6 +12,10 @@ include { WAIT } from '../nf_modules/utility_mods'
 include { GET_WAIT_TIME } from '../nf_modules/utility_mods'
 
 workflow RUN_SUBMISSION {
+
+ lifted_Fasta = Channel.fromPath("*.fasta")
+ lifted_Gff = Channel.fromPath("*.gff")
+ 
     take:
         lift_signal
         vadr_signal
