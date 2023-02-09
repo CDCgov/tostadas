@@ -161,7 +161,7 @@ workflow {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow WITH_SUBMISSION {
+workflow with_submission {
     main:      
         
         // run cleanup
