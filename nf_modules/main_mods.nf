@@ -41,7 +41,8 @@ process METADATA_VALIDATION {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process LIFTOFF {
-
+    
+    tag {meta_id}
     label 'main'
     
     if ( params.run_conda == true ) {
