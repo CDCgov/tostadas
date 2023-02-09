@@ -26,7 +26,7 @@ process METADATA_VALIDATION {
 
     output:
     path("${params.val_output_dir}/*/*.tsv"), emit: tsv_Files
-    val true, emit:meta_signal
+    val true, emit: meta_signal
 
     script:
    
@@ -64,7 +64,7 @@ process LIFTOFF {
     output:
     path("${params.final_liftoff_output_dir}/*/liftoff/*.fasta"), emit:lifted_Fasta
     path("${params.final_liftoff_output_dir}/*/liftoff/*.gff"), emit:lifted_Gff
-    val true
+    val true, emit:  signal
 
     script:
     """
