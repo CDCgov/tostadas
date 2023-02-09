@@ -176,29 +176,8 @@ workflow WITH_SUBMISSION {
         LIFTOFF (METADATA_VALIDATION.out.meta_signal,params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path)
         
         RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,LIFTOFF.out.lifted_Fasta,LIFTOFF.out.lifted_Gff,'dummy signal')
-
-        // run annotation (in parallel)
-        if ( params.run_vadr == true ) {
-            VADR ( cleanup_signal, channels['fasta'] )
-        }
-        // run post annotation checks
-
-        } else if ( params.run_vadr == true ) {
-            RUN_SUBMISSION ( 'dummy signal', VADR.out[1], METADATA_VALIDATION.out[1], false,
-            "$params.output_dir/$params.val_output_dir",
-            "$params.output_dir/$params.final_liftoff_output_dir",
-            "$params.output_dir/$params.final_liftoff_output_dir"
-            )
-
-        } else if ( params.run_vadr == true && params.run_liftoff == true ) {
-            RUN_SUBMISSION ( LIFTOFF.out[1], VADR.out[1], METADATA_VALIDATION.out[1], false,
-            "$params.output_dir/$params.val_output_dir",
-            "$params.output_dir/$params.final_liftoff_output_dir",
-            "$params.output_dir/$params.final_liftoff_output_dir"
-            )
-        }
 }
-
+  
 workflow without_submission {
     take:
         cleanup_signal
