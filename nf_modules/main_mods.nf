@@ -25,7 +25,7 @@ process METADATA_VALIDATION {
     path(fasta_path) 
 
     output:
-    path("*.tsv"), emit: tsv_Files
+    path "$params.val_output_dir/*/,*tsv", emit: tsv_Files
     val true, emit: meta_signal
 
     script:
