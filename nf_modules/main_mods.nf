@@ -62,8 +62,8 @@ process LIFTOFF {
     path ref_gff_path 
 
     output:
-    path $params.final_liftoff_output_dir ,pattern: "*.fasta", emit:lifted_Fasta
-    path $params.final_liftoff_output_dir ,pattern: "*.gff", emit:lifted_Gff
+    path ($params.final_liftoff_output_dir ,pattern: "*.fasta", emit:lifted_Fasta)
+    path ($params.final_liftoff_output_dir ,pattern: "*.gff", emit:lifted_Gff)
     val true, emit:  signal
 
     script:
