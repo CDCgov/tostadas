@@ -167,10 +167,6 @@ workflow WITH_SUBMISSION {
         // run cleanup
         RUN_UTILITY()
 
-        // run post annotation checks
-        if ( params.run_liftoff == true ) {      
-        // run metadata validation
-
         METADATA_VALIDATION (RUN_UTILITY.out,params.meta_path,params.fasta_path)
 
         LIFTOFF (METADATA_VALIDATION.out.meta_signal,params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path)
