@@ -17,7 +17,7 @@ process METADATA_VALIDATION {
         }
     }
 
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.val_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:
     val signal
