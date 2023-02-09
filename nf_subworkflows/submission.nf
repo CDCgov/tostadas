@@ -22,7 +22,7 @@ workflow RUN_SUBMISSION {
         entry_flag
     main:
     
-        SUBMISSION ( lift_signal, vadr_signal, val_signal, valMeta, lifted_Fasta, lifted_Gff, entry_flag)
+        SUBMISSION ( lift_signal, vadr_signal, val_signal, valMeta, Channel.fromPath(lifted_Fasta), Channel.fromPath(lifted_Gff), entry_flag)
 
         GET_WAIT_TIME ( SUBMISSION.out, valMeta, entry_flag )
 
