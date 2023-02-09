@@ -63,7 +63,8 @@ process LIFTOFF {
     path ref_gff_path 
 
     output:
-    tuple path("$params.final_liftoff_output_dir/*/fasta/*.fasta"), path("$params.final_liftoff_output_dir/*/liftoff/*.gff")
+    path "$params.final_liftoff_output_dir/*/fasta/*.fasta", emit: fasta
+    path "$params.final_liftoff_output_dir/*/liftoff/*.gff", emit: gff
     val true, emit: signal
 
     script:
