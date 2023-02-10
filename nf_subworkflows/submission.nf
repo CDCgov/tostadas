@@ -11,9 +11,6 @@ include { UPDATE_SUBMISSION } from '../nf_modules/main_mods'
 include { WAIT } from '../nf_modules/utility_mods'
 include { GET_WAIT_TIME } from '../nf_modules/utility_mods'
 
-lifted_Fasta = Channel.fromPath("*.fasta")
-lifted_Gff = Channel.fromPath("*.gff")
-
 workflow RUN_SUBMISSION {
     take:
         lift_signal
