@@ -133,15 +133,7 @@ workflow {
          
         LIFTOFF (METADATA_VALIDATION.out.meta_signal,params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path)
          
-         Channel
-        .fromPath("$params.final_liftoff_output_dir/*/fasta/*.fasta")
-        .set { ch_Fasta }
-        
-        Channel
-        .fromPath("$params.final_liftoff_output_dir/*/liftoff/*.gff")
-        .set{ ch_Gff }
-        
-        RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,lifted_Fasta,lifted_Gff,'dummy signal')
+       RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,LIFTOFF.out.fasta.flatten(),LIFTOFF.out.gff.flatten(),'dummy signal')
      
     } 
 }
@@ -162,7 +154,7 @@ workflow with_submission {
 
         LIFTOFF (METADATA_VALIDATION.out.meta_signal,params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path)
         
-        RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,LIFTOFF.out.fasta,LIFTOFF.out.gff,'dummy signal')
+        RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,LIFTOFF.out.fasta.flatten(),LIFTOFF.out.gff.flatten(),'dummy signal')
 }
   
 workflow without_submission {
