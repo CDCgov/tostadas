@@ -122,37 +122,28 @@ workflow {
         helpMessage()
         exit 0
     }
-
-    // check parameters + cleanup the files 
-    RUN_UTILITY()
-
+    
     // run validation script
     if ( params.run_submission == true ) {
-        WITH_SUBMISSION(
-        true,
-        meta = Channel.fromPath(params.meta_path),
-        fasta = Channel.fromPath(params.fasta_path),
-        ref_fasta = Channel.fromPath(params.ref_fasta_path),
-        ref_gff = Channel.fromPath(params.ref_gff_path),
-        valMeta = Channel.fromPath('params.val_output_dir/*/tsv_per_sample/*.tsv'),
-        lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*/liftoff/*.gff'),
-        lifted_Fasta = Channel.fromPath('final_liftoff_output_dir/*/fasta/*.fasta')
-        )
-    } else if ( params.run_submission == false ) {
-        without_submission( RUN_UTILITY.out )
-    } else {
-        println ("Running with submission since a run_submission flag was not specified")
-       WITH_SUBMISSION(
-        true,
-        meta = Channel.fromPath(params.meta_path),
-        fasta = Channel.fromPath(params.fasta_path),
-        ref_fasta = Channel.fromPath(params.ref_fasta_path),
-        ref_gff = Channel.fromPath(params.ref_gff_path),
-        valMeta = Channel.fromPath('params.val_output_dir/*/tsv_per_sample/*.tsv'),
-        lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*/liftoff/*.gff'),
-        lifted_Fasta = Channel.fromPath('final_liftoff_output_dir/*/fasta/*.fasta')
-        )
-    }
+       
+        // run cleanup
+        RUN_UTILITY()
+
+        METADATA_VALIDATION (RUN_UTILITY.out,params.meta_path,params.fasta_path)
+         
+        LIFTOFF (METADATA_VALIDATION.out.meta_signal,params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path)
+         
+         Channel
+        .fromPath("$params.final_liftoff_output_dir/*/fasta/*.fasta")
+        .set { ch_Fasta }
+        
+        Channel
+        .fromPath("$params.final_liftoff_output_dir/*/liftoff/*.gff")
+        .set{ ch_Gff }
+        
+        RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,lifted_Fasta,lifted_Gff,'dummy signal')
+     
+    } 
 }
 
 /*
