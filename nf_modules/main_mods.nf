@@ -137,7 +137,7 @@ process SUBMISSION {
 
     script:
     """
-    submission.py submit --unique_name batch1.test --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $params.submission_config --test
+    submission.py submit --unique_name "${params.batch_name}.test" --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $params.submission_config --$params.submission_prod_or_test
     """
         /*
         """

@@ -72,20 +72,6 @@ def helpMessage() {
         --help                                  Flag to call in help statements mentioned in this block
         """
 }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                INITIALIZE VARS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-// channels for data files
-
-/*
-ref_fasta = Channel.fromPath(params.ref_fasta_path)
-ref_gff = Channel.fromPath(params.ref_gff_path)
-meta = Channel.fromPath(params.meta_path)
-fasta = Channel.fromPath(params.fasta_path)
-*/
     
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,12 +114,16 @@ workflow {
         // run cleanup
         RUN_UTILITY()
 
+        // run metadata validation process
         METADATA_VALIDATION ( RUN_UTILITY.out, params.meta_path, params.fasta_path )
          
+        // run liftoff annotation process 
         LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
-         
-        RUN_SUBMISSION ( METADATA_VALIDATION.out.tsv_Files.flatten(), LIFTOFF.out.fasta.flatten(), LIFTOFF.out.gff.flatten(), false)
-     
+
+        // run submission for the annotated samples 
+        if ( params.run_submission == true ) {
+            RUN_SUBMISSION ( METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), LIFTOFF.out.gff.sort().flatten(), false )
+        }
     } 
 }
 
@@ -142,38 +132,6 @@ workflow {
                                     SUB WORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-workflow with_submission {
-    main:      
-        
-        // run cleanup
-        RUN_UTILITY()
-
-        METADATA_VALIDATION (RUN_UTILITY.out,params.meta_path,params.fasta_path)
-
-        LIFTOFF (METADATA_VALIDATION.out.meta_signal,params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path)
-        
-        RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files,LIFTOFF.out.fasta.flatten(),LIFTOFF.out.gff.flatten(), false)
-}
-  
-workflow without_submission {
-    take:
-        cleanup_signal
-    main:
-        // get channels 
-        channels = get_channels()
-
-        // run metadata validation
-        METADATA_VALIDATION ( cleanup_signal, channels['meta'], channels['fasta'] )
-
-        // run annotation (in parallel)
-        if ( params.run_liftoff == true ) {
-            LIFTOFF ( cleanup_signal, channels['meta'], channels['fasta'], channels['ref_fasta'], channels['ref_gff'] )
-        }
-        if ( params.run_vadr == true ) {
-            VADR ( cleanup_signal, channels['fasta'] )
-        }
-}
 
 workflow only_validate_params {
     main:

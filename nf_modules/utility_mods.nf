@@ -211,6 +211,7 @@ process WAIT {
     input:
         val signal
         val wait_time
+
     shell:
         """
         #!/usr/bin/env python
@@ -219,6 +220,7 @@ process WAIT {
 
         time.sleep($wait_time)
         """
+
     output:
         val true
 }
@@ -290,5 +292,3 @@ process SUBMISSION_ENTRY_CHECK {
     output:
         val true
 }
-
-

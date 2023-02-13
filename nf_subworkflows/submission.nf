@@ -17,9 +17,10 @@ workflow RUN_SUBMISSION {
         lifted_fasta_files
         lifted_gff_files
         entry_flag
+
     main:
     
-        SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag)
+        SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag )
 
         GET_WAIT_TIME ( SUBMISSION.out, meta_files, entry_flag )
 
