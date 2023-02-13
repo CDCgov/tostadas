@@ -64,6 +64,7 @@ class SubmitToDatabase:
         """
 
         # if the entrypoint was used, assumes that the path to dir contaiing the files is already specified
+        """
         elif self.parameters['entry_flag'].lower() == 'true':
             meta_files = glob.glob(f"{self.parameters['validated_meta_path']}/*.tsv")
             fasta_files = glob.glob(f"{self.parameters['lifted_fasta_path']}/*.fasta")
@@ -71,7 +72,7 @@ class SubmitToDatabase:
         else:
             raise ValueError("Entry flag, for whether or not submission was called via entrypoint, must be a str and either true or false " + \
                              f"... passed input = {self.parameters['entry_flag']}")
-
+        """
         # check to make sure that the number of meta, fasta, and gff files are equal to each other
         """
         try:
