@@ -32,7 +32,7 @@ general:
     title: ''
   organism_name: Severe acute respiratory syndrome coronavirus 2
   metadata_file_sep: ''
-  fasta_sample_name_col: 'TEST'
+  fasta_sample_name_col: 'sample_name'
   collection_date_col: ''
   baseline_surveillance: 'True'
 ncbi:
