@@ -142,9 +142,9 @@ process SUBMISSION {
    script:
         """
         run_submission.py --validated_meta_path $validated_meta_path --lifted_fasta_path $lifted_fasta_path\
-        --lifted_gff_path $lifted_gff_path --launch_dir $launchDir --entry_flag $entry_flag --submission_script $params.submission_script \
-        --meta_path $params.meta_path --config $params.submission_config --nf_output_dir $params.output_dir --submission_output_dir $params.submission_output_dir --update false \
-        --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test --project_dir $projectDir
+        --lifted_gff_path $lifted_gff_path --entry_flag $entry_flag --submission_script $params.submission_script \
+        --meta_path $params.meta_path --config $params.submission_config --nf_output_dir \$PWD --submission_output_dir $params.submission_output_dir --update false \
+        --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test
         """
 
     output:

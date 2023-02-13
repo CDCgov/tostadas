@@ -55,11 +55,13 @@ class SubmitToDatabase:
                 self.parameters['lifted_gff_path'] = f"{self.parameters['lifted_gff_path']}"
                 
         # get the meta file name from meta path if entry point was not used
+        """
         if self.parameters['entry_flag'].lower() == 'false':
             meta_filename = (self.parameters['meta_path'].split('/')[-1]).split('.')[0]
             meta_files = glob.glob(f"/{meta_filename}/tsv_per_sample/*.tsv")
             fasta_files = glob.glob(f"/{meta_filename}/fasta/*.fasta")
             gff_files = glob.glob(f"/{meta_filename}/liftoff/*.gff")
+        """
 
         # if the entrypoint was used, assumes that the path to dir contaiing the files is already specified
         elif self.parameters['entry_flag'].lower() == 'true':
@@ -71,6 +73,7 @@ class SubmitToDatabase:
                              f"... passed input = {self.parameters['entry_flag']}")
 
         # check to make sure that the number of meta, fasta, and gff files are equal to each other
+        """
         try:
             assert len(meta_files) == len(fasta_files) == len(gff_files)
         except AssertionError:
@@ -82,7 +85,7 @@ class SubmitToDatabase:
         except AssertionError:
             raise AssertionError(f"Length of meta files {len(meta_files)} or fasta files {len(fasta_files)} or gff files {len(gff_files)} is equal to zero" + \
                                  f"{self.parameters['validated_meta_path']}")
-        
+        """
         # create the main submission outputs directory 
         commands = {}
         if not os.path.isabs(self.parameters['submission_output_dir']):
@@ -119,10 +122,13 @@ class SubmitToDatabase:
                     self.parameters['config'] = path_to_new_conf
 
         # sort file lists to ensure they are in the same order, assumes you have alpha prefix
+        """
         meta_files = sorted(meta_files)
         fasta_files = sorted(fasta_files)
         gff_files = sorted(gff_files)
+        """
 
+        """
         for meta, fasta, gff in zip(meta_files, fasta_files, gff_files):
             # get the sample names and specify command
             sample_name = (meta.split('/')[-1]).split('.')[0]
@@ -144,12 +150,16 @@ class SubmitToDatabase:
             f.close()
             # store the final command within dictionary
             commands[sample_name] = command
-
+        """
         # cycle through the commands stored and initiate subprocesses for these + write terminal output to file
+        """
         for key in commands.keys():
             file_ = open(f"{dirs_to_check['terminal']}/{key}_initial_terminal_output.txt", "w+")
             subprocess.run(commands[key], shell=True, stdout=file_)
             file_.close()
+        """
+        subprocess.run( f"python {self.parameters['submission_script']} submit --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {self.parameters['lifted_fasta_path']}" + \
+                        f" --metadata {self.parameters['validated_meta_path']} --gff {self.parameters['lifted_gff_path']} --config {self.parameters['config']} --{self.parameters['prod_or_test']}")
 
     def update_submission(self):
         """ Calls update submission
