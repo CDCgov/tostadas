@@ -138,11 +138,10 @@ process SUBMISSION {
         path(lifted_fasta_path)
         path(lifted_gff_path)
         val entry_flag
-        path(config)
 
     script:
         """
-        submission.py submit --unique_name batch1.test --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $config --test
+        submission.py submit --unique_name batch1.test --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config test.yaml --test
         """
         /*
         """

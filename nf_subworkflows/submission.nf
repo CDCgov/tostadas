@@ -20,10 +20,9 @@ workflow RUN_SUBMISSION {
         lifted_Fasta
         lifted_Gff
         entry_flag
-        config
     main:
     
-        SUBMISSION ( lift_signal, vadr_signal, val_signal, valMeta, lifted_Fasta, lifted_Gff, entry_flag, config)
+        SUBMISSION ( lift_signal, vadr_signal, val_signal, valMeta, lifted_Fasta, lifted_Gff, entry_flag)
 
         GET_WAIT_TIME ( SUBMISSION.out, valMeta, entry_flag )
 
