@@ -141,7 +141,7 @@ process SUBMISSION {
 
     script:
         """
-        submission.py submit --unique_name batch1.test --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $projectDir/test.yaml --test
+        submission.py submit --unique_name batch1.test --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config test.yaml --test
         """
         /*
         """
