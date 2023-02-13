@@ -25,7 +25,7 @@ process METADATA_VALIDATION {
     path(fasta_path) 
 
     output:
-    path "$params.val_output_dir", emit: tsv_Files
+    path "$params.val_output_dir/*/tsv_per_sample/*.tsv", emit: tsv_Files
     val true, emit: meta_signal
 
     script:
@@ -141,7 +141,7 @@ process SUBMISSION {
 
     script:
         """
-        submission.py submit --unique_name batch1.test --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $projectDir/test.yaml --test
+        submission.py submit --unique_name batch1.test --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config test.yaml --test
         """
         /*
         """
