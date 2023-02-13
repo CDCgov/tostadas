@@ -160,7 +160,8 @@ class SubmitToDatabase:
             subprocess.run(commands[key], shell=True, stdout=file_)
             file_.close()
         """
-        subprocess.run( f"python {self.parameters['submission_script']} submit --unique_name {self.parameters['batch_name']}.{sample_name} --fasta {self.parameters['lifted_fasta_path']}" + \
+
+        os.system( f"python {self.parameters['submission_script']} submit --unique_name {self.parameters['batch_name']}.test --fasta {self.parameters['lifted_fasta_path']}" + \
                         f" --metadata {self.parameters['validated_meta_path']} --gff {self.parameters['lifted_gff_path']} --config {self.parameters['config']} --{self.parameters['prod_or_test']}")
 
     def update_submission(self):
