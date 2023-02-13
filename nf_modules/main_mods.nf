@@ -119,7 +119,7 @@ process VADR {
 process SUBMISSION {
     label 'main'
     
-    publishDir "$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     
     if ( params.run_conda == true ) {
@@ -149,7 +149,7 @@ process SUBMISSION {
         """
 
     output:
-        val true
+        path "$params.submission_output_dir"
 }
 
 process UPDATE_SUBMISSION {
