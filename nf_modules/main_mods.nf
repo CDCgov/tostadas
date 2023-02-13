@@ -21,18 +21,17 @@ process METADATA_VALIDATION {
 
     input:
     val signal
-    path(meta_path) 
-    path(fasta_path) 
+    path meta_path
+    path fasta_path
+
+    script:
+    """
+    validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
+    """
 
     output:
     path "$params.val_output_dir/*/tsv_per_sample/*.tsv", emit: tsv_Files
     val true, emit: meta_signal
-
-    script:
-   
-    """
-    validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
-    """
 }
 
 /*
@@ -41,8 +40,7 @@ process METADATA_VALIDATION {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process LIFTOFF {
-    
-    tag {meta_id}
+
     label 'main'
     
     if ( params.run_conda == true ) {
@@ -62,11 +60,6 @@ process LIFTOFF {
     path ref_fasta_path 
     path ref_gff_path 
 
-    output:
-    path "$params.final_liftoff_output_dir/*/fasta/*.fasta", emit: fasta
-    path "$params.final_liftoff_output_dir/*/liftoff/*.gff", emit: gff
-    val true, emit: signal
-
     script:
     """
         liftoff_submission.py --fasta_path $fasta_path --meta_path $meta_path --ref_fasta_path $ref_fasta_path \
@@ -76,6 +69,12 @@ process LIFTOFF {
         --copy_threshold $params.lift_copy_threshold --coverage_threshold $params.lift_coverage_threshold --child_feature_align_threshold $params.lift_child_feature_align_threshold \
         --copies $params.lift_copies --flank $params.lift_flank --mismatch $params.lift_mismatch --gap_open $params.lift_gap_open --gap_extend $params.lift_gap_extend
     """
+
+    output:
+    path "$params.final_liftoff_output_dir/*/fasta/*.fasta", emit: fasta
+    path "$params.final_liftoff_output_dir/*/liftoff/*.gff", emit: gff
+    path "$params.final_liftoff_output_dir/*/errors/*.txt", emit: errors
+    path "$params.final_liftoff_output_dir/*/tbl/*.tbl", emit: tbl
 }
 
 /*
@@ -117,11 +116,11 @@ process VADR {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process SUBMISSION {
+
     label 'main'
     
     publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
-    
     if ( params.run_conda == true ) {
         try {
             conda params.env_yml
@@ -131,18 +130,15 @@ process SUBMISSION {
     }
 
     input:
-        val lift_signal
-        val vadr_signal
-        val val_signal
-        path(validated_meta_path)
-        path(lifted_fasta_path)
-        path(lifted_gff_path)
+        path validated_meta_path
+        path lifted_fasta_path
+        path lifted_gff_path
         val entry_flag
 
     script:
-        """
-        submission.py submit --unique_name batch1.test --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config test.yaml --test
-        """
+    """
+    submission.py submit --unique_name batch1.test --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $params.submission_config --test
+    """
         /*
         """
         f"python {self.parameters['submission_script']} submit --unique_name {self.parameters['batch_name']}.test --fasta {self.parameters['lifted_fasta_path']}" + \

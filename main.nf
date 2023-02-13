@@ -80,14 +80,12 @@ def helpMessage() {
 */
 // channels for data files
 
+/*
 ref_fasta = Channel.fromPath(params.ref_fasta_path)
 ref_gff = Channel.fromPath(params.ref_gff_path)
 meta = Channel.fromPath(params.meta_path)
 fasta = Channel.fromPath(params.fasta_path)
-//config = Channel.fromPath("$projectDir/bin/default_mpox.yaml")
-valMeta = Channel.fromPath('params.val_output_dir/*/tsv_per_sample/*.tsv')
-lifted_Fasta= Channel.fromPath('final_liftoff_output_dir/*/fasta/*.fasta')
-lifted_Gff = Channel.fromPath('final_liftoff_output_dir/*/liftoff/*.gff')
+*/
     
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -110,7 +108,7 @@ include { UPDATE_SUBMISSION } from "$projectDir/nf_modules/main_mods"
 // get the subworkflows
 include { RUN_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
 include { RUN_UTILITY } from "$projectDir/nf_subworkflows/utility"
-// include { WITH_SUBMISSION } from "$projectDir/nf_subworkflows/with_submission"
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     MAIN WORKFLOW
@@ -130,11 +128,11 @@ workflow {
         // run cleanup
         RUN_UTILITY()
 
-        METADATA_VALIDATION (RUN_UTILITY.out,params.meta_path,params.fasta_path)
+        METADATA_VALIDATION ( RUN_UTILITY.out, params.meta_path, params.fasta_path )
          
-        LIFTOFF (METADATA_VALIDATION.out.meta_signal,params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path)
+        LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
          
-       RUN_SUBMISSION (LIFTOFF.out.signal,false,METADATA_VALIDATION.out.meta_signal,METADATA_VALIDATION.out.tsv_Files.flatten(),LIFTOFF.out.fasta.flatten(),LIFTOFF.out.gff.flatten(),false)
+        RUN_SUBMISSION ( METADATA_VALIDATION.out.tsv_Files.flatten(), LIFTOFF.out.fasta.flatten(), LIFTOFF.out.gff.flatten(), false)
      
     } 
 }
