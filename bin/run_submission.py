@@ -87,6 +87,7 @@ class SubmitToDatabase:
             raise AssertionError(f"Length of meta files {len(meta_files)} or fasta files {len(fasta_files)} or gff files {len(gff_files)} is equal to zero" + \
                                  f"{self.parameters['validated_meta_path']}")
         """
+        """
         # create the main submission outputs directory 
         commands = {}
         if not os.path.isabs(self.parameters['submission_output_dir']):
@@ -121,7 +122,7 @@ class SubmitToDatabase:
                 with open(path_to_new_conf, 'w') as new_config:
                     yaml.dump(loaded_conf, new_config)
                     self.parameters['config'] = path_to_new_conf
-
+        """
         # sort file lists to ensure they are in the same order, assumes you have alpha prefix
         """
         meta_files = sorted(meta_files)
