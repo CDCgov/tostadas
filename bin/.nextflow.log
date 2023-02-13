@@ -1,0 +1,14 @@
+Feb-13 12:37:32.485 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf -profile test,conda --submission_wait_time 2
+Feb-13 12:37:32.562 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 22.10.0
+Feb-13 12:37:32.593 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/scicomp/home-pure/ufl1/.nextflow/plugins; core-plugins: nf-amazon@1.11.0,nf-azure@0.14.2,nf-codecommit@0.1.2,nf-console@1.0.4,nf-ga4gh@1.0.4,nf-google@1.4.4,nf-tower@1.5.5,nf-wave@0.5.2
+Feb-13 12:37:32.618 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Feb-13 12:37:32.619 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Feb-13 12:37:32.624 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+Feb-13 12:37:32.639 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Feb-13 12:37:32.676 [main] DEBUG nextflow.scm.ProviderConfig - Using SCM config path: /scicomp/home-pure/ufl1/.nextflow/scm
+Feb-13 12:37:32.689 [main] DEBUG nextflow.cli.Launcher - Operation aborted
+nextflow.exception.AbortOperationException: Cannot find script file: main.nf
+	at nextflow.cli.CmdRun.getScriptFile(CmdRun.groovy:448)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:300)
+	at nextflow.cli.Launcher.run(Launcher.groovy:487)
+	at nextflow.cli.Launcher.main(Launcher.groovy:646)
