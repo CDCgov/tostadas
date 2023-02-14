@@ -297,6 +297,7 @@ process SUBMISSION_ENTRY_CHECK {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+/*
 PRESUBMISSION {
 
     conda params.env_yml
@@ -314,3 +315,4 @@ PRESUBMISSION {
         """
 
 }
+*/
