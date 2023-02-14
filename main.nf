@@ -83,7 +83,7 @@ include { VALIDATE_PARAMS } from "$projectDir/nf_modules/utility_mods"
 include { CLEANUP_FILES } from "$projectDir/nf_modules/utility_mods"
 include { WAIT } from "$projectDir/nf_modules/utility_mods"
 include { SUBMISSION_ENTRY_CHECK } from "$projectDir/nf_modules/utility_mods"
-include { PRESUBMISSION } from "$projectDir/nf_modules/utility_mods"
+//include { PRESUBMISSION } from "$projectDir/nf_modules/utility_mods"
 
 // get the main processes
 include { METADATA_VALIDATION } from "$projectDir/nf_modules/main_mods"
