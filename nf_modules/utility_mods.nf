@@ -221,7 +221,7 @@ process WAIT {
 
     script:
         """
-        submission_wait.py --wait_time $wait_time
+        submission_utility.py --wait true --wait_time $wait_time
         """
 
     output:
