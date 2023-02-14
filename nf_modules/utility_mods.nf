@@ -209,7 +209,6 @@ process WAIT {
     conda params.env_yml
 
     input:
-        val signal
         val wait_time
 
     shell:
@@ -249,7 +248,6 @@ process GET_WAIT_TIME {
             submission_wait_time = 3 * 60 * i
         }
     output:
-        val true
         val submission_wait_time
 }
 
@@ -291,4 +289,28 @@ process SUBMISSION_ENTRY_CHECK {
 
     output:
         val true
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  PRESUBMISSION 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+PRESUBMISSION {
+
+    conda params.env_yml
+
+    input:
+        val wait_time
+
+    shell:
+        """
+        #!/usr/bin/env python
+
+        import time
+
+        time.sleep($wait_time)
+        """
+
 }

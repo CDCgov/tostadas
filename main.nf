@@ -107,25 +107,24 @@ workflow {
         helpMessage()
         exit 0
     }
-    
-    // run validation script
+
+    // run cleanup
+    RUN_UTILITY()
+
+    // run metadata validation process
+    METADATA_VALIDATION ( RUN_UTILITY.out, params.meta_path, params.fasta_path )
+        
+    // run liftoff annotation process 
+    LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
+
+    // pre submission process
+    // PRESUBMISSION ()
+
+    // run submission for the annotated samples 
     if ( params.run_submission == true ) {
-       
-        // run cleanup
-        RUN_UTILITY()
-
-        // run metadata validation process
-        METADATA_VALIDATION ( RUN_UTILITY.out, params.meta_path, params.fasta_path )
-         
-        // run liftoff annotation process 
-        LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
-
-        // run submission for the annotated samples 
-        if ( params.run_submission == true ) {
-            RUN_SUBMISSION ( METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), LIFTOFF.out.gff.sort().flatten(), false )
-        }
-    } 
-}
+        RUN_SUBMISSION ( METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), LIFTOFF.out.gff.sort().flatten(), false )
+    }
+} 
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -148,11 +147,8 @@ workflow only_validation {
         // check parameters + cleanup the files 
         RUN_UTILITY()
 
-        // get channels 
-        channels = get_channels()
-
         // run metadata validation
-        METADATA_VALIDATION ( RUN_UTILITY.out, channels['meta'], channels['fasta'] )
+        METADATA_VALIDATION ( RUN_UTILITY.out, params.meta_path, params.fasta_path )
 }
 
 workflow only_liftoff {
@@ -160,11 +156,8 @@ workflow only_liftoff {
         // check parameters + cleanup the files 
         RUN_UTILITY()
 
-        // get channels 
-        channels = get_channels()
-
         // run annotation on files
-        LIFTOFF ( RUN_UTILITY.out, channels['meta'], channels['fasta'], channels['ref_fasta'], channels['ref_gff'] )
+        LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
 }
 
 workflow only_vadr {

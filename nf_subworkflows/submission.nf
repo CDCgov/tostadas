@@ -20,11 +20,11 @@ workflow RUN_SUBMISSION {
 
     main:
     
-        SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag )
+        //SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag )
 
-        GET_WAIT_TIME ( SUBMISSION.out, meta_files, entry_flag )
+        GET_WAIT_TIME ( true, meta_files, entry_flag )
 
-        WAIT ( GET_WAIT_TIME.out[0], GET_WAIT_TIME.out[1] )
+        WAIT ( GET_WAIT_TIME.out )
 
-        UPDATE_SUBMISSION ( WAIT.out )
+        //UPDATE_SUBMISSION ( WAIT.out )
 }

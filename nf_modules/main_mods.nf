@@ -154,7 +154,8 @@ process SUBMISSION {
         """
         */
     output:
-        path "$params.submission_output_dir"
+        file '*'
+        // path "$params.submission_output_dir"
 }
 
 process UPDATE_SUBMISSION {
