@@ -241,18 +241,7 @@ process GET_WAIT_TIME {
         if ( params.submission_wait_time != 'calc' ) {
             submission_wait_time = params.submission_wait_time
         } else {
-            if ( entry_flag == true ) {
-                dir = file(validated_meta_path)
-            } else {
-                def splitted = params.meta_path.tokenize( '/' )[-1]
-                def meta_file_name = splitted.tokenize( '.' )[0]
-                dir = file(validated_meta_path + "/" + meta_file_name + "/tsv_per_sample")
-            }
-            samp_files = dir.list()
-            i = 0
-            for ( def x : samp_files ) {
-                i = i + 1
-            }
+            i = validated_meta_path.toList().size
             submission_wait_time = 3 * 60 * i
         }
     output:
