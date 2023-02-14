@@ -206,7 +206,15 @@ process CLEANUP_FILES {
 
 process WAIT {
 
-    conda params.env_yml
+    label 'main'
+    
+    if ( params.run_conda == true ) {
+        try {
+            conda params.env_yml
+        } catch (Exception e) {
+            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+        }
+    }
 
     input:
         val wait_time
