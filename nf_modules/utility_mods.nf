@@ -219,13 +219,9 @@ process WAIT {
     input:
         val wait_time
 
-    shell:
+    script:
         """
-        #!/usr/bin/env python
-
-        import time
-
-        time.sleep($wait_time)
+        submission_wait.py --wait_time $wait_time
         """
 
     output:
