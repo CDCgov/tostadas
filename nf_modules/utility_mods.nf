@@ -317,6 +317,6 @@ process CHECK_CONFIG {
         """
 
     output:
-        file 'nextflow_modified.yaml'
+        file 'config_files/nextflow_modified.yaml'
         val true, emit: config_signal
 }
