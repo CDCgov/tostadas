@@ -70,8 +70,8 @@ def main():
     # =================================================================================================================
 
             # now write the new .yaml file with this updated value
-            # os.mkdir('config_files')
-            with open('nextflow_modified.yaml', 'w') as new_config:
+            os.mkdir('config_files')
+            with open('config_files/nextflow_modified.yaml', 'w') as new_config:
                 yaml.dump(loaded_conf, new_config)
     # =================================================================================================================
 
