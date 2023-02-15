@@ -295,7 +295,7 @@ process CHECK_CONFIG {
 
     label 'main'
 
-    publishDir "$projectDir/bin/config_files", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
     
     if ( params.run_conda == true ) {
         try {
@@ -317,5 +317,5 @@ process CHECK_CONFIG {
         """
 
     output:
-        file '*'
+        file 'nextflow_modified.yaml'
 }
