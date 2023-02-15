@@ -136,6 +136,7 @@ process SUBMISSION {
         path lifted_gff_path
         val entry_flag
         path submission_config
+        val config_signal
 
     script:
     """

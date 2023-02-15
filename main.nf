@@ -121,13 +121,12 @@ workflow {
     // pre submission process + get wait time (parallel)
     CHECK_CONFIG ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, params.submission_config )
     GET_WAIT_TIME ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, METADATA_VALIDATION.out.tsv_Files.collect() )
-    params.submission_config = CHECK_CONFIG.out
 
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
-        RUN_SUBMISSION ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, 
+        RUN_SUBMISSION ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, CHECK_CONFIG.out.config_signal,
                          METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), 
-                         LIFTOFF.out.gff.sort().flatten(), false, params.submission_config, GET_WAIT_TIME.out)
+                         LIFTOFF.out.gff.sort().flatten(), false, params.modified_config, GET_WAIT_TIME.out)
     }
 } 
 
