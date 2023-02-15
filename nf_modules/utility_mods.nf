@@ -317,5 +317,5 @@ process CHECK_CONFIG {
         """
 
     output:
-        path 'nextflow_modified.yaml'
+        file '*'
 }
