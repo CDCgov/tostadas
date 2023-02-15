@@ -107,7 +107,7 @@ process VADR {
 
     script:
     """
-     $params.vadr_script --vadr_loc $params.vadr_loc --fasta_path $params.fasta_path --vadr_outdir $params.vadr_outdir --mpxv_models_dir $projectDir/mpxv-models
+    $params.vadr_script --vadr_loc $params.vadr_loc --fasta_path $params.fasta_path --vadr_outdir $params.vadr_outdir --mpxv_models_dir $projectDir/mpxv-models
     """
 }
 
