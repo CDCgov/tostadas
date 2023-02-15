@@ -29,7 +29,7 @@ workflow RUN_SUBMISSION {
         GET_WAIT_TIME ( meta_signal, liftoff_signal, meta_files.collect() )
 
         // submit the files to database of choice (after fixing config and getting wait time)
-        // SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag, CHECK_CONFIG.out )
+        SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag, CHECK_CONFIG.out )
 
         // actual process to initiate wait 
         WAIT ( 'duumy submission output', GET_WAIT_TIME.out )
