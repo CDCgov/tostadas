@@ -1,4 +1,3 @@
-include { WAIT } from "$projectDir/nf_modules/utility_mods"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -31,6 +30,7 @@ process METADATA_VALIDATION {
 
     output:
     path "$params.val_output_dir/*/tsv_per_sample/*.tsv", emit: tsv_Files
+    path "$params.val_output_dir/*/errors", emit: errors
     val true, emit: meta_signal
 }
 
@@ -75,6 +75,7 @@ process LIFTOFF {
     path "$params.final_liftoff_output_dir/*/liftoff/*.gff", emit: gff
     path "$params.final_liftoff_output_dir/*/errors/*.txt", emit: errors
     path "$params.final_liftoff_output_dir/*/tbl/*.tbl", emit: tbl
+    val true, emit: liftoff_signal
 }
 
 /*
@@ -134,10 +135,11 @@ process SUBMISSION {
         path lifted_fasta_path
         path lifted_gff_path
         val entry_flag
+        path submission_config
 
     script:
     """
-    submission.py submit --unique_name "${params.batch_name}.test" --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $params.submission_config --$params.submission_prod_or_test
+    submission.py submit --unique_name "${params.batch_name}.test" --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $submission_config --$params.submission_prod_or_test
     """
         /*
         """

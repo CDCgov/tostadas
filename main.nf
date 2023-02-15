@@ -83,7 +83,7 @@ include { VALIDATE_PARAMS } from "$projectDir/nf_modules/utility_mods"
 include { CLEANUP_FILES } from "$projectDir/nf_modules/utility_mods"
 include { WAIT } from "$projectDir/nf_modules/utility_mods"
 include { SUBMISSION_ENTRY_CHECK } from "$projectDir/nf_modules/utility_mods"
-//include { PRESUBMISSION } from "$projectDir/nf_modules/utility_mods"
+include { CHECK_CONFIG } from "$projectDir/nf_modules/utility_mods"
 
 // get the main processes
 include { METADATA_VALIDATION } from "$projectDir/nf_modules/main_mods"
@@ -119,11 +119,13 @@ workflow {
     LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
 
     // pre submission process
-    // PRESUBMISSION ( params.submission_config )
+    CHECK_CONFIG ( LIFTOFF.out.liftoff_signal, params.submission_config )
 
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
-        RUN_SUBMISSION ( METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), LIFTOFF.out.gff.sort().flatten(), false )
+        RUN_SUBMISSION ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, 
+                         METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), 
+                         LIFTOFF.out.gff.sort().flatten(), false, CHECK_CONFIG.out )
     }
 } 
 
@@ -176,20 +178,14 @@ workflow only_vadr {
 workflow only_submission {
     main:
         // check that certain paths are specified
-        SUBMISSION_ENTRY_CHECK ( )
+        SUBMISSION_ENTRY_CHECK()
         
-        // define channels
-        channels = get_channels()
-
         // call the submission workflow
         RUN_SUBMISSION (
-            SUBMISSION_ENTRY_CHECK.out,
-            'dummy signal value', 
-            'dummy signal value',
-            true,
             params.submission_only_meta,
             params.submission_only_fasta,
-            params.submission_only_gff
+            params.submission_only_gff, 
+            true
         )
 }
 

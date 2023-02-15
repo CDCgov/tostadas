@@ -290,22 +290,29 @@ process SUBMISSION_ENTRY_CHECK {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-/*
-PRESUBMISSION {
+process CHECK_CONFIG {
 
-    conda params.env_yml
+    label 'main'
+
+    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+    
+    if ( params.run_conda == true ) {
+        try {
+            conda params.env_yml
+        } catch (Exception e) {
+            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
+        }
+    }
 
     input:
-        val wait_time
+        val signal
+        path submission_config
 
-    shell:
+    script:
         """
-        #!/usr/bin/env python
-
-        import time
-
-        time.sleep($wait_time)
+        submission_utility.py --check_submission_config true --config $submission_config --submission_outputs $projectDir/$params.output_dir/$params.submission_output_dir
         """
 
+    output:
+        path '*.yaml'
 }
-*/

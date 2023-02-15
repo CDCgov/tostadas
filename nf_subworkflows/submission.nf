@@ -13,16 +13,19 @@ include { GET_WAIT_TIME } from '../nf_modules/utility_mods'
 
 workflow RUN_SUBMISSION {
     take:
+        meta_signal 
+        liftoff_signal
         meta_files
         lifted_fasta_files
         lifted_gff_files
         entry_flag
+        submission_config
 
     main:
     
-        //SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag )
+        //SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag, submission_config )
 
-        GET_WAIT_TIME ( true, meta_files.collect(), entry_flag )
+        GET_WAIT_TIME ( lifted_fasta_files, meta_files.collect(), entry_flag )
 
         WAIT ( GET_WAIT_TIME.out )
 

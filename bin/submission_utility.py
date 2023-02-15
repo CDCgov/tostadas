@@ -14,6 +14,7 @@ def get_args():
     parser.add_argument("--specific_submission", type=str, help='Certain database to submit to')
     parser.add_argument("--wait_time", type=str, help='Length of time to wait in seconds')
     parser.add_argument("--config", type=str, help='Name of submission config file')
+    parser.add_argument("--submission_outputs", type=str, help='Path to the submission outputs')
     return parser
 
 
@@ -37,16 +38,12 @@ def main():
         # open the config and make some modifications 
         with open(path_to_config) as sub_config:
             loaded_conf = yaml.safe_load(sub_config)
-            if loaded_conf['general']['submission_directory'] != dirs_to_check['root']:
-                loaded_conf['general']['submission_directory'] = dirs_to_check['root']
+            if loaded_conf['general']['submission_directory'] != parameters['submission_outputs']:
+                loaded_conf['general']['submission_directory'] = parameters['submission_outputs']
 
                 # now write the new .yaml file with this updated value
-                path_to_new_conf = '/'.join(path_to_config.split('/')[:-1]) + '/' + path_to_config.split('/')[-1].split('.')[0] + '_submitdir_modified.yaml'
-                if os.path.exists(path_to_new_conf):
-                    os.remove(path_to_new_conf)
-                with open(path_to_new_conf, 'w') as new_config:
+                with open('submitdir_modified.yaml', 'w') as new_config:
                     yaml.dump(loaded_conf, new_config)
-                    path_to_config = path_to_new_conf
 
 
 if __name__ == "__main__":
