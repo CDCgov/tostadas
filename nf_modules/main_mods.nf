@@ -141,23 +141,9 @@ process SUBMISSION {
     """
     submission.py submit --unique_name "${params.batch_name}.test" --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $submission_config --$params.submission_prod_or_test
     """
-        /*
-        """
-        f"python {self.parameters['submission_script']} submit --unique_name {self.parameters['batch_name']}.test --fasta {self.parameters['lifted_fasta_path']}" + \
-                        f" --metadata {self.parameters['validated_meta_path']} --gff {self.parameters['lifted_gff_path']} --config {self.parameters['config']} --{self.parameters['prod_or_test']}")
 
-        """
-
-        """
-        run_submission.py --validated_meta_path $validated_meta_path --lifted_fasta_path $lifted_fasta_path\
-        --lifted_gff_path $lifted_gff_path --entry_flag $entry_flag --submission_script $params.submission_script \
-        --meta_path $params.meta_path --config $config --nf_output_dir \$PWD --submission_output_dir $params.submission_output_dir --update false \
-        --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test
-        """
-        */
     output:
         file '*'
-        // path "$params.submission_output_dir"
 }
 
 process UPDATE_SUBMISSION {
@@ -173,10 +159,10 @@ process UPDATE_SUBMISSION {
     }
 
     input:
-        val signal
+        val wait_signal
+
     script:
         """
-         run_submission.py --update true --submission_script $params.submission_script --submission_output_dir $params.submission_output_dir \
-         --nf_output_dir $params.output_dir --launch_dir $launchDir 
+        submission.py update_submissions
         """
 } 

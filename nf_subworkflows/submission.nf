@@ -34,5 +34,5 @@ workflow RUN_SUBMISSION {
         // actual process to initiate wait 
         WAIT ( 'duumy submission output', GET_WAIT_TIME.out )
 
-        //UPDATE_SUBMISSION ( WAIT.out )
+        UPDATE_SUBMISSION ( WAIT.out )
 }
