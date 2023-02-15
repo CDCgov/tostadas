@@ -217,6 +217,7 @@ process WAIT {
     }
 
     input:
+        val submission_signal
         val wait_time
 
     script:
@@ -294,7 +295,7 @@ process CHECK_CONFIG {
 
     label 'main'
 
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$projectDir/bin/config_files", mode: 'copy', overwrite: params.overwrite_output
     
     if ( params.run_conda == true ) {
         try {
@@ -305,12 +306,14 @@ process CHECK_CONFIG {
     }
 
     input:
-        val signal
+        val meta_signal
+        val liftoff_signal
         path submission_config
 
     script:
         """
-        submission_utility.py --check_submission_config true --config $submission_config --submission_outputs $projectDir/$params.output_dir/$params.submission_output_dir
+        submission_utility.py --check_submission_config true --config $submission_config --submission_outputs $projectDir/$params.output_dir/$params.submission_output_dir \
+        --database $params.submission_database
         """
 
     output:
