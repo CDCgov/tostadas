@@ -25,7 +25,7 @@ workflow RUN_SUBMISSION {
     
         //SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag, submission_config )
 
-        GET_WAIT_TIME ( lifted_fasta_files, meta_files.collect(), entry_flag )
+        GET_WAIT_TIME ( meta_signal, liftoff_signal, meta_files.collect() )
 
         WAIT ( GET_WAIT_TIME.out )
 

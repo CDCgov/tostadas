@@ -230,9 +230,9 @@ process WAIT {
 
 process GET_WAIT_TIME {
     input:
-        val signal
+        val meta_signal
+        val liftoff_signal
         val validated_meta_path
-        val entry_flag
     exec:
         if ( params.submission_wait_time != 'calc' ) {
             submission_wait_time = params.submission_wait_time
