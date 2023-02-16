@@ -19,14 +19,15 @@ workflow RUN_SUBMISSION {
         lifted_gff_files
         entry_flag
         submission_config
+        req_col_config
         wait_time
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
-        SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag, submission_config )
+        SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag, submission_config, req_col_config )
 
         // actual process to initiate wait 
-        WAIT ( SUBMISSION.out, wait_time )
+        WAIT ( SUBMISSION.out.collect(), wait_time )
 
         //UPDATE_SUBMISSION ( WAIT.out )
 }

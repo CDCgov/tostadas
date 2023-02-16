@@ -136,11 +136,12 @@ process SUBMISSION {
         path lifted_gff_path
         val entry_flag
         path submission_config
+        path req_col_config
 
     script:
     """
     submission.py --command submit --unique_name "${params.batch_name}" --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  \
-    --config $submission_config --test_or_prod $params.submission_prod_or_test --req_col_config $params.req_col_config
+    --config $submission_config --test_or_prod $params.submission_prod_or_test --req_col_config $req_col_config
     """
 
     output:
