@@ -140,9 +140,16 @@ process SUBMISSION {
 
     script:
     """
+    run_submission.py --submission_database $params.submission_database --unique_name $params.batch_name --lifted_fasta_path $lifted_fasta_path \
+    --validated_meta_path $validated_meta_path --lifted_gff_path $lifted_gff_path --config $submission_config --prod_or_test $params.submission_prod_or_test \
+    --req_col_config $req_col_config --update false
+    """
+    /*
+    """
     submission.py --command $params.submission_database --unique_name "${params.batch_name}" --fasta $lifted_fasta_path --metadata $validated_meta_path \
     --gff $lifted_gff_path --config $submission_config --test_or_prod $params.submission_prod_or_test --req_col_config $req_col_config
     """
+    */
 
     output:
         file '*'
