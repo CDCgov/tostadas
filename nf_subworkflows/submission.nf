@@ -26,7 +26,7 @@ workflow RUN_SUBMISSION {
         SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag, submission_config )
 
         // actual process to initiate wait 
-        WAIT ( 'duumy submission output', wait_time )
+        WAIT ( SUBMISSION.out, wait_time )
 
         //UPDATE_SUBMISSION ( WAIT.out )
 }
