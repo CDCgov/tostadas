@@ -27,8 +27,8 @@ def initialize_global_variables(config):
 #submit files to ncbi
 def submit_ftp(unique_name, config, test, overwrite):
     initialize_global_variables(config)
-    if not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), "submit.ready")):
-        open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "submit.ready"), 'w+').close()
+    if not os.path.isfile("submit.ready"):
+        open("submit.ready", 'w+').close()
     create_zip(unique_name)
     try:
         #Login to ftp
@@ -58,7 +58,7 @@ def submit_ftp(unique_name, config, test, overwrite):
             res = ftp.storbinary("STOR " + unique_name + ".zip", open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + ".zip"), 'rb'))
             if not res.startswith('226 Transfer complete'):
                 print(unique_name + ".zip upload failed.", file=sys.stderr)
-            res = ftp.storlines("STOR " + "submit.ready", open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "submit.ready"), 'rb'))
+            res = ftp.storlines("STOR " + "submit.ready", open("submit.ready", 'rb'))
             if not res.startswith('226 Transfer complete'):
                 print('submit.ready upload failed.', file=sys.stderr)
     except ftplib.all_errors as e:

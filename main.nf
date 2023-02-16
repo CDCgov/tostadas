@@ -82,7 +82,6 @@ def helpMessage() {
 include { VALIDATE_PARAMS } from "$projectDir/nf_modules/utility_mods"
 include { CLEANUP_FILES } from "$projectDir/nf_modules/utility_mods"
 include { SUBMISSION_ENTRY_CHECK } from "$projectDir/nf_modules/utility_mods"
-include { CHECK_CONFIG } from "$projectDir/nf_modules/utility_mods"
 include { GET_WAIT_TIME } from "$projectDir/nf_modules/utility_mods"
 
 // get the main processes
@@ -118,15 +117,14 @@ workflow {
     // run liftoff annotation process 
     LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
 
-    // pre submission process + get wait time (parallel)
-    CHECK_CONFIG ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, params.submission_config )
+    // pre submission process + get wait time (parallel))
     GET_WAIT_TIME ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, METADATA_VALIDATION.out.tsv_Files.collect() )
 
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
-        RUN_SUBMISSION ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, CHECK_CONFIG.out.config_signal,
+        RUN_SUBMISSION ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal,
                          METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), 
-                         LIFTOFF.out.gff.sort().flatten(), false, params.modified_config, GET_WAIT_TIME.out)
+                         LIFTOFF.out.gff.sort().flatten(), false, params.submission_config, GET_WAIT_TIME.out)
     }
 } 
 

@@ -539,12 +539,16 @@ def write_ncbi_names(unique_name, main_df):
         tmp["GISAID_sequence"] = main_df[config_dict["gisaid"]["gisaid_sample_name_col"]]
     tmp.to_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "accessions.csv"), header = True, index = False, sep = ",")
 
-def process_submission(unique_name, fasta_file, metadata_file, gff_file, config):
+def process_submission(unique_name, fasta_file, metadata_file, gff_file, config, req_col_config):
     print("\nProcessing " + unique_name + ".")
+
     initialize_global_variables(config)
-    initialize_required_columns(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config_files", "required_columns.yaml"))
+    initialize_required_columns(req_col_config)
+    
     print("Processing Files.")
+
     main_df = merge(fasta_file, metadata_file)
+
     if not isinstance(config_dict["general"]["authorset"], list):
         authorlist = []
         name_list = main_df[config_dict["general"]["authorset"]].iloc[0].split(";")

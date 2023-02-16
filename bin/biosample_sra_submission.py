@@ -26,8 +26,8 @@ def initialize_global_variables(config):
 
 def submit_ftp(unique_name, ncbi_sub_type, config, test, overwrite):
     initialize_global_variables(config)
-    if not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), "submit.ready")):
-        open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "submit.ready"), 'w+').close()
+    if not os.path.isfile("submit.ready"):
+        open("submit.ready", 'w+').close()
     try:
         #Login to ftp
         ftp = ftplib.FTP(config_dict["ncbi"]["hostname"])
@@ -68,7 +68,7 @@ def submit_ftp(unique_name, ncbi_sub_type, config, test, overwrite):
                         res = ftp.storbinary("STOR " + os.path.basename(row[config_dict["ncbi"]["SRA_file_column3"]]), open(row[config_dict["ncbi"]["SRA_file_column3"]], 'rb'))
                         if not res.startswith('226 Transfer complete'):
                             print('Submission.xml upload failed.')
-            res = ftp.storlines("STOR " + "submit.ready", open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "submit.ready"), 'rb'))
+            res = ftp.storlines("STOR " + "submit.ready", open("submit.ready", 'rb'))
             if not res.startswith('226 Transfer complete'):
                 print('submit.ready upload failed.')
     except ftplib.all_errors as e:

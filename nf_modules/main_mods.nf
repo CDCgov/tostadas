@@ -120,7 +120,7 @@ process SUBMISSION {
 
     label 'main'
     
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     if ( params.run_conda == true ) {
         try {
@@ -136,11 +136,11 @@ process SUBMISSION {
         path lifted_gff_path
         val entry_flag
         path submission_config
-        val config_signal
 
     script:
     """
-    submission.py submit --unique_name "${params.batch_name}.test" --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $submission_config --$params.submission_prod_or_test
+    submission.py --command submit --unique_name "${params.batch_name}" --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  \
+    --config $submission_config --test_or_prod $params.submission_prod_or_test --req_col_config $params.req_col_config
     """
 
     output:
@@ -164,6 +164,6 @@ process UPDATE_SUBMISSION {
 
     script:
         """
-        submission.py update_submissions
+        submission.py --command update_submissions
         """
 } 
