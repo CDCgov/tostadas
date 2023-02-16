@@ -45,16 +45,16 @@ def submit_ftp(unique_name, ncbi_sub_type, config, test, overwrite):
         #Check if report.xml exists
         if "report.xml" in ftp.nlst() and overwrite == False:
             print("Submission report exists pulling down.")
-            report_file = open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra", unique_name + "_" + ncbi_sub_type + "_report.xml"), 'wb')
+            report_file = open(os.path.join(unique_name, "biosample_sra", unique_name + "_" + ncbi_sub_type + "_report.xml"), 'wb')
             ftp.retrbinary('RETR report.xml', report_file.write, 262144)
             report_file.close()
         else:
             print("Submitting to SRA/BioSample.")
-            res = ftp.storlines("STOR " + "submission.xml", open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra", unique_name + "_" + ncbi_sub_type + "_submission.xml"), 'rb'))
+            res = ftp.storlines("STOR " + "submission.xml", open(os.path.join(unique_name, "biosample_sra", unique_name + "_" + ncbi_sub_type + "_submission.xml"), 'rb'))
             if not res.startswith('226 Transfer complete'):
                 print('Submission.xml upload failed.')
             if "sra" in ncbi_sub_type:
-                upload_files = pd.read_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra", unique_name + "_sra_path.csv"), header = 0, sep = ",")
+                upload_files = pd.read_csv(os.path.join(unique_name, "biosample_sra", unique_name + "_sra_path.csv"), header = 0, sep = ",")
                 for index, row in upload_files.iterrows():
                     if row[config_dict["ncbi"]["SRA_file_column1"]] != "" and pd.isnull(row[config_dict["ncbi"]["SRA_file_column1"]]) == False:
                         res = ftp.storbinary("STOR " + os.path.basename(row[config_dict["ncbi"]["SRA_file_column1"]]), open(row[config_dict["ncbi"]["SRA_file_column1"]], 'rb'))

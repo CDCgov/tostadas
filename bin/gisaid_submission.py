@@ -57,7 +57,7 @@ def check_authentication_date():
 def run_uploader(unique_name, config, test):
     initialize_global_variables(config)
     if test == True:
-        print("Performing test submission to CID: " + cid)
+        # print("Performing test submission to CID: " + cid)
         print("If this is not a test CID interrupt submission immediately.")
         time.sleep(10)
     print("Submitting now to gisaid.")

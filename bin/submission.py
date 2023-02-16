@@ -334,8 +334,6 @@ def pull_report_files(unique_name, files):
         open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_" + item), 'wb').write(r.content)
 
 def submit_genbank(unique_name, config, test, overwrite):
-    # initialize the global variables from the config (gets the config dict)
-    initialize_global_variables(config)
     prepare_genbank(unique_name)
     if config_dict["general"]["genbank_submission_type"].lower() == "ftp":
         if test.lower() == "production" or test.lower() == 'prod':
@@ -389,9 +387,6 @@ def submit_genbank(unique_name, config, test, overwrite):
         sys.exit(1)
 
 def submit_gisaid(unique_name, config, test):
-    # initialize the global variables from the config (gets the config dict)
-    initialize_global_variables(config)
-
     if config_dict["gisaid"]["Update_sequences_on_Genbank_auto_removal"] == True and config_dict["ncbi"]["Genbank_auto_remove_sequences_that_fail_qc"] == True:
         prepare_gisaid(unique_name)
     if test.lower() == "production" or test.lower() == 'prod':
@@ -490,8 +485,6 @@ def prepare_gisaid(unique_name):
 
 # For submitting when SRA/Biosample have to be split due to errors
 def submit_biosample_sra(unique_name, config, test, ncbi_sub_type, overwrite):
-    # initialize the global variables from the config (gets the config dict)
-    initialize_global_variables(config)
 
     if test.lower() == "production" or test.lower() == 'prod':
         test_type = False
@@ -510,9 +503,6 @@ def submit_biosample_sra(unique_name, config, test, ncbi_sub_type, overwrite):
 
 # Start submission into automated pipeline
 def start_submission(unique_name, config, test, overwrite):
-
-    # initialize the global variables from the config (gets the config dict)
-    initialize_global_variables(config)
 
     # go through the different database submissions and call the appropriate functions
     if config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True and config_dict["general"]["joint_SRA_BioSample_submission"] == True:
@@ -542,7 +532,7 @@ def get_args():
     parser.add_argument("--gff", help="GFF file for annotation")
     parser.add_argument("--fasta", help="Fasta file")
     parser.add_argument("--command", default='submit', help="whether to submit or not" \
-                        "[submit, genbank, biosample, biosample_sra, sra, gisaid, update_submissions]")
+                        "[submit, genbank, biosample, biosample_sra, sra, gisaid, update_submissions, or all]")
     return parser
 
 
@@ -560,33 +550,36 @@ def main():
             raise AssertionError(f"Missing one of the following required arguments:  \
                                 [unique_Name, config, req_col_config, test_or_prod, metadata, gff, fasta, command]")
 
-    # gets the information directly from the config
-    if args.command == 'submit':
-        submission_preparation.process_submission(args.unique_name, args.fasta, args.metadata, args.gff, args.config, args.req_col_config)
-        start_submission(args.unique_name, args.config, args.test_or_prod, args.overwrite)
+    # initialize the global variables from the config (gets the config dict)
+    initialize_global_variables(args.config)
 
-    elif args.command == "update_submissions":
+    # go through and change the config to match the passed in database submission
+    database_mappings = {
+        'genbank': 'submit_Genbank', 
+        'sra': 'submit_SRA', 
+        'gisaid': 'submit_GISAID', 
+        'biosample': 'submit_BioSample',
+        'joint_sra_biosample': 'joint_SRA_BioSample_submission'
+    }
+
+    if args.command != 'submit':
+        for key, value in database_mappings.items():
+            if args.command == key or args.command == 'all':
+                config_dict['general'][value] = True
+            else:
+                config_dict['general'][value] = False
+
+    if args.command != 'update_submissions':
+        submission_preparation.process_submission(args.unique_name, args.fasta, args.metadata, args.gff, args.config, args.req_col_config, config_dict)
+        start_submission(args.unique_name, args.config, args.test_or_prod, args.overwrite)
+    
+    elif args.command == 'update_submissions':
         update_log(args.unique_name)
-    
-    # skip the config and call the function that corresponds to the proper function
-    elif args.command == "genbank":
-        submit_genbank(unique_name=args.unique_name, config=args.config, test=args.test_or_prod, overwrite=args.overwrite)
-    
-    elif args.command == "gisaid":
-        submit_gisaid(unique_name=args.unique_name, config=args.config, test=args.test_or_prod)
-    
-    elif args.command == "biosample_sra":
-        submit_biosample_sra(unique_name=args.unique_name, config=args.config, test=args.test_or_prod, ncbi_sub_type="biosample_sra", overwrite=args.overwrite)
-    
-    elif args.command == "biosample":
-        submit_biosample_sra(unique_name=args.unique_name, config=args.config, test=args.test_or_prod, ncbi_sub_type="biosample", overwrite=args.overwrite)
-    
-    elif args.command == "sra":
-        submit_biosample_sra(unique_name=args.unique_name, config=args.config, test=args.test_or_prod, ncbi_sub_type="sra", overwrite=args.overwrite)
-    
+
     else:
         print ("Invalid option")
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()
