@@ -527,7 +527,7 @@ def get_args():
     parser.add_argument("--config", help='config file for submission')
     parser.add_argument("--req_col_config", help='config file for required columns in yaml')
     parser.add_argument("--test_or_prod", help='Perform test submission or prod')
-    parser.add_argument("--overwrite", default=True, help='Overwrite existing submission on NCBI')
+    parser.add_argument("--overwrite", default=False, help='Overwrite existing submission on NCBI')
     parser.add_argument("--metadata", help="Metadata file")
     parser.add_argument("--gff", help="GFF file for annotation")
     parser.add_argument("--fasta", help="Fasta file")

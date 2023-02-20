@@ -170,4 +170,7 @@ process UPDATE_SUBMISSION {
         """
         run_submission.py --config $submission_config --update true --unique_name $params.batch_name
         """
+    
+    output:
+        file '*'
 } 
