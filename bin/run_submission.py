@@ -42,8 +42,10 @@ class SubmitToDatabase:
         """ Function for initial submission
         """
         # make the dir for storing the command + terminal output
-        sample_name = self.parameters['validated_meta_path'].split('/')[-1].split('.')[0]
-        unique_dir_name = f"{self.parameters['unique_name']}.{sample_name}"
+        unique_dir_name, sample_name = self.get_unique_name(
+            path=self.parameters['validated_meta_path'],
+            unique_name=self.parameters['unique_name']
+        )
         os.makedirs(unique_dir_name)
 
         # get the command that will be used 
@@ -65,26 +67,21 @@ class SubmitToDatabase:
     def update_submission(self):
         """ Calls update submission
         """
-        if not os.path.isabs(self.parameters['nf_output_dir']):
-            self.parameters['nf_output_dir'] = f"{self.parameters['launch_dir']}/{self.parameters['nf_output_dir']}"
+        # get the command that will be used 
+        command = f"submission.py --command update_submissions --config {self.parameters['config']} --unique_name {self.parameters['unique_name']}"
 
-        if not os.path.isabs(self.parameters['submission_output_dir']):
-            terminal_dir = f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}/terminal_outputs",
-            command_dir = f"{self.parameters['nf_output_dir']}/{self.parameters['submission_output_dir']}/commands_used"
-        else:
-            terminal_dir = f"{self.parameters['submission_output_dir']}/terminal_outputs", 
-            command_dir = f"{self.parameters['submission_output_dir']}/commands_used"
-
-        with open(f"{command_dir}/submit_info_for_update.txt", 'w') as f:
-            f.write(f"ACTUAL COMMAND USED: python {self.parameters['submission_script']} update_submissions\n")
-            f.close()
-
-        os.system(f"python {self.parameters['submission_script']} update_submissions")
-        """
-        with open(f"{terminal_dir}/test.txt", "w+") as f:
-            subprocess.run(f"python {self.parameters['submission_script']} update_submissions", shell=true, stdout=f)
+        with open(f"update_submission_terminal_output.txt", "w+") as f:
+            subprocess.run(f"{command}", shell=True, stdout=f)
         f.close()
-        """
+
+     
+    @staticmethod
+    def get_unique_name(path, unique_name):
+         # make the dir for storing the command + terminal output
+        sample_name = path.split('/')[-1].split('.')[0]
+        unique_dir_name = f"{unique_name}.{sample_name}"
+        return unique_dir_name, sample_name
+
 
 if __name__ == "__main__":
     submit_to_database = SubmitToDatabase()

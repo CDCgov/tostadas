@@ -29,5 +29,5 @@ workflow RUN_SUBMISSION {
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.collect(), wait_time )
 
-        //UPDATE_SUBMISSION ( WAIT.out )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, meta_files )
 }

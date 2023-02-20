@@ -124,7 +124,7 @@ workflow {
     if ( params.run_submission == true ) {
         RUN_SUBMISSION ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal,
                          METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), 
-                         LIFTOFF.out.gff.sort().flatten(), false, params.submission_config, params.req_col_config, GET_WAIT_TIME.out)
+                         LIFTOFF.out.gff.sort().flatten(), false, params.submission_config, params.req_col_config, GET_WAIT_TIME.out )
     }
 } 
 
