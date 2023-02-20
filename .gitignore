@@ -106,5 +106,6 @@ tests/__pycache__
 /input_files
 /bin/config_files/mpxv_config_kk.yaml
 /bin/config_files/
-
+/bin/__pycache__/
+/bin/__pycache__
 /bin/table2asn
