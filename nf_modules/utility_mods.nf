@@ -251,13 +251,7 @@ process GET_WAIT_TIME {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process SUBMISSION_ENTRY_CHECK {
-    /*
-    input:
-        path meta_path
-        path fasta_path
-        path gff_path
-    */
-    
+
     exec:
         // check the different ways to run params
         def check = [params.run_docker, params.run_conda, params.run_singularity].count(true)
@@ -290,10 +284,38 @@ process SUBMISSION_ENTRY_CHECK {
 
     output:
         val true
-    /*
-    output:
-        path "$params.meta_path/*.tsv"
-        path "$params.fasta_path/*.fasta"
-        path "$params.gff_path/*.gff"
-    */
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            PREP SUBMISSION ENTRY INPUTS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+process PREP_SUBMISSION_ENTRY {
+
+    label 'main'
+    
+    if ( params.run_conda == true ) {
+        try {
+            conda params.env_yml
+        } catch (Exception e) {
+            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+        }
+    }
+
+    input:
+        val submission_entry_check_signal
+        path validated_meta
+        path fasta
+        path annotated_gff
+
+    script:
+        """
+        submission_utility.py --prep_submission_entry true --meta_path $validated_meta --fasta_path $fasta --gff_path $annotated_gff
+        """
+
+    output: 
+        path "tsv_submit_entry/*.tsv", emit: tsv
+        path "fasta_submit_entry/*.fasta", emit: fasta
+        path "gff_submit_entry/*.gff", emit: gff
 }

@@ -5,6 +5,7 @@ import argparse
 import os
 import glob
 import yaml
+import shutil
 
 
 def get_args():
@@ -15,6 +16,10 @@ def get_args():
     parser.add_argument("--wait_time", type=str, help='Length of time to wait in seconds')
     parser.add_argument("--config", type=str, help='Name of submission config file')
     parser.add_argument("--submission_outputs", type=str, help='Path to the submission outputs')
+    parser.add_argument("--prep_submission_entry", type=str, default='false', help='Whether or not to create directory for submission files')
+    parser.add_argument("--meta_path", type=str, help='Path to the metadata files for submission entrypoint')
+    parser.add_argument("--fasta_path", type=str, help='Path to the fasta files for submission entrypoint')
+    parser.add_argument("--gff_path", type=str, help='Path to the gff files for submission entrypoint')
     return parser
 
 
@@ -30,11 +35,19 @@ def main():
     if parameters['wait'].lower().strip() == 'true':
         time_2_wait = int(parameters['wait_time'])
         time.sleep(time_2_wait)
+
     # =================================================================================================================
-    
+    #                        CHECK IF NEED TO CREATE SUBMISSION OUTPUT DIR FOR ENTRYPOINT
     # =================================================================================================================
-    #                      MAKE SURE THAT OUTPUT DIRECTORY IS ALIGNED BETWEEN CONFIG AND ACTUAL
-    # =================================================================================================================
+    if parameters['prep_submission_entry'].lower().strip() == 'true':
+        for file_type, key in zip(['tsv', 'fasta', 'gff'], ['meta_path', 'fasta_path', 'gff_path']):
+            # make the directory to copy over the files to 
+            os.mkdir(f"{file_type}_submit_entry")
+            # copy over the files to this directory
+            for file in glob.glob(f"{parameters[key]}/*.{file_type}"):
+                shutil.copy(file, f"{file_type}_submit_entry")
+
+    """
     # modify the submission by checking the output paths are aligned + modifying for certain type of submission
     if parameters['check_submission_config'].lower().strip() == 'true':
 
@@ -47,10 +60,6 @@ def main():
             loaded_conf = yaml.safe_load(sub_config)
             if loaded_conf['general']['submission_directory'] != parameters['submission_outputs']:
                 loaded_conf['general']['submission_directory'] = parameters['submission_outputs']
-
-    # =================================================================================================================
-    #                              CHANGE THE CONFIG BASED ON THE SELECTED DATABASE
-    # =================================================================================================================
 
             # go through and change the config to match the passed in database submission
             database_mappings = {
@@ -67,13 +76,13 @@ def main():
                         loaded_conf['general'][value] = True
                     else:
                         loaded_conf['general'][value] = False
-    # =================================================================================================================
 
             # now write the new .yaml file with this updated value
             # os.mkdir('config_files')
             with open('nextflow_modified.yaml', 'w') as new_config:
                 yaml.dump(loaded_conf, new_config)
-    # =================================================================================================================
+    """
+
 
 if __name__ == "__main__":
     main()
