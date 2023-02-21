@@ -117,11 +117,12 @@ workflow {
     // run liftoff annotation process 
     LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
 
-    // pre submission process + get wait time (parallel))
-    GET_WAIT_TIME ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, METADATA_VALIDATION.out.tsv_Files.collect() )
-
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
+         // pre submission process + get wait time (parallel))
+        GET_WAIT_TIME ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, METADATA_VALIDATION.out.tsv_Files.collect() )
+
+        // call the submission workflow
         RUN_SUBMISSION ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal,
                          METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), 
                          LIFTOFF.out.gff.sort().flatten(), false, params.submission_config, params.req_col_config, GET_WAIT_TIME.out )
@@ -146,72 +147,66 @@ workflow only_cleanup_files {
 
 workflow only_validation {
     main:
-        // check parameters + cleanup the files 
-        RUN_UTILITY()
-
         // run metadata validation
-        METADATA_VALIDATION ( RUN_UTILITY.out, params.meta_path, params.fasta_path )
+        METADATA_VALIDATION ( 'dummy signal signal', params.meta_path, params.fasta_path )
 }
 
 workflow only_liftoff {
     main:
-        // check parameters + cleanup the files 
-        RUN_UTILITY()
-
         // run annotation on files
-        LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
+        LIFTOFF ( 'dummy utility signal', params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
 }
 
 workflow only_vadr {
     main:
-        // check parameters + cleanup the files 
-        RUN_UTILITY()
-
-        // get channels 
-        channels = get_channels()
-
         // run annotation on files
-        VADR ( RUN_UTILITY.out, channels['fasta'] )
+        VADR ( 'dummy utility signal', params.fasta_path )
 }
 
 workflow only_submission {
     main:
-        // check that certain paths are specified
+        // check that certain paths are specified (need to pass in for it to work)
         SUBMISSION_ENTRY_CHECK()
         
         // call the submission workflow
         RUN_SUBMISSION (
-            params.submission_only_meta,
-            params.submission_only_fasta,
-            params.submission_only_gff, 
-            true
+            SUBMISSION_ENTRY_CHECK.out,
+            'dummy liftoff signal',
+            Channel.fromPath(params.submission_only_meta).flatten(),
+            Channel.fromPath(params.submission_only_fasta).flatten(),
+            Channel.fromPath(params.submission_only_gff).flatten(), 
+            true,
+            params.submission_config,
+            params.req_col_config,
+            params.submission_wait_time
         )
 }
 
 workflow only_initial_submission {
     main:        
-        // def channels
-        channels = get_channels()
+        // check that certain paths are specified
+        SUBMISSION_ENTRY_CHECK()
 
         // call the initial submission portion only
         SUBMISSION (
+            Channel.fromPath(params.submission_only_meta).flatten(),
+            Channel.fromPath(params.submission_only_fasta).flatten(),
+            Channel.fromPath(params.submission_only_gff).flatten(), 
             true,
-            'dummy signal value', 
-            'dummy signal value', 
-            channels['valMeta'],
-            channels['lifted_Fasta'],
-            channels['lifted_Gff'],
-            true,
+            params.submission_config,
+            params.req_col_config,
         )
 }
 
 workflow only_update_submission {
     main:
         // call the check specific to submission
-        SUBMISSION_ENTRY_CHECK ( )
+        SUBMISSION_ENTRY_CHECK()
 
         // call the update submission portion only
         UPDATE_SUBMISSION (
-            SUBMISSION_ENTRY_CHECK.out
+            SUBMISSION_ENTRY_CHECK.out,
+            params.submission_config,
+            Channel.fromPath(params.submission_only_meta).flatten()
         )
 }

@@ -251,6 +251,13 @@ process GET_WAIT_TIME {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process SUBMISSION_ENTRY_CHECK {
+    /*
+    input:
+        path meta_path
+        path fasta_path
+        path gff_path
+    */
+    
     exec:
         // check the different ways to run params
         def check = [params.run_docker, params.run_conda, params.run_singularity].count(true)
@@ -283,4 +290,10 @@ process SUBMISSION_ENTRY_CHECK {
 
     output:
         val true
+    /*
+    output:
+        path "$params.meta_path/*.tsv"
+        path "$params.fasta_path/*.fasta"
+        path "$params.gff_path/*.gff"
+    */
 }
