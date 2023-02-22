@@ -294,6 +294,8 @@ process SUBMISSION_ENTRY_CHECK {
 process PREP_SUBMISSION_ENTRY {
 
     label 'main'
+
+    publishDir "$projectDir/bin", mode: 'copy', overwrite: params.overwrite_output
     
     if ( params.run_conda == true ) {
         try {
@@ -313,7 +315,7 @@ process PREP_SUBMISSION_ENTRY {
         """
         submission_utility.py --prep_submission_entry true --meta_path $validated_meta --fasta_path $fasta --gff_path $annotated_gff
         """
-
+        
     output: 
         path "tsv_submit_entry/*.tsv", emit: tsv
         path "fasta_submit_entry/*.fasta", emit: fasta
