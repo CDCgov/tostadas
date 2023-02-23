@@ -19,6 +19,7 @@ def get_args():
     parser.add_argument("--submission_database", type=str, help='Which database to submit to')
     parser.add_argument("--req_col_config", type=str, help='Path to the required columns yamls')
     parser.add_argument("--update", type=str, help='Whether to update or not')
+    parser.add_argument("--send_submission_email", type=str, help='Whether to send genbank/table2asn email or not')
     return parser
 
 class SubmitToDatabase:
@@ -37,7 +38,7 @@ class SubmitToDatabase:
             self.initial_submission()
         elif self.parameters['update'].lower() == 'true':
             self.update_submission()
-
+ 
     def initial_submission(self):
         """ Function for initial submission
         """
@@ -51,7 +52,7 @@ class SubmitToDatabase:
         # get the command that will be used 
         command = f"submission.py --command {self.parameters['submission_database']} --unique_name {self.parameters['unique_name']} --fasta {self.parameters['lifted_fasta_path']} \
                   --metadata {self.parameters['validated_meta_path']} --gff {self.parameters['lifted_gff_path']} --config {self.parameters['config']} --test_or_prod {self.parameters['prod_or_test']} \
-                  --req_col_config {self.parameters['req_col_config']}"
+                  --req_col_config {self.parameters['req_col_config']} --send_submission_email {self.parameters['send_submission_email']}"
 
         # open a txt file and write the command 
         with open(f"{unique_dir_name}/{sample_name}_initial_submit_info", "w") as f:
