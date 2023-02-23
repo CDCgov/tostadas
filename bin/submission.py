@@ -17,6 +17,12 @@ from Bio import SeqIO
 import xml.etree.ElementTree as ET
 import subprocess as subprocess
 
+# email related imports (genbank submission + table2asn for genbank_submission_type)
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+
 config_dict = dict()
 
 #Initialize config file
@@ -333,7 +339,7 @@ def pull_report_files(unique_name, files):
         r = requests.get(api_url.replace("FILE_ID", files[item]), allow_redirects=True)
         open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_" + item), 'wb').write(r.content)
 
-def submit_genbank(unique_name, config, test, overwrite):
+def submit_genbank(unique_name, config, test, overwrite, send_email):
     prepare_genbank(unique_name)
     if config_dict["general"]["genbank_submission_type"].lower() == "ftp":
         if test.lower() == "production" or test.lower() == 'prod':
@@ -364,22 +370,32 @@ def submit_genbank(unique_name, config, test, overwrite):
             print(proc.stdout)
             print(proc.stderr)
             sys.exit(1)
-        import smtplib
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        from email.mime.application import MIMEApplication
-        msg = MIMEMultipart('multipart')
-        msg['Subject'] = unique_name + " table2asn"
-        from_email = "submission_prep@cdc.gov"
-        to_email = ["wgg9@cdc.gov", "bun3@cdc.gov", "psv4@cdc.gov"]
-        msg['From'] = from_email
-        msg['To'] = ", ".join(to_email)
-        with open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_ncbi.sqn"), 'rb') as file_input:
-            part = MIMEApplication(file_input.read(), Name=unique_name + "_ncbi.sqn")
-        part['Content-Disposition'] = "attachment; filename=" + unique_name + "_ncbi.sqn"
-        msg.attach(part)
-        s = smtplib.SMTP('localhost')
-        s.sendmail(from_email, to_email, msg.as_string())
+        
+        # check if the send_submission_email param is true or false (if true, send email based on config)
+        if send_email.lower().strip() == 'true':
+
+            # acquire / place necessary information into dict for message
+            msg = MIMEMultipart('multipart')
+            msg['Subject'] = unique_name + " table2asn"
+            msg['From'] = "submission_prep@cdc.gov"
+            recipients = [config_dict['general'][field] for field in config_dict['general'].keys() if 'notif_email_recipient' in field]
+
+            # check that the recipients is not empty, if it is then do not send email
+            if recipients:
+                # join the recipients together via comma 
+                msg['To'] = ", ".join(recipients)
+
+                # attach some information to the email
+                with open(os.path.join(unique_name, "genbank", unique_name + "_ncbi.sqn"), 'rb') as file_input:
+                    part = MIMEApplication(file_input.read(), Name=unique_name + "_ncbi.sqn")
+                    part['Content-Disposition'] = "attachment; filename=" + unique_name + "_ncbi.sqn"
+                    msg.attach(part)
+                file_input.close()
+
+                # send out the email
+                s = smtplib.SMTP('localhost')
+                s.sendmail(msg['From'], msg['To'], msg.as_string())
+
         curr_time = datetime.now()
         update_csv(unique_name=unique_name, config=config, type=test, Genbank_submission_id="table2asn", Genbank_submission_date=curr_time.strftime("%-m/%-d/%Y"), Genbank_status="table2asn")
     else:
@@ -502,7 +518,7 @@ def submit_biosample_sra(unique_name, config, test, ncbi_sub_type, overwrite):
         update_csv(unique_name=unique_name,config=config,type=test,SRA_submission_id="submitted",SRA_status="submitted",SRA_submission_date=curr_time.strftime("%-m/%-d/%Y"))
 
 # Start submission into automated pipeline
-def start_submission(unique_name, config, test, overwrite):
+def start_submission(unique_name, config, test, overwrite, send_email):
 
     if config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True and config_dict["general"]["joint_SRA_BioSample_submission"] == True:
         submit_biosample_sra(unique_name, config, test, "biosample_sra", overwrite)
@@ -514,7 +530,7 @@ def start_submission(unique_name, config, test, overwrite):
     elif config_dict["general"]["submit_SRA"] == True:
         submit_biosample_sra(unique_name, config, test, "sra", overwrite)
     elif config_dict["general"]["submit_Genbank"] == True:
-        submit_genbank(unique_name=unique_name, config=config, test=test, overwrite=overwrite)
+        submit_genbank(unique_name=unique_name, config=config, test=test, overwrite=overwrite, send_email=send_email)
     elif config_dict["general"]["submit_GISAID"] == True:
         submit_gisaid(unique_name=unique_name, config=config, test=test)
     """
@@ -539,6 +555,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--unique_name", help='unique identifier')
     parser.add_argument("--config", help='config file for submission')
+    parser.add_argument("--send_email", help='whether or not to send email')
     parser.add_argument("--req_col_config", help='config file for required columns in yaml')
     parser.add_argument("--test_or_prod", help='Perform test submission or prod')
     parser.add_argument("--overwrite", default=False, help='Overwrite existing submission on NCBI')
@@ -559,7 +576,7 @@ def main():
     if args.command != 'update_submissions':
         args.unique_name = args.unique_name + '.' + str(args.metadata.split('/')[-1].split('.')[0])
         try:
-            assert all([args.unique_name, args.config, args.req_col_config, args.test_or_prod, args.metadata, args.gff, args.fasta, args.command])
+            assert all([args.unique_name, args.config, args.req_col_config, args.test_or_prod, args.metadata, args.gff, args.fasta, args.command, args.send_email])
         except AssertionError:
             raise AssertionError(f"Missing one of the following required arguments:  \
                                 [unique_Name, config, req_col_config, test_or_prod, metadata, gff, fasta, command]")
