@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Adapted from Perl scripts by MH Seabolt and Python scripts by J Heuser
 # Refactored and updated by AK Gupta and KA O'Connell
 
@@ -188,7 +190,7 @@ class AnnotationPrep:
 		self.load_meta()
 		# get the length of sequences for each sample
 		self.get_seq_lens()
-
+ 
 	def split_fasta(self):
 		"""
 		Parses fasta file and writes it
