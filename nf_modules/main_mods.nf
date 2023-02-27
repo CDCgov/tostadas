@@ -142,16 +142,18 @@ process SUBMISSION {
     """
     run_submission.py --submission_database $params.submission_database --unique_name $params.batch_name --lifted_fasta_path $lifted_fasta_path \
     --validated_meta_path $validated_meta_path --lifted_gff_path $lifted_gff_path --config $submission_config --prod_or_test $params.submission_prod_or_test \
-    --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email
+    --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email --sample_name ${validated_meta_path.getSimpleName()}
     """
 
     output:
-        file '*'
+        file "$params.batch_name.${validated_meta_path.getSimpleName()}"
 }
 
 process UPDATE_SUBMISSION {
 
     label 'main'
+
+    publishDir "$params.output_dir/$params.submission_output_dir/$params.batch_name.${validated_meta_path.getSimpleName()}", mode: 'copy', overwrite: params.overwrite_output
     
     if ( params.run_conda == true ) {
         try {
@@ -168,7 +170,8 @@ process UPDATE_SUBMISSION {
 
     script:
         """
-        run_submission.py --config $submission_config --update true --unique_name $params.batch_name
+        run_submission.py --config $submission_config --update true --unique_name $params.batch_name --validated_meta_path $validated_meta_path \
+        --sample_name ${validated_meta_path.getSimpleName()}
         """
     
     output:

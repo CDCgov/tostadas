@@ -34,7 +34,6 @@ def initialize_global_variables(config):
         with open(config, "r") as f:
             global config_dict
             config_dict = yaml.safe_load(f)
-            # config_dict['general']['submission_directory'] = submission_output_dir
         if isinstance(config_dict, dict) == False:
             print("Config Error: Config file structure is incorrect.", file=sys.stderr)
             sys.exit(1)
@@ -43,12 +42,12 @@ def initialize_global_variables(config):
 def biosample_sra_process_report(unique_name, ncbi_sub_type):
     submission_status = ""
     submission_id = "pending"
-    df = pd.read_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "accessions.csv"), header = 0, dtype = str, sep = ",")
+    df = pd.read_csv(os.path.join(unique_name, "accessions.csv"), header = 0, dtype = str, sep = ",")
     if "BioSample_accession" not in df and "biosample" in ncbi_sub_type:
         df["BioSample_accession"] = ""
     if "SRA_accession" not in df and "sra" in ncbi_sub_type:
         df["SRA_accession"] = ""
-    with open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra", unique_name + "_" + ncbi_sub_type + "_report.xml"), 'r') as file:
+    with open(os.path.join(unique_name, "biosample_sra", unique_name + "_" + ncbi_sub_type + "_report.xml"), 'r') as file:
         line = file.readline()
         while line:
             if "<SubmissionStatus status=" in line:
@@ -60,7 +59,7 @@ def biosample_sra_process_report(unique_name, ncbi_sub_type):
             if "<Object target_db=\"SRA\"" in line and "accession=" in line:
                 df.loc[df.SRA_sequence == (line.split("spuid=\"")[-1].split("\" spuid_namespace=")[0]), "SRA_accession"] = line.split("accession=\"")[-1].split("\" spuid=")[0]
             line = file.readline()
-    df.to_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "accessions.csv"), header = True, index = False, sep = ",")
+    df.to_csv(os.path.join(unique_name, "accessions.csv"), header = True, index = False, sep = ",")
     return submission_id, submission_status
 
 #Update log csv
@@ -74,7 +73,7 @@ def update_csv(unique_name,config,type,Genbank_submission_id=None,Genbank_submis
     if df['name'].str.contains(unique_name).any():
         df_partial = df.loc[df['name'] == unique_name]
         df.loc[df_partial.index.values, 'update_date'] = curr_time.strftime("%-m/%-d/%Y")
-        df.loc[df_partial.index.values, 'directory'] = os.path.join(config_dict["general"]["submission_directory"], unique_name)
+        df.loc[df_partial.index.values, 'directory'] = os.path.join(unique_name)
         df.loc[df_partial.index.values, 'config'] = config
         df.loc[df_partial.index.values, 'type'] = type
         if Genbank_submission_id is not None:
@@ -107,7 +106,7 @@ def update_csv(unique_name,config,type,Genbank_submission_id=None,Genbank_submis
                     'Genbank_submission_id':Genbank_submission_id,
                     'Genbank_submission_date':Genbank_submission_date,
                     'Genbank_status':Genbank_status,
-                    'directory':os.path.join(config_dict["general"]["submission_directory"], unique_name),
+                    'directory':os.path.join(unique_name),
                     'config':config,
                     'type':type,
                     "SRA_submission_id":SRA_submission_id,
@@ -156,7 +155,7 @@ def update_log(unique_name):
                     #Check if report.xml exists
                     if "report.xml" in ftp.nlst():
                         print("Report exists pulling down")
-                        report_file = open(os.path.join(config_dict["general"]["submission_directory"], row["name"], "biosample_sra", row["name"] + "_biosample_sra_report.xml"), 'wb')
+                        report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_biosample_sra_report.xml"), 'wb')
                         ftp.retrbinary('RETR report.xml', report_file.write, 262144)
                         report_file.close()
                         report_generated = True
@@ -193,7 +192,7 @@ def update_log(unique_name):
                     #Check if report.xml exists
                     if "report.xml" in ftp.nlst():
                         print("Report exists pulling down")
-                        report_file = open(os.path.join(config_dict["general"]["submission_directory"], row["name"], "biosample_sra", row["name"] + "_biosample_report.xml"), 'wb')
+                        report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_biosample_report.xml"), 'wb')
                         ftp.retrbinary('RETR report.xml', report_file.write, 262144)
                         report_file.close()
                         report_generated = True
@@ -231,7 +230,7 @@ def update_log(unique_name):
                     #Check if report.xml exists
                     if "report.xml" in ftp.nlst():
                         print("Report exists pulling down")
-                        report_file = open(os.path.join(config_dict["general"]["submission_directory"], row["name"], "biosample_sra", row["name"] + "_sra_report.xml"), 'wb')
+                        report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_sra_report.xml"), 'wb')
                         ftp.retrbinary('RETR report.xml', report_file.write, 262144)
                         report_file.close()
                         report_generated = True
@@ -269,7 +268,7 @@ def update_log(unique_name):
                     #Check if report.xml exists
                     if "report.xml" in ftp.nlst():
                         print("Report exists pulling down")
-                        report_file = open(os.path.join(config_dict["general"]["submission_directory"], row["name"], "genbank", row["name"] + "_report.xml"), 'wb')
+                        report_file = open(os.path.join(row["name"], "genbank", row["name"] + "_report.xml"), 'wb')
                         ftp.retrbinary('RETR report.xml', report_file.write, 262144)
                         report_file.close()
                         report_generated = True
@@ -323,21 +322,21 @@ def read_log(unique_name, file):
 #Removes file if it is empty
 def clean_failed_log(unique_name, number_failed, already_submitted):
     if number_failed == 0 or number_failed == len(already_submitted):
-        if os.path.exists(os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + "_failed_meta.csv")):
+        if os.path.exists(os.path.join(unique_name, "gisaid", unique_name + "_failed_meta.csv")):
             print("No failed sequences.\nCleaning up files.")
-            os.remove(os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + "_failed_meta.csv"))
+            os.remove(os.path.join(unique_name, "gisaid", unique_name + "_failed_meta.csv"))
     else:
-        df = pd.read_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + "_failed_meta.csv"), header = 0, dtype = str)
+        df = pd.read_csv(os.path.join(unique_name, "gisaid", unique_name + "_failed_meta.csv"), header = 0, dtype = str)
         clean_df = df[~df.covv_virus_name.isin(already_submitted)]
-        clean_df.to_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + "_failed_meta.csv"), header = True, index = False)
-        print("Error: Sequences failed please check: " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + ".log"))
+        clean_df.to_csv(os.path.join(unique_name, "gisaid", unique_name + "_failed_meta.csv"), header = True, index = False)
+        print("Error: Sequences failed please check: " + os.path.join(unique_name, "gisaid", unique_name + ".log"))
 
 #Pull down report files
 def pull_report_files(unique_name, files):
     api_url = config_dict["ncbi"]["api_url"]
     for item in files.keys():
         r = requests.get(api_url.replace("FILE_ID", files[item]), allow_redirects=True)
-        open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_" + item), 'wb').write(r.content)
+        open(os.path.join(unique_name, "genbank", unique_name + "_" + item), 'wb').write(r.content)
 
 def submit_genbank(unique_name, config, test, overwrite, send_email):
     prepare_genbank(unique_name)
@@ -352,24 +351,25 @@ def submit_genbank(unique_name, config, test, overwrite, send_email):
     elif config_dict["general"]["genbank_submission_type"].lower() == "table2asn":
         if config_dict["genbank_cmt_metadata"]["create_cmt"] == True:
             command = (os.path.join(os.path.dirname(os.path.abspath(__file__)), "table2asn") + " " + config_dict["ncbi"]["tbl2asn_flags"] +
-                " -t " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_authorset.sbt") +
-                " -w " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_comment.cmt") +
-                " -i " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_ncbi.fsa") +
-                " -src-file " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_source.src") +
-                " -f " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + ".gff"))
-            cmt = pd.read_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_comment.cmt"), header = 0, sep = "\t")
-            cmt.to_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_comment.cmt"), header = True, index = False, sep = "\t")
+                " -t " + os.path.join(unique_name, "genbank", unique_name + "_authorset.sbt") +
+                " -w " + os.path.join(unique_name, "genbank", unique_name + "_comment.cmt") +
+                " -i " + os.path.join(unique_name, "genbank", unique_name + "_ncbi.fsa") +
+                " -src-file " + os.path.join(unique_name, "genbank", unique_name + "_source.src") +
+                " -f " + os.path.join(unique_name, "genbank", unique_name + ".gff"))
+            cmt = pd.read_csv(os.path.join(unique_name, "genbank", unique_name + "_comment.cmt"), header = 0, sep = "\t")
+            cmt.to_csv(os.path.join(unique_name, "genbank", unique_name + "_comment.cmt"), header = True, index = False, sep = "\t")
         else:
             command = (os.path.join(os.path.dirname(os.path.abspath(__file__)), "table2asn") + " " + config_dict["ncbi"]["tbl2asn_flags"] +
-                " -t " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_authorset.sbt") +
-                " -i " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_ncbi.fsa") +
-                " -f " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + ".gff"))
+                " -t " + os.path.join(unique_name, "genbank", unique_name + "_authorset.sbt") +
+                " -i " + os.path.join(unique_name, "genbank", unique_name + "_ncbi.fsa") +
+                " -f " + os.path.join(unique_name, "genbank", unique_name + ".gff"))
+        print('TEST')
         proc = subprocess.run(command, env = os.environ.copy(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
         print(proc.args)
         if proc.returncode != 0:
             print(proc.stdout)
             print(proc.stderr)
-            sys.exit(1)
+            # sys.exit(1)
         
         # check if the send_submission_email param is true or false (if true, send email based on config)
         if send_email.lower().strip() == 'true':
@@ -383,7 +383,10 @@ def submit_genbank(unique_name, config, test, overwrite, send_email):
             # check that the recipients is not empty, if it is then do not send email
             if recipients:
                 # join the recipients together via comma 
-                msg['To'] = ", ".join(recipients)
+                if len(recipients) > 1:
+                    msg['To'] = ", ".join(recipients)
+                else:
+                    msg['To'] = recipients
 
                 # attach some information to the email
                 with open(os.path.join(unique_name, "genbank", unique_name + "_ncbi.sqn"), 'rb') as file_input:
@@ -410,13 +413,13 @@ def submit_gisaid(unique_name, config, test):
     else:
         test_type = True
     gisaid_submission.run_uploader(unique_name=unique_name, config=config, test=test_type)
-    submitted, failed = read_log(unique_name, os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + ".log"))
+    submitted, failed = read_log(unique_name, os.path.join(unique_name, "gisaid", unique_name + ".log"))
     curr_time = datetime.now()
     update_csv(unique_name=unique_name, config=config, type=test, GISAID_submission_date=curr_time.strftime("%-m/%-d/%Y"),GISAID_submitted_total=submitted,GISAID_failed_total=failed)
 
 #Read xml report and check status of report
 def genbank_process_report(unique_name):
-    tree = ET.parse(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_report.xml"))
+    tree = ET.parse(os.path.join(unique_name, "genbank", unique_name + "_report.xml"))
     root = tree.getroot()
     if root.get('submission_id') == None:
         return "error", "error"
@@ -436,7 +439,7 @@ def genbank_process_report(unique_name):
             elif elem.attrib["status"] == "processed-ok":
                 status = "processed-ok"
             else:
-                print("Possible Error check " + os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_report.xml"))
+                print("Possible Error check " + os.path.join(unique_name, "genbank", unique_name + "_report.xml"))
                 status = "error"
         if "file_id" in elem.attrib.keys():
             files[elem.attrib['file_path']] = elem.attrib['file_id']
@@ -446,10 +449,11 @@ def genbank_process_report(unique_name):
 
 #Add biosample/SRA data to genbank submissions
 def prepare_genbank(unique_name):
-    accessions = pd.read_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "accessions.csv"), header = 0, dtype=str, sep=',')
-    df = pd.read_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_source.src"), header = 0, dtype=str, sep='\t')
+    accessions = pd.read_csv(os.path.join(unique_name, "accessions.csv"), header = 0, dtype=str, sep=',')
+    df = pd.read_csv(os.path.join(unique_name, "genbank", unique_name + "_source.src"), header = 0, dtype=str, sep='\t')
     if config_dict["ncbi"]['BioProject'] != "":
         df['BioProject'] = config_dict["ncbi"]['BioProject']
+    print('TEST')
     df = df.merge(accessions, how='left', left_on='sequence_ID', right_on='Genbank_sequence')
     potential_columns = ["SRA_sequence", "BioSample_sequence", "Genbank_sequence", "Genbank_accession", "GISAID_sequence"]
     drop_columns = []
@@ -468,16 +472,16 @@ def prepare_genbank(unique_name):
     col_names.remove("sequence_ID")
     col_names.insert(0, "sequence_ID")
     df = df[col_names]
-    df.to_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank", unique_name + "_source.src"), header = True, index = False, sep = '\t')
+    df.to_csv(os.path.join(unique_name, "genbank", unique_name + "_source.src"), header = True, index = False, sep = '\t')
 
 # If removing GISAID sequences based on Genbank Auto-remove
 def prepare_gisaid(unique_name):
     if config_dict["gisaid"]["Update_sequences_on_Genbank_auto_removal"] != True:
         return
-    accessions = pd.read_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "accessions.csv"), header = 0, dtype=str, sep=',')
+    accessions = pd.read_csv(os.path.join(unique_name, "accessions.csv"), header = 0, dtype=str, sep=',')
     if "Genbank_accession" not in accessions:
         return
-    df = pd.read_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + "_gisaid.csv"), header = 0, dtype=str, sep=',')
+    df = pd.read_csv(os.path.join(unique_name, "gisaid", unique_name + "_gisaid.csv"), header = 0, dtype=str, sep=',')
     df = df.merge(accessions, how='left', left_on='GISAID_sequence', right_on='covv_virus_name')
     potential_columns = ["SRA_sequence", "BioSample_sequence", "Genbank_sequence", "BioSample_accession", "SRA_accession", "GISAID_sequence", "Genbank_accession"]
     drop_columns = []
@@ -487,16 +491,16 @@ def prepare_gisaid(unique_name):
     df = df.dropna(subset=["Genbank_accession"])
     df = df[df.Genbank_accession != ""]
     df = df.drop(columns=[drop_columns])
-    shutil.copy2(os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + "_gisaid.csv"), os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", "old_" + unique_name + "_gisaid.csv"))
-    df.to_csv(os.path.join(config_dict["general"]["submission_directory"],unique_name,"gisaid",unique_name + "_gisaid.csv"), na_rep="Unknown", index = False, header = True, quoting=csv.QUOTE_ALL)
+    shutil.copy2(os.path.join(unique_name, "gisaid", unique_name + "_gisaid.csv"), os.path.join(unique_name, "gisaid", "old_" + unique_name + "_gisaid.csv"))
+    df.to_csv(os.path.join(unique_name,"gisaid",unique_name + "_gisaid.csv"), na_rep="Unknown", index = False, header = True, quoting=csv.QUOTE_ALL)
     keep_records = []
-    with open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + "_gisaid.fsa"), "r") as fsa:
+    with open(os.path.join(unique_name, "gisaid", unique_name + "_gisaid.fsa"), "r") as fsa:
         records = SeqIO.parse(fsa, "fasta")
         for record in records:
             if record.id in df["covv_virus_name"]:
                 keep_records.append(record)
-    shutil.copy2(os.path.join(config_dict["general"]["submission_directory"],unique_name,"gisaid",unique_name + "_gisaid.fsa"), os.path.join(config_dict["general"]["submission_directory"],unique_name,"gisaid", "old_" + unique_name + "_gisaid.fsa"))
-    with open(os.path.join(config_dict["general"]["submission_directory"],unique_name,"gisaid",unique_name + "_gisaid.fsa"), "w+") as fasta_file:
+    shutil.copy2(os.path.join(unique_name,"gisaid",unique_name + "_gisaid.fsa"), os.path.join(unique_name,"gisaid", "old_" + unique_name + "_gisaid.fsa"))
+    with open(os.path.join(unique_name,"gisaid",unique_name + "_gisaid.fsa"), "w+") as fasta_file:
         SeqIO.write(keep_records, fasta_file, "fasta")
 
 # For submitting when SRA/Biosample have to be split due to errors
@@ -530,6 +534,7 @@ def start_submission(unique_name, config, test, overwrite, send_email):
     elif config_dict["general"]["submit_SRA"] == True:
         submit_biosample_sra(unique_name, config, test, "sra", overwrite)
     elif config_dict["general"]["submit_Genbank"] == True:
+        print('WORKED')
         submit_genbank(unique_name=unique_name, config=config, test=test, overwrite=overwrite, send_email=send_email)
     elif config_dict["general"]["submit_GISAID"] == True:
         submit_gisaid(unique_name=unique_name, config=config, test=test)
@@ -605,6 +610,7 @@ def main():
         config_dict['general']['submit_BioSample'] = True
 
     if args.command != 'update_submissions':
+        print('WORKED')
         submission_preparation.process_submission(args.unique_name, args.fasta, args.metadata, args.gff, args.config, args.req_col_config, config_dict)
         start_submission(args.unique_name, args.config, args.test_or_prod, args.overwrite)
     
