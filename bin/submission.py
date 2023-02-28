@@ -16,6 +16,7 @@ import yaml
 from Bio import SeqIO
 import xml.etree.ElementTree as ET
 import subprocess as subprocess
+import numpy as np
 
 # email related imports (genbank submission + table2asn for genbank_submission_type)
 import smtplib
@@ -124,134 +125,142 @@ def update_csv(unique_name,config,type,Genbank_submission_id=None,Genbank_submis
         df = pd.concat([df, new_df], axis=0, ignore_index=True)
     df.to_csv(f"{unique_name}/upload_log.csv", header = True, index = False, sep = ",")
 
+
+def check_if_update(df, database_name):
+    not_good_vals = [None, np.nan, '', 0, '0']
+    if database_name == 'GISAID':
+        if (df[f"{database_name}_submitted_total"].tolist()[0] not in not_good_vals) & (df[f"{database_name}_failed_total"].tolist()[0] not in not_good_vals) & (df['type'].tolist()[0].lower().strip() != 'test'):
+            update_status = True
+        else:
+            update_status = False
+    else:
+        if (df[f"{database_name}_status"].tolist()[0] not in not_good_vals) & (df[f"{database_name}_status"].tolist()[0] != 'processed-ok'):
+            update_status = True
+        else:
+            update_status = False
+    return update_status
+
 # Update log status
-# Pulls all entries that do not say processed and updates status
 def update_log(unique_name):
+
+    # find the upload_log file
     if os.path.isfile(f"{unique_name}/upload_log.csv"):
         main_df = pd.read_csv(f"{unique_name}/upload_log.csv", header = 0, dtype = str, sep = ",")
     else:
-        print("Error: Either a submission has not been made or upload_log.csv has been moved from " + os.path.dirname(os.path.abspath(__file__)), file=sys.stderr)
-    # Biosample/SRA
-    df = main_df.loc[(main_df['BioSample_status'] != None) & (main_df['BioSample_status'] != "processed-ok") & (main_df['SRA_status'] != None) & (main_df['SRA_status'] != "processed-ok") & (main_df['BioSample_status'] != "") & (main_df['SRA_status'] != "")]
-    if len(df.index) != 0:
-        for index, row in df.iterrows():
-            report_generated = False
-            try:
-                initialize_global_variables(row["config"], submission_output_dir)
-                if config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True and config_dict["general"]["joint_SRA_BioSample_submission"] == True:
-                    print("\nUpdating: " + row["name"] + " BioSample/SRA")
-                    #Login to ftp
-                    ftp = ftplib.FTP(config_dict["ncbi"]["hostname"])
-                    ftp.login(user=config_dict["ncbi"]["username"], passwd = config_dict["ncbi"]["password"])
-                    if config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"] != "":
-                        ftp.cwd(config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"])
-                    ftp.cwd(row["type"])
-                    submission_folder = row['name'] + "_biosample_sra"
-                    #Check if submission folder already exists
-                    if submission_folder not in ftp.nlst():
-                        print("submission doesn't exist")
-                        continue
-                    ftp.cwd(submission_folder)
-                    #Check if report.xml exists
-                    if "report.xml" in ftp.nlst():
-                        print("Report exists pulling down")
-                        report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_biosample_sra_report.xml"), 'wb')
-                        ftp.retrbinary('RETR report.xml', report_file.write, 262144)
-                        report_file.close()
-                        report_generated = True
-            except ftplib.all_errors as e:
-                print('FTP error:', e)
-            if report_generated == True:
-                submission_id, submission_status = biosample_sra_process_report(row["name"], "biosample_sra")
-                update_csv(unique_name=row['name'],config=row["config"],type=row["type"],Biosample_submission_id=submission_id,Biosample_status=submission_status,SRA_submission_id=submission_id,SRA_status=submission_status)
-                if submission_status == "processed-ok" and config_dict["general"]["submit_Genbank"] == True and (row["Genbank_status"] == None or row["Genbank_status"] == "" or pd.isnull(row["Genbank_status"])):
-                    print("Submitting to Genbank: " + row["name"])
-                    submit_genbank(row["name"], row["config"], row["type"], False)
-    #Check BioSample
-    main_df = pd.read_csv(f"{unique_name}/upload_log.csv", header = 0, dtype = str, sep = ",")
-    df = main_df.loc[(main_df['BioSample_status'] != None) & (main_df['BioSample_status'] != "processed-ok") & (main_df['BioSample_status'] != "")]
-    if len(df.index) != 0:
-        for index, row in df.iterrows():
+        print("Error: Either a submission has not been made or upload_log.csv has been moved from " + f"{unique_name}/upload_log.csv", file=sys.stderr)
+        return
+        
+    # get the update status for biosample, sra, and genbank
+    update_status_biosample = check_if_update(df=main_df, database_name='BioSample')
+    update_status_sra = check_if_update(df=main_df, database_name='SRA')
+    update_status_genbank = check_if_update(df=main_df, database_name='Genbank')
+    update_status_gisaid = check_if_update(df=main_df, database_name='GISAID')
+
+    if all([update_status_biosample, update_status_sra]):
+        for index, row in main_df.iterrows():
             report_generated = False
             try:
                 initialize_global_variables(row["config"])
-                if config_dict["general"]["submit_BioSample"] == True:
-                    print("\nUpdating: " + row["name"] + " BioSample")
-                    #Login to ftp
-                    ftp = ftplib.FTP(config_dict["ncbi"]["hostname"])
-                    ftp.login(user=config_dict["ncbi"]["username"], passwd = config_dict["ncbi"]["password"])
-                    if config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"] != "":
-                        ftp.cwd(config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"])
-                    ftp.cwd(row["type"])
-                    submission_folder = row['name'] + "_biosample"
-                    #Check if submission folder already exists
-                    if submission_folder not in ftp.nlst():
-                        print("submission doesn't exist")
-                        continue
-                    ftp.cwd(submission_folder)
-                    #Check if report.xml exists
-                    if "report.xml" in ftp.nlst():
-                        print("Report exists pulling down")
-                        report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_biosample_report.xml"), 'wb')
-                        ftp.retrbinary('RETR report.xml', report_file.write, 262144)
-                        report_file.close()
-                        report_generated = True
+                print("\nUpdating: " + row["name"] + " BioSample/SRA")
+                #Login to ftp
+                ftp = ftplib.FTP(config_dict["ncbi"]["hostname"])
+                ftp.login(user=config_dict["ncbi"]["username"], passwd = config_dict["ncbi"]["password"])
+                if config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"] != "":
+                    ftp.cwd(config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"])
+                ftp.cwd(row["type"])
+                submission_folder = row['name'] + "_biosample_sra"
+                #Check if submission folder already exists
+                if submission_folder not in ftp.nlst():
+                    print("submission doesn't exist")
+                    continue
+                ftp.cwd(submission_folder)
+                #Check if report.xml exists
+                if "report.xml" in ftp.nlst():
+                    print("Report exists pulling down")
+                    report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_biosample_sra_report.xml"), 'wb')
+                    ftp.retrbinary('RETR report.xml', report_file.write, 262144)
+                    report_file.close()
+                    report_generated = True
             except ftplib.all_errors as e:
                 print('FTP error:', e)
-            if report_generated == True:
-                submission_id, submission_status = biosample_sra_process_report(row["name"], "biosample")
-                update_csv(unique_name=row['name'],config=row["config"],type=row["type"],Biosample_submission_id=submission_id,Biosample_status=submission_status)
-                print("Status: " + submission_status)
-                if submission_status == "processed-ok" and config_dict["general"]["submit_Genbank"] == True and (row["Genbank_status"] == None or row["Genbank_status"] == "" or pd.isnull(row["Genbank_status"])):
-                    print("Submitting to Genbank: " + row["name"])
-                    submit_genbank(row["name"], row["config"], row["type"], True)
+        if report_generated == True:
+            submission_id, submission_status = biosample_sra_process_report(row["name"], "biosample_sra")
+            update_csv(unique_name=row['name'],config=row["config"],type=row["type"],Biosample_submission_id=submission_id,Biosample_status=submission_status,SRA_submission_id=submission_id,SRA_status=submission_status)
+            print("Status: " + submission_status)
+            
+    #Check BioSample
+    if update_status_biosample is True:
+        for index, row in main_df.iterrows():
+            report_generated = False
+            try:
+                initialize_global_variables(row["config"])
+                print("\nUpdating: " + row["name"] + " BioSample")
+                #Login to ftp
+                ftp = ftplib.FTP(config_dict["ncbi"]["hostname"])
+                ftp.login(user=config_dict["ncbi"]["username"], passwd = config_dict["ncbi"]["password"])
+                if config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"] != "":
+                    ftp.cwd(config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"])
+                ftp.cwd(row["type"])
+                submission_folder = row['name'] + "_biosample"
+                #Check if submission folder already exists
+                if submission_folder not in ftp.nlst():
+                    print("submission doesn't exist")
+                    continue
+                ftp.cwd(submission_folder)
+                #Check if report.xml exists
+                if "report.xml" in ftp.nlst():
+                    print("Report exists pulling down")
+                    report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_biosample_report.xml"), 'wb')
+                    ftp.retrbinary('RETR report.xml', report_file.write, 262144)
+                    report_file.close()
+                    report_generated = True
+            except ftplib.all_errors as e:
+                print('FTP error:', e)
+        if report_generated == True:
+            submission_id, submission_status = biosample_sra_process_report(row["name"], "biosample")
+            update_csv(unique_name=row['name'],config=row["config"],type=row["type"],Biosample_submission_id=submission_id,Biosample_status=submission_status)
+            print("Status: " + submission_status)
+
     #Check SRA
-    main_df = pd.read_csv(f"{unique_name}/upload_log.csv", header = 0, dtype = str, sep = ",")
-    df = main_df.loc[(main_df['SRA_status'] != None) & (main_df['SRA_status'] != "processed-ok") & (main_df['SRA_status'] != "")]
-    if len(df.index) != 0:
-        for index, row in df.iterrows():
+    if update_status_sra is True:
+        for index, row in main_df.iterrows():
             report_generated = False
             try:
-                initialize_global_variables(row["config"], submission_output_dir)
-                if config_dict["general"]["submit_SRA"] == True:
-                    print("\nUpdating: " + row["name"] + " SRA")
-                    #Login to ftp
-                    ftp = ftplib.FTP(config_dict["ncbi"]["hostname"])
-                    ftp.login(user=config_dict["ncbi"]["username"], passwd = config_dict["ncbi"]["password"])
-                    if config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"] != "":
-                        ftp.cwd(config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"])
-                    ftp.cwd(row["type"])
-                    submission_folder = row['name'] + "_sra"
-                    #Check if submission folder already exists
-                    if submission_folder not in ftp.nlst():
-                        print("submission doesn't exist")
-                        continue
-                    ftp.cwd(submission_folder)
-                    #Check if report.xml exists
-                    if "report.xml" in ftp.nlst():
-                        print("Report exists pulling down")
-                        report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_sra_report.xml"), 'wb')
-                        ftp.retrbinary('RETR report.xml', report_file.write, 262144)
-                        report_file.close()
-                        report_generated = True
+                initialize_global_variables(row["config"])
+                print("\nUpdating: " + row["name"] + " SRA")
+                #Login to ftp
+                ftp = ftplib.FTP(config_dict["ncbi"]["hostname"])
+                ftp.login(user=config_dict["ncbi"]["username"], passwd = config_dict["ncbi"]["password"])
+                if config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"] != "":
+                    ftp.cwd(config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"])
+                ftp.cwd(row["type"])
+                submission_folder = row['name'] + "_sra"
+                #Check if submission folder already exists
+                if submission_folder not in ftp.nlst():
+                    print("submission doesn't exist")
+                    continue
+                ftp.cwd(submission_folder)
+                #Check if report.xml exists
+                if "report.xml" in ftp.nlst():
+                    print("Report exists pulling down")
+                    report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_sra_report.xml"), 'wb')
+                    ftp.retrbinary('RETR report.xml', report_file.write, 262144)
+                    report_file.close()
+                    report_generated = True
             except ftplib.all_errors as e:
                 print('FTP error:', e)
-            if report_generated == True:
-                submission_id, submission_status = biosample_sra_process_report(row["name"], "sra")
-                update_csv(unique_name=row['name'],config=row["config"],type=row["type"],SRA_submission_id=submission_id,SRA_status=submission_status)
-                print("Status: " + submission_status)
-                if submission_status == "processed-ok" and config_dict["general"]["submit_Genbank"] == True and (row["Genbank_status"] == None or row["Genbank_status"] == "" or pd.isnull(row["Genbank_status"])):
-                    print("Submitting to Genbank: " + row["name"])
-                    submit_genbank(row["name"], row["config"], row["type"], False)
+        if report_generated == True:
+            submission_id, submission_status = biosample_sra_process_report(row["name"], "sra")
+            update_csv(unique_name=row['name'],config=row["config"],type=row["type"],SRA_submission_id=submission_id,SRA_status=submission_status)
+            print("Status: " + submission_status)
+
     #Check Genbank
-    main_df = pd.read_csv(f"{unique_name}/upload_log.csv", header = 0, dtype = str, sep = ",")
-    df = main_df.loc[(main_df['Genbank_status'] != None) & (main_df['Genbank_status'] != "processed-ok") & (main_df['Genbank_status'] != "") & (main_df['Genbank_status'].isnull() == False)]
-    if len(df.index) != 0:
-        for index, row in df.iterrows():
+    if update_status_genbank is True:
+        for index, row in main_df.iterrows():
             report_generated = False
             try:
-                initialize_global_variables(row["config"], submission_output_dir)
-                if config_dict["general"]["submit_Genbank"] == True and config_dict["general"]["genbank_submission_type"].lower() == "ftp":
+                initialize_global_variables(row["config"])
+                if config_dict["general"]["genbank_submission_type"].lower() == "ftp":
                     print("\nUpdating: " + row["name"] + " Genbank")
                     #Login to ftp
                     ftp = ftplib.FTP(config_dict["ncbi"]["hostname"])
@@ -278,15 +287,11 @@ def update_log(unique_name):
                 submission_id, submission_status = genbank_process_report(row["name"])
                 update_csv(unique_name=row['name'],config=row["config"],type=row["type"],Genbank_submission_id=submission_id,Genbank_status=submission_status)
                 print("Status: " + submission_status)
-                if submission_status == "processed-ok" and config_dict["general"]["submit_GISAID"] == True and row["type"] != "Test":
-                    print("\nSubmitting to GISAID: " + row["name"])
-                    submit_gisaid(unique_name=row["name"], config=row["config"], test=row["type"])
+
     #Check GISAID
-    main_df = pd.read_csv(f"{unique_name}/upload_log.csv", header = 0, dtype = str, sep = ",")
-    df = main_df.loc[(main_df['GISAID_submitted_total'] != None) & (main_df['GISAID_submitted_total'] != "") & (main_df['GISAID_submitted_total'].isnull() == False) & (main_df['type'] != "Test") & (main_df['GISAID_failed_total'] != "0")]
-    if len(df.index) != 0:
-        for index, row in df.iterrows():
-            initialize_global_variables(row["config"], submission_output_dir)
+    if update_status_gisaid is True:
+        for index, row in main_df.iterrows():
+            initialize_global_variables(row["config"])
             if config_dict["general"]["submit_GISAID"] == True:
                 print("\nSubmitting to GISAID: " + row["name"])
                 submit_gisaid(unique_name=row["name"], config=row["config"], test=row["type"])
@@ -363,7 +368,6 @@ def submit_genbank(unique_name, config, test, overwrite, send_email):
                 " -t " + os.path.join(unique_name, "genbank", unique_name + "_authorset.sbt") +
                 " -i " + os.path.join(unique_name, "genbank", unique_name + "_ncbi.fsa") +
                 " -f " + os.path.join(unique_name, "genbank", unique_name + ".gff"))
-        print('TEST')
         proc = subprocess.run(command, env = os.environ.copy(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
         print(proc.args)
         if proc.returncode != 0:
@@ -386,7 +390,7 @@ def submit_genbank(unique_name, config, test, overwrite, send_email):
                 if len(recipients) > 1:
                     msg['To'] = ", ".join(recipients)
                 else:
-                    msg['To'] = recipients
+                    msg['To'] = recipients[0]
 
                 # attach some information to the email
                 with open(os.path.join(unique_name, "genbank", unique_name + "_ncbi.sqn"), 'rb') as file_input:
@@ -453,7 +457,6 @@ def prepare_genbank(unique_name):
     df = pd.read_csv(os.path.join(unique_name, "genbank", unique_name + "_source.src"), header = 0, dtype=str, sep='\t')
     if config_dict["ncbi"]['BioProject'] != "":
         df['BioProject'] = config_dict["ncbi"]['BioProject']
-    print('TEST')
     df = df.merge(accessions, how='left', left_on='sequence_ID', right_on='Genbank_sequence')
     potential_columns = ["SRA_sequence", "BioSample_sequence", "Genbank_sequence", "Genbank_accession", "GISAID_sequence"]
     drop_columns = []
@@ -523,7 +526,6 @@ def submit_biosample_sra(unique_name, config, test, ncbi_sub_type, overwrite):
 
 # Start submission into automated pipeline
 def start_submission(unique_name, config, test, overwrite, send_email):
-
     if config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True and config_dict["general"]["joint_SRA_BioSample_submission"] == True:
         submit_biosample_sra(unique_name, config, test, "biosample_sra", overwrite)
     elif config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True and config_dict["general"]["joint_SRA_BioSample_submission"] == False:
@@ -534,7 +536,6 @@ def start_submission(unique_name, config, test, overwrite, send_email):
     elif config_dict["general"]["submit_SRA"] == True:
         submit_biosample_sra(unique_name, config, test, "sra", overwrite)
     elif config_dict["general"]["submit_Genbank"] == True:
-        print('WORKED')
         submit_genbank(unique_name=unique_name, config=config, test=test, overwrite=overwrite, send_email=send_email)
     elif config_dict["general"]["submit_GISAID"] == True:
         submit_gisaid(unique_name=unique_name, config=config, test=test)
@@ -610,9 +611,8 @@ def main():
         config_dict['general']['submit_BioSample'] = True
 
     if args.command != 'update_submissions':
-        print('WORKED')
         submission_preparation.process_submission(args.unique_name, args.fasta, args.metadata, args.gff, args.config, args.req_col_config, config_dict)
-        start_submission(args.unique_name, args.config, args.test_or_prod, args.overwrite)
+        start_submission(args.unique_name, args.config, args.test_or_prod, args.overwrite, args.send_email)
     
     elif args.command == 'update_submissions':
         update_log(args.unique_name)

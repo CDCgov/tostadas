@@ -1,12 +1,12 @@
-Feb-24 00:53:10.117 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf -profile test,docker --submission_wait_time 2 --send_submission_email true
-Feb-24 00:53:10.185 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 22.10.6
-Feb-24 00:53:10.221 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/ankushkgupta/.nextflow/plugins; core-plugins: nf-amazon@1.11.3,nf-azure@0.14.2,nf-codecommit@0.1.2,nf-console@1.0.4,nf-ga4gh@1.0.4,nf-google@1.4.5,nf-tower@1.5.6,nf-wave@0.5.3
-Feb-24 00:53:10.239 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
-Feb-24 00:53:10.243 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
-Feb-24 00:53:10.249 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
-Feb-24 00:53:10.264 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
-Feb-24 00:53:10.276 [main] DEBUG nextflow.scm.ProviderConfig - Using SCM config path: /home/ankushkgupta/.nextflow/scm
-Feb-24 00:53:10.287 [main] DEBUG nextflow.cli.Launcher - Operation aborted
+Feb-27 17:53:10.347 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf -profile test,singularity --scicomp true --submission_wait_time 2 --submission_database genbank
+Feb-27 17:53:10.480 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 22.10.0
+Feb-27 17:53:10.550 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/scicomp/home-pure/ufl1/.nextflow/plugins; core-plugins: nf-amazon@1.11.0,nf-azure@0.14.2,nf-codecommit@0.1.2,nf-console@1.0.4,nf-ga4gh@1.0.4,nf-google@1.4.4,nf-tower@1.5.5,nf-wave@0.5.2
+Feb-27 17:53:10.576 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Feb-27 17:53:10.579 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Feb-27 17:53:10.586 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+Feb-27 17:53:10.613 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Feb-27 17:53:10.653 [main] DEBUG nextflow.scm.ProviderConfig - Using SCM config path: /scicomp/home-pure/ufl1/.nextflow/scm
+Feb-27 17:53:10.671 [main] DEBUG nextflow.cli.Launcher - Operation aborted
 nextflow.exception.AbortOperationException: Cannot find script file: main.nf
 	at nextflow.cli.CmdRun.getScriptFile(CmdRun.groovy:448)
 	at nextflow.cli.CmdRun.run(CmdRun.groovy:300)
