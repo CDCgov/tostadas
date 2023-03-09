@@ -46,6 +46,19 @@
 /tests/.nextflow.log.7
 /tests/.nextflow.log.8
 /submission_scripts/upload_log.csv
+
+/bin/.nextflow
+/bin/.nextflow.log
+/bin/.nextflow.log.1
+/bin/.nextflow.log.2
+/bin/.nextflow.log.3
+/bin/.nextflow.log.4
+/bin/.nextflow.log.5
+/bin/.nextflow.log.6
+/bin/.nextflow.log.7
+/bin/.nextflow.log.8
+/bin/upload_log.csv
+
 /submission_scripts/__pycache__/
 /submission_scripts/upload_log.csv
 tests/__pycache__
@@ -91,3 +104,8 @@ tests/__pycache__
 
 /input_files/
 /input_files
+/bin/config_files/mpxv_config_kk.yaml
+/bin/config_files/
+/bin/__pycache__/
+/bin/__pycache__
+/bin/table2asn
