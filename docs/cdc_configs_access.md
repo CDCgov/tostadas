@@ -5,18 +5,18 @@
 
 ### If You Do Not Have the Tostadas Repository Cloned, There are Two Options to Initialize the Submodule and Retrieve the Submission Config Files:
 
-#### (1) Clone and Initialize Separately
+### (1) Clone and Initialize Separately
 ```
 git clone https://github.com/CDCgov/tostadas.git && cd tostadas/bin && git submodule init && git submodule update 
 ```
 
 OR 
 
-#### (2) Clone with Initialization
+### (2) Clone with Initialization
 ```
 git clone --recurse-submodules https://github.com/CDCgov/tostadas.git
 ```
-#### You should now have the latest submission config files available within bin/config_files
+### You should now have the latest submission config files available within bin/config_files
 
 ### If You Already Have Tostadas Cloned Locally + Want to Update with Latest Remote Changes, You Can Either Use the Following Command Every Time:
 ```
