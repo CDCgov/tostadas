@@ -1,0 +1,3 @@
+[submodule "bin/config_files"]
+	path = bin/config_files
+	url = https://git.biotech.cdc.gov/monkeypox/mpxv_annotation_submission_dev.git

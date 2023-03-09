@@ -107,3 +107,5 @@ tests/__pycache__
 /bin/__pycache__/
 /bin/__pycache__
 /bin/table2asn
+/bin/config_files
+/bin/config_files/
