@@ -120,7 +120,7 @@ process SUBMISSION {
 
     label 'main'
     
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     if ( params.run_conda == true ) {
         try {
@@ -136,20 +136,24 @@ process SUBMISSION {
         path lifted_gff_path
         val entry_flag
         path submission_config
-        val config_signal
+        path req_col_config
 
     script:
     """
-    submission.py submit --unique_name "${params.batch_name}.test" --fasta $lifted_fasta_path --metadata $validated_meta_path --gff $lifted_gff_path  --config $submission_config --$params.submission_prod_or_test
+    run_submission.py --submission_database $params.submission_database --unique_name $params.batch_name --lifted_fasta_path $lifted_fasta_path \
+    --validated_meta_path $validated_meta_path --lifted_gff_path $lifted_gff_path --config $submission_config --prod_or_test $params.submission_prod_or_test \
+    --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email --sample_name ${validated_meta_path.getSimpleName()}
     """
 
     output:
-        file '*'
+        path "$params.batch_name.${validated_meta_path.getSimpleName()}", emit: submission_files
 }
 
 process UPDATE_SUBMISSION {
 
     label 'main'
+
+    publishDir "$params.output_dir/$params.submission_output_dir/$params.batch_name.${submission_output.getExtension()}", mode: 'copy', overwrite: true
     
     if ( params.run_conda == true ) {
         try {
@@ -161,9 +165,15 @@ process UPDATE_SUBMISSION {
 
     input:
         val wait_signal
+        path submission_config
+        path submission_output
 
     script:
         """
-        submission.py update_submissions
+        run_submission.py --config $submission_config --update true --unique_name $params.batch_name --sample_name ${submission_output.getExtension()}
         """
+    
+    output:
+        path "update_submit_info/${submission_output.getExtension()}_update_terminal_output.txt"
+        file '*'
 } 

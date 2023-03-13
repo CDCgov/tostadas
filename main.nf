@@ -82,7 +82,7 @@ def helpMessage() {
 include { VALIDATE_PARAMS } from "$projectDir/nf_modules/utility_mods"
 include { CLEANUP_FILES } from "$projectDir/nf_modules/utility_mods"
 include { SUBMISSION_ENTRY_CHECK } from "$projectDir/nf_modules/utility_mods"
-include { CHECK_CONFIG } from "$projectDir/nf_modules/utility_mods"
+include { PREP_SUBMISSION_ENTRY } from "$projectDir/nf_modules/utility_mods"
 include { GET_WAIT_TIME } from "$projectDir/nf_modules/utility_mods"
 
 // get the main processes
@@ -113,20 +113,43 @@ workflow {
     RUN_UTILITY()
 
     // run metadata validation process
-    METADATA_VALIDATION ( RUN_UTILITY.out, params.meta_path, params.fasta_path )
+    METADATA_VALIDATION ( 
+        RUN_UTILITY.out, 
+        params.meta_path, 
+        params.fasta_path 
+    )
         
     // run liftoff annotation process 
-    LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
-
-    // pre submission process + get wait time (parallel)
-    CHECK_CONFIG ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, params.submission_config )
-    GET_WAIT_TIME ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, METADATA_VALIDATION.out.tsv_Files.collect() )
+    LIFTOFF ( 
+        RUN_UTILITY.out, 
+        params.meta_path, 
+        params.fasta_path, 
+        params.ref_fasta_path, 
+        params.ref_gff_path 
+    )
 
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
-        RUN_SUBMISSION ( METADATA_VALIDATION.out.meta_signal, LIFTOFF.out.liftoff_signal, CHECK_CONFIG.out.config_signal,
-                         METADATA_VALIDATION.out.tsv_Files.sort().flatten(), LIFTOFF.out.fasta.sort().flatten(), 
-                         LIFTOFF.out.gff.sort().flatten(), false, params.modified_config, GET_WAIT_TIME.out)
+
+        // pre submission process + get wait time (parallel)
+        GET_WAIT_TIME ( 
+            METADATA_VALIDATION.out.meta_signal, 
+            LIFTOFF.out.liftoff_signal, 
+            METADATA_VALIDATION.out.tsv_Files.collect() 
+        )
+
+        // call the submission workflow
+        RUN_SUBMISSION (
+            METADATA_VALIDATION.out.meta_signal, 
+            LIFTOFF.out.liftoff_signal,
+            METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
+            LIFTOFF.out.fasta.sort().flatten(), 
+            LIFTOFF.out.gff.sort().flatten(), 
+            false, 
+            params.submission_config, 
+            params.req_col_config, 
+            GET_WAIT_TIME.out 
+        )
     }
 } 
 
@@ -138,82 +161,124 @@ workflow {
 
 workflow only_validate_params {
     main:
-        VALIDATE_PARAMS()
+        // run the process for validating general parameters
+        VALIDATE_PARAMS ()
 }
 
 workflow only_cleanup_files {
     main:
-        CLEANUP_FILES ( 'dummy validate params signal' )
+        // run process for cleaning up files 
+        CLEANUP_FILES (
+            'dummy validate params signal' 
+        )
 }
 
 workflow only_validation {
     main:
-        // check parameters + cleanup the files 
-        RUN_UTILITY()
-
         // run metadata validation
-        METADATA_VALIDATION ( RUN_UTILITY.out, params.meta_path, params.fasta_path )
+        METADATA_VALIDATION (
+            'dummy signal signal', 
+            params.meta_path, 
+            params.fasta_path
+        )
 }
 
 workflow only_liftoff {
     main:
-        // check parameters + cleanup the files 
-        RUN_UTILITY()
-
         // run annotation on files
-        LIFTOFF ( RUN_UTILITY.out, params.meta_path, params.fasta_path, params.ref_fasta_path, params.ref_gff_path )
+        LIFTOFF ( 
+            'dummy utility signal', 
+            params.meta_path, 
+            params.fasta_path, 
+            params.ref_fasta_path, 
+            params.ref_gff_path 
+        )
 }
 
 workflow only_vadr {
     main:
-        // check parameters + cleanup the files 
-        RUN_UTILITY()
-
-        // get channels 
-        channels = get_channels()
-
         // run annotation on files
-        VADR ( RUN_UTILITY.out, channels['fasta'] )
+        VADR ( 
+            'dummy utility signal', 
+            params.fasta_path 
+        )
 }
 
 workflow only_submission {
     main:
-        // check that certain paths are specified
-        SUBMISSION_ENTRY_CHECK()
+        // check that certain paths are specified (need to pass in for it to work)
+        SUBMISSION_ENTRY_CHECK ()
+
+        // get the parameter paths into proper format 
+        PREP_SUBMISSION_ENTRY ( 
+            SUBMISSION_ENTRY_CHECK.out,
+            params.submission_only_meta, 
+            params.submission_only_fasta, 
+            params.submission_only_gff
+        )
+
+        // get the wait time
+        GET_WAIT_TIME ( 
+            'dummy meta signal', 
+            'dummy liftoff signal', 
+            PREP_SUBMISSION_ENTRY.out.tsv.collect() 
+        )
         
         // call the submission workflow
         RUN_SUBMISSION (
-            params.submission_only_meta,
-            params.submission_only_fasta,
-            params.submission_only_gff, 
-            true
+            'dummy meta signal',
+            'dummy annotation signal',
+            PREP_SUBMISSION_ENTRY.out.tsv.sort().flatten(),
+            PREP_SUBMISSION_ENTRY.out.fasta.sort().flatten(),
+            PREP_SUBMISSION_ENTRY.out.gff.sort().flatten(), 
+            true,
+            params.submission_config,
+            params.req_col_config,
+            GET_WAIT_TIME.out
         )
 }
 
 workflow only_initial_submission {
     main:        
-        // def channels
-        channels = get_channels()
+        // check that certain paths are specified (need to pass in for it to work)
+        SUBMISSION_ENTRY_CHECK ()
+
+        // get the parameter paths into proper format 
+        PREP_SUBMISSION_ENTRY ( 
+            SUBMISSION_ENTRY_CHECK.out,
+            params.submission_only_meta, 
+            params.submission_only_fasta, 
+            params.submission_only_gff
+        )
 
         // call the initial submission portion only
         SUBMISSION (
+            PREP_SUBMISSION_ENTRY.out.tsv.sort().flatten(),
+            PREP_SUBMISSION_ENTRY.out.fasta.sort().flatten(),
+            PREP_SUBMISSION_ENTRY.out.gff.sort().flatten(), 
             true,
-            'dummy signal value', 
-            'dummy signal value', 
-            channels['valMeta'],
-            channels['lifted_Fasta'],
-            channels['lifted_Gff'],
-            true,
+            params.submission_config,
+            params.req_col_config
         )
 }
 
 workflow only_update_submission {
     main:
         // call the check specific to submission
-        SUBMISSION_ENTRY_CHECK ( )
+        SUBMISSION_ENTRY_CHECK ()
+
+        // get the parameter paths into proper format 
+        PREP_SUBMISSION_ENTRY ( 
+            SUBMISSION_ENTRY_CHECK.out,
+            params.submission_only_meta, 
+            params.submission_only_fasta, 
+            params.submission_only_gff
+        )
 
         // call the update submission portion only
         UPDATE_SUBMISSION (
-            SUBMISSION_ENTRY_CHECK.out
+            SUBMISSION_ENTRY_CHECK.out,
+            params.submission_config,
+            PREP_SUBMISSION_ENTRY.out.tsv.flatten()
         )
 }

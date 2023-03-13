@@ -251,6 +251,7 @@ process GET_WAIT_TIME {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process SUBMISSION_ENTRY_CHECK {
+
     exec:
         // check the different ways to run params
         def check = [params.run_docker, params.run_conda, params.run_singularity].count(true)
@@ -287,36 +288,34 @@ process SUBMISSION_ENTRY_CHECK {
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  PRESUBMISSION 
+                            PREP SUBMISSION ENTRY INPUTS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-process CHECK_CONFIG {
+process PREP_SUBMISSION_ENTRY {
 
     label 'main'
 
-    publishDir "$projectDir/bin", mode: 'copy', overwrite: params.overwrite_output
-    
     if ( params.run_conda == true ) {
         try {
             conda params.env_yml
         } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
+            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
         }
     }
 
     input:
-        val meta_signal
-        val liftoff_signal
-        path submission_config
+        val submission_entry_check_signal
+        path validated_meta
+        path fasta
+        path annotated_gff
 
     script:
         """
-        submission_utility.py --check_submission_config true --config $submission_config --submission_outputs $projectDir/$params.output_dir/$params.submission_output_dir \
-        --database $params.submission_database
+        submission_utility.py --prep_submission_entry true --meta_path $validated_meta --fasta_path $fasta --gff_path $annotated_gff
         """
-
-    output:
-        file 'config_files/*.yaml'
-        val true, emit: config_signal
+        
+    output: 
+        path "tsv_submit_entry/*.tsv", emit: tsv
+        path "fasta_submit_entry/*.fasta", emit: fasta
+        path "gff_submit_entry/*.gff", emit: gff
 }
