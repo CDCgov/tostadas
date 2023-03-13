@@ -42,10 +42,11 @@ def main():
     if parameters['prep_submission_entry'].lower().strip() == 'true':
         for file_type, key in zip(['tsv', 'fasta', 'gff'], ['meta_path', 'fasta_path', 'gff_path']):
             # make the directory to copy over the files to 
-            os.mkdir(f"{file_type}_submit_entry")
+            os.mkdir(f"{file_type}_submit_entry", mode=0o777)
             # copy over the files to this directory
             for file in glob.glob(f"{parameters[key]}/*.{file_type}"):
-                shutil.copy(file, f"{file_type}_submit_entry")
+                file_name = file.split('/')[-1]
+                shutil.copyfile(file, f"{file_type}_submit_entry/{file_name}")
 
     """
     # modify the submission by checking the output paths are aligned + modifying for certain type of submission

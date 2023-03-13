@@ -27,7 +27,7 @@ workflow RUN_SUBMISSION {
         SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag, submission_config, req_col_config )
 
         // actual process to initiate wait 
-        WAIT ( SUBMISSION.out.collect(), wait_time )
+        WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, meta_files )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files )
 }

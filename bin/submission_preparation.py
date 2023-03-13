@@ -189,15 +189,15 @@ def generate_XML(unique_name, main_df, generate_biosample, generate_sra, config_
                 spuid.text = row[config_dict["ncbi"]["SRA_sample_name_col"]] + "_nanopore"
     xml_file = minidom.parseString(ET.tostring(submission, encoding="unicode", method="xml")).toprettyxml(indent = "   ")
     if generate_sra == True:
-        main_df.to_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra", unique_name + "_sra_path.csv"), header = True, index = 0, columns = [config_dict["ncbi"]["SRA_file_column1"], config_dict["ncbi"]["SRA_file_column2"], config_dict["ncbi"]["SRA_file_column3"]])
+        main_df.to_csv(os.path.join(unique_name, "biosample_sra", unique_name + "_sra_path.csv"), header = True, index = 0, columns = [config_dict["ncbi"]["SRA_file_column1"], config_dict["ncbi"]["SRA_file_column2"], config_dict["ncbi"]["SRA_file_column3"]])
     if generate_sra == True and generate_biosample == True:
-        with open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra", unique_name + "_biosample_sra_submission.xml"),"w+") as f:
+        with open(os.path.join(unique_name, "biosample_sra", unique_name + "_biosample_sra_submission.xml"),"w+") as f:
             f.write(xml_file)
     elif generate_sra == False and generate_biosample == True:
-        with open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra", unique_name + "_biosample_submission.xml"),"w+") as f:
+        with open(os.path.join(unique_name, "biosample_sra", unique_name + "_biosample_submission.xml"),"w+") as f:
             f.write(xml_file)
     elif generate_sra == True and generate_biosample == False:
-        with open(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra", unique_name + "_sra_submission.xml"),"w+") as f:
+        with open(os.path.join(unique_name, "biosample_sra", unique_name + "_sra_submission.xml"),"w+") as f:
             f.write(xml_file)
     else:
         print("Error: This should not be reachable.", file=sys.stderr)
@@ -303,11 +303,11 @@ def gisaid_write(unique_name, main_df, config_dict):
     gisaid_df = gisaid_df.replace(r'^\s*$', "Unknown", regex=True)
     gisaid_df["covv_comment"] = gisaid_df["covv_comment"].replace("Unknown", "")
     gisaid_df["comment_type"] = gisaid_df["comment_type"].replace("Unknown", "")
-    gisaid_df.to_csv(os.path.join(config_dict["general"]["submission_directory"],unique_name,"gisaid",unique_name + "_gisaid.csv"), na_rep="Unknown", index = False, header = True, quoting=csv.QUOTE_ALL)
+    gisaid_df.to_csv(os.path.join(unique_name,"gisaid",unique_name + "_gisaid.csv"), na_rep="Unknown", index = False, header = True, quoting=csv.QUOTE_ALL)
     records = []
     for index, row in main_df.iterrows():
         records.append(SeqRecord(row["fasta_sequence_orig"], id = row[config_dict["gisaid"]["gisaid_sample_name_col"]], description = ""))
-    with open(os.path.join(config_dict["general"]["submission_directory"],unique_name,"gisaid",unique_name + "_gisaid.fsa"), "w+") as fasta_file:
+    with open(os.path.join(unique_name,"gisaid",unique_name + "_gisaid.fsa"), "w+") as fasta_file:
         SeqIO.write(records, fasta_file, "fasta")
 
 #Merge user's metadata file into genbank formatted metadata files
@@ -329,7 +329,7 @@ def write_metadata_files(unique_name, main_df, config_dict):
     if required.issubset(src_columns_set) == False:
         print("Error: Metadata file is missing required columns for src file. Required columns in config are: " + str(required_config["Genbank"]['required_src_columns']), file=sys.stderr)
         sys.exit(1)
-    src_df.to_csv(os.path.join(config_dict["general"]["submission_directory"],unique_name,"genbank",unique_name + "_source.src"), header = True, index = False, sep = "\t")
+    src_df.to_csv(os.path.join(unique_name,"genbank",unique_name + "_source.src"), header = True, index = False, sep = "\t")
     #Create optional cmt file
     if config_dict["genbank_cmt_metadata"]['create_cmt'] == True:
         cmt_df = pd.DataFrame()
@@ -347,11 +347,11 @@ def write_metadata_files(unique_name, main_df, config_dict):
                 ordered_columns.append(col)
         ordered_columns.append("StructuredCommentSuffix")
         cmt_df = cmt_df.reindex(columns=ordered_columns)
-        cmt_df.to_csv(os.path.join(config_dict["general"]["submission_directory"],unique_name,"genbank",unique_name + "_comment.cmt"), header = True, index = False, sep = "\t")
+        cmt_df.to_csv(os.path.join(unique_name,"genbank",unique_name + "_comment.cmt"), header = True, index = False, sep = "\t")
 
 #Write submission file
 def write_submission_files(unique_name, main_df, config_dict):
-    with open(os.path.join(config_dict["general"]["submission_directory"],unique_name, "genbank", "submission.xml"), "w+") as f:
+    with open(os.path.join(unique_name, "genbank", "submission.xml"), "w+") as f:
         f.write("<?xml version=\"1.0\"?>\n")
         f.write("<Submission>\n")
         f.write("  <Description>\n")
@@ -378,7 +378,7 @@ def write_submission_files(unique_name, main_df, config_dict):
         f.write("  </Action>\n")
         f.write("</Submission>\n")
     #Create authorset file
-    with open(os.path.join(config_dict["general"]["submission_directory"],unique_name, "genbank", unique_name + "_authorset.sbt"), "w+") as f:
+    with open(os.path.join(unique_name, "genbank", unique_name + "_authorset.sbt"), "w+") as f:
         f.write("Submit-block ::= {\n")
         f.write("  contact {\n")
         f.write("    contact {\n")
@@ -493,7 +493,7 @@ def ncbi_write(unique_name, main_df, gff_file, config_dict):
     records = []
     for index, row in main_df.iterrows():
         records.append(SeqRecord(row["fasta_sequence_orig"], id = row["final_ncbi_fasta_name"], description = ""))
-    with open(os.path.join(config_dict["general"]["submission_directory"],unique_name, "genbank", unique_name + "_ncbi.fsa"), "w+") as fasta_file:
+    with open(os.path.join(unique_name, "genbank", unique_name + "_ncbi.fsa"), "w+") as fasta_file:
         SeqIO.write(records, fasta_file, "fasta")
     if gff_file is not None:
         gff_df = pd.read_csv(gff_file, header = None, comment = "#", sep = "\t")
@@ -510,17 +510,17 @@ def ncbi_write(unique_name, main_df, gff_file, config_dict):
                 if line.startswith("#"):
                     comment_line = comment_line + line
                 line = file.readline()
-        with open(os.path.join(config_dict["general"]["submission_directory"],unique_name, "genbank", unique_name + ".gff"), "w+") as file:
+        with open(os.path.join(unique_name, "genbank", unique_name + ".gff"), "w+") as file:
             file.write(comment_line)
-        gff_df.to_csv(os.path.join(config_dict["general"]["submission_directory"],unique_name, "genbank", unique_name + ".gff"), header = False, index = False, sep = "\t", mode = "a")
+        gff_df.to_csv(os.path.join(unique_name, "genbank", unique_name + ".gff"), header = False, index = False, sep = "\t", mode = "a")
 
 #If uploading files for SRA create csv with file paths
 def write_sra_file_path(unique_name, main_df, config_dict):
     if config_dict["ncbi"]["SRA_file_location"] == "file":
         if config_dict["ncbi"]["SRA_file_column2"] != "":
-            main_df.to_csv(os.path.join(config_dict["general"]["submission_directory"],unique_name,"biosample_sra", "sra_file_path.csv"), header = False, index = False, sep = ",", columns = [config_dict["ncbi"]["SRA_file_column1"], config_dict["ncbi"]["SRA_file_column2"]])
+            main_df.to_csv(os.path.join(unique_name,"biosample_sra", "sra_file_path.csv"), header = False, index = False, sep = ",", columns = [config_dict["ncbi"]["SRA_file_column1"], config_dict["ncbi"]["SRA_file_column2"]])
         else:
-            main_df.to_csv(os.path.join(config_dict["general"]["submission_directory"],unique_name,"biosample_sra", "sra_file_path.csv"), header = False, index = False, sep = ",", columns = [config_dict["ncbi"]["SRA_file_column1"]])
+            main_df.to_csv(os.path.join(unique_name,"biosample_sra", "sra_file_path.csv"), header = False, index = False, sep = ",", columns = [config_dict["ncbi"]["SRA_file_column1"]])
 
 def author_column_update(authorlist, config_dict):
     config_dict["general"]["authorset"] = authorlist
@@ -536,7 +536,7 @@ def write_ncbi_names(unique_name, main_df, config_dict):
         tmp["Genbank_sequence"] = main_df[config_dict["ncbi"]["Genbank_sample_name_col"]]
     if config_dict["general"]["submit_GISAID"] == True:
         tmp["GISAID_sequence"] = main_df[config_dict["gisaid"]["gisaid_sample_name_col"]]
-    tmp.to_csv(os.path.join(config_dict["general"]["submission_directory"], unique_name, "accessions.csv"), header = True, index = False, sep = ",")
+    tmp.to_csv(os.path.join(unique_name, "accessions.csv"), header = True, index = False, sep = ",")
 
 def process_submission(unique_name, fasta_file, metadata_file, gff_file, config, req_col_config, config_dict):
     print("\nProcessing " + unique_name + ".")
@@ -558,35 +558,35 @@ def process_submission(unique_name, fasta_file, metadata_file, gff_file, config,
                 authorlist.append({"first": name.split(" ")[0], "last": name.split(" ")[-1], "middle": name.split(" ")[1], "initials": name.split(" ")[0][0] + "." + name.split(" ")[1][0] + ".", "suffix": "", "title": ""})
         author_column_update(authorlist, config_dict)
 
-    os.makedirs(os.path.join(config_dict["general"]["submission_directory"], unique_name), exist_ok = True)
+    os.makedirs(os.path.join(unique_name), exist_ok = True)
 
     if config_dict["general"]["submit_GISAID"] == True:
         print("Creating GISAID files.")
-        os.makedirs(os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid"), exist_ok = True)
+        os.makedirs(os.path.join(unique_name, "gisaid"), exist_ok = True)
         gisaid_write(unique_name, main_df, config_dict)
 
     if config_dict["general"]["submit_Genbank"] == True:
         print("Creating Genbank files.")
-        os.makedirs(os.path.join(config_dict["general"]["submission_directory"], unique_name, "genbank"), exist_ok = True)
+        os.makedirs(os.path.join(unique_name, "genbank"), exist_ok = True)
         write_metadata_files(unique_name, main_df, config_dict)
         write_submission_files(unique_name, main_df, config_dict)
         ncbi_write(unique_name, main_df, gff_file, config_dict)
 
     if config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True and config_dict["general"]["joint_SRA_BioSample_submission"] == True:
         print("Creating BioSample/SRA files.")
-        os.makedirs(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra"), exist_ok = True)
+        os.makedirs(os.path.join(unique_name, "biosample_sra"), exist_ok = True)
         generate_XML(unique_name = unique_name, main_df = main_df, generate_biosample = True, generate_sra = True, config_dict=config_dict)
         write_sra_file_path(unique_name, main_df, config_dict)
 
     else:
         if config_dict["general"]["submit_BioSample"] == True:
             print("Creating BioSample files.")
-            os.makedirs(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra"), exist_ok = True)
+            os.makedirs(os.path.join(unique_name, "biosample_sra"), exist_ok = True)
             generate_XML(unique_name = unique_name, main_df = main_df, generate_biosample = True, generate_sra = False, config_dict=config_dict)
 
         if config_dict["general"]["submit_SRA"] == True:
             print("Creating SRA files.")
-            os.makedirs(os.path.join(config_dict["general"]["submission_directory"], unique_name, "biosample_sra"), exist_ok = True)
+            os.makedirs(os.path.join(unique_name, "biosample_sra"), exist_ok = True)
             generate_XML(unique_name = unique_name, main_df = main_df, generate_biosample = False, generate_sra = True, config_dict=config_dict)
             write_sra_file_path(unique_name, main_df, config_dict)
 

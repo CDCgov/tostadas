@@ -131,7 +131,7 @@ workflow {
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
 
-        // pre submission process + get wait time (parallel))
+        // pre submission process + get wait time (parallel)
         GET_WAIT_TIME ( 
             METADATA_VALIDATION.out.meta_signal, 
             LIFTOFF.out.liftoff_signal, 
@@ -216,6 +216,13 @@ workflow only_submission {
             params.submission_only_fasta, 
             params.submission_only_gff
         )
+
+        // get the wait time
+        GET_WAIT_TIME ( 
+            'dummy meta signal', 
+            'dummy liftoff signal', 
+            PREP_SUBMISSION_ENTRY.out.tsv.collect() 
+        )
         
         // call the submission workflow
         RUN_SUBMISSION (
@@ -227,7 +234,7 @@ workflow only_submission {
             true,
             params.submission_config,
             params.req_col_config,
-            params.submission_wait_time
+            GET_WAIT_TIME.out
         )
 }
 

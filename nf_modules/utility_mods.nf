@@ -295,8 +295,6 @@ process PREP_SUBMISSION_ENTRY {
 
     label 'main'
 
-    publishDir "$projectDir/bin", mode: 'copy', overwrite: params.overwrite_output
-    
     if ( params.run_conda == true ) {
         try {
             conda params.env_yml
