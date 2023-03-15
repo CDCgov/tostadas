@@ -3,7 +3,7 @@ import os
 import glob
 import subprocess
 import yaml
-
+ 
 def get_args():
     """ All potential arguments passed in through command line
     """

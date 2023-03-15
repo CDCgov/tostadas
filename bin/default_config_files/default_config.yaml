@@ -1,0 +1,96 @@
+---
+general:
+  submission_directory: ''
+  submit_Genbank: 'True'
+  submit_GISAID: 'True'
+  submit_SRA: 'False'
+  submit_BioSample: 'True'
+  joint_SRA_BioSample_submission: 'True'
+  contact_email1: ''
+  contact_email2: ''
+  organization_name: ''
+  authorset:
+  - first: ''
+    last: ''
+    middle: ''
+    initials: ''
+    suffix: ''
+    title: ''
+  - first: ''
+    last: ''
+    middle: ''
+    initials: ''
+    suffix: ''
+    title: ''
+  ncbi_org_id: ''
+  submitter_info:
+    first: ''
+    last: ''
+    middle: ''
+    initials: ''
+    suffix: ''
+    title: ''
+  organism_name: Severe acute respiratory syndrome coronavirus 2
+  metadata_file_sep: ''
+  fasta_sample_name_col: ''
+  collection_date_col: ''
+  baseline_surveillance: 'True'
+ncbi:
+  hostname: ftp-private.ncbi.nlm.nih.gov
+  api_url: https://submit.ncbi.nlm.nih.gov/api/2.0/files/FILE_ID/?format=attachment
+  username: ''
+  password: ''
+  publication_title: ''
+  ncbi_ftp_path_to_submission_folders: ''
+  BioProject: ''
+  BioSample_sample_name_col: ''
+  SRA_sample_name_col: ''
+  Genbank_sample_name_col: ''
+  BioSample_package: SARS-CoV-2.cl.1.0
+  Center_title: ''
+  Genbank_organization_type: center
+  Genbank_organization_role: owner
+  Genbank_spuid_namespace: ncbi-sarscov2-genbank
+  Genbank_auto_remove_sequences_that_fail_qc: 'True'
+  Genbank_wizard: BankIt_SARSCoV2_api
+  citation_address:
+    affil: ''
+    div: ''
+    city: ''
+    sub: ''
+    country: ''
+    street: ''
+    postal-code: ''
+    email: ''
+    phone: ''
+  SRA_file_location: Cloud
+  SRA_file_column1: ''
+  SRA_file_column2: ''
+  SRA_file_loader: ''
+genbank_src_metadata:
+  column_names:
+    database_field1: metadata_column
+    database_field2: metadata_column
+genbank_cmt_metadata:
+  create_cmt: 'True'
+  column_names:
+    database_field1: metadata_column
+    database_field2: metadata_column
+BioSample_attributes:
+  column_names:
+    database_field1: metadata_column
+    database_field2: metadata_column
+SRA_attributes:
+  column_names:
+    database_field1: metadata_column
+    database_field2: metadata_column
+gisaid:
+  column_names:
+    database_field1: metadata_column
+    database_field2: metadata_column
+  gisaid_sample_name_col: ''
+  cid: TEST-EA76875B00C3
+  username: ''
+  password: ''
+  type: betacoronavirus
+  Update_sequences_on_Genbank_auto_removal: 'True'
