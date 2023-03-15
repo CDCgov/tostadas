@@ -7,10 +7,10 @@
 
 ### (1) Clone and Initialize Separately
 ```
-git clone https://github.com/CDCgov/tostadas.git && cd tostadas/bin && git submodule init && git submodule update 
+git clone https://github.com/CDCgov/tostadas.git && cd tostadas/bin && git submodule init && git submodule update --remote
 ```
 
-OR 
+#### OR 
 
 ### (2) Clone with Initialization
 ```
