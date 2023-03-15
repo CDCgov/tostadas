@@ -19,6 +19,9 @@ def helpMessage() {
          --ref_fasta_path                       Path to the reference fasta file (accepts string)
          --ref_gff_path                         Path to the reference gff file (accepts string)
 
+         --scicomp                              Flag for whether running on scicomp server or not (accepts bool: true/false)
+         --docker_container                     Name of the docker container (accepts string)
+
          --run_submission                       Flag for whether to run submission portion or not (accepts bool: true/false)
          --cleanup                              Flag for whether to run the cleanup process (accepts bool: true/false)
 
