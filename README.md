@@ -95,7 +95,7 @@ git clone https://github.com/CDCgov/tostadas.git
 ```
 
 If the following applies to you:
-* CDC user with acess to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
+* CDC user with access to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
 * Require access to available submission config files
 
 Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
