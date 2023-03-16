@@ -21,10 +21,9 @@ process VALIDATE_PARAMS {
         assert params.meta_path
 
         // check script params
-        assert params.liftoff_script
-        assert params.validation_script
-        assert params.submission_script
         assert params.env_yml
+        assert params.scicomp 
+        assert params.docker_container
 
         // check batch name 
         assert params.batch_name 
@@ -57,8 +56,6 @@ process VALIDATE_PARAMS {
             "ref_fasta_path": params.ref_fasta_path,
             "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-            "liftoff_script": params.liftoff_script,
-            "validation_script": params.validation_script,
             "env_yml": params.env_yml,
             "output_dir": params.output_dir,
             "lift_minimap_path": params.lift_minimap_path,
@@ -105,8 +102,6 @@ process VALIDATE_PARAMS {
             "ref_fasta_path": params.ref_fasta_path,
             "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-            "liftoff_script": params.liftoff_script,
-            "validation_script": params.validation_script,
             "env_yml": params.env_yml,
             "lift_minimap_path": params.lift_minimap_path,
             "lift_feature_database_name": params.lift_feature_database_name
