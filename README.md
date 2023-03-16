@@ -32,12 +32,12 @@
 - [Parameters](#parameters)
     - [Input Files](#input-files)
     - [Run Environment](#run-environment)
-    - [General Subworkflow](#specify-which-subworkflows-to-run)
-    - [Cleanup Subworkflow](#parameters-specific-to-cleanup-workflow)
-    - [General Output](#specify-where-output-files-should-be-stored-and-if-they-should-overwritten)
-    - [Metadata Validation](#specify-metadata-validation-workflow-params)
-    - [Liftoff](#specify-liftoff-workflow-params)
-    - [Submission](#specify-submission-workflow-params)
+    - [General Subworkflow](#general-subworkflow)
+    - [Cleanup Subworkflow](#cleanup-subworkflow)
+    - [General Output](#general-output)
+    - [Metadata Validation](#metadata-validation)
+    - [Liftoff](#liftoff)
+    - [Submission](#submission)
 - [Helpful Links](#helpful-links)
 - [Acknowledgements](#acknowledgements)
 
@@ -291,7 +291,7 @@ When changing these parameters pay attention to the required inputs and make sur
 * Please note the correct formatting and the default calculation of submission_wait_time at the bottom of the params table.
 
 
-### Input files
+### Input Files
 
 | Param                      | Description                                             | Input Required   |
 |----------------------------|---------------------------------------------------------|------------------|
@@ -301,19 +301,19 @@ When changing these parameters pay attention to the required inputs and make sur
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
 | --env_yml                  | Path to environment.yml file                            |        Yes (path as string)       |
 
-### Run environment
+### Run Environment
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --scicomp           | Flag for whether running on Scicomp or not                            | Yes (true/false as bool) |
 | --docker_container           | Name of the Docker container                            | Yes, if running with docker profile (name as string) |
 
-### Specify which subworkflows to run
+### General Subworkflow
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --run_submission           | Toggle for running submission                            | Yes (true/false as bool) |
 | --cleanup                  | Toggle for running cleanup subworkflows                 | Yes (true/false as bool) |
 
-### Parameters specific to cleanup workflow
+### Cleanup Subworkflow
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --clear_nextflow_log     | Clears nextflow work log                                |        Yes (true/false as bool)      |
@@ -322,15 +322,14 @@ When changing these parameters pay attention to the required inputs and make sur
 | --clear_conda_env        | Clears conda environment                                |  Yes (true/false as bool) |               
 | --clear_nf_results       | Remove results from nextflow outputs                    |  Yes (true/false as bool) |               
 
-
-### Specify where output files should be stored and if they should be overwritten
+### General Output
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --output_dir               | File path to submit outputs from pipeline              |        Yes (path as string)      |
 | --overwrite_output         | Toggle to overwriting output files in directory        | Yes (true/false as bool) |
 
 
-### Specify metadata validation workflow params:
+### Metadata Validation
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --val_output_dir         | File path for outputs specific to validate sub-workflow |        Yes (folder name as string)      |
@@ -338,7 +337,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --val_keep_pi            | Flag to keep personal identifying info, if provided otherwise it will return an error|        Yes (true/false as bool)      |
 
 
-### Specify liftoff workflow params:
+### Liftoff
 | Param                       | Description                                             | Input Required   |
 |-----------------------------|---------------------------------------------------------|------------------|
 | --final_liftoff_output_dir  | File path to liftoff specific sub-workflow outputs      |        Yes (folder name as string)      |
@@ -360,7 +359,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --lift_minimap_path         |Path to minimap if you did not use conda or pip          |        Yes (N/A or path as string)       |
 |--lift_feature_database_name |Name of the feature database, if none, then will use ref gff path to construct one|        Yes (N/A or name as string)      |
 
-### Specify submission workflow params:
+### Submission
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --submission_output_dir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
