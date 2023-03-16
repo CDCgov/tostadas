@@ -22,7 +22,6 @@ process VALIDATE_PARAMS {
 
         // check script params
         assert params.env_yml
-        assert params.scicomp 
         assert params.docker_container
 
         // check batch name 
@@ -38,6 +37,7 @@ process VALIDATE_PARAMS {
         assert params.lift_gap_extend
 
         // check list of params with bool values
+        assert scicomp == true || params.scicomp == false
         assert params.clear_nextflow_log == true || params.clear_nextflow_log == false
         assert params.clear_work_dir == true || params.clear_work_dir == false
         assert params.run_submission == true || params.run_submission == false
