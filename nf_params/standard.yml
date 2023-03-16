@@ -1,53 +1,56 @@
 help: false
-fasta_path: 
-ref_fasta_path:
-meta_path:
-ref_gff_path:
-liftoff_script:
-validation_script:
-submission_script:
-env_yml:
-run_docker:
-run_conda:
-run_singularity:
-scicomp:
-run_submission:
+fasta_path: ""
+ref_fasta_path: ""
+meta_path: ""
+ref_gff_path: ""
 
-cleanup: true
-clear_nextflow_log:
-clear_work_dir:
-clear_conda_env:
-clear_nf_results:
+env_yml: ""
+scicomp: null
+docker_container: ""
 
-output_dir:
-overwrite_output:
-val_output_dir:
-val_date_format_flag:
-val_keep_pi:
-final_liftoff_output_dir:
-lift_print_version_exit:
-lift_print_help_exit:
-lift_parallel_processes:
-lift_delete_temp_files:
-lift_coverage_threshold:
-lift_child_feature_align_threshold:
-lift_unmapped_features_file_name:
-lift_copy_threshold:
-lift_distance_scaling_factor:
-lift_flank:
-lift_overlap:
-lift_mismatch:
-lift_gap_open:
-lift_gap_extend:
-lift_infer_transcripts:
-lift_copies:
-lift_minimap_path:
-lift_feature_database_name:
-submission_output_dir:
-submission_prod_or_test:
-submission_wait_time:
-submission_only_meta:
-submission_only_gff:
-submission_only_fasta:
-submission_config:
-batch_name:
+run_submission: null
+cleanup: null
+
+clear_nextflow_log: null
+clear_work_dir: null
+clear_conda_env: null
+clear_nf_results: null
+
+output_dir: ""
+overwrite_output: null
+
+val_output_dir: ""
+val_date_format_flag: ""
+val_keep_pi: ""
+
+final_liftoff_output_dir: ""
+lift_print_version_exit: null
+lift_print_help_exit: null
+lift_parallel_processes: null
+lift_delete_temp_files: ""
+lift_coverage_threshold: null
+lift_child_feature_align_threshold: null
+lift_unmapped_features_file_name: ""
+lift_copy_threshold: null
+lift_distance_scaling_factor: null
+lift_flank: null
+lift_overlap: null
+lift_mismatch: null
+lift_gap_open: null
+lift_gap_extend: null
+lift_infer_transcripts: ""
+lift_copies: ""
+lift_minimap_path: ""
+lift_feature_database_name: ""
+
+submission_output_dir: ""
+submission_prod_or_test: ""
+submission_wait_time: ""
+submission_only_meta: ""
+submission_only_gff: ""
+submission_only_fasta: ""
+submission_config: ""
+reg_col_config: ""
+batch_name: ""
+send_submission_email: null
+submission_database: ""

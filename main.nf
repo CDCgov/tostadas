@@ -19,11 +19,9 @@ def helpMessage() {
          --ref_fasta_path                       Path to the reference fasta file (accepts string)
          --ref_gff_path                         Path to the reference gff file (accepts string)
 
-         --liftoff_script                       Path to the liftoff_submission.py script (accepts string)
-         --validation_script                    Path to the validate_metadata.py script (accepts string)
-         --submission_script                    Path to the submission.py script (accepts string)
+         --scicomp                              Flag for whether running on scicomp server or not (accepts bool: true/false)
+         --docker_container                     Name of the docker container (accepts string)
 
-         --run_docker                           Flag for whether to run docker or not (accepts bool: true/false)
          --run_submission                       Flag for whether to run submission portion or not (accepts bool: true/false)
          --cleanup                              Flag for whether to run the cleanup process (accepts bool: true/false)
 
@@ -64,8 +62,11 @@ def helpMessage() {
          --submission_only_gff                  Path to the reformatted gff directory if calling submission entrypoint (accepts string)
          --submission_only_fasta                Path to the split fasta files directory if calling submission entrypoint (accepts string)
          --submission_config                    Path to the configuration file used for the submission process (accepts string)
+         --req_col_config                       Path to the required_columns.yaml file (accepts string)
          --submission_prod_or_test              Denotes whether to submit as a test or production (accepts string: test/prod)
          --batch_name                           Prefixes the sample names to group together certain samples during submission
+         --send_submission_email                Flag for whether or not to send a notification email (specified in submission config) during genbank/table2asn submission (accepts bool: true/false)
+         --submission_database                  Name of database for sample submissions; by default is 'submit' (accepts string: submit/genbank/sra/gisaid/biosample/joint_sra_biosample/all)
 
        Optional arguments:
         --submission_wait_time                  Overwrites the default calculation of (3 * 60 * num samples) in seconds for wait time after initial submission
