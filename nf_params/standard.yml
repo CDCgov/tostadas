@@ -50,6 +50,7 @@ submission_only_meta: ""
 submission_only_gff: ""
 submission_only_fasta: ""
 submission_config: ""
+reg_col_config: ""
 batch_name: ""
 send_submission_email: null
 submission_database: ""

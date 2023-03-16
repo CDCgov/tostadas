@@ -361,11 +361,14 @@ When changing these parameters pay attention to the required inputs and make sur
 | --submission_only_gff    | Full path directly to the directory with reformatted GFFs    |        Yes (path as string)      |
 | --submission_only_fasta  | Full path directly to the directory with split fastas for each sample|        Yes (path as string)      |
 | --submission_config      | Configuration file for submission to public repos       |        Yes (path as string)      |
-| --submission_wait_time **|Calculated based on sample number(3 * 60secs * sample_num)| integer (seconds)       |
+| --submission_wait_time |Calculated based on sample number (3 * 60 secs * sample_num) | integer (seconds)       |
 | --batch_name | Name of the batch to prefix samples with during submission | Yes (name as string)
-| --send_submission_email | Toggle email notification on/off (** Only triggered if genbank is being submitted to AND table2asn is the genbank_submission_type | Yes (true/false as bool)           |
+| --send_submission_email | Toggle email notification on/off | Yes (true/false as bool)           |
+| --req_col_config | Path to the required_columns.yaml file | Yes (path as string)           |
 
-## Helpful Links for Resources and Software Integrated with TOSTADAS :     
+** Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'
+
+## Helpful Links for Resources and Software Integrated with TOSTADAS:     
    :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/
    
    :link: Nextflow Documentation: https://www.nextflow.io/docs/latest/getstarted.html

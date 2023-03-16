@@ -62,6 +62,7 @@ def helpMessage() {
          --submission_only_gff                  Path to the reformatted gff directory if calling submission entrypoint (accepts string)
          --submission_only_fasta                Path to the split fasta files directory if calling submission entrypoint (accepts string)
          --submission_config                    Path to the configuration file used for the submission process (accepts string)
+         --req_col_config                       Path to the required_columns.yaml file (accepts string)
          --submission_prod_or_test              Denotes whether to submit as a test or production (accepts string: test/prod)
          --batch_name                           Prefixes the sample names to group together certain samples during submission
          --send_submission_email                Flag for whether or not to send a notification email (specified in submission config) during genbank/table2asn submission (accepts bool: true/false)
