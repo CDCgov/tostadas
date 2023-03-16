@@ -59,27 +59,27 @@ The environment setup needs to occur within a terminal, or can optionally be han
 * Note: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
 * If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
 
-#### (A) First install mamba:
+#### (1) First install mamba:
 ```bash
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
 bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
 ```
-#### (B) Add mamba to PATH:
+#### (2) Add mamba to PATH:
 ```bash
 export PATH="$HOME/mambaforge/bin:$PATH"
 ```
-#### (C) Now you can create the conda environment and install the dependencies set in your environment.yml:   
+#### (3) Now you can create the conda environment and install the dependencies set in your environment.yml:   
 ```bash
 mamba create -n tostadas -f environment.yml   
 ```
-#### (D) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
+#### (4) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
 ```bash
 source activate tostadas
 ```
 
-#### (E) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk*
+#### (5) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk*
 
-#### (F) The final piece to the environment set up is to install nextflow (optionally with conda):
+#### (6) The final piece to the environment set up is to install nextflow (optionally with conda):
 
 * First make sure your path is set correctly and you are active in your tostadas environment. Then run the following command to install nextflow with Conda: 
 ```bash
@@ -229,7 +229,7 @@ Table of entrypoints available for the nextflow pipeline:
 * Documentation for using entrypoints with NF can be found at [Nextflow_Entrypoints](https://www.nextflow.io/blog/2020/cli-docs-release.html) under section 5. 
 
 
-(D) The following command can be used to specify entrypoints for the workflow:
+The following command can be used to specify entrypoints for the workflow:
 
 ```bash
 nextflow run main.nf -profile <param set>,<env> -entry <insert option from table above>
