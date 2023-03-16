@@ -10,26 +10,26 @@
 
 ## Table of Contents
 - [Overview](#overview)
- - [Table of Contents](#table-of-contents)
- - [Pipeline Summary](#pipeline-summary)
+- [Table of Contents](#table-of-contents)
+- [Pipeline Summary](#pipeline-summary)
     - [Metadata Validation](#metadata-validation)
     - [Liftoff](#liftoff)
     - [Submission](#submission)
- - [Setup](#setup)
+- [Setup](#setup)
     - [Environment Setup](#environment-setup)
     - [Repository Setup](#repository-setup)
- - [Quickstart](#quick-start)
- - [Running the Pipeline](#running-the-pipeline)
- - [Profile Options & Input Files](#profile-options-&-input-files)
+- [Quickstart](#quick-start)
+- [Running the Pipeline](#running-the-pipeline)
+- [Profile Options & Input Files](#profile-options-&-input-files)
     - [Input Files Required](#input-files-required)
     - [Customizing Parameters](#customizing-parameters)
     - [Understanding Profiles and Environments](#understanding-profiles-and-environments)
     - [Toggling Submission](#toggling-submission)
-  - [Outputs](#outputs)
+- [Outputs](#outputs)
     - [Pipeline Overview](#pipeline-overview)
     - [Output Directory Formatting](#output-directory-formatting)
     - [Understanding Pipeline Outputs](#understanding-pipeline-outputs)
-  - [Parameters](#parameters)
+- [Parameters](#parameters)
     - [Input Files](#input-files)
     - [Run Environment](#run-environment)
     - [General Subworkflow](#specify-which-subworkflows-to-run)
@@ -38,8 +38,8 @@
     - [Metadata Validation](#specify-metadata-validation-workflow-params)
     - [Liftoff](#specify-liftoff-workflow-params)
     - [Submission](#specify-submission-workflow-params)
-  - [Helpful Links](#helpful-links)
-  - [Acknowledgements](#acknowledgements)
+- [Helpful Links](#helpful-links)
+- [Acknowledgements](#acknowledgements)
 
 ## Pipeline Summary
 
@@ -54,32 +54,32 @@ Submission workflow generates the necessary files for Genbank submission, genera
 
 ## Setup
 
-#### Environment Setup 
+### Environment Setup 
 The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
 * Note: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
 * If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
 
-##### (A) First install mamba:
+#### (A) First install mamba:
 ```bash
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
 bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
 ```
-##### (B) Add mamba to PATH:
+#### (B) Add mamba to PATH:
 ```bash
 export PATH="$HOME/mambaforge/bin:$PATH"
 ```
-##### (C) Now you can create the conda environment and install the dependencies set in your environment.yml:   
+#### (C) Now you can create the conda environment and install the dependencies set in your environment.yml:   
 ```bash
 mamba create -n tostadas -f environment.yml   
 ```
-##### (D) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
+#### (D) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
 ```bash
 source activate tostadas
 ```
 
-##### (E) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk*
+#### (E) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk*
 
-##### (F) The final piece to the environment set up is to install nextflow (optionally with conda):
+#### (F) The final piece to the environment set up is to install nextflow (optionally with conda):
 
 * First make sure your path is set correctly and you are active in your tostadas environment. Then run the following command to install nextflow with Conda: 
 ```bash
@@ -87,7 +87,7 @@ mamba install -c bioconda nextflow
 ```
 Access the link provided for help with installing [nextflow](https://www.nextflow.io/docs/latest/getstarted.html)
 
-#### Repository Setup
+### Repository Setup
 
 To clone the code from the repo to your local machine: 
 ```bash
@@ -104,17 +104,17 @@ Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/c
 
 The configs are set-up to run the default params with the test option
 
-##### (1) Ensure nextflow was installed successfully by running ```Nextflow -v```
+#### (1) Ensure nextflow was installed successfully by running ```Nextflow -v```
 ```
 * Version of nextflow should be >=22.10.0
 ```
 
-##### (2) Check that you are in the project directory (Tostadas).
+#### (2) Check that you are in the project directory (Tostadas).
 This is the default directory set in the nextflow.config file to allow for running the nextflow pipeline with the provided test input files.
 
-##### (3) Change the ```submission_config``` parameter within ```test_params.config``` to the location of your personal submission config file.
+#### (3) Change the ```submission_config``` parameter within ```test_params.config``` to the location of your personal submission config file.
 
-##### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
+#### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
 
 ```bash
 nextflow run main.nf -profile test,conda
@@ -124,7 +124,7 @@ The outputs of the pipeline will appear in the "nf_test_results" folder within t
 
 ## Running the Pipeline
 
-#### How to Run:
+### How to Run:
 The typical command to run the pipeline based on your custom parameters defined/saved in the standard_params.config (more information about profiles and parameter sets below) and created conda environment is as follows:
 
 ```bash
@@ -170,9 +170,9 @@ Outputs will be generated in the nf_test_results folder (if running the test par
 
 This section walks through the available parameters to customize your workflow.
 
-#### Input Files Required: 
+### Input Files Required: 
 
-##### (A) This table lists the required files to run metadata validation and liftoff annotation:
+#### (A) This table lists the required files to run metadata validation and liftoff annotation:
 | Input files | File type | Description                                                                               |
 |-------------|-----------|-------------------------------------------------------------------------------------------|
 | fasta       | .fasta    | Multi-sample fasta file with your input sequences                                         |
@@ -180,7 +180,7 @@ This section walks through the available parameters to customize your workflow.
 | ref_fasta   | .fasta    | Reference genome to use for the  liftoff_submission branch of the pipeline                |
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
 
-##### (B) This table lists the required files to run with submission: 
+#### (B) This table lists the required files to run with submission: 
 | Input files | File type | Description                                                                               |
 |-------------|-----------|-------------------------------------------------------------------------------------------|
 | fasta       | .fasta    | Multi-sample fasta file with your input sequences                                         |
@@ -189,16 +189,16 @@ This section walks through the available parameters to customize your workflow.
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
 | submission_config| .yaml    | configuration file for submitting to NCBI, sample versions can be found in repo       |
 
-#### Customizing Parameters:
+### Customizing Parameters:
 The standard_params.config file found within the conf directory is where parameters can be adjusted based on preference for running the pipeline. First you will want to ensure the file paths are correctly set for the params listed above depending on your preference for submitting your results. 
  * Adjust your file inputs within standard_params.config ensuring accurate file paths for the inputs listed above.
  * The params can be changed within the standard_params.config or you can change the standard.yml/standard.json file inside the nf_params directory and pass it in with: ```-params-file <standard_params.yml or standard_params.json>```
  * Note: DO NOT EDIT the main.nf file or other paths in the nextflow.config unless familiar with editing nextflow workflows
 
-#### Understanding Profiles and Environments:
+### Understanding Profiles and Environments:
 Within the nextflow pipeline the ```-profile``` option is required as an input. The profile options with the pipeline include test and standard. These two options can be seen listed in the nextflow.config file. The test params should remain the same for testing purposes, but the standard profile can be changed to fit user preferences. Also within the nextflow pipeline there is the use of varying run environments as the second profile input. Nextflow expects at least one option for both of these configurations to be passed in: ```-profile <test/standard>,<conda/docker/singularity>```
 
-#### Toggling Submission:
+### Toggling Submission:
 Now that your file paths are set within your standard.yml or standard.json or standard_params.config file, you will want to define whether to run the full pipeline with submission or without submission. This is defined within the standard_params.config file underneath the subworkflow section as run_submission ```run_submission = true/false```
  * Apart from this main bifurcation, there exists entrypoints that you can use to access specific processes. More information is listed in the table below.
 
@@ -238,7 +238,7 @@ nextflow run main.nf -profile <param set>,<env> -entry <insert option from table
 ## Outputs
 The following section walks through the outputs from the pipeline.
 
-#### Pipeline Overview:
+### Pipeline Overview:
 The workflow will generate outputs in the following order:
 
 * Validation
@@ -253,7 +253,7 @@ The workflow will generate outputs in the following order:
     * Formats for database submission
     * This section runs twice, with the second run occuring after a wait time to allow for all samples to be uploaded to NCBI. Entrypoint `only_update_submission` can be run as many times as necessary until all files are fully uploaded.
 
-#### Output Directory Formatting:
+### Output Directory Formatting:
 The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:
 * validation_outputs (**name configurable with val_output_dir)
     * sample_metadata_run
@@ -274,7 +274,7 @@ The outputs are recorded in the directory specified within the nextflow.config f
     * commands_used
 * liftoffCommand.txt
 
-#### Understanding Pipeline Outputs:
+### Understanding Pipeline Outputs:
 The pipeline outputs inlcude: 
 * metadata.tsv files for each sample 
 * separate fasta files for each sample
@@ -291,7 +291,7 @@ When changing these parameters pay attention to the required inputs and make sur
 * Please note the correct formatting and the default calculation of submission_wait_time at the bottom of the params table.
 
 
-#### Input files
+### Input files
 
 | Param                      | Description                                             | Input Required   |
 |----------------------------|---------------------------------------------------------|------------------|
@@ -301,19 +301,19 @@ When changing these parameters pay attention to the required inputs and make sur
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
 | --env_yml                  | Path to environment.yml file                            |        Yes (path as string)       |
 
-#### Run environment
+### Run environment
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --scicomp           | Flag for whether running on Scicomp or not                            | Yes (true/false as bool) |
 | --docker_container           | Name of the Docker container                            | Yes, if running with docker profile (name as string) |
 
-#### Specify which subworkflows to run
+### Specify which subworkflows to run
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --run_submission           | Toggle for running submission                            | Yes (true/false as bool) |
 | --cleanup                  | Toggle for running cleanup subworkflows                 | Yes (true/false as bool) |
 
-#### Parameters specific to cleanup workflow
+### Parameters specific to cleanup workflow
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --clear_nextflow_log     | Clears nextflow work log                                |        Yes (true/false as bool)      |
@@ -323,14 +323,14 @@ When changing these parameters pay attention to the required inputs and make sur
 | --clear_nf_results       | Remove results from nextflow outputs                    |  Yes (true/false as bool) |               
 
 
-#### Specify where output files should be stored and if they should be overwritten
+### Specify where output files should be stored and if they should be overwritten
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --output_dir               | File path to submit outputs from pipeline              |        Yes (path as string)      |
 | --overwrite_output         | Toggle to overwriting output files in directory        | Yes (true/false as bool) |
 
 
-#### Specify metadata validation workflow params:
+### Specify metadata validation workflow params:
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --val_output_dir         | File path for outputs specific to validate sub-workflow |        Yes (folder name as string)      |
@@ -338,7 +338,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --val_keep_pi            | Flag to keep personal identifying info, if provided otherwise it will return an error|        Yes (true/false as bool)      |
 
 
-#### Specify liftoff workflow params:
+### Specify liftoff workflow params:
 | Param                       | Description                                             | Input Required   |
 |-----------------------------|---------------------------------------------------------|------------------|
 | --final_liftoff_output_dir  | File path to liftoff specific sub-workflow outputs      |        Yes (folder name as string)      |
@@ -360,7 +360,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --lift_minimap_path         |Path to minimap if you did not use conda or pip          |        Yes (N/A or path as string)       |
 |--lift_feature_database_name |Name of the feature database, if none, then will use ref gff path to construct one|        Yes (N/A or name as string)      |
 
-#### Specify submission workflow params:
+### Specify submission workflow params:
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --submission_output_dir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
