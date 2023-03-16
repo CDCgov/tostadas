@@ -43,13 +43,13 @@
 
 ## Pipeline Summary
 
-#### Metadata Validation
+### Metadata Validation
 The validation workflow checks if metadata conforms to NCBI standards and matches the input fasta file. The script also splits a multi-sample xlsx file into a separate .tsv file for each individual.
 
-#### Liftoff
+### Liftoff
 The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes.
 
-#### Submission 
+### Submission 
 Submission workflow generates the necessary files for Genbank submission, generates a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
 
 ## Setup
