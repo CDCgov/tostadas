@@ -3,7 +3,7 @@
 
 ## Checklist
 
-**Go Through Checklist Below and Place An 'X' if Completed**
+**Go Through Checklist Below and Place An :heavy_check_mark: if Completed**
 
 #### General Checks
 
