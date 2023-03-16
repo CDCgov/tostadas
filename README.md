@@ -80,25 +80,86 @@ mamba install -c bioconda nextflow
 ```
 Access the link provided for help with installing [nextflow](https://www.nextflow.io/docs/latest/getstarted.html)
 
+## Repository Setup
+
+### To clone the code from the repo to your local machine: 
+```
+git clone https://github.com/CDCgov/tostadas.git
+```
+
+If the following applies to you:
+* CDC user with acess to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
+* Require access to available submission config files
+
+Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
+
 ## Quick Start
 
 ### The configs are set-up to run the default params with the test option
 
-#### (A) First you want to ensure nextflow was installed successfully by running ```Nextflow -v```
-        * Version of nextflow should be >=22.10.0
+#### (1) Ensure nextflow was installed successfully by running ```Nextflow -v```
+```
+* Version of nextflow should be >=22.10.0
+```
 
-#### (B) Now check that you are in the project repo.
+#### (2) Check that you are in the project directory (Tostadas).
 This is the default directory set in the nextflow.config file to allow for running the nextflow pipeline with the provided test input files.
 
-#### (C) Finally you can run the following nextflow command to execute the scripts with default parameters: 
+#### (3) Change the ```submission_config``` parameter within ```test_params.config``` to the location of your personal submission config file.
 
-```bash
+#### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
+
+```
 nextflow run main.nf -profile test,conda
 ```
 
-#### (D) The outputs of the pipeline will appear in the "nf_test_results" folder with in the project directory (update this in the nextflow.config for a different output path).
+#### The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory (update this in the standard params set for a different output path).
 
-## Usage
+## Running the Pipeline (continued)
+
+#### How to Run:
+The typical command to run the pipeline based on your custom parameters defined/saved in the standard_params.config (more information about profiles and parameter sets below) and created conda environment is as follows:
+
+```
+nextflow run main.nf -profile standard,conda
+``` 
+OR with the parameters specified in the .json/.yaml files with the following command:
+
+```
+nextflow run main.nf -profile standard,conda --<param name> <param value>
+```
+
+Other options for the run environment include ```docker``` and ```singularity```. These options can be used simply by replacing the second profile option: 
+```
+nextflow run main.nf -profile standard,<docker or singularity>
+```
+
+Either one of the above commands will launch the nextflow pipeline and show the progress of the subworkflow:process and checks looking similar to below depending on the entrypoint specified. 
+
+```bash
+N E X T F L O W  ~  version 22.10.0
+Launching `main.nf` [festering_spence] DSL2 - revision: 3441f714f2
+executor >  local (7)
+[e5/9dbcbc] process > VALIDATE_PARAMS                                  [100%] 1 of 1 âœ”
+[53/a833be] process > CLEANUP_FILES                                    [100%] 1 of 1 âœ”
+[e4/a50c97] process > with_submission:METADATA_VALIDATION (1)          [100%] 1 of 1 âœ”
+[81/badd3b] process > with_submission:LIFTOFF (1)                      [100%] 1 of 1 âœ”
+[d7/16d16a] process > with_submission:RUN_SUBMISSION:SUBMISSION (1)    [100%] 1 of 1 âœ”
+[3c/8c7ba4] process > with_submission:RUN_SUBMISSION:GET_WAIT_TIME (1) [100%] 1 of 1 âœ”
+[13/85f6f3] process > with_submission:RUN_SUBMISSION:WAIT (1)          [  0%] 0 of 1
+[-        ] process > with_submission:RUN_SUBMISSION:UPDATE_SUBMISSION -
+USING CONDA
+
+````
+** NOTE: The default wait time between initial submission and updating the submitted samples is three minutes or 180 seconds per sample. To override this default calculation, you can modify the submission_wait_time parameter within your config or through the command line (in terms of seconds):
+ 
+ ```bash
+nextflow run main.nf -profile <param set>,<env> --submission_wait_time 360
+ ```
+ 
+Outputs will be generated in the nf_test_results folder (if running the test parameter set) unless otherwise specified in your standard_params.config file as output_dir param. 
+
+## Profile Options & Input Files
 #### This section walks through the available parameters to customize your workflow.
 
 #### Input Files Required: 
@@ -120,22 +181,20 @@ nextflow run main.nf -profile test,conda
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
 | submission_config| .yaml    | configuration file for submitting to NCBI, sample versions can be found in repo       |
 
-
 #### Customizing Parameters:
-The standard_params.config file found within the conf directory is where parameters can be adjusted based on preference for running the pipeline. First you will
-want to ensure the file paths are correctly set for the params listed above depending on your preference for submitting your results. 
+The standard_params.config file found within the conf directory is where parameters can be adjusted based on preference for running the pipeline. First you will want to ensure the file paths are correctly set for the params listed above depending on your preference for submitting your results. 
  * Adjust your file inputs within standard_params.config ensuring accurate file paths for the inputs listed above.
- * The params can be changed within the standard_params.config or you can change the standard.yml file inside of the nf_params directory and pass it in with the ```-params-file <params.yml or params.json>```
+ * The params can be changed within the standard_params.config or you can change the standard.yml/standard.json file inside the nf_params directory and pass it in with: ```-params-file <standard_params.yml or standard_params.json>```
  * Note: DO NOT EDIT the main.nf file or other paths in the nextflow.config unless familiar with editing nextflow workflows
 
 #### Understanding Profiles and Environments:
-Within the nextflow pipeline the -profile option is required as an input. The profile options with the pipeline include test and standard. These two options can be seen listed in the nextflow.config file. The test params should remain the same for testing purposes, but the standard profile can be changed to fit user preferences. Also within the nextflow pipeline there is the optional use of varying environments as the second -profile input. Nextflow expects at least one of these configurations to be passed in: ```-profile <test/standard>,<conda/docker/singularity>```
+Within the nextflow pipeline the ```-profile``` option is required as an input. The profile options with the pipeline include test and standard. These two options can be seen listed in the nextflow.config file. The test params should remain the same for testing purposes, but the standard profile can be changed to fit user preferences. Also within the nextflow pipeline there is the use of varying run environments as the second profile input. Nextflow expects at least one option for both of these configurations to be passed in: ```-profile <test/standard>,<conda/docker/singularity>```
 
-#### Defining Entrypoints:
-Now that your file paths are set within your standard.yml or standard_params.config file you will want to define whether to run the full pipeline with submission or without submission. This is defined within the standard_params.config file underneath the subworkflow section as run_submission ```run_submission = true/false```
- * Apart from this main bifurcation, there exists entrypoints that you can use to access specific processes. These are listed in the table below.
+#### Toggling Submission:
+Now that your file paths are set within your standard.yml or standard.json or standard_params.config file, you will want to define whether to run the full pipeline with submission or without submission. This is defined within the standard_params.config file underneath the subworkflow section as run_submission ```run_submission = true/false```
+ * Apart from this main bifurcation, there exists entrypoints that you can use to access specific processes. More information is listed in the table below.
 
-#### Running Submission:
+## More Information on Submission:
 The submission piece of the pipeline uses the processes that are directly integrated from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline. It has been developed to allow the user to create a config file to select which databases they would like to upload to and allows for any possible metadata fields by using a YAML to pair the database's metadata fields which your personal metadata field columns. The requirements for this portion of the pipeline to run are listed below.
 
 (A) Create Appropriate Accounts as needed for the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline integrated into TOSTADAS:
@@ -143,66 +202,9 @@ The submission piece of the pipeline uses the processes that are directly integr
 * GISAID: A GISAID account is required for submission to GISAID, you can register for an account at https://www.gisaid.org/. Test submissions are first required before a final submission can be made. When your first test submission is complete contact GISAID at hcov-19@gisaid.org to recieve a personal CID. GISAID support is not yet implemented but it may be added in the future.
 
 (B) Config File Set-up:
-* The submission_config file is located in submission_scripts/config_files directory
-* The script automatically defaults to the default_config.yaml to change the submission config to your own, you must run ```--submission_config <file path to custom config>```  as a flag, or change this parameter in the standard_params.config file.
-* The template for the submission .yaml file can be found in submission scripts/config_files within the repo. This is where you can edit the various parameters you want to include in your submission. Then you must set the file path accordingly in the nextflow.config file or with the ```--submission_config``` flag to overwrite the old .yaml file (as mentioned above).
+* The template for the submission config file can be found in bin/default_config_files within the repo. This is where you can edit the various parameters you want to include in your submission.
 
-#### Running The Pipeline with Conda:
-(A) The typical command to run the pipeline based on your custom parameters defined/saved in the standard_params.config and created conda environment is as follows:
-      Note: The ```-profile``` flag is responsible for defining profiles. These profiles are defined in the nextflow.config file including: 
-           * test profile which runs the command based on a default set of params listed in the config file for you to be able to see and example run. 
-           * standard profile which runs the pipeline based on how you have set the params in the config file under the standard profile section
-```bash
-nextflow run main.nf -profile standard,conda
-``` 
-Another option to run the pipeline with specified parameters is with the following command:
-
-```bash
-nextflow run main.nf -profile standard,conda --<param name> <param value>
-```
-
-(B) Either one of the above commands will launch the nextflow pipeline and show the progress of the subworkflows and checks looking similar to below depending on the entrypoint specified. 
-
-```bash 
-N E X T F L O W  ~  version 22.10.0
-Launching `main.nf` [festering_spence] DSL2 - revision: 3441f714f2
-executor >  local (7)
-[e5/9dbcbc] process > VALIDATE_PARAMS                                  [100%] 1 of 1 âœ”
-[53/a833be] process > CLEANUP_FILES                                    [100%] 1 of 1 âœ”
-[e4/a50c97] process > with_submission:METADATA_VALIDATION (1)          [100%] 1 of 1 âœ”
-[81/badd3b] process > with_submission:LIFTOFF (1)                      [100%] 1 of 1 âœ”
-[d7/16d16a] process > with_submission:RUN_SUBMISSION:SUBMISSION (1)    [100%] 1 of 1 âœ”
-[3c/8c7ba4] process > with_submission:RUN_SUBMISSION:GET_WAIT_TIME (1) [100%] 1 of 1 âœ”
-[13/85f6f3] process > with_submission:RUN_SUBMISSION:WAIT (1)          [  0%] 0 of 1
-[-        ] process > with_submission:RUN_SUBMISSION:UPDATE_SUBMISSION -
-USING CONDA
-
-````
-** NOTE: The default wait time between initial submission and updating the submitted samples is three minutes or 180 seconds per sample. To override this default calculation, you can modify the submission_wait_time parameter within your config or through the command line (in terms of seconds):
- 
- ```bash
-nextflow run main.nf -profile <param set>,<env> --submission_wait_time 360
- ```
- 
-(C) Outputs will be generated in the nf_test_results folder (if running the test parameter set) unless otherwise specified in your standard_params.config file as output_dir param. 
-
-#### Running The Pipeline with Docker:
-The pipeline can be ran with Docker as well. This container has been set according to the conda environment and dependencies needed to run the pipeline. To run the pipeline using Docker use one of the following commands:
-    
-  To run with custom params:
-```bash
-nextflow run main.nf -profile standard,docker 
-``` 
-  For a dry run with the test params:
-```bash
-nextflow run main.nf -profile test,docker 
-```
-Then, if you want to add in custom entrypoints or params the same command can be used that was listed for use with conda: 
-```bash
-nextflow run main.nf -profile <param set>,docker --<param name> <param value>
-```
-
-#### Entrypoints:
+## Entrypoints:
 
 Table of entrypoints available for the nextflow pipeline:
 
@@ -289,17 +291,20 @@ When changing these parameters pay attention to the required inputs and make sur
 | --ref_fasta_path           | Reference Sequence file path                            |        Yes (path as string)      |
 | --meta_path                | Meta-data file path for samples                         |        Yes (path as string)      |
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
-| --liftoff_script           | Path to liftoff.py script                               |        Yes (path as string)      |
-| --validation_script        | Path to validation.py script                            |        Yes (path as string)      |
-| --submission_script        | Path to submission.py script                            |        Yes (path as string)       |
 | --env_yml                  | Path to environment.yml file                            |        Yes (path as string)       |
 
+### Run environment
+| Param                    | Description                                             | Input Required   |
+|--------------------------|---------------------------------------------------------|------------------|
+| --scicomp           | Flag for whether running on Scicomp or not                            | Yes (true/false as bool) |
+| --docker_container           | Name of the Docker container                            | Yes, if running with docker profile (name as string) |
 
 ### Specify which subworkflows to run
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
-| --run_submission           | Toggle to running submission                            | Yes (true/false as bool) |
+| --run_submission           | Toggle for running submission                            | Yes (true/false as bool) |
 | --cleanup                  | Toggle for running cleanup subworkflows                 | Yes (true/false as bool) |
+
 ### Parameters specific to cleanup workflow
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
@@ -347,7 +352,6 @@ When changing these parameters pay attention to the required inputs and make sur
 | --lift_minimap_path         |Path to minimap if you did not use conda or pip          |        Yes (N/A or path as string)       |
 |--lift_feature_database_name |Name of the feature database, if none, then will use ref gff path to construct one|        Yes (N/A or name as string)      |
 
-
 ### Specify submission workflow params:
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
@@ -357,8 +361,9 @@ When changing these parameters pay attention to the required inputs and make sur
 | --submission_only_gff    | Full path directly to the directory with reformatted GFFs    |        Yes (path as string)      |
 | --submission_only_fasta  | Full path directly to the directory with split fastas for each sample|        Yes (path as string)      |
 | --submission_config      | Configuration file for submission to public repos       |        Yes (path as string)      |
-| --submission_wait_time **|Calculated based on sample number(3 * 60secs * sample_num)| integer (seconds)|
+| --submission_wait_time **|Calculated based on sample number(3 * 60secs * sample_num)| integer (seconds)       |
 | --batch_name | Name of the batch to prefix samples with during submission | Yes (name as string)
+| --send_submission_email | Toggle email notification on/off (** Only triggered if genbank is being submitted to AND table2asn is the genbank_submission_type | Yes (true/false as bool)           |
 
 ## Helpful Links for Resources and Software Integrated with TOSTADAS :     
    :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/
