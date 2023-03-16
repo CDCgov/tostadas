@@ -60,16 +60,16 @@ The environment setup needs to occur within a terminal, or can optionally be han
 * If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
 
 ##### (A) First install mamba:
-```
+```bash
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
 bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
 ```
 ##### (B) Add mamba to PATH:
-```
+```bash
 export PATH="$HOME/mambaforge/bin:$PATH"
 ```
 ##### (C) Now you can create the conda environment and install the dependencies set in your environment.yml:   
-```
+```bash
 mamba create -n tostadas -f environment.yml   
 ```
 ##### (D) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
@@ -90,7 +90,7 @@ Access the link provided for help with installing [nextflow](https://www.nextflo
 #### Repository Setup
 
 To clone the code from the repo to your local machine: 
-```
+```bash
 git clone https://github.com/CDCgov/tostadas.git
 ```
 
@@ -116,7 +116,7 @@ This is the default directory set in the nextflow.config file to allow for runni
 
 ##### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
 
-```
+```bash
 nextflow run main.nf -profile test,conda
 ```
 
@@ -127,17 +127,17 @@ The outputs of the pipeline will appear in the "nf_test_results" folder within t
 #### How to Run:
 The typical command to run the pipeline based on your custom parameters defined/saved in the standard_params.config (more information about profiles and parameter sets below) and created conda environment is as follows:
 
-```
+```bash
 nextflow run main.nf -profile standard,conda
 ``` 
 OR with the parameters specified in the .json/.yaml files with the following command:
 
-```
+```bash
 nextflow run main.nf -profile standard,conda --<param name> <param value>
 ```
 
 Other options for the run environment include ```docker``` and ```singularity```. These options can be used simply by replacing the second profile option: 
-```
+```bash
 nextflow run main.nf -profile standard,<docker or singularity>
 ```
 
