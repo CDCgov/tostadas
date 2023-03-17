@@ -1,3 +1,5 @@
+#!/usr/bin/env nextflow 
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     RUNNING SUBMISSION
@@ -7,23 +9,25 @@
 include { SUBMISSION } from '../nf_modules/main_mods'
 include { UPDATE_SUBMISSION } from '../nf_modules/main_mods'
 include { WAIT } from '../nf_modules/utility_mods'
-include { GET_WAIT_TIME } from '../nf_modules/utility_mods'
 
 workflow RUN_SUBMISSION {
     take:
-        lift_signal
-        vadr_signal
-        val_signal
+        meta_signal 
+        liftoff_signal
+        meta_files
+        lifted_fasta_files
+        lifted_gff_files
         entry_flag
-        validated_meta_path
-        lifted_fasta_path
-        lifted_gff_path
+        submission_config
+        req_col_config
+        wait_time
+
     main:
-        SUBMISSION ( lift_signal, vadr_signal, val_signal, validated_meta_path, lifted_fasta_path, lifted_gff_path, entry_flag )
+        // submit the files to database of choice (after fixing config and getting wait time)
+        SUBMISSION ( meta_files, lifted_fasta_files, lifted_gff_files, entry_flag, submission_config, req_col_config )
 
-        GET_WAIT_TIME ( SUBMISSION.out, validated_meta_path, entry_flag )
+        // actual process to initiate wait 
+        WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
-        WAIT ( GET_WAIT_TIME.out[0], GET_WAIT_TIME.out[1] )
-
-        UPDATE_SUBMISSION ( WAIT.out )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files )
 }

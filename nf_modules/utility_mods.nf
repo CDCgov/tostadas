@@ -21,10 +21,8 @@ process VALIDATE_PARAMS {
         assert params.meta_path
 
         // check script params
-        assert params.liftoff_script
-        assert params.validation_script
-        assert params.submission_script
         assert params.env_yml
+        assert params.docker_container
 
         // check batch name 
         assert params.batch_name 
@@ -39,6 +37,7 @@ process VALIDATE_PARAMS {
         assert params.lift_gap_extend
 
         // check list of params with bool values
+        assert params.scicomp == true || params.scicomp == false
         assert params.clear_nextflow_log == true || params.clear_nextflow_log == false
         assert params.clear_work_dir == true || params.clear_work_dir == false
         assert params.run_submission == true || params.run_submission == false
@@ -57,8 +56,6 @@ process VALIDATE_PARAMS {
             "ref_fasta_path": params.ref_fasta_path,
             "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-            "liftoff_script": params.liftoff_script,
-            "validation_script": params.validation_script,
             "env_yml": params.env_yml,
             "output_dir": params.output_dir,
             "lift_minimap_path": params.lift_minimap_path,
@@ -105,8 +102,6 @@ process VALIDATE_PARAMS {
             "ref_fasta_path": params.ref_fasta_path,
             "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-            "liftoff_script": params.liftoff_script,
-            "validation_script": params.validation_script,
             "env_yml": params.env_yml,
             "lift_minimap_path": params.lift_minimap_path,
             "lift_feature_database_name": params.lift_feature_database_name
@@ -206,48 +201,42 @@ process CLEANUP_FILES {
 
 process WAIT {
 
-    conda params.env_yml
+    label 'main'
+    
+    if ( params.run_conda == true ) {
+        try {
+            conda params.env_yml
+        } catch (Exception e) {
+            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+        }
+    }
 
     input:
-        val signal
+        val submission_signal
         val wait_time
-    shell:
-        """
-        #!/usr/bin/env python
 
-        import time
-
-        time.sleep($wait_time)
+    script:
         """
+        submission_utility.py --wait true --wait_time $wait_time
+        """
+
     output:
         val true
 }
 
 process GET_WAIT_TIME {
     input:
-        val signal
+        val meta_signal
+        val liftoff_signal
         val validated_meta_path
-        val entry_flag
     exec:
         if ( params.submission_wait_time != 'calc' ) {
             submission_wait_time = params.submission_wait_time
         } else {
-            if ( entry_flag == true ) {
-                dir = file(validated_meta_path)
-            } else {
-                def splitted = params.meta_path.tokenize( '/' )[-1]
-                def meta_file_name = splitted.tokenize( '.' )[0]
-                dir = file(validated_meta_path + "/" + meta_file_name + "/tsv_per_sample")
-            }
-            samp_files = dir.list()
-            i = 0
-            for ( def x : samp_files ) {
-                i = i + 1
-            }
+            i = validated_meta_path.toList().size
             submission_wait_time = 3 * 60 * i
         }
     output:
-        val true
         val submission_wait_time
 }
 
@@ -257,6 +246,7 @@ process GET_WAIT_TIME {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process SUBMISSION_ENTRY_CHECK {
+
     exec:
         // check the different ways to run params
         def check = [params.run_docker, params.run_conda, params.run_singularity].count(true)
@@ -291,4 +281,64 @@ process SUBMISSION_ENTRY_CHECK {
         val true
 }
 
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            PREP SUBMISSION ENTRY INPUTS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+process PREP_SUBMISSION_ENTRY {
 
+    label 'main'
+
+    if ( params.run_conda == true ) {
+        try {
+            conda params.env_yml
+        } catch (Exception e) {
+            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+        }
+    }
+
+    input:
+        val submission_entry_check_signal
+        path validated_meta
+        path fasta
+        path annotated_gff
+        val update_entry
+
+    script:
+        """
+        submission_utility.py --prep_submission_entry true --update_entry $update_entry --meta_path $validated_meta --fasta_path $fasta --gff_path $annotated_gff
+        """
+     
+    output: 
+        path "tsv_submit_entry/*", emit: tsv
+        path "fasta_submit_entry/*", emit: fasta
+        path "gff_submit_entry/*", emit: gff
+}
+
+process PREP_UPDATE_SUBMISSION_ENTRY {
+
+    label 'main'
+
+        if ( params.run_conda == true ) {
+        try {
+            conda params.env_yml
+        } catch (Exception e) {
+            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+        }
+    }
+
+    input: 
+        val submission_entry_check_signal
+        val update_entry
+        path processed_samples
+    
+    script:
+        """
+        submission_utility.py --prep_submission_entry true --processed_samples $processed_samples --update_entry $update_entry
+        """
+    
+    output: 
+        path "update_entry/*", emit: samples
+    
+}

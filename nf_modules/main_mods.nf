@@ -1,4 +1,3 @@
-include { WAIT } from "$projectDir/nf_modules/utility_mods"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,14 +23,15 @@ process METADATA_VALIDATION {
     path meta_path
     path fasta_path
 
-    output:
-    file "$params.val_output_dir"
-    val true
-
     script:
     """
-    python3 $params.validation_script --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
+    validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir
     """
+
+    output:
+    path "$params.val_output_dir/*/tsv_per_sample/*.tsv", emit: tsv_Files
+    path "$params.val_output_dir/*/errors", emit: errors
+    val true, emit: meta_signal
 }
 
 /*
@@ -57,22 +57,25 @@ process LIFTOFF {
     val signal
     path meta_path
     path fasta_path
-    path ref_fasta_path
-    path ref_gff_path
-
-    output:
-    file "$params.final_liftoff_output_dir"
-    val true
+    path ref_fasta_path 
+    path ref_gff_path 
 
     script:
     """
-        python3 $params.liftoff_script --fasta_path $fasta_path --meta_path $meta_path --ref_fasta_path $ref_fasta_path \
+        liftoff_submission.py --fasta_path $fasta_path --meta_path $meta_path --ref_fasta_path $ref_fasta_path \
         --ref_gff_path $ref_gff_path --parallel_processes $params.lift_parallel_processes --final_liftoff_output_dir $params.final_liftoff_output_dir \
         --delete_temp_files $params.lift_delete_temp_files --minimap_path $params.lift_minimap_path --feature_database_name $params.lift_feature_database_name \
         --unmapped_features_file_name $params.lift_unmapped_features_file_name --distance_scaling_factor $params.lift_distance_scaling_factor \
         --copy_threshold $params.lift_copy_threshold --coverage_threshold $params.lift_coverage_threshold --child_feature_align_threshold $params.lift_child_feature_align_threshold \
         --copies $params.lift_copies --flank $params.lift_flank --mismatch $params.lift_mismatch --gap_open $params.lift_gap_open --gap_extend $params.lift_gap_extend
     """
+
+    output:
+    path "$params.final_liftoff_output_dir/*/fasta/*.fasta", emit: fasta
+    path "$params.final_liftoff_output_dir/*/liftoff/*.gff", emit: gff
+    path "$params.final_liftoff_output_dir/*/errors/*.txt", emit: errors
+    path "$params.final_liftoff_output_dir/*/tbl/*.tbl", emit: tbl
+    val true, emit: liftoff_signal
 }
 
 /*
@@ -96,15 +99,15 @@ process VADR {
 
     input:
     val signal
-    path fasta_path
+    path fasta_path 
 
     output:
-    file "$params.vadr_outdir"
+    path("${params.vadr_outdir}")
     val true
 
     script:
     """
-        python3 $params.vadr_script --vadr_loc $params.vadr_loc --fasta_path $params.fasta_path --vadr_outdir $params.vadr_outdir --mpxv_models_dir $projectDir/mpxv-models
+    $params.vadr_script --vadr_loc $params.vadr_loc --fasta_path $params.fasta_path --vadr_outdir $params.vadr_outdir --mpxv_models_dir $projectDir/mpxv-models
     """
 }
 
@@ -115,10 +118,10 @@ process VADR {
 */
 process SUBMISSION {
 
-    publishDir "$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
-
     label 'main'
     
+    publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
+
     if ( params.run_conda == true ) {
         try {
             conda params.env_yml
@@ -128,30 +131,30 @@ process SUBMISSION {
     }
 
     input:
-        val lift_signal
-        val vadr_signal
-        val val_signal
-        val validated_meta_path
-        val lifted_fasta_path
-        val lifted_gff_path
+        path validated_meta_path
+        path lifted_fasta_path
+        path lifted_gff_path
         val entry_flag
+        path submission_config
+        path req_col_config
 
     script:
-        """
-        python3 $projectDir/bin/run_submission.py --validated_meta_path $validated_meta_path --lifted_fasta_path $lifted_fasta_path \
-        --lifted_gff_path $lifted_gff_path --launch_dir $launchDir --entry_flag $entry_flag --submission_script $params.submission_script \
-        --meta_path $params.meta_path --config $params.submission_config --nf_output_dir $params.output_dir --submission_output_dir $params.submission_output_dir --update false \
-        --batch_name $params.batch_name --prod_or_test $params.submission_prod_or_test --project_dir $projectDir
-        """
+    """
+    run_submission.py --submission_database $params.submission_database --unique_name $params.batch_name --lifted_fasta_path $lifted_fasta_path \
+    --validated_meta_path $validated_meta_path --lifted_gff_path $lifted_gff_path --config $submission_config --prod_or_test $params.submission_prod_or_test \
+    --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email --sample_name ${validated_meta_path.getSimpleName()}
+    """
 
     output:
-        val true
+        path "$params.batch_name.${validated_meta_path.getSimpleName()}", emit: submission_files
 }
 
 process UPDATE_SUBMISSION {
 
     label 'main'
-    
+
+    publishDir "$params.output_dir/$params.submission_output_dir/$params.batch_name.${submission_output.getExtension()}", mode: 'copy', overwrite: true
+
     if ( params.run_conda == true ) {
         try {
             conda params.env_yml
@@ -161,10 +164,16 @@ process UPDATE_SUBMISSION {
     }
 
     input:
-        val signal
+        val wait_signal
+        path submission_config
+        path submission_output
+        
     script:
         """
-         python3 $projectDir/bin/run_submission.py --update true --submission_script $params.submission_script --submission_output_dir $params.submission_output_dir \
-         --nf_output_dir $params.output_dir --launch_dir $launchDir 
+        run_submission.py --config $submission_config --update true --unique_name $params.batch_name --sample_name ${submission_output.getExtension()}
         """
+    
+    output:
+        path "update_submit_info/${submission_output.getExtension()}_update_terminal_output.txt"
+        file '*'
 } 
