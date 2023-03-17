@@ -1,0 +1,4 @@
+[submodule "CDC Submission Configs"]
+	path = bin/config_files
+	url = git@git.biotech.cdc.gov:monkeypox/mpxv_annotation_submission_dev_configs.git
+
