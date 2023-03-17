@@ -303,14 +303,42 @@ process PREP_SUBMISSION_ENTRY {
         path validated_meta
         path fasta
         path annotated_gff
+        val update_entry
 
     script:
         """
-        submission_utility.py --prep_submission_entry true --meta_path $validated_meta --fasta_path $fasta --gff_path $annotated_gff
+        submission_utility.py --prep_submission_entry true --update_entry $update_entry --meta_path $validated_meta --fasta_path $fasta --gff_path $annotated_gff
         """
-        
+     
     output: 
-        path "tsv_submit_entry/*.tsv", emit: tsv
-        path "fasta_submit_entry/*.fasta", emit: fasta
-        path "gff_submit_entry/*.gff", emit: gff
+        path "tsv_submit_entry/*", emit: tsv
+        path "fasta_submit_entry/*", emit: fasta
+        path "gff_submit_entry/*", emit: gff
+}
+
+process PREP_UPDATE_SUBMISSION_ENTRY {
+
+    label 'main'
+
+        if ( params.run_conda == true ) {
+        try {
+            conda params.env_yml
+        } catch (Exception e) {
+            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+        }
+    }
+
+    input: 
+        val submission_entry_check_signal
+        val update_entry
+        path processed_samples
+    
+    script:
+        """
+        submission_utility.py --prep_submission_entry true --processed_samples $processed_samples --update_entry $update_entry
+        """
+    
+    output: 
+        path "update_entry/*", emit: samples
+    
 }

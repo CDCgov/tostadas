@@ -61,6 +61,7 @@ def helpMessage() {
          --submission_only_meta                 Path to the validated metadata directory if calling submission entrypoint (accepts string)
          --submission_only_gff                  Path to the reformatted gff directory if calling submission entrypoint (accepts string)
          --submission_only_fasta                Path to the split fasta files directory if calling submission entrypoint (accepts string)
+         --processed_samples                    Path to the directory containing processed samples <batch_name>.<sample name> for update only entrypoint (accepts string)
          --submission_config                    Path to the configuration file used for the submission process (accepts string)
          --req_col_config                       Path to the required_columns.yaml file (accepts string)
          --submission_prod_or_test              Denotes whether to submit as a test or production (accepts string: test/prod)
@@ -84,6 +85,7 @@ include { VALIDATE_PARAMS } from "$projectDir/nf_modules/utility_mods"
 include { CLEANUP_FILES } from "$projectDir/nf_modules/utility_mods"
 include { SUBMISSION_ENTRY_CHECK } from "$projectDir/nf_modules/utility_mods"
 include { PREP_SUBMISSION_ENTRY } from "$projectDir/nf_modules/utility_mods"
+include { PREP_UPDATE_SUBMISSION_ENTRY } from "$projectDir/nf_modules/utility_mods"
 include { GET_WAIT_TIME } from "$projectDir/nf_modules/utility_mods"
 
 // get the main processes
@@ -215,7 +217,8 @@ workflow only_submission {
             SUBMISSION_ENTRY_CHECK.out,
             params.submission_only_meta, 
             params.submission_only_fasta, 
-            params.submission_only_gff
+            params.submission_only_gff, 
+            false
         )
 
         // get the wait time
@@ -249,7 +252,8 @@ workflow only_initial_submission {
             SUBMISSION_ENTRY_CHECK.out,
             params.submission_only_meta, 
             params.submission_only_fasta, 
-            params.submission_only_gff
+            params.submission_only_gff, 
+            false
         )
 
         // call the initial submission portion only
@@ -265,21 +269,22 @@ workflow only_initial_submission {
 
 workflow only_update_submission {
     main:
+
         // call the check specific to submission
         SUBMISSION_ENTRY_CHECK ()
 
         // get the parameter paths into proper format 
-        PREP_SUBMISSION_ENTRY ( 
+        PREP_UPDATE_SUBMISSION_ENTRY ( 
             SUBMISSION_ENTRY_CHECK.out,
-            params.submission_only_meta, 
-            params.submission_only_fasta, 
-            params.submission_only_gff
+            true, 
+            params.processed_samples
         )
 
         // call the update submission portion only
         UPDATE_SUBMISSION (
             SUBMISSION_ENTRY_CHECK.out,
             params.submission_config,
-            PREP_SUBMISSION_ENTRY.out.tsv.flatten()
+            PREP_UPDATE_SUBMISSION_ENTRY.out.samples.flatten()
         )
 }
+ 

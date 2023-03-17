@@ -154,7 +154,7 @@ process UPDATE_SUBMISSION {
     label 'main'
 
     publishDir "$params.output_dir/$params.submission_output_dir/$params.batch_name.${submission_output.getExtension()}", mode: 'copy', overwrite: true
-    
+
     if ( params.run_conda == true ) {
         try {
             conda params.env_yml
@@ -167,7 +167,7 @@ process UPDATE_SUBMISSION {
         val wait_signal
         path submission_config
         path submission_output
-
+        
     script:
         """
         run_submission.py --config $submission_config --update true --unique_name $params.batch_name --sample_name ${submission_output.getExtension()}

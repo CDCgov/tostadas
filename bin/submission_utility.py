@@ -20,6 +20,9 @@ def get_args():
     parser.add_argument("--meta_path", type=str, help='Path to the metadata files for submission entrypoint')
     parser.add_argument("--fasta_path", type=str, help='Path to the fasta files for submission entrypoint')
     parser.add_argument("--gff_path", type=str, help='Path to the gff files for submission entrypoint')
+    parser.add_argument("--update_entry", type=str, help='Whether or not it is update submission entry')
+    parser.add_argument("--batch_name", type=str, help='Name of the batch prefix')
+    parser.add_argument("--processed_samples", type=str, help='Path to processed samples')
     return parser
 
 
@@ -39,7 +42,7 @@ def main():
     # =================================================================================================================
     #                        CHECK IF NEED TO CREATE SUBMISSION OUTPUT DIR FOR ENTRYPOINT
     # =================================================================================================================
-    if parameters['prep_submission_entry'].lower().strip() == 'true':
+    if parameters['prep_submission_entry'].lower().strip() == 'true' and parameters['update_entry'].lower().strip() == 'false':
         for file_type, key in zip(['tsv', 'fasta', 'gff'], ['meta_path', 'fasta_path', 'gff_path']):
             # make the directory to copy over the files to 
             os.mkdir(f"{file_type}_submit_entry", mode=0o777)
@@ -47,6 +50,16 @@ def main():
             for file in glob.glob(f"{parameters[key]}/*.{file_type}"):
                 file_name = file.split('/')[-1]
                 shutil.copyfile(file, f"{file_type}_submit_entry/{file_name}")
+    else:
+        # make the new directory to copy over the files to
+        os.mkdir(f"update_entry", mode=0o777)
+        # copy over the processed files
+        for folder in glob.glob(f"{parameters['processed_samples']}/*"):
+            # get the dir name 
+            dir_name = folder.split('/')[-1]
+            # copy over the files 
+            shutil.copytree(folder, f"update_entry/{dir_name}")
+
 
     """
     # modify the submission by checking the output paths are aligned + modifying for certain type of submission

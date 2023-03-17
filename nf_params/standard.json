@@ -50,6 +50,7 @@
     "submission_only_meta": "",
     "submission_only_gff": "",
     "submission_only_fasta": "",
+    "processed_samples": "",
     "submission_config": "",
     "req_col_config": "",
     "batch_name": "",

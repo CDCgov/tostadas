@@ -372,6 +372,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --batch_name | Name of the batch to prefix samples with during submission | Yes (name as string)
 | --send_submission_email | Toggle email notification on/off | Yes (true/false as bool)           |
 | --req_col_config | Path to the required_columns.yaml file | Yes (path as string)           |
+| --processed_samples | Path to the directory containing processed samples for update only submission entrypoint (containing <batch_name>.<sample_name> dirs) | Yes (path as string)           |
 
 ** Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'
 
