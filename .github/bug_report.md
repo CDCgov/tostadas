@@ -11,5 +11,8 @@
  - Version [e.g. 22]:
  - Run environment (container, cloud service, HPC, platform, etc.):
 
+ **Please Outline Necessary Steps to Replicate Bug (Go to.. Click on... Install the following... etc.):**
+
+
 **Any Additional Context or Information? Has There Been Any Progress Made So Far Towards this Request? Any Concrete Instructions to Resolve the Bug or Helpful Resources to Reference? Screenshots or Logs?**
 
