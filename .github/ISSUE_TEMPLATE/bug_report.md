@@ -1,3 +1,12 @@
+---
+name: Bug Report
+about: Suggest an idea for this project
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 **What is the Bug Related To? Please Provide a Description.**&nbsp;  
 
 **Categorize the Severity of the Bug from 1-5:**
