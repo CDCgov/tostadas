@@ -1,7 +1,7 @@
 ---
 name: Feature Request (Maintainer/Collaborator)
 about: As a maintainer/collaborator, propose/highlight a feature for this project
-title: "[Internal][Feature] <Title>"
+title: "[Internal] [Feature] <Title>"
 labels: enhancement
 assignees: ''
 
