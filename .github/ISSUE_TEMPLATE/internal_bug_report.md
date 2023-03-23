@@ -2,7 +2,8 @@
 name: Bug Report (Maintainer/Collaborator)
 about: As a maintainer/collaborator, create a report to help improve existing code/documentation
 title: [Internal][Bug] <Title>
-labels: [bug]
+labels:
+    - bug
 assignees: ''
 
 ---

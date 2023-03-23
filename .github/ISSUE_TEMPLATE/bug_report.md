@@ -2,7 +2,8 @@
 name: Bug Report (User)
 about: As a user, create a report to help us improve
 title: [External][Bug] <Title>
-labels: [bug]
+labels:
+    - bug
 assignees: ''
 
 ---
