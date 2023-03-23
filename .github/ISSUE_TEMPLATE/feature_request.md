@@ -2,8 +2,7 @@
 name: Feature Request [User]
 about: As a user, suggest an idea for this project
 title: [External][Feature] <Title>
-labels:
-    - enhancement
+labels: enhancement
 ---
 
 **What is the Feature Related To? Please Provide a Description.**
