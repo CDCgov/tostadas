@@ -1,4 +1,3 @@
-export VADRINSTALLDIR="."
 export VADRSCRIPTSDIR="$VADRINSTALLDIR/vadr"
 export VADRMODELDIR="$VADRINSTALLDIR/vadr-models-calici"
 export VADRINFERNALDIR="$VADRINSTALLDIR/infernal/binaries"
@@ -12,5 +11,5 @@ export PERL5LIB="$VADRSCRIPTSDIR":"$VADRSEQUIPDIR":"$VADRBIOEASELDIR/blib/lib":"
 BIOEASELDIR/blib/arch":"$PERL5LIB"
 export PATH="$VADRSCRIPTSDIR":"$PATH"
 export VADRMINIMAP2DIR="$VADRINSTALLDIR/minimap2"
-export MDIR='../mpxv_annotation_submission_dev/mpxv-models/'
-export INPUT_DIR='../mpxv_annotation_submission_dev/input_files/'
+export MDIR='$VADRINSTALLDIR/mpxv-models/'
+export INPUT_DIR='../input_files/'
