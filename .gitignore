@@ -111,3 +111,7 @@ bin/__pycache__
 /bin/table2asn
 /bin/config_files/
 /bin/config_files
+
+.DS_Store
+app/.DS_Store
+bin/.DS_Store
