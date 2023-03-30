@@ -3,7 +3,7 @@
 ```
 git clone https://github.com/ncbi/vadr.git
 cd vadr
-VADRINSTALLDIR='.'
+VADRINSTALLDIR=$PWD
 ```
 ### **2. Run the Install Script, If Getting an Error with Curl, Install Curl Using Mamba**
 `mamba install -c conda-forge curl`
@@ -75,7 +75,7 @@ cd <location to env_variables.sh>
 ```
 **(2) Use env_variables.sh file to export path variables:**
 ```
-bash env_variables.sh
+. env_variables.sh
 ```
 
 ### 6. Run the annotation script
@@ -87,3 +87,5 @@ discontn,dupregin --s_overhang 150 -i $MDIR/mpxv.rpt.minfo -n \
 $MDIR/mpxv.fa -x $MDIR $INPUT_DIR/trialDatav5.fasta \
 vadr_testing_outdir -f
 ```
+
+INPUT_DIR and MDIR are the variables for input directory location and mpxv-models location within the VADR directory respectively
