@@ -39,6 +39,8 @@
     - [Liftoff](#liftoff)
     - [Submission](#submission)
 - [Helpful Links](#helpful-links)
+- [Want to Help](#want-to-help)
+- [Get in Touch](#get-in-touch)
 - [Acknowledgements](#acknowledgements)
 
 ## Pipeline Summary
