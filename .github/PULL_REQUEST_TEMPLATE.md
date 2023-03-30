@@ -3,7 +3,7 @@
 
 ## Checklist
 
-**Go Through Checklist Below and Place A :heavy_check_mark: if Completed**
+**Go Through Checklist Below and Place A :heavy_check_mark: (X Inside the Box) if Completed**
 
 #### General Checks
 
@@ -27,9 +27,11 @@
 #### CDC Checks
 
 * [ ] Did you check for sensitive data, and remove any?
-* [ ] Are additional approvals needed for this change?
-* [ ] Are there potential vulnerabilities or licensing issues with any new dependencies introduced?
 * [ ] If you added or modified HTML, did you check that it was 508 compliant?
+
+Are additional approvals needed for this change? If so, please mention them below:
+
+Are there potential vulnerabilities or licensing issues with any new dependencies introduced? If so, please mention them below:
 
 
 
