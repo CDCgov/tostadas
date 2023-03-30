@@ -16,3 +16,4 @@ labels: enhancement
 
 **Any Additional Context or Information? Has There Been Any Progress Made So Far Towards this Request? Any Helpful Resources to Reference? Screenshots or Links?**
 
+**In Case for Additional Follow-Up, Please Provide your Email:**
