@@ -24,3 +24,5 @@ assignees: ''
 
 **Any Additional Context or Information? Has There Been Any Progress Made So Far Towards this Request? Any Concrete Instructions to Resolve the Bug or Helpful Resources to Reference? Screenshots or Logs?**
 
+**In Case for Additional Follow-Up, Please Provide your Email:**
+
