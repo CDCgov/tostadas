@@ -1,9 +1,9 @@
+#!/usr/bin/env python3
+
 import argparse
 import os
 import pandas as pd 
 import re
-from annotation_utility import MainUtility as main_util
-from annotation_utility import GFFChecksUtility as gff_checks_util
 
 
 def vadr_main(): 
@@ -13,8 +13,6 @@ def vadr_main():
 
     # get directory for the output files
     [parameters['one_dir_out'], parameters['two_dir_out']] = ['/'.join(__file__.split('/')[:-2]), '/'.join(__file__.split('/')[:-3])]
-    if not os.path.isabs(parameters['vadr_outdir']):
-        parameters['vadr_outdir'] = os.path.join(os.getcwd(), parameters['vadr_outdir'])
 
     # instantiate the class object 
     main_funcs = MainVADRFuncs(parameters)
@@ -22,11 +20,13 @@ def vadr_main():
     # run the vadr command 
     main_funcs.run_vadr()
 
-    # split the fasta file and save it 
+    # split the fasta file and save it
+    """
     main_util.split_fasta(
         fasta_path=parameters['fasta_path'], 
         fasta_output=f"{parameters['vadr_outdir']}/fasta/"
     )
+    """
 
     # split the outputted tables into separate samples
     main_funcs.split_table()
@@ -35,20 +35,20 @@ def vadr_main():
     main_funcs.line_cleanup()
 
     # convert the gff back to a table
+    """
     for sample in main_funcs.sample_info.keys():
         main_util.gff2tbl(
             samp_name=sample, 
             gff_loc=f"{parameters['vadr_outdir']}/gffs/{sample}_reformatted.gff",
             tbl_output=f"{parameters['vadr_outdir']}/tbl/"
         )
-
+    """
+ 
 
 def get_args():
     parser = argparse.ArgumentParser(description="Parameters for Running VADR Annotation")
-    parser.add_argument("--vadr_outdir", type=str, default='vadr_outputs', help="Path to output file")
-    parser.add_argument("--fasta_path", type=str, help="Path to output file")
-    parser.add_argument("--vadr_loc", type=str, help="Path to vadr scripts")
-    parser.add_argument("--mpxv_models_dir", type=str, help="Path to vadr scripts")
+    parser.add_argument("--vadr_outdir", type=str, default='vadr_outputs', help="Path to output directory")
+    parser.add_argument("--fasta_path", type=str, help="Path to the input fasta file")
     return parser
 
 
@@ -68,32 +68,25 @@ class MainVADRFuncs:
     def run_vadr(self):
         # check that the vadr scripts location has been passed in 
         try:
-            assert self.parameters['vadr_loc']
+            assert os.path.exists(f"{self.parameters['one_dir_out']}/vadr")
         except AssertionError:
-            raise AssertionError("Must specify the location of vadr scripts [--vadr_loc]")
+            raise AssertionError(f"VADR cannot be found in expected location: {self.parameters['one_dir_out']}/vadr")
 
         # now get the necessary dirs 
         # assume that the mpxv models dir is one level out from this script 
-        # mpxv_models_dir = f"{self.parameters['one_dir_out']}/mpxv-models"
+        mpxv_models_dir = f"{self.parameters['one_dir_out']}/vadr/mpxv-models"
         # assume that the env_variables.sh to source is located one level out from this script
-        env_vars = f"{self.parameters['one_dir_out']}/docs/env_variables.sh"
+        env_vars = f"{self.parameters['one_dir_out']}/vadr_files/env_variables.sh"
 
         # define the command
-        vadr_command = f"perl ./v-annotate.pl --split --cpu 8 --glsearch --minimap2 -s -r --nomisc \
+        vadr_command = f"perl {self.parameters['one_dir_out']}/vadr/v-annotate.pl --split --cpu 8 --glsearch --minimap2 -s -r --nomisc \
         --r_lowsimok --r_lowsimxd 100 --r_lowsimxl 2000 --alt_pass \
-        discontn,dupregin --s_overhang 150 -i {self.parameters['mpxv_models_dir']}/mpxv.rpt.minfo -n \
-        {self.parameters['mpxv_models_dir']}/mpxv.fa -x {self.parameters['mpxv_models_dir']} {self.parameters['fasta_path']} \
+        discontn,dupregin --s_overhang 150 -i {mpxv_models_dir}/mpxv.rpt.minfo -n \
+        {mpxv_models_dir}/mpxv.fa -x {mpxv_models_dir} {self.parameters['fasta_path']} \
         {self.parameters['vadr_outdir']} -f"
 
-        # change directories to where the VADR scripts are located
-        os.chdir(f"{self.parameters['vadr_loc']}")
-        # os.system(f"echo $PWD > test.txt")
-        try:
-            # call the VADR command
-            os.system(vadr_command)
-        except:
-            raise ValueError("Make sure that --fasta_path to the fasta file and location of VADR scripts --vadr_loc is specified properly")
-
+        # call the VADR command
+        os.system(vadr_command)
 
     def split_table(self): 
         """ splits the pass table and fail table into individual samples and store it
@@ -234,9 +227,11 @@ class MainVADRFuncs:
             )
 
             # check note to make sure it does not have a #
+            """
             self.line_dict = gff_checks_util.check_note(
                 field_value_mapping=self.line_dict
             )
+            """
 
             # save line to list
             self.final_samp_lines.append([self.get_next_line, self.line_dict])
