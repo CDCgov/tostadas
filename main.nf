@@ -90,13 +90,14 @@ include { GET_WAIT_TIME } from "$projectDir/nf_modules/utility_mods"
 
 // get the main processes
 include { METADATA_VALIDATION } from "$projectDir/nf_modules/main_mods"
-include { LIFTOFF } from "$projectDir/nf_modules/main_mods"
-include { VADR } from "$projectDir/nf_modules/main_mods"
 include { SUBMISSION } from "$projectDir/nf_modules/main_mods"
 include { UPDATE_SUBMISSION } from "$projectDir/nf_modules/main_mods"
+include { VADR } from "$projectDir/nf_modules/main_mods"
+include { LIFTOFF } from "$projectDir/nf_modules/main_mods"
 
 // get the subworkflows
-include { RUN_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
+include { RUN_SUBMISSION_4_LIFTOFF } from "$projectDir/nf_subworkflows/submission"
+include { RUN_SUBMISSION_4_VADR } from "$projectDir/nf_subworkflows/submission"
 include { RUN_UTILITY } from "$projectDir/nf_subworkflows/utility"
 
 /*
@@ -123,13 +124,23 @@ workflow {
     )
         
     // run liftoff annotation process 
-    LIFTOFF ( 
-        RUN_UTILITY.out, 
-        params.meta_path, 
-        params.fasta_path, 
-        params.ref_fasta_path, 
-        params.ref_gff_path 
-    )
+    if ( params.run_liftoff == true ) {
+        LIFTOFF ( 
+            RUN_UTILITY.out, 
+            params.meta_path, 
+            params.fasta_path, 
+            params.ref_fasta_path, 
+            params.ref_gff_path 
+        )
+    }
+
+    // run vadr process 
+    if ( params.run_vadr == true ) {
+        VADR (
+            RUN_UTILITY.out, 
+            params.fasta_path
+        )
+    }
 
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
@@ -137,22 +148,34 @@ workflow {
         // pre submission process + get wait time (parallel)
         GET_WAIT_TIME ( 
             METADATA_VALIDATION.out.meta_signal, 
-            LIFTOFF.out.liftoff_signal, 
             METADATA_VALIDATION.out.tsv_Files.collect() 
         )
 
-        // call the submission workflow
-        RUN_SUBMISSION (
-            METADATA_VALIDATION.out.meta_signal, 
-            LIFTOFF.out.liftoff_signal,
-            METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
-            LIFTOFF.out.fasta.sort().flatten(), 
-            LIFTOFF.out.gff.sort().flatten(), 
-            false, 
-            params.submission_config, 
-            params.req_col_config, 
-            GET_WAIT_TIME.out 
-        )
+        // call the submission workflow for liftoff 
+        if ( params.run_liftoff == true ) {
+            RUN_SUBMISSION_4_LIFTOFF (
+                METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
+                LIFTOFF.out.fasta.sort().flatten(), 
+                LIFTOFF.out.gff.sort().flatten(), 
+                false, 
+                params.submission_config, 
+                params.req_col_config, 
+                GET_WAIT_TIME.out 
+            )
+        }
+
+        // call the submission workflow for vadr 
+        if ( params.run_vadr  == true ) {
+            RUN_SUBMISSION_4_VADR (
+                METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
+                'vadr fasta files', 
+                'vadr gff files', 
+                false, 
+                params.submission_config, 
+                params.req_col_config, 
+                GET_WAIT_TIME.out 
+            )
+        }
     }
 } 
 
