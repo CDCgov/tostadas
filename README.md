@@ -39,7 +39,6 @@
     - [Liftoff](#liftoff)
     - [Submission](#submission)
 - [Helpful Links](#helpful-links)
-- [Want to Help](#want-to-help)
 - [Get in Touch](#get-in-touch)
 - [Acknowledgements](#acknowledgements)
 
@@ -392,7 +391,7 @@ When changing these parameters pay attention to the required inputs and make sur
    :link: table2asn Documentation: https://github.com/svn2github/NCBI_toolkit/blob/master/src/app/table2asn/table2asn.cpp
 
 
-  ## Want to Help
+  ## Get in Touch
 
   If you have any ideas for ways to improve our existing codebase, feel free to open an Issue Request (found here: [Open New Issue](https://github.com/CDCgov/tostadas/issues/new/choose))
 
@@ -404,26 +403,17 @@ When changing these parameters pay attention to the required inputs and make sur
   #### **(2) Fill Out Necessary Information**
   Once the appropriate template has been selected, you must fill/answer all fields/questions specified. The information provided will be valuable in getting more information about the issue and any necessary context surrounding it.
 
-  ### **(3) Submit the Issue**
+  #### **(3) Submit the Issue**
 
   Once all information has been provided, you may now submit it!
 
-  Please allow for at least 2-3 business days for us to start addressing the issue. If this is an urgent request and have not heard from us nor see any progress being made after 2-3 days, feel free to contact Ankush K. Gupta (email listed below) mentioning the following: 
+  Please allow for some turnaround time for us to review the issue and potentially start addressing it. If this is an urgent request and have not heard from us nor see any progress being made after quite some time (longer than a week), feel free to start a discussion (found here: [Start New Discussion](https://github.com/CDCgov/tostadas/discussions)) mentioning the following: 
   * Issue Number 
-  * Data Submitted 
+  * Date Submitted
+  * General Background on Bug/Feature 
   * Reason for Urgency
 
-  And we will get back to you as soon as possible. 
-
-  ## Get in Touch
-
-  If you have any questions not covered in this overview, please contact either one of the following maintainers: 
-
-  Ankush K. Gupta: ankushkgupta@deloitte.com (Main Contact)
-  Kyle O'Connell: kyoconnell@deloitte.com
-  Cole Tindall: ctindall@deloitte.com
-  Dhwani Batra: bun3@cdc.gov
-  Michael Weigand: yrh8@cdc.gov
+  And we will get back to you as soon as possible.  
    
   ## Acknowledgements
   Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison\
