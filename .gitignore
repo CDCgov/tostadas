@@ -71,7 +71,9 @@ tests/__pycache__
 
 # vadr related 
 /vadr
-/vadr/ 
+/vadr/
+/vadr_testing_outdir/
+/vadr_testing_outdir
 
 # add singularity related stuff
 /app/singularity/containers/
