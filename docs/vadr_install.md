@@ -62,6 +62,7 @@ If it works as expected, skip to #5 to export your variables. Else, you can now 
 **To Install Bio/Easel/MSA.pl**
 ```
 perl vadr/Bio-Easel/Makefile.PL
+cd vadr/Bio-Easel
 make
 make install
 ```
