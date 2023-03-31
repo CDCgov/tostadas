@@ -1,5 +1,8 @@
 # VADR Install Guide for Biolinux
 ### **1. Clone the Repo**
+
+First, make sure that you are inside of the root directory of the tostadas repository, and then run the following:
+
 ```
 git clone https://github.com/ncbi/vadr.git
 cd vadr
@@ -35,18 +38,17 @@ brew install autoconf
 ### 3. **Set Up the MPXV Model Directory**
 ```
 curl https://ftp.ncbi.nlm.nih.gov/pub/nawrocki/vadr-models/mpxv/1.4.2-1/vadr-models-mpxv-1.4.2-1.tar.gz --output mpxv-models.tar.gz
-tar -xf mpxv-models.tar.gz
-mv vadr-models-mpxv-* mpxv-models
+tar -xf mpxv-models.tar.gz && mv vadr-models-mpxv-* mpxv-models
 ```
 You also need to copy the modified model file that includes the ITRs from our MPXV repo.
-`cp ../mpxv_annotation_submission_dev/mpxv-models/mpxv.rpt.minfo mpxv-models`
+`cp ../vadr_files/mpxv.rpt.minfo mpxv-models/`
 
 ### **4. Export PATHS**
 Or add to your .bashrc profile
 
 **Use env_variables.sh file to export path variables:**
 ```
-cd .. && . docs/env_variables.sh
+cd .. && . vadr_files/env_variables.sh
 ```
 
 ### **5. Test and Troubleshoot the Install**
