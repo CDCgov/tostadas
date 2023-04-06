@@ -93,6 +93,7 @@ include { METADATA_VALIDATION } from "$projectDir/nf_modules/main_mods"
 include { SUBMISSION } from "$projectDir/nf_modules/main_mods"
 include { UPDATE_SUBMISSION } from "$projectDir/nf_modules/main_mods"
 include { VADR } from "$projectDir/nf_modules/main_mods"
+include { VADR_POST_CLEANUP } from "$projectDir/nf_modules/main_mods"
 include { LIFTOFF } from "$projectDir/nf_modules/main_mods"
 
 // get the subworkflows
@@ -134,10 +135,15 @@ workflow {
         )
     }
 
-    // run vadr process 
+    // run vadr processes
     if ( params.run_vadr == true ) {
         VADR (
             RUN_UTILITY.out, 
+            params.fasta_path,
+            params.vadr_models_dir
+        )
+        VADR_POST_CLEANUP (
+            VADR.out.vadr_outputs,
             params.fasta_path
         )
     }

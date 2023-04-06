@@ -5,7 +5,6 @@ import os
 import pandas as pd 
 import re
 
-
 def vadr_main(): 
     # get the parameters
     args = get_args().parse_args()
