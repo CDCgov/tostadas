@@ -143,7 +143,7 @@ workflow {
             params.vadr_models_dir
         )
         VADR_POST_CLEANUP (
-            VADR.out.vadr_outputs,
+            VADR.out,
             params.fasta_path
         )
     }
