@@ -87,12 +87,10 @@ process VADR {
 
     label 'vadr'
     
-    if ( params.run_conda == true ) {
-        try {
-            conda params.env_yml
-        } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
-        }
+    try {
+        container "$params.docker_container_vadr"
+    } catch (Exception e) {
+        System.err.println("WARNING: Cannot pull the following docker container: $params.docker_container_vadr to run VADR")
     }
 
     publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
