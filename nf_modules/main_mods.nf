@@ -12,7 +12,7 @@ process METADATA_VALIDATION {
         try {
             conda params.env_yml
         } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
         }
     }
 
@@ -47,7 +47,7 @@ process LIFTOFF {
         try {
             conda params.env_yml
         } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
         }
     }
 
@@ -85,13 +85,13 @@ process LIFTOFF {
 */
 process VADR {
 
-    label 'main'
+    label 'vadr'
     
     if ( params.run_conda == true ) {
         try {
             conda params.env_yml
         } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
         }
     }
 
@@ -99,15 +99,43 @@ process VADR {
 
     input:
     val signal
-    path fasta_path 
+    path fasta_path
+    path vadr_models_dir
 
     script:
     """
-    run_vadr.py --fasta_path $fasta_path --vadr_outdir $params.vadr_output_dir
+    v-annotate.pl --split --cpu 8 --glsearch --minimap2 -s -r --nomisc \
+    --r_lowsimok --r_lowsimxd 100 --r_lowsimxl 2000 --alt_pass \
+    discontn,dupregin --s_overhang 150 -i $vadr_models_dir/mpxv.rpt.minfo -n \
+    $vadr_models_dir/mpxv.fa -x $MDIR $fasta_path \
+    $params.vadr_output_dir -f
     """
 
     output:
-    val true
+    path $params.vadr_output_dir, emit: vadr_outputs
+}
+
+process VADR_POST_CLEANUP {
+    label 'main'
+    
+    if ( params.run_conda == true ) {
+        try {
+            conda params.env_yml
+        } catch (Exception e) {
+            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
+        }
+    }
+
+    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+
+    input:
+    path vadr_outputs
+    path fasta_path
+    
+    script:
+    """
+    run_vadr.py --fasta_path $fasta_path --gff_path $vadr_gff
+    """
 }
 
 /*
@@ -125,7 +153,7 @@ process SUBMISSION {
         try {
             conda params.env_yml
         } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
         }
     }
 
@@ -158,7 +186,7 @@ process UPDATE_SUBMISSION {
         try {
             conda params.env_yml
         } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $parmas.env_yml")
+            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
         }
     }
 
