@@ -107,12 +107,12 @@ process VADR {
     v-annotate.pl --split --cpu 8 --glsearch --minimap2 -s -r --nomisc \
     --r_lowsimok --r_lowsimxd 100 --r_lowsimxl 2000 --alt_pass \
     discontn,dupregin --s_overhang 150 -i $vadr_models_dir/mpxv.rpt.minfo -n \
-    $vadr_models_dir/mpxv.fa -x $MDIR $fasta_path \
+    $vadr_models_dir/mpxv.fa -x $vadr_models_dir $fasta_path \
     $params.vadr_output_dir -f
     """
 
     output:
-    path $params.vadr_output_dir, emit: vadr_outputs
+    file '*'
 }
 
 process VADR_POST_CLEANUP {
@@ -158,12 +158,12 @@ process SUBMISSION {
     }
 
     input:
-        path validated_meta_path
-        path lifted_fasta_path
-        path lifted_gff_path
-        val entry_flag
-        path submission_config
-        path req_col_config
+    path validated_meta_path
+    path lifted_fasta_path
+    path lifted_gff_path
+    val entry_flag
+    path submission_config
+    path req_col_config
 
     script:
     """
@@ -173,7 +173,7 @@ process SUBMISSION {
     """
 
     output:
-        path "$params.batch_name.${validated_meta_path.getSimpleName()}", emit: submission_files
+    path "$params.batch_name.${validated_meta_path.getSimpleName()}", emit: submission_files
 }
 
 process UPDATE_SUBMISSION {
@@ -191,16 +191,16 @@ process UPDATE_SUBMISSION {
     }
 
     input:
-        val wait_signal
-        path submission_config
-        path submission_output
+    val wait_signal
+    path submission_config
+    path submission_output
         
     script:
-        """
-        run_submission.py --config $submission_config --update true --unique_name $params.batch_name --sample_name ${submission_output.getExtension()}
-        """
-    
+    """
+    run_submission.py --config $submission_config --update true --unique_name $params.batch_name --sample_name ${submission_output.getExtension()}
+    """
+
     output:
-        path "update_submit_info/${submission_output.getExtension()}_update_terminal_output.txt"
-        file '*'
+    path "update_submit_info/${submission_output.getExtension()}_update_terminal_output.txt"
+    file '*'
 } 
