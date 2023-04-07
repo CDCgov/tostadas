@@ -102,6 +102,7 @@ process VADR {
 
     script:
     """
+    VADRMODELDIR=$vadr_models_dir && \
     v-annotate.pl --split --cpu 8 --glsearch --minimap2 -s -r --nomisc \
     --r_lowsimok --r_lowsimxd 100 --r_lowsimxl 2000 --alt_pass \
     discontn,dupregin --s_overhang 150 -i $vadr_models_dir/mpxv.rpt.minfo -n \
@@ -110,10 +111,11 @@ process VADR {
     """
 
     output:
-    file '*'
+    path "$params.vadr_output_dir", emit: vadr_outputs
 }
 
 process VADR_POST_CLEANUP {
+
     label 'main'
     
     if ( params.run_conda == true ) {
@@ -132,8 +134,11 @@ process VADR_POST_CLEANUP {
     
     script:
     """
-    run_vadr.py --fasta_path $fasta_path --gff_path $vadr_gff
+    post_vadr_cleanup.py --fasta_path $fasta_path --vadr_outdir $vadr_outputs
     """
+
+    output:
+    file '*'
 }
 
 /*

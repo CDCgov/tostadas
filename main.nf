@@ -139,8 +139,7 @@ workflow {
     if ( params.run_vadr == true ) {
         VADR (
             RUN_UTILITY.out, 
-            params.fasta_path,
-            params.vadr_models_dir
+            params.fasta_path
         )
         VADR_POST_CLEANUP (
             VADR.out,
@@ -229,11 +228,20 @@ workflow only_liftoff {
 
 workflow only_vadr {
     main:
-        // run annotation on files
-        VADR ( 
-            'dummy utility signal', 
-            params.fasta_path 
-        )
+        // run vadr processes
+        if ( params.run_vadr == true ) {
+            /*
+            VADR (
+                'dummy utility signal', 
+                params.fasta_path,
+                params.vadr_models_dir
+            )
+            */
+            VADR_POST_CLEANUP (
+                "$projectDir/nf_test_results/vadr_outputs",
+                params.fasta_path
+            )
+        }
 }
 
 workflow only_submission {
