@@ -1,0 +1,5 @@
+current git commit hash: 5f99511
+git repo:     https://nawrockie@bitbucket.org/nawrockie/vadr-models-mpxv.git
+git branch:   master
+dir name:     vadr-models-mpxv-1.4.2-1
+packaged on: Fri Jul 15 11:31:49 EDT 2022

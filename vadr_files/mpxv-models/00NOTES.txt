@@ -1,0 +1,4 @@
+# v1.4.2-1 July 2022
+#
+# notebook dir where this model was created:
+# 22_0606_mpox_vadr
