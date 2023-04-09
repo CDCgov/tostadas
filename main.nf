@@ -169,7 +169,7 @@ workflow {
                 false, 
                 params.submission_config, 
                 params.req_col_config, 
-                GET_WAIT_TIME.out 
+                GET_WAIT_TIME.out
             )
         }
 

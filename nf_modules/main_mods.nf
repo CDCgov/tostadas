@@ -153,7 +153,7 @@ process SUBMISSION {
 
     label 'main'
     
-    publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
 
     if ( params.run_conda == true ) {
         try {
@@ -170,6 +170,7 @@ process SUBMISSION {
     val entry_flag
     path submission_config
     path req_col_config
+    val annotation_name
 
     script:
     """
@@ -186,7 +187,7 @@ process UPDATE_SUBMISSION {
 
     label 'main'
 
-    publishDir "$params.output_dir/$params.submission_output_dir/$params.batch_name.${submission_output.getExtension()}", mode: 'copy', overwrite: true
+    publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name/$params.batch_name.${submission_output.getExtension()}", mode: 'copy', overwrite: true
 
     if ( params.run_conda == true ) {
         try {
@@ -200,6 +201,7 @@ process UPDATE_SUBMISSION {
     val wait_signal
     path submission_config
     path submission_output
+    val annotation_name
         
     script:
     """
