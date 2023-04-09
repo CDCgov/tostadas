@@ -97,8 +97,8 @@ include { VADR_POST_CLEANUP } from "$projectDir/nf_modules/main_mods"
 include { LIFTOFF } from "$projectDir/nf_modules/main_mods"
 
 // get the subworkflows
-include { RUN_SUBMISSION_4_LIFTOFF } from "$projectDir/nf_subworkflows/submission"
-include { RUN_SUBMISSION_4_VADR } from "$projectDir/nf_subworkflows/submission"
+include { LIFTOFF_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
+include { VADR_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
 include { RUN_UTILITY } from "$projectDir/nf_subworkflows/utility"
 
 /*
@@ -162,7 +162,7 @@ workflow {
 
         // call the submission workflow for liftoff 
         if ( params.run_liftoff == true ) {
-            RUN_SUBMISSION_4_LIFTOFF (
+            LIFTOFF_SUBMISSION (
                 METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
                 LIFTOFF.out.fasta.sort().flatten(), 
                 LIFTOFF.out.gff.sort().flatten(), 
@@ -175,7 +175,7 @@ workflow {
 
         // call the submission workflow for vadr 
         if ( params.run_vadr  == true ) {
-            RUN_SUBMISSION_4_VADR (
+            VADR_SUBMISSION (
                 METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
                 VADR_POST_CLEANUP.out.fasta.sort().flatten(), 
                 VADR_POST_CLEANUP.out.gff.sort().flatten(), 
