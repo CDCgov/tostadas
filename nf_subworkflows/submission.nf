@@ -10,7 +10,7 @@ include { SUBMISSION } from '../nf_modules/main_mods'
 include { UPDATE_SUBMISSION } from '../nf_modules/main_mods'
 include { WAIT } from '../nf_modules/utility_mods'
 
-workflow RUN_SUBMISSION_4_LIFTOFF {
+workflow LIFTOFF_SUBMISSION {
     take:
         meta_files
         liftoff_fasta_files
@@ -30,7 +30,7 @@ workflow RUN_SUBMISSION_4_LIFTOFF {
         UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'liftoff' )
 }
 
-workflow RUN_SUBMISSION_4_VADR {
+workflow VADR_SUBMISSION {
     take:
         meta_files
         vadr_fasta_files
