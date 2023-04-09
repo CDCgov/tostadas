@@ -137,12 +137,16 @@ workflow {
 
     // run vadr processes
     if ( params.run_vadr == true ) {
+        /*
         VADR (
             RUN_UTILITY.out, 
-            params.fasta_path
+            params.fasta_path,
+            params.vadr_models_dir
         )
+        */
         VADR_POST_CLEANUP (
-            VADR.out,
+            "$projectDir/work/f8/5a6a8c082daf01463c91d2e7f96900/original_outputs",
+            params.meta_path,
             params.fasta_path
         )
     }
@@ -173,8 +177,8 @@ workflow {
         if ( params.run_vadr  == true ) {
             RUN_SUBMISSION_4_VADR (
                 METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
-                'vadr fasta files', 
-                'vadr gff files', 
+                VADR_POST_CLEANUP.out.fasta.sort().flatten(), 
+                VADR_POST_CLEANUP.out.gff.sort().flatten(), 
                 false, 
                 params.submission_config, 
                 params.req_col_config, 
@@ -235,6 +239,10 @@ workflow only_vadr {
                 'dummy utility signal', 
                 params.fasta_path,
                 params.vadr_models_dir
+            )
+            VADR_POST_CLEANUP (
+                VADR.out.vadr_outputs,
+                params.fasta_path
             )
             */
             VADR_POST_CLEANUP (

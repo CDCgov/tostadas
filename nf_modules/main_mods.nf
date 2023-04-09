@@ -75,7 +75,6 @@ process LIFTOFF {
     path "$params.final_liftoff_output_dir/*/liftoff/*.gff", emit: gff
     path "$params.final_liftoff_output_dir/*/errors/*.txt", emit: errors
     path "$params.final_liftoff_output_dir/*/tbl/*.tbl", emit: tbl
-    val true, emit: liftoff_signal
 }
 
 /*
@@ -93,8 +92,6 @@ process VADR {
         System.err.println("WARNING: Cannot pull the following docker container: $params.docker_container_vadr to run VADR")
     }
 
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
-
     input:
     val signal
     path fasta_path
@@ -107,11 +104,11 @@ process VADR {
     --r_lowsimok --r_lowsimxd 100 --r_lowsimxl 2000 --alt_pass \
     discontn,dupregin --s_overhang 150 -i $vadr_models_dir/mpxv.rpt.minfo -n \
     $vadr_models_dir/mpxv.fa -x $vadr_models_dir $fasta_path \
-    $params.vadr_output_dir -f
+    original_outputs -f
     """
 
     output:
-    path "$params.vadr_output_dir", emit: vadr_outputs
+    path "original_outputs", emit: vadr_outputs
 }
 
 process VADR_POST_CLEANUP {
@@ -130,15 +127,21 @@ process VADR_POST_CLEANUP {
 
     input:
     path vadr_outputs
+    path meta_path
     path fasta_path
     
     script:
     """
-    post_vadr_cleanup.py --fasta_path $fasta_path --vadr_outdir $vadr_outputs
+    post_vadr_cleanup.py --meta_path $meta_path --fasta_path $fasta_path --vadr_outdir $params.vadr_output_dir --vadr_outputs $vadr_outputs
     """
 
     output:
-    file '*'
+    path "$params.vadr_output_dir/*/transformed_outputs/fasta/*.fasta", emit: fasta
+    path "$params.vadr_output_dir/*/transformed_outputs/gffs/*.gff", emit: gff
+    path "$params.vadr_output_dir/*/transformed_outputs/errors/*.txt", emit: errors
+    path "$params.vadr_output_dir/*/transformed_outputs/tbl/*.tbl", emit: tbl
+    path "$params.vadr_output_dir/*/original_outputs/*", emit: original_outputs
+    path "$params.vadr_output_dir/*/transformed_outputs/*.tbl", emit: concat_table
 }
 
 /*
