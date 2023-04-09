@@ -4,22 +4,35 @@ import argparse
 import os
 import pandas as pd 
 import re
+import shutil
+
+# import utility functions
+from annotation_utility import MainUtility as main_util
+from annotation_utility import GFFChecksUtility as gff_checks_util
+
 
 def vadr_main(): 
     # get the parameters
     args = get_args().parse_args()
     parameters = vars(args)
 
+    # get the path for outputs
+    meta_filename = parameters['meta_path'].split('/')[-1].split('.')[0]
+    parameters['output_path'] = f"{parameters['vadr_outdir']}/{meta_filename}/transformed_outputs"
+
+    # initialize the directory structure + move the original input files into this location
+    shutil.copytree(parameters['vadr_outputs'], f"{parameters['vadr_outdir']}/{meta_filename}/original_outputs")
+    for dir_name in ['', 'fasta', 'gffs', 'tbl', 'errors']:
+        os.mkdir(f"{parameters['output_path']}/{dir_name}")
+
     # instantiate the class object 
     main_funcs = MainVADRFuncs(parameters)
 
     # split the fasta file and save it
-    """
-    main_util.split_fasta(
+    main_util.split_fasta (
         fasta_path=parameters['fasta_path'], 
-        fasta_output=f"{parameters['vadr_outdir']}/fasta/"
+        fasta_output=f"{parameters['output_path']}/fasta/"
     )
-    """
 
     # split the outputted tables into separate samples
     main_funcs.split_table()
@@ -28,20 +41,20 @@ def vadr_main():
     main_funcs.line_cleanup()
 
     # convert the gff back to a table
-    """
     for sample in main_funcs.sample_info.keys():
         main_util.gff2tbl(
             samp_name=sample, 
-            gff_loc=f"{parameters['vadr_outdir']}/gffs/{sample}_reformatted.gff",
-            tbl_output=f"{parameters['vadr_outdir']}/tbl/"
+            gff_loc=f"{parameters['output_path']}/gffs/{sample}_reformatted.gff",
+            tbl_output=f"{parameters['output_path']}/tbl/"
         )
-    """
- 
+
 
 def get_args():
     parser = argparse.ArgumentParser(description="Parameters for Running VADR Annotation")
-    parser.add_argument("--vadr_outdir", type=str, default='vadr_outputs', help="Path to output directory")
+    parser.add_argument("--vadr_outdir", type=str, default='vadr_outputs', help="Name of vadr output directory")
+    parser.add_argument("--vadr_outputs", type=str, help="Path to the vadr outputs")
     parser.add_argument("--fasta_path", type=str, help="Path to the input fasta file")
+    parser.add_argument("--meta_path", type=str, help="Path to the input metadata file")
     return parser
 
 
@@ -62,12 +75,12 @@ class MainVADRFuncs:
         """ splits the pass table and fail table into individual samples and store it
         """
         # get the name of the actual output folder from path + specify paths 
-        dir_name = self.parameters['vadr_outdir'].split('/')[-1]
-        pass_tbl = f"{self.parameters['vadr_outdir']}/{dir_name}.vadr.pass.tbl"
-        fail_tbl = f"{self.parameters['vadr_outdir']}/{dir_name}.vadr.fail.tbl"
+        dir_name = self.parameters['vadr_outputs'].split('/')[-1]
+        pass_tbl = f"{self.parameters['vadr_outputs']}/{dir_name}.vadr.pass.tbl"
+        fail_tbl = f"{self.parameters['vadr_outputs']}/{dir_name}.vadr.fail.tbl"
 
         # concatenate the tables together 
-        new_tbl = f"{self.parameters['vadr_outdir']}/{dir_name}.vadr.cat.tbl"
+        new_tbl = f"{self.parameters['output_path']}/{dir_name}.vadr.cat.tbl"
         cat_cmd = f"cat {pass_tbl} {fail_tbl} > {new_tbl}"
         os.system(cat_cmd)
 
@@ -198,11 +211,9 @@ class MainVADRFuncs:
             )
 
             # check note to make sure it does not have a #
-            """
-            self.line_dict = gff_checks_util.check_note(
+            self.line_dict = gff_checks_util.check_note (
                 field_value_mapping=self.line_dict
             )
-            """
 
             # save line to list
             self.final_samp_lines.append([self.get_next_line, self.line_dict])
@@ -251,7 +262,6 @@ class MainVADRFuncs:
             rem_keys = line_info[1].copy()
             [rem_keys.pop(x) for x in ['coord1', 'coord2', 'type', 'orientation']]
 
-            #print(rem_keys.keys())
             for key in rem_keys.keys():
                 if key == 'ID':
                     line_sub1 += f"ID=gene-{line_info[1]['ID']}"
@@ -269,21 +279,17 @@ class MainVADRFuncs:
                         line_sub2 += ';'
             
             # finally write to gff 
-            with open(f"{self.parameters['vadr_outdir']}/gffs/{sample}_reformatted.gff", 'w') as gff: 
+            with open(f"{self.parameters['output_path']}/gffs/{sample}_reformatted.gff", 'a', encoding='utf-8') as gff: 
                 self.new_gff.write(f"{line_sub1}\n")
                 if line_info[1]['type'] != 'repeat_region':
                     self.new_gff.write(f"{line_sub2}\n")
-                gff.close()
+            gff.close()
     
     def get_new_gff(self, sample):
-        if not os.path.isdir(os.path.join(self.parameters['vadr_outdir'], 'gffs')):
-            os.mkdir(os.path.join(self.parameters['vadr_outdir'], 'gffs'))
-        self.new_gff = open(f"{self.parameters['vadr_outdir']}/gffs/{sample}_reformatted.gff", 'w')
+        self.new_gff = open(f"{self.parameters['output_path']}/gffs/{sample}_reformatted.gff", 'w', encoding='utf-8')
     
     def get_new_error_file(self):
-        if not os.path.isdir(os.path.join(self.parameters['vadr_outdir'], 'errors')):
-            os.mkdir(os.path.join(self.parameters['vadr_outdir'], 'errors'))
-        self.new_error_file = open(os.path.join(self.parameters['vadr_outdir'], 'errors/annotation_error.txt'), 'w')
+        self.new_error_file = open(os.path.join(self.parameters['output_path'], 'errors/annotation_error.txt'), 'w', encoding='utf-8')
     
     def get_orientation(self):
         # strip any non numerical characters
@@ -316,7 +322,7 @@ class MainVADRFuncs:
         except AssertionError:
             raise AssertionError(f"The dictionary for stop codon flags and the one for repeat flag have different keys as samples")
 
-        with open(os.path.join(self.parameters['vadr_outdir'], 'errors/annotation_error.txt'), 'a') as error_file:
+        with open(os.path.join(self.parameters['output_path'], 'errors/annotation_error.txt'), 'a') as error_file:
             for sample in self.stop_codon_flag.keys():
 
                 # write the sample to the error . txt file
