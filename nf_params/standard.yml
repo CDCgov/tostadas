@@ -7,8 +7,11 @@ ref_gff_path: ""
 env_yml: ""
 scicomp: null
 docker_container: ""
+docker_container_vadr: ""
 
 run_submission: null
+run_vadr: null
+run_liftoff: null
 cleanup: null
 
 clear_nextflow_log: null
@@ -42,6 +45,9 @@ lift_infer_transcripts: ""
 lift_copies: ""
 lift_minimap_path: ""
 lift_feature_database_name: ""
+
+vadr_output_dir: ""
+vadr_models_dir: ""
 
 submission_output_dir: ""
 submission_prod_or_test: ""
