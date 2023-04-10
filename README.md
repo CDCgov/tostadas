@@ -172,7 +172,7 @@ This section walks through the available parameters to customize your workflow.
 
 ### Input Files Required: 
 
-#### (A) This table lists the required files to run metadata validation and liftoff annotation:
+#### (A) This table lists the required files to run metadata validation and annotation:
 | Input files | File type | Description                                                                               |
 |-------------|-----------|-------------------------------------------------------------------------------------------|
 | fasta       | .fasta    | Multi-sample fasta file with your input sequences                                         |
@@ -222,6 +222,7 @@ Table of entrypoints available for the nextflow pipeline:
 | only_cleanup_files   | Cleans-up files utilizing the clean-up process within the utility sub-workflow             |
 | only_validation      | Runs the metadata validation process only                           |
 | only_liftoff      | Runs the liftoff annotation process only                           |
+| only_vadr         | Runs the VADR annotation process only                           |
 | only_submission      | Runs submission sub-workflow only                           |
 | only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow               |
 | only_update_submission  | Updates NCBI submissions                                 |
@@ -256,23 +257,29 @@ The workflow will generate outputs in the following order:
 ### Output Directory Formatting:
 The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:
 * validation_outputs (**name configurable with val_output_dir)
-    * sample_metadata_run
+    * name of metadata sample file
         * errors
         * tsv_per_sample
 * liftoff_outputs (**name configurable with final_liftoff_output_dir)
-    * final_sample_metadata_file
+    * name of metadata sample file
         * errors
         * fasta
         * liftoff
-        * tbl 
+        * tbl
+* vadr_outputs (**name configurable with vadr_output_dir)
+    * name of metadata sample file
+        * errors
+        * fasta
+        * gffs
+        * tbl
 * submission_outputs (**name and path configurable with submission_output_dir)
-    * individual_sample_batch_info
-        * biosample_sra
-        * genbank
-        * accessions.csv
-    * terminal_outputs
-    * commands_used
-* liftoffCommand.txt
+    * name of annotation results (Liftoff or VADR, etc.)
+        * individual_sample_batch_info
+            * biosample_sra
+            * genbank
+            * accessions.csv
+        * terminal_outputs
+        * commands_used
 
 ### Understanding Pipeline Outputs:
 The pipeline outputs inlcude: 
@@ -300,18 +307,24 @@ When changing these parameters pay attention to the required inputs and make sur
 | --meta_path                | Meta-data file path for samples                         |        Yes (path as string)      |
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
 | --env_yml                  | Path to environment.yml file                            |        Yes (path as string)       |
+|
 
 ### Run Environment
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --scicomp           | Flag for whether running on Scicomp or not                            | Yes (true/false as bool) |
 | --docker_container           | Name of the Docker container                            | Yes, if running with docker profile (name as string) |
+| --docker_container_vadr           | Name of the Docker container to run VADR annotation                            | Yes, if running with docker profile (name as string) |
+|
 
 ### General Subworkflow
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --run_submission           | Toggle for running submission                            | Yes (true/false as bool) |
+| --run_liftoff           | Toggle for running liftoff annotation                            | Yes (true/false as bool) |
+| --run_vadr           | Toggle for running vadr annotation                            | Yes (true/false as bool) |
 | --cleanup                  | Toggle for running cleanup subworkflows                 | Yes (true/false as bool) |
+|
 
 ### Cleanup Subworkflow
 | Param                    | Description                                             | Input Required   |
@@ -320,7 +333,8 @@ When changing these parameters pay attention to the required inputs and make sur
 | --clear_nextflow_dir     | Clears nextflow working directory                       |  Yes (true/false as bool)|
 | --clear_work_dir         | Param to clear work directory created during workflow   |  Yes (true/false as bool) |                
 | --clear_conda_env        | Clears conda environment                                |  Yes (true/false as bool) |               
-| --clear_nf_results       | Remove results from nextflow outputs                    |  Yes (true/false as bool) |               
+| --clear_nf_results       | Remove results from nextflow outputs                    |  Yes (true/false as bool) |
+|               
 
 ### General Output
 | Param                    | Description                                             | Input Required   |
@@ -359,6 +373,13 @@ When changing these parameters pay attention to the required inputs and make sur
 | --lift_minimap_path         |Path to minimap if you did not use conda or pip          |        Yes (N/A or path as string)       |
 |--lift_feature_database_name |Name of the feature database, if none, then will use ref gff path to construct one|        Yes (N/A or name as string)      |
 
+### VADR
+| Param                       | Description                                             | Input Required   |
+|-----------------------------|---------------------------------------------------------|------------------|
+| --vadr_output_dir  | File path to vadr specific sub-workflow outputs      |        Yes (folder name as string)      |
+| --vadr_models_dir  | File path to models for MPXV used by VADR annotation      |        Yes (folder name as string)      |
+|
+
 ### Submission
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
@@ -373,6 +394,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --send_submission_email | Toggle email notification on/off | Yes (true/false as bool)           |
 | --req_col_config | Path to the required_columns.yaml file | Yes (path as string)           |
 | --processed_samples | Path to the directory containing processed samples for update only submission entrypoint (containing <batch_name>.<sample_name> dirs) | Yes (path as string)           |
+|
 
 ** Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'
 
