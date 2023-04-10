@@ -238,7 +238,6 @@ workflow only_vadr {
     main:
         // run vadr processes
         if ( params.run_vadr == true ) {
-            /*
             VADR (
                 'dummy utility signal', 
                 params.fasta_path,
@@ -246,12 +245,6 @@ workflow only_vadr {
             )
             VADR_POST_CLEANUP (
                 VADR.out.vadr_outputs,
-                params.fasta_path
-            )
-            */
-            VADR_POST_CLEANUP (
-                "$projectDir/nf_test_results/vadr_outputs",
-                params.meta_path,
                 params.fasta_path
             )
         }
