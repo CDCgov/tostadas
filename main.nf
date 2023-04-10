@@ -21,8 +21,11 @@ def helpMessage() {
 
          --scicomp                              Flag for whether running on scicomp server or not (accepts bool: true/false)
          --docker_container                     Name of the docker container (accepts string)
+         --docker_container_vadr                Name of the docker container to run VADR annotation (accepts string)
 
          --run_submission                       Flag for whether to run submission portion or not (accepts bool: true/false)
+         --run_vadr                             Flag for whether to run VADR annotation or not (accepts bool: true/false)
+         --run_liftoff                          Flag for whether to run LIFTOFF annotation or not (accepts bool: true/false)
          --cleanup                              Flag for whether to run the cleanup process (accepts bool: true/false)
 
          --clear_nextflow_log                   Defines the cleanup process further: whether to clear the nextflow log files (accepts bool: true/false)
@@ -57,6 +60,9 @@ def helpMessage() {
          --lift_copies                          Look for extra gene copies in the target genome
          --lift_minimap_path                    Path to minimap if you did not use conda or pip
          --lift_feature_database_name           Name of the feature database, if none, then will use ref gff path to construct one
+
+         --vadr_output_dir                      Name of output directory for results from VADR annotation (accepts string)
+         --vadr_models_dir                      Name of directory containing necessary model information to complete VADR annotation (accepts string; default is tostadas/vadr_files/mpxv-models)
 
          --submission_only_meta                 Path to the validated metadata directory if calling submission entrypoint (accepts string)
          --submission_only_gff                  Path to the reformatted gff directory if calling submission entrypoint (accepts string)
