@@ -267,7 +267,7 @@ workflow only_submission {
         // get the wait time
         GET_WAIT_TIME ( 
             'dummy meta signal', 
-            'dummy liftoff signal', 
+            'dummy annotation signal', 
             PREP_SUBMISSION_ENTRY.out.tsv.collect() 
         )
         
