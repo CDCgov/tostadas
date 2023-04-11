@@ -21,8 +21,11 @@ def helpMessage() {
 
          --scicomp                              Flag for whether running on scicomp server or not (accepts bool: true/false)
          --docker_container                     Name of the docker container (accepts string)
+         --docker_container_vadr                Name of the docker container to run VADR annotation (accepts string)
 
          --run_submission                       Flag for whether to run submission portion or not (accepts bool: true/false)
+         --run_vadr                             Flag for whether to run VADR annotation or not (accepts bool: true/false)
+         --run_liftoff                          Flag for whether to run LIFTOFF annotation or not (accepts bool: true/false)
          --cleanup                              Flag for whether to run the cleanup process (accepts bool: true/false)
 
          --clear_nextflow_log                   Defines the cleanup process further: whether to clear the nextflow log files (accepts bool: true/false)
@@ -58,6 +61,9 @@ def helpMessage() {
          --lift_minimap_path                    Path to minimap if you did not use conda or pip
          --lift_feature_database_name           Name of the feature database, if none, then will use ref gff path to construct one
 
+         --vadr_output_dir                      Name of output directory for results from VADR annotation (accepts string)
+         --vadr_models_dir                      Name of directory containing necessary model information to complete VADR annotation (accepts string; default is tostadas/vadr_files/mpxv-models)
+
          --submission_only_meta                 Path to the validated metadata directory if calling submission entrypoint (accepts string)
          --submission_only_gff                  Path to the reformatted gff directory if calling submission entrypoint (accepts string)
          --submission_only_fasta                Path to the split fasta files directory if calling submission entrypoint (accepts string)
@@ -90,13 +96,15 @@ include { GET_WAIT_TIME } from "$projectDir/nf_modules/utility_mods"
 
 // get the main processes
 include { METADATA_VALIDATION } from "$projectDir/nf_modules/main_mods"
-include { LIFTOFF } from "$projectDir/nf_modules/main_mods"
-include { VADR } from "$projectDir/nf_modules/main_mods"
 include { SUBMISSION } from "$projectDir/nf_modules/main_mods"
 include { UPDATE_SUBMISSION } from "$projectDir/nf_modules/main_mods"
+include { VADR } from "$projectDir/nf_modules/main_mods"
+include { VADR_POST_CLEANUP } from "$projectDir/nf_modules/main_mods"
+include { LIFTOFF } from "$projectDir/nf_modules/main_mods"
 
 // get the subworkflows
-include { RUN_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
+include { LIFTOFF_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
+include { VADR_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
 include { RUN_UTILITY } from "$projectDir/nf_subworkflows/utility"
 
 /*
@@ -123,13 +131,29 @@ workflow {
     )
         
     // run liftoff annotation process 
-    LIFTOFF ( 
-        RUN_UTILITY.out, 
-        params.meta_path, 
-        params.fasta_path, 
-        params.ref_fasta_path, 
-        params.ref_gff_path 
-    )
+    if ( params.run_liftoff == true ) {
+        LIFTOFF ( 
+            RUN_UTILITY.out, 
+            params.meta_path, 
+            params.fasta_path, 
+            params.ref_fasta_path, 
+            params.ref_gff_path 
+        )
+    }
+
+    // run vadr processes
+    if ( params.run_vadr == true ) {
+        VADR (
+            RUN_UTILITY.out, 
+            params.fasta_path,
+            params.vadr_models_dir
+        )
+        VADR_POST_CLEANUP (
+            VADR.out.vadr_outputs,
+            params.meta_path,
+            params.fasta_path
+        )
+    }
 
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
@@ -137,22 +161,34 @@ workflow {
         // pre submission process + get wait time (parallel)
         GET_WAIT_TIME ( 
             METADATA_VALIDATION.out.meta_signal, 
-            LIFTOFF.out.liftoff_signal, 
             METADATA_VALIDATION.out.tsv_Files.collect() 
         )
 
-        // call the submission workflow
-        RUN_SUBMISSION (
-            METADATA_VALIDATION.out.meta_signal, 
-            LIFTOFF.out.liftoff_signal,
-            METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
-            LIFTOFF.out.fasta.sort().flatten(), 
-            LIFTOFF.out.gff.sort().flatten(), 
-            false, 
-            params.submission_config, 
-            params.req_col_config, 
-            GET_WAIT_TIME.out 
-        )
+        // call the submission workflow for liftoff 
+        if ( params.run_liftoff == true ) {
+            LIFTOFF_SUBMISSION (
+                METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
+                LIFTOFF.out.fasta.sort().flatten(), 
+                LIFTOFF.out.gff.sort().flatten(), 
+                false, 
+                params.submission_config, 
+                params.req_col_config, 
+                GET_WAIT_TIME.out
+            )
+        }
+
+        // call the submission workflow for vadr 
+        if ( params.run_vadr  == true ) {
+            VADR_SUBMISSION (
+                METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
+                VADR_POST_CLEANUP.out.fasta.sort().flatten(), 
+                VADR_POST_CLEANUP.out.gff.sort().flatten(), 
+                false, 
+                params.submission_config, 
+                params.req_col_config, 
+                GET_WAIT_TIME.out 
+            )
+        }
     }
 } 
 
@@ -200,11 +236,18 @@ workflow only_liftoff {
 
 workflow only_vadr {
     main:
-        // run annotation on files
-        VADR ( 
-            'dummy utility signal', 
-            params.fasta_path 
-        )
+        // run vadr processes
+        if ( params.run_vadr == true ) {
+            VADR (
+                'dummy utility signal', 
+                params.fasta_path,
+                params.vadr_models_dir
+            )
+            VADR_POST_CLEANUP (
+                VADR.out.vadr_outputs,
+                params.fasta_path
+            )
+        }
 }
 
 workflow only_submission {
@@ -224,7 +267,7 @@ workflow only_submission {
         // get the wait time
         GET_WAIT_TIME ( 
             'dummy meta signal', 
-            'dummy liftoff signal', 
+            'dummy annotation signal', 
             PREP_SUBMISSION_ENTRY.out.tsv.collect() 
         )
         
