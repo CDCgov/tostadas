@@ -98,13 +98,15 @@ source activate tostadas
 
 #### (5) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk*
 
-#### (6) The final piece to the environment set up is to install nextflow (optionally with conda):
+#### (6) The final piece to the environment set up is to install Nextflow:
 
-* First make sure your path is set correctly and you are active in your tostadas environment. Then run the following command to install nextflow with Conda: 
+You need the Nextflow package to actually run the pipeline and have two options for installing it:
+
+(1) Using Mamba and the Bioconda Channel:
 ```bash
 mamba install -c bioconda nextflow
 ```
-Access the link provided for help with installing [nextflow](https://www.nextflow.io/docs/latest/getstarted.html)
+(2) Externally to Mamba Environment Following the Instructions Here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
 ## Quick Start
 
