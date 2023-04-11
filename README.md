@@ -60,6 +60,19 @@ Submission workflow generates the necessary files for Genbank submission, genera
 
 ## Setup
 
+### Repository Setup
+
+To clone the code from the repo to your local machine: 
+```bash
+git clone https://github.com/CDCgov/tostadas.git
+```
+
+If the following applies to you:
+* CDC user with access to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
+* Require access to available submission config files
+
+Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
+
 ### Environment Setup 
 The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
 * Note: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
@@ -76,7 +89,7 @@ export PATH="$HOME/mambaforge/bin:$PATH"
 ```
 #### (3) Now you can create the conda environment and install the dependencies set in your environment.yml:   
 ```bash
-mamba create -n tostadas -f environment.yml   
+mamba env create -n tostadas -f environment.yml   
 ```
 #### (4) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
 ```bash
@@ -92,19 +105,6 @@ source activate tostadas
 mamba install -c bioconda nextflow
 ```
 Access the link provided for help with installing [nextflow](https://www.nextflow.io/docs/latest/getstarted.html)
-
-### Repository Setup
-
-To clone the code from the repo to your local machine: 
-```bash
-git clone https://github.com/CDCgov/tostadas.git
-```
-
-If the following applies to you:
-* CDC user with access to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
-* Require access to available submission config files
-
-Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
 
 ## Quick Start
 
