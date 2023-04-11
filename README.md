@@ -77,17 +77,24 @@ Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/c
 
 ### Environment Setup 
 The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
-* Note: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
+* NOTE: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
 * If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
 
-#### (1) First install mamba:
+If you are not running the pipeline on Scicomp and do not have Mamba installed, then run the following two steps:
+#### (1) Install Mamba:
 ```bash
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
 bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
 ```
-#### (2) Add mamba to PATH:
+#### (2) Add Mamba to PATH:
 ```bash
 export PATH="$HOME/mambaforge/bin:$PATH"
+```
+
+Otherwise, if you are running the pipeline on Scicomp, then run the following step instead:
+#### Initialize the Miniconda Module:
+```bash
+ml miniconda3
 ```
 #### (3) Now you can create the conda environment and install the dependencies set in your environment.yml:   
 ```bash
