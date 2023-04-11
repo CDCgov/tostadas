@@ -25,7 +25,7 @@
     - [Customizing Parameters](#customizing-parameters)
     - [Understanding Profiles and Environments](#understanding-profiles-and-environments)
     - [Toggling Submission](#toggling-submission)
-- [More Information on Submission](#more-information-on-submission)
+    - [More Information on Submission](#more-information-on-submission)
 - [Entrypoints](#entrypoints)
 - [Outputs](#outputs)
     - [Pipeline Overview](#pipeline-overview)
@@ -126,7 +126,7 @@ This is the default directory set in the nextflow.config file to allow for runni
 
 #### (3) Change the ```submission_config``` parameter within ```test_params.config``` to the location of your personal submission config file.
 
-** NOTE: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all
+** NOTE: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: [More Information on Submission](#more-information-on-submission)
 
 #### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
 
@@ -216,7 +216,7 @@ Within the nextflow pipeline the ```-profile``` option is required as an input. 
 Now that your file paths are set within your standard.yml or standard.json or standard_params.config file, you will want to define whether to run the full pipeline with submission or without submission. This is defined within the standard_params.config file underneath the subworkflow section as run_submission ```run_submission = true/false```
  * Apart from this main bifurcation, there exists entrypoints that you can use to access specific processes. More information is listed in the table below.
 
-## More Information on Submission:
+### More Information on Submission:
 The submission piece of the pipeline uses the processes that are directly integrated from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline. It has been developed to allow the user to create a config file to select which databases they would like to upload to and allows for any possible metadata fields by using a YAML to pair the database's metadata fields which your personal metadata field columns. The requirements for this portion of the pipeline to run are listed below.
 
 (A) Create Appropriate Accounts as needed for the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline integrated into TOSTADAS:
