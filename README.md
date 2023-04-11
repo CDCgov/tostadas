@@ -96,7 +96,7 @@ mamba env create -n tostadas -f environment.yml
 source activate tostadas
 ```
 
-#### (5) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk*
+#### (5) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk ```*```
 
 #### (6) The final piece to the environment set up is to install Nextflow:
 
@@ -113,8 +113,10 @@ mamba install -c bioconda nextflow
 The configs are set-up to run the default params with the test option
 
 #### (1) Ensure nextflow was installed successfully by running ```Nextflow -v```
+
+Expected Output:
 ```
-* Version of nextflow should be >=22.10.0
+nextflow version 22.10.0.5826
 ```
 
 #### (2) Check that you are in the project directory (Tostadas).
