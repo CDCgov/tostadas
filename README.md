@@ -20,11 +20,13 @@
     - [Repository Setup](#repository-setup)
 - [Quickstart](#quick-start)
 - [Running the Pipeline](#running-the-pipeline)
-- [Profile Options & Input Files](#profile-options-&-input-files)
+- [Profile Options & Input Files](#profile-options--input-files)
     - [Input Files Required](#input-files-required)
     - [Customizing Parameters](#customizing-parameters)
     - [Understanding Profiles and Environments](#understanding-profiles-and-environments)
     - [Toggling Submission](#toggling-submission)
+- [More Information on Submission](#more-information-on-submission)
+- [Entrypoints](#entrypoints)
 - [Outputs](#outputs)
     - [Pipeline Overview](#pipeline-overview)
     - [Output Directory Formatting](#output-directory-formatting)
@@ -124,6 +126,8 @@ nextflow version 22.10.0.5826
 This is the default directory set in the nextflow.config file to allow for running the nextflow pipeline with the provided test input files.
 
 #### (3) Change the ```submission_config``` parameter within ```test_params.config``` to the location of your personal submission config file.
+
+** NOTE: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all
 
 #### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
 
