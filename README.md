@@ -17,6 +17,8 @@
     - [Submission](#submission)
 - [Setup](#setup)
     - [Environment Setup](#environment-setup)
+        - [Non-Scicomp Setup](#non-scicomp-setup)
+        - [Scicomp Setup](#scicomp-setup)
     - [Repository Setup](#repository-setup)
 - [Quickstart](#quick-start)
 - [Running the Pipeline](#running-the-pipeline)
@@ -81,42 +83,70 @@ The environment setup needs to occur within a terminal, or can optionally be han
 * NOTE: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
 * If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
 
-If you are not running the pipeline on Scicomp and do not have Mamba installed, then run the following two steps:
+### Non-Scicomp Setup:
+
+The following steps are for running the pipeline on a non-Scicomp environment.
+
 #### (1) Install Mamba:
 ```bash
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
 bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
 ```
+
 #### (2) Add Mamba to PATH:
 ```bash
 export PATH="$HOME/mambaforge/bin:$PATH"
 ```
 
-Otherwise, if you are running the pipeline on Scicomp, then run the following step instead:
-#### Initialize the Miniconda Module:
-```bash
-ml miniconda3
-```
 #### (3) Now you can create the conda environment and install the dependencies set in your environment.yml:   
 ```bash
 mamba env create -n tostadas -f environment.yml   
 ```
+
 #### (4) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
 ```bash
 source activate tostadas
 ```
+** NOTE: You can check which environment is active by running the following conda command: ```conda env list```  . The active environment will be denoted with an asterisk ```*```
 
-#### (5) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk ```*```
-
-#### (6) The final piece to the environment set up is to install Nextflow:
+#### (5) Install Nextflow:
 
 You need the Nextflow package to actually run the pipeline and have two options for installing it:
 
-(1) Using Mamba and the Bioconda Channel:
+(5.1) Using Mamba and the Bioconda Channel:
 ```bash
 mamba install -c bioconda nextflow
 ```
-(2) Externally to Mamba Environment Following the Instructions Here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
+(5.2) Externally to Mamba Environment Following the Instructions Here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
+
+### Scicomp Setup:
+
+The following steps are for running the pipeline on Scicomp.
+
+#### (1) Activate the miniconda module:
+```bash
+ml miniconda3
+```
+
+#### (2) Create conda environment using mamba:
+```bash
+mamba env create -n tostadas -f environment.yml   
+```
+
+#### (3) Activate the conda environment:
+```bash
+conda activate tostadas   
+```
+
+#### (4) Install Nextflow:
+
+You need the Nextflow package to actually run the pipeline and have two options for installing it:
+
+(4.1) Using Mamba and the Bioconda Channel:
+```bash
+mamba install -c bioconda nextflow
+```
+(4.2) Externally to Mamba Environment Following the Instructions Here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
 ## Quick Start
 
