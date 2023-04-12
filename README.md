@@ -17,14 +17,18 @@
     - [Submission](#submission)
 - [Setup](#setup)
     - [Environment Setup](#environment-setup)
+        - [Non-Scicomp Setup](#non-scicomp-setup)
+        - [Scicomp Setup](#scicomp-setup)
     - [Repository Setup](#repository-setup)
 - [Quickstart](#quick-start)
 - [Running the Pipeline](#running-the-pipeline)
-- [Profile Options & Input Files](#profile-options-&-input-files)
+- [Profile Options & Input Files](#profile-options--input-files)
     - [Input Files Required](#input-files-required)
     - [Customizing Parameters](#customizing-parameters)
     - [Understanding Profiles and Environments](#understanding-profiles-and-environments)
     - [Toggling Submission](#toggling-submission)
+    - [More Information on Submission](#more-information-on-submission)
+- [Entrypoints](#entrypoints)
 - [Outputs](#outputs)
     - [Pipeline Overview](#pipeline-overview)
     - [Output Directory Formatting](#output-directory-formatting)
@@ -38,7 +42,7 @@
     - [Metadata Validation](#metadata-validation)
     - [Liftoff](#liftoff)
     - [VADR](#vadr)
-    - [Submission](#submission)
+    - [Submission](#sample-submission)
 - [Helpful Links](#helpful-links)
 - [Acknowledgements](#acknowledgements)
 
@@ -60,65 +64,105 @@ Submission workflow generates the necessary files for Genbank submission, genera
 
 ## Setup
 
-### Environment Setup 
-The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
-* Note: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
-* If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
-
-#### (1) First install mamba:
-```bash
-curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
-bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
-```
-#### (2) Add mamba to PATH:
-```bash
-export PATH="$HOME/mambaforge/bin:$PATH"
-```
-#### (3) Now you can create the conda environment and install the dependencies set in your environment.yml:   
-```bash
-mamba create -n tostadas -f environment.yml   
-```
-#### (4) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
-```bash
-source activate tostadas
-```
-
-#### (5) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk*
-
-#### (6) The final piece to the environment set up is to install nextflow (optionally with conda):
-
-* First make sure your path is set correctly and you are active in your tostadas environment. Then run the following command to install nextflow with Conda: 
-```bash
-mamba install -c bioconda nextflow
-```
-Access the link provided for help with installing [nextflow](https://www.nextflow.io/docs/latest/getstarted.html)
-
 ### Repository Setup
 
-To clone the code from the repo to your local machine: 
-```bash
-git clone https://github.com/CDCgov/tostadas.git
-```
-
-If the following applies to you:
+Before cloning, check if the following applies to you:
 * CDC user with access to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
 * Require access to available submission config files
 
 Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
+
+Otherwise, proceed with cloning the repo to your local machine: 
+```bash
+git clone https://github.com/CDCgov/tostadas.git
+```
+
+### Environment Setup 
+The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
+* NOTE: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
+* If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
+
+#### Non-Scicomp Setup:
+
+The following steps are for running the pipeline on a non-Scicomp environment.
+
+#### (1) Install Mamba:
+```bash
+curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
+```
+
+#### (2) Add Mamba to PATH:
+```bash
+export PATH="$HOME/mambaforge/bin:$PATH"
+```
+
+#### (3) Now you can create the conda environment and install the dependencies set in your environment.yml:   
+```bash
+mamba env create -n tostadas -f environment.yml   
+```
+
+#### (4) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
+```bash
+source activate tostadas
+```
+** NOTE: You can check which environment is active by running the following conda command: ```conda env list```  . The active environment will be denoted with an asterisk ```*```
+
+#### (5) Install Nextflow:
+
+You need the Nextflow package to actually run the pipeline and have two options for installing it:
+
+(5.1) Using Mamba and the Bioconda Channel:
+```bash
+mamba install -c bioconda nextflow
+```
+(5.2) Externally to mamba environment following the instructions here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
+
+#### Scicomp Setup:
+
+The following steps are for running the pipeline on Scicomp.
+
+#### (1) Activate the miniconda module:
+```bash
+ml miniconda3
+```
+
+#### (2) Create conda environment using mamba:
+```bash
+mamba env create -n tostadas -f environment.yml   
+```
+
+#### (3) Activate the conda environment:
+```bash
+conda activate tostadas   
+```
+
+#### (4) Install Nextflow:
+
+You need the Nextflow package to actually run the pipeline and can install it in the following manner:
+
+Using mamba and the bioconda channel:
+```bash
+mamba install -c bioconda nextflow
+```
 
 ## Quick Start
 
 The configs are set-up to run the default params with the test option
 
 #### (1) Ensure nextflow was installed successfully by running ```Nextflow -v```
+
+Expected Output:
 ```
-* Version of nextflow should be >=22.10.0
+nextflow version 22.10.0.5826
 ```
 
 #### (2) Check that you are in the project directory (Tostadas).
 This is the default directory set in the nextflow.config file to allow for running the nextflow pipeline with the provided test input files.
 
 #### (3) Change the ```submission_config``` parameter within ```test_params.config``` to the location of your personal submission config file.
+
+** NOTE: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: [More Information on Submission](#more-information-on-submission)
 
 #### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
 
@@ -127,6 +171,14 @@ nextflow run main.nf -profile test,conda
 ```
 
 The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory (update this in the standard params set for a different output path).
+
+** NOTE: Running the pipeline with default parameters (test) will trigger a wait time equal to # of samples * 180 seconds. This default parameter can be overridden by running the following command instead:
+
+```bash
+nextflow run main.nf -profile test,conda --submission_wait_time <place integer value here in seconds>
+```
+
+More information on the ```submission_wait_time``` parameter can be found under [Submission Parameters](#submission)
 
 ## Running the Pipeline
 
@@ -208,7 +260,7 @@ Within the nextflow pipeline the ```-profile``` option is required as an input. 
 Now that your file paths are set within your standard.yml or standard.json or standard_params.config file, you will want to define whether to run the full pipeline with submission or without submission. This is defined within the standard_params.config file underneath the subworkflow section as run_submission ```run_submission = true/false```
  * Apart from this main bifurcation, there exists entrypoints that you can use to access specific processes. More information is listed in the table below.
 
-## More Information on Submission:
+### More Information on Submission:
 The submission piece of the pipeline uses the processes that are directly integrated from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline. It has been developed to allow the user to create a config file to select which databases they would like to upload to and allows for any possible metadata fields by using a YAML to pair the database's metadata fields which your personal metadata field columns. The requirements for this portion of the pipeline to run are listed below.
 
 (A) Create Appropriate Accounts as needed for the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline integrated into TOSTADAS:
@@ -381,7 +433,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --vadr_output_dir  | File path to vadr specific sub-workflow outputs      |        Yes (folder name as string)      |
 | --vadr_models_dir  | File path to models for MPXV used by VADR annotation      |        Yes (folder name as string)      |
 
-### Submission
+### Sample Submission
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --submission_output_dir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
