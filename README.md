@@ -319,7 +319,7 @@ If you are using the ```only_submission``` entrypoint, you must define the paths
 
 It is preferred to use ```$projectDir``` to prefix the defined paths, which is a built-in variable for encoding the path to the **main.nf** file. Then, you can simply append it with the path relative to main.nf.
 
-For example, if your files are located in a directory named **test_files** immediately below the level where main.nf is, with separate directories for fasta, gff, and metadata files (called fasta, gff, and meta)inside it, then you would use the following:
+For example, if your files are located in a directory named **test_files** immediately below the level where main.nf is, with separate directories for fasta, gff, and metadata files (called fasta, gff, and meta) inside it, then you would use the following:
  
 ```submission_only_meta = $projectDir/test_files/meta```
 
