@@ -299,8 +299,8 @@ Table of entrypoints available for the nextflow pipeline:
 | only_liftoff      | Runs the liftoff annotation process only                           |
 | only_vadr         | Runs the VADR annotation process only                           |
 | only_submission      | Runs submission sub-workflow only. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                           |
-| only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow               |
-| only_update_submission  | Updates NCBI submissions                                 |
+| only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)               |
+| only_update_submission  | Updates NCBI submissions. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                                 |
 
 * Documentation for using entrypoints with NF can be found at [Nextflow_Entrypoints](https://www.nextflow.io/blog/2020/cli-docs-release.html) under section 5. 
 
@@ -313,7 +313,8 @@ nextflow run main.nf -profile <param set>,<env> -entry <insert option from table
 
 ### Required Files for Submission Entrypoint:
 
-If you are using the ```only_submission``` entrypoint, you must define the paths for the following parameters/files:
+If you are using the ```only_submission``` or  ```only_initial_submission``` entrypoint, you must define the paths for the following parameters:
+
 * ```submission_only_meta``` : path to the directory containing validated metadata files (one .tsv per sample)
 * ```submission_only_fasta``` : path to the directory containing split fasta files (one .fasta per sample)
 * ```submission_only_gff``` : path to the directory containing the cleaned and reformatted GFF files (one .gff per sample)
@@ -329,6 +330,10 @@ For example, if your files are located in a directory named **test_files** immed
 ```submission_only_gff = $projectDir/test_files/gff```
 
 You do have the option to use either relative paths (from where you are running the pipeline) or absolute paths, but this may introduce issues when running it on certain cloud/HPC environments.
+
+If you are using ```only_update_submission``` entrypoint, you must define the following parameter:
+
+* ```processed_samples``` : path to the directory containing outputs from initial submission
 
 ## Outputs
 The following section walks through the outputs from the pipeline.
