@@ -1,72 +1,86 @@
 # VADR Install Guide for Biolinux
-### 1. Clone the repo
+### **1. Clone the Repo**
+
+First, make sure that you are inside of the root directory of the tostadas repository, and then run the following:
+
 ```
 git clone https://github.com/ncbi/vadr.git
 cd vadr
-VADRINSTALLDIR='.'
+VADRINSTALLDIR=$PWD
 ```
-### 2. Run the install script, if getting an error with curl, install curl using mamba
+### **2. Run the Install Script, If Getting an Error with Curl, Install Curl Using Mamba**
 `mamba install -c conda-forge curl`
-```
-vadr-install.sh linux
-```
 
-### 3. Set up the MPXV model directory. 
+Windows:
+```
+bash vadr-install.sh linux
+```
+Mac:
+```
+bash vadr-install.sh macosx
+```
+**Troubleshooting:**
+
+If you receive the following error message:
+```
+vadr-install.sh: line 174: autoconf: command not found
+```
+Then, install autoconf using either of the following commands:
+
+```
+sudo apt-get install autoconf
+```
+OR
+```
+brew install autoconf
+``` 
+
+### 3. **Set Up the MPXV Model Directory**
 ```
 curl https://ftp.ncbi.nlm.nih.gov/pub/nawrocki/vadr-models/mpxv/1.4.2-1/vadr-models-mpxv-1.4.2-1.tar.gz --output mpxv-models.tar.gz
-tar -xf mpxv-models.tar.gz
-mv vadr-models-mpxv-* mpxv-models
+tar -xf mpxv-models.tar.gz && mv vadr-models-mpxv-* mpxv-models
 ```
 You also need to copy the modified model file that includes the ITRs from our MPXV repo.
-`cp ../mpxv_annotation_submission_dev/mpxv-models/mpxv.rpt.minfo mpxv-models`
+`cp ../vadr_files/mpxv.rpt.minfo mpxv-models/`
 
-### 4. Test and troubleshoot the install
+### **4. Export PATHS**
+Or add to your .bashrc profile
 
-Test your install by running `v-annotate.pl`. It will probably fail with a message something like 'Cant locate XYZ package in @INC'. You now begin the process of troubleshooting by installing the required perl libraries.
-If it works as expected, skip to #5 to export your variables.
-
-To install Bio/Easel/MSA.pl
+**Use env_variables.sh file to export path variables:**
 ```
-cd Bio-Easel/
-perl Makefile.PL
+cd .. && . vadr_files/env_variables.sh
+```
+
+### **5. Test and Troubleshoot the Install**
+
+Test your install by running `perl vadr/v-annotate.pl`. 
+
+It will probably fail with either (1) ```use: command not found``` or (2) ```Cant locate XYZ package in @INC```. 
+
+If it works as expected, skip to #5 to export your variables. Else, you can now begin the process of troubleshooting by installing the required PERL libraries.
+
+**To Install Bio/Easel/MSA.pl**
+```
+perl vadr/Bio-Easel/Makefile.PL
+cd vadr/Bio-Easel
 make
 make install
-cd ..
 ```
-To install LWP/Simple.pm
+** If ```make install``` throws a permission error, try running it as admin with ```sudo make install``` instead
+
+**To Install LWP/Simple.pm**
 ```
 cpan install LWP
 ```
 If error about sqp_opts.pm copy the files in sequip to your Perl path, which is shown as the @INC 
 `cp sequip/* <YOUR_PATH>`
 
-### 5. Export PATHS
-Or add to your .bashrc profile
-```
-export VADRINSTALLDIR="."
-export VADRSCRIPTSDIR="$VADRINSTALLDIR/vadr"
-export VADRMODELDIR="$VADRINSTALLDIR/vadr-models-calici"
-export VADRINFERNALDIR="$VADRINSTALLDIR/infernal/binaries"
-export VADREASELDIR="$VADRINSTALLDIR/infernal/binaries"
-export VADRHMMERDIR="$VADRINSTALLDIR/hmmer/binaries"
-export VADRBIOEASELDIR="$VADRINSTALLDIR/Bio-Easel"
-export VADRSEQUIPDIR="$VADRINSTALLDIR/sequip"
-export VADRBLASTDIR="$VADRINSTALLDIR/ncbi-blast/bin"
-export VADRFASTADIR="$VADRINSTALLDIR/fasta/bin"
-export PERL5LIB="$VADRSCRIPTSDIR":"$VADRSEQUIPDIR":"$VADRBIOEASELDIR/blib/lib":"$VAR 
-BIOEASELDIR/blib/arch":"$PERL5LIB"
-export PATH="$VADRSCRIPTSDIR":"$PATH"
-export VADRMINIMAP2DIR="$VADRINSTALLDIR/minimap2"
-export MDIR='../mpxv_annotation_submission_dev/mpxv-models'
-export INPUT_DIR='../mpxv_annotation_submission_dev/input_files/'
-```
-
 ### 6. Run the annotation script
 Ideally you have as many threads as samples, since VADR will give one thread to each sample
 ```
-v-annotate.pl --split --cpu 8 --glsearch --minimap2 -s -r --nomisc \
+perl vadr/v-annotate.pl --split --cpu 8 --glsearch --minimap2 -s -r --nomisc \
 --r_lowsimok --r_lowsimxd 100 --r_lowsimxl 2000 --alt_pass \
-discontn,dupregin --s_overhang 150 -i $MDIR/mpxv.rpt.minfo -n \
-$MDIR/mpxv.fa -x $MDIR $INPUT_DIR/trialDatav5.fasta \
+discontn,dupregin --s_overhang 150 -i vadr/mpxv-models/mpxv.rpt.minfo -n \
+vadr/mpxv-models/mpxv.fa -x $MDIR input_files/trialDatav5.fasta \
 vadr_testing_outdir -f
 ```

@@ -17,14 +17,19 @@
     - [Submission](#submission)
 - [Setup](#setup)
     - [Environment Setup](#environment-setup)
+        - [Non-CDC Setup](#non-cdc-setup)
+        - [Scicomp Setup](#scicomp-setup)
     - [Repository Setup](#repository-setup)
 - [Quickstart](#quick-start)
 - [Running the Pipeline](#running-the-pipeline)
-- [Profile Options & Input Files](#profile-options-&-input-files)
+- [Profile Options & Input Files](#profile-options--input-files)
     - [Input Files Required](#input-files-required)
     - [Customizing Parameters](#customizing-parameters)
     - [Understanding Profiles and Environments](#understanding-profiles-and-environments)
     - [Toggling Submission](#toggling-submission)
+    - [More Information on Submission](#more-information-on-submission)
+- [Entrypoints](#entrypoints)
+    - [Required Files for Submission](#required-files-for-submission-entrypoint)
 - [Outputs](#outputs)
     - [Pipeline Overview](#pipeline-overview)
     - [Output Directory Formatting](#output-directory-formatting)
@@ -37,7 +42,8 @@
     - [General Output](#general-output)
     - [Metadata Validation](#metadata-validation)
     - [Liftoff](#liftoff)
-    - [Submission](#submission)
+    - [VADR](#vadr)
+    - [Submission](#sample-submission)
 - [Helpful Links](#helpful-links)
 - [Acknowledgements](#acknowledgements)
 
@@ -46,73 +52,133 @@
 ### Metadata Validation
 The validation workflow checks if metadata conforms to NCBI standards and matches the input fasta file. The script also splits a multi-sample xlsx file into a separate .tsv file for each individual.
 
-### Liftoff
-The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes.
+### Gene Annotation
+
+Currently, consists of two annotation options:
+* (1) Liftoff 
+    * The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes.
+* (2) VADR
+    * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your multi-sample fasta, metadata in .xlsx format, and reference information for the pathogen genome which is included within this repository (found [here](https://github.com/CDCgov/tostadas/tree/lets_add_vadrv2/vadr_files/mpxv-models)). VADR is an existing package that was integrated into the pipeline and you can find more information about this tool at the following link: [VADR Git Repo](https://github.com/ncbi/vadr).
 
 ### Submission 
 Submission workflow generates the necessary files for Genbank submission, generates a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
 
 ## Setup
 
-### Environment Setup 
-The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
-* Note: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
-* If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
-
-#### (1) First install mamba:
-```bash
-curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
-bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
-```
-#### (2) Add mamba to PATH:
-```bash
-export PATH="$HOME/mambaforge/bin:$PATH"
-```
-#### (3) Now you can create the conda environment and install the dependencies set in your environment.yml:   
-```bash
-mamba create -n tostadas -f environment.yml   
-```
-#### (4) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
-```bash
-source activate tostadas
-```
-
-#### (5) To examine which environment is active, run the following conda command: ```conda env list```  , then the active environment will be denoted with an asterisk*
-
-#### (6) The final piece to the environment set up is to install nextflow (optionally with conda):
-
-* First make sure your path is set correctly and you are active in your tostadas environment. Then run the following command to install nextflow with Conda: 
-```bash
-mamba install -c bioconda nextflow
-```
-Access the link provided for help with installing [nextflow](https://www.nextflow.io/docs/latest/getstarted.html)
-
 ### Repository Setup
 
-To clone the code from the repo to your local machine: 
+Before cloning, check if the following applies to you:
+* CDC user with access to the Monkeypox group on Gitlab
+* Require access to available submission config files
+
+Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
+
+Otherwise, proceed with cloning the repo to your local machine: 
 ```bash
 git clone https://github.com/CDCgov/tostadas.git
 ```
 
-If the following applies to you:
-* CDC user with access to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
-* Require access to available submission config files
+### Environment Setup 
+Based on whether or not you are a CDC user and running on Scicomp servers, the setup steps will differ. 
 
-Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
+If you are not running the pipeline on CDC HPC, then perform steps directly below: ([Non-CDC Setup](#non-cdc-setup)), else if you are running on Scicomp servers then proceed to the setup steps under [Scicomp Setup](#scicomp-setup)
+
+#### Non-CDC Setup:
+
+The following steps are for running the pipeline in a non-CDC environment.
+
+If you want to create the full-conda environment needed to run the pipeline outside of Nextflow (enables you to run individual python scripts), then proceed with **steps 1-5** below. 
+
+If you simply want to run the pipeline using Nextflow only (this will be most users), then you would simply create an empty conda environment (skip **step 3** but perform **steps 1-2 and steps 4-5**):
+```bash
+conda create --name tostadas
+```
+Nextflow will handle environment creation and you would only need to install the nextflow package locally vs the entire environment.
+
+#### (1) Install Mamba:
+```bash
+curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
+```
+
+#### (2) Add Mamba to PATH:
+```bash
+export PATH="$HOME/mambaforge/bin:$PATH"
+```
+
+#### (3) Now you can create the conda environment and install the dependencies set in your environment.yml:   
+```bash
+mamba env create -n tostadas -f environment.yml   
+```
+
+#### (4) After the environment is created activate the environment. Always make sure to activate the environment with each new session.
+```bash
+source activate tostadas
+```
+** NOTE: You can check which environment is active by running the following conda command: ```conda env list```  . The active environment will be denoted with an asterisk ```*```
+
+#### (5) Install Nextflow:
+
+You need the Nextflow package to actually run the pipeline and have two options for installing it:
+
+(5a) Using Mamba and the Bioconda Channel:
+```bash
+mamba install -c bioconda nextflow
+```
+(5b) Externally to mamba environment following the instructions here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
+
+#### Scicomp Setup:
+
+The following steps are for running the pipeline on Scicomp at the CDC.
+
+If you want to create the full-conda environment needed to run the pipeline outside of Nextflow (enables you to run individual python scripts), then proceed with the steps listed below [here](#1-activate-the-miniconda-module). 
+
+If you simply want to run the pipeline using Nextflow only (this will be most users), then you would simply initialize the nextflow module (skip all steps below):
+```bash
+ml nextflow
+```
+
+#### (1) Activate the miniconda module:
+```bash
+ml miniconda3
+```
+
+#### (2) Create conda environment using mamba:
+```bash
+mamba env create -n tostadas -f environment.yml   
+```
+
+#### (3) Activate the conda environment:
+```bash
+conda activate tostadas   
+```
+
+#### (4) Install Nextflow:
+
+You need the Nextflow package to actually run the pipeline and can install it in the following manner:
+
+Using mamba and the bioconda channel:
+```bash
+mamba install -c bioconda nextflow
+```
 
 ## Quick Start
 
 The configs are set-up to run the default params with the test option
 
 #### (1) Ensure nextflow was installed successfully by running ```Nextflow -v```
+
+Expected Output:
 ```
-* Version of nextflow should be >=22.10.0
+nextflow version 22.10.0.5826
 ```
 
 #### (2) Check that you are in the project directory (Tostadas).
 This is the default directory set in the nextflow.config file to allow for running the nextflow pipeline with the provided test input files.
 
 #### (3) Change the ```submission_config``` parameter within ```test_params.config``` to the location of your personal submission config file.
+
+** NOTE: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: [More Information on Submission](#more-information-on-submission)
 
 #### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
 
@@ -121,6 +187,14 @@ nextflow run main.nf -profile test,conda
 ```
 
 The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory (update this in the standard params set for a different output path).
+
+** NOTE: Running the pipeline with default parameters (test) will trigger a wait time equal to # of samples * 180 seconds. This default parameter can be overridden by running the following command instead:
+
+```bash
+nextflow run main.nf -profile test,conda --submission_wait_time <place integer value here in seconds>
+```
+
+More information on the ```submission_wait_time``` parameter can be found under [Submission Parameters](#submission)
 
 ## Running the Pipeline
 
@@ -172,7 +246,7 @@ This section walks through the available parameters to customize your workflow.
 
 ### Input Files Required: 
 
-#### (A) This table lists the required files to run metadata validation and liftoff annotation:
+#### (A) This table lists the required files to run metadata validation and annotation:
 | Input files | File type | Description                                                                               |
 |-------------|-----------|-------------------------------------------------------------------------------------------|
 | fasta       | .fasta    | Multi-sample fasta file with your input sequences                                         |
@@ -202,7 +276,7 @@ Within the nextflow pipeline the ```-profile``` option is required as an input. 
 Now that your file paths are set within your standard.yml or standard.json or standard_params.config file, you will want to define whether to run the full pipeline with submission or without submission. This is defined within the standard_params.config file underneath the subworkflow section as run_submission ```run_submission = true/false```
  * Apart from this main bifurcation, there exists entrypoints that you can use to access specific processes. More information is listed in the table below.
 
-## More Information on Submission:
+### More Information on Submission:
 The submission piece of the pipeline uses the processes that are directly integrated from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline. It has been developed to allow the user to create a config file to select which databases they would like to upload to and allows for any possible metadata fields by using a YAML to pair the database's metadata fields which your personal metadata field columns. The requirements for this portion of the pipeline to run are listed below.
 
 (A) Create Appropriate Accounts as needed for the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline integrated into TOSTADAS:
@@ -222,9 +296,10 @@ Table of entrypoints available for the nextflow pipeline:
 | only_cleanup_files   | Cleans-up files utilizing the clean-up process within the utility sub-workflow             |
 | only_validation      | Runs the metadata validation process only                           |
 | only_liftoff      | Runs the liftoff annotation process only                           |
-| only_submission      | Runs submission sub-workflow only                           |
-| only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow               |
-| only_update_submission  | Updates NCBI submissions                                 |
+| only_vadr         | Runs the VADR annotation process only                           |
+| only_submission      | Runs submission sub-workflow only. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                           |
+| only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)               |
+| only_update_submission  | Updates NCBI submissions. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                                 |
 
 * Documentation for using entrypoints with NF can be found at [Nextflow_Entrypoints](https://www.nextflow.io/blog/2020/cli-docs-release.html) under section 5. 
 
@@ -234,6 +309,30 @@ The following command can be used to specify entrypoints for the workflow:
 ```bash
 nextflow run main.nf -profile <param set>,<env> -entry <insert option from table above>
 ```
+
+### Required Files for Submission Entrypoint:
+
+If you are using the ```only_submission``` or  ```only_initial_submission``` entrypoint, you must define the paths for the following parameters:
+
+* ```submission_only_meta``` : path to the directory containing validated metadata files (one .tsv per sample)
+* ```submission_only_fasta``` : path to the directory containing split fasta files (one .fasta per sample)
+* ```submission_only_gff``` : path to the directory containing the cleaned and reformatted GFF files (one .gff per sample)
+
+It is preferred to use ```$projectDir``` to prefix the defined paths, which is a built-in variable for encoding the path to the **main.nf** file. Then, you can simply append it with the path relative to main.nf.
+
+For example, if your files are located in a directory named **test_files** immediately below the level where main.nf is, with separate directories for fasta, gff, and metadata files (called fasta, gff, and meta) inside it, then you would use the following:
+ 
+```submission_only_meta = $projectDir/test_files/meta```
+
+```submission_only_fasta = $projectDir/test_files/fasta```
+
+```submission_only_gff = $projectDir/test_files/gff```
+
+You do have the option to use either relative paths (from where you are running the pipeline) or absolute paths, but this may introduce issues when running it on certain cloud/HPC environments.
+
+If you are using ```only_update_submission``` entrypoint, you must define the following parameter:
+
+* ```processed_samples``` : path to the directory containing outputs from initial submission
 
 ## Outputs
 The following section walks through the outputs from the pipeline.
@@ -256,23 +355,29 @@ The workflow will generate outputs in the following order:
 ### Output Directory Formatting:
 The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:
 * validation_outputs (**name configurable with val_output_dir)
-    * sample_metadata_run
+    * name of metadata sample file
         * errors
         * tsv_per_sample
 * liftoff_outputs (**name configurable with final_liftoff_output_dir)
-    * final_sample_metadata_file
+    * name of metadata sample file
         * errors
         * fasta
         * liftoff
-        * tbl 
+        * tbl
+* vadr_outputs (**name configurable with vadr_output_dir)
+    * name of metadata sample file
+        * errors
+        * fasta
+        * gffs
+        * tbl
 * submission_outputs (**name and path configurable with submission_output_dir)
-    * individual_sample_batch_info
-        * biosample_sra
-        * genbank
-        * accessions.csv
-    * terminal_outputs
-    * commands_used
-* liftoffCommand.txt
+    * name of annotation results (Liftoff or VADR, etc.)
+        * individual_sample_batch_info
+            * biosample_sra
+            * genbank
+            * accessions.csv
+        * terminal_outputs
+        * commands_used
 
 ### Understanding Pipeline Outputs:
 The pipeline outputs inlcude: 
@@ -306,11 +411,14 @@ When changing these parameters pay attention to the required inputs and make sur
 |--------------------------|---------------------------------------------------------|------------------|
 | --scicomp           | Flag for whether running on Scicomp or not                            | Yes (true/false as bool) |
 | --docker_container           | Name of the Docker container                            | Yes, if running with docker profile (name as string) |
+| --docker_container_vadr           | Name of the Docker container to run VADR annotation                            | Yes, if running with docker profile (name as string) |
 
 ### General Subworkflow
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --run_submission           | Toggle for running submission                            | Yes (true/false as bool) |
+| --run_liftoff           | Toggle for running liftoff annotation                            | Yes (true/false as bool) |
+| --run_vadr           | Toggle for running vadr annotation                            | Yes (true/false as bool) |
 | --cleanup                  | Toggle for running cleanup subworkflows                 | Yes (true/false as bool) |
 
 ### Cleanup Subworkflow
@@ -320,7 +428,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --clear_nextflow_dir     | Clears nextflow working directory                       |  Yes (true/false as bool)|
 | --clear_work_dir         | Param to clear work directory created during workflow   |  Yes (true/false as bool) |                
 | --clear_conda_env        | Clears conda environment                                |  Yes (true/false as bool) |               
-| --clear_nf_results       | Remove results from nextflow outputs                    |  Yes (true/false as bool) |               
+| --clear_nf_results       | Remove results from nextflow outputs                    |  Yes (true/false as bool) |              
 
 ### General Output
 | Param                    | Description                                             | Input Required   |
@@ -359,7 +467,13 @@ When changing these parameters pay attention to the required inputs and make sur
 | --lift_minimap_path         |Path to minimap if you did not use conda or pip          |        Yes (N/A or path as string)       |
 |--lift_feature_database_name |Name of the feature database, if none, then will use ref gff path to construct one|        Yes (N/A or name as string)      |
 
-### Submission
+### VADR
+| Param                       | Description                                             | Input Required   |
+|-----------------------------|---------------------------------------------------------|------------------|
+| --vadr_output_dir  | File path to vadr specific sub-workflow outputs      |        Yes (folder name as string)      |
+| --vadr_models_dir  | File path to models for MPXV used by VADR annotation      |        Yes (folder name as string)      |
+
+### Sample Submission
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --submission_output_dir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |

@@ -1,0 +1,28 @@
+Release notes for vadr monkeypox virus (MPXV) models:
+
+Download site:
+https://ftp.ncbi.nlm.nih.gov/pub/nawrocki/vadr-models/mpxv
+
+Bitbucket repo:
+https://bitbucket.org/nawrockie/vadr-models-mpxv
+
+====================================================
+
+1.4.2-1: [Jul 2022]: Initial model built from NC_063383 on July 13,
+         2022 using vadr 1.4.2 command:
+
+         v-build.pl --forcelong --skipbuild NC_063383 NC_063383' 
+
+         and output files renamed to have prefix 'mpxv' instead of
+         'NC_063383.vadr'.
+
+         Also, the following was manually added to the MODEL line (first line) of
+         mpxv.minfo: 
+         
+         group:"Orthopoxvirus" subgroup:"Monkeypox_virus" indfstrn_exc:"1..6422:+;190788..197209:+;"
+
+         The model contains 179 CDS features and 179 corresponding
+         gene features. 
+
+====================================================
+contact: eric.nawrocki@nih.gov

@@ -71,7 +71,11 @@ tests/__pycache__
 
 # vadr related 
 /vadr
-/vadr/ 
+/vadr/
+/vadr_testing_outdir/
+/vadr_testing_outdir
+/bin/vadr_outputs
+/bin/vadr_outputs/
 
 # add singularity related stuff
 /app/singularity/containers/
@@ -111,3 +115,7 @@ bin/__pycache__
 /bin/table2asn
 /bin/config_files/
 /bin/config_files
+
+.DS_Store
+app/.DS_Store
+bin/.DS_Store
