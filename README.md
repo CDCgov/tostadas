@@ -17,7 +17,7 @@
     - [Submission](#submission)
 - [Setup](#setup)
     - [Environment Setup](#environment-setup)
-        - [Non-Scicomp Setup](#non-scicomp-setup)
+        - [Non-CDC Setup](#non-cdc-setup)
         - [Scicomp Setup](#scicomp-setup)
     - [Repository Setup](#repository-setup)
 - [Quickstart](#quick-start)
@@ -67,7 +67,7 @@ Submission workflow generates the necessary files for Genbank submission, genera
 ### Repository Setup
 
 Before cloning, check if the following applies to you:
-* CDC user with access to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
+* CDC user with access to the Monkeypox group on Gitlab
 * Require access to available submission config files
 
 Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
@@ -78,13 +78,21 @@ git clone https://github.com/CDCgov/tostadas.git
 ```
 
 ### Environment Setup 
-The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
-* NOTE: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
-* If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
+Based on whether or not you are a CDC user and running on Scicomp servers, the setup steps will differ. 
 
-#### Non-Scicomp Setup:
+If you are not running the pipeline on CDC HPC, then perform steps directly below: ([Non-CDC Setup](#non-cdc-setup)), else if you are running on Scicomp servers then proceed to the setup steps under [Scicomp Setup](#scicomp-setup)
 
-The following steps are for running the pipeline on a non-Scicomp environment.
+#### Non-CDC Setup:
+
+The following steps are for running the pipeline in a non-CDC environment.
+
+If you want to create the full-conda environment needed to run the pipeline outside of Nextflow (enables you to run individual python scripts), then proceed with **steps 1-5** below. 
+
+If you simply want to run the pipeline using Nextflow only (this will be most users), then you would simply create an empty conda environment (skip **step 3** but perform **steps 1-2 and steps 4-5**):
+```bash
+conda create --name tostadas
+```
+Nextflow will handle environment creation and you would only need to install the nextflow package locally vs the entire environment.
 
 #### (1) Install Mamba:
 ```bash
@@ -112,15 +120,22 @@ source activate tostadas
 
 You need the Nextflow package to actually run the pipeline and have two options for installing it:
 
-(5.1) Using Mamba and the Bioconda Channel:
+(5a) Using Mamba and the Bioconda Channel:
 ```bash
 mamba install -c bioconda nextflow
 ```
-(5.2) Externally to mamba environment following the instructions here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
+(5b) Externally to mamba environment following the instructions here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
 #### Scicomp Setup:
 
-The following steps are for running the pipeline on Scicomp.
+The following steps are for running the pipeline on Scicomp at the CDC.
+
+If you want to create the full-conda environment needed to run the pipeline outside of Nextflow (enables you to run individual python scripts), then proceed with the steps listed below [here](#1-activate-the-miniconda-module). 
+
+If you simply want to run the pipeline using Nextflow only (this will be most users), then you would simply initialize the nextflow module (skip all steps below):
+```bash
+ml nextflow
+```
 
 #### (1) Activate the miniconda module:
 ```bash
