@@ -42,7 +42,7 @@
     - [Metadata Validation](#metadata-validation)
     - [Liftoff](#liftoff)
     - [VADR](#vadr)
-    - [Submission](#submission)
+    - [Submission](#sample-submission)
 - [Helpful Links](#helpful-links)
 - [Acknowledgements](#acknowledgements)
 
@@ -171,6 +171,14 @@ nextflow run main.nf -profile test,conda
 ```
 
 The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory (update this in the standard params set for a different output path).
+
+** NOTE: Running the pipeline with default parameters (test) will trigger a wait time equal to # of samples * 180 seconds. This default parameter can be overridden by running the following command instead:
+
+```bash
+nextflow run main.nf -profile test,conda --submission_wait_time <place integer value here in seconds>
+```
+
+More information on the ```submission_wait_time``` parameter can be found under [Submission Parameters](#submission)
 
 ## Running the Pipeline
 
@@ -425,7 +433,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --vadr_output_dir  | File path to vadr specific sub-workflow outputs      |        Yes (folder name as string)      |
 | --vadr_models_dir  | File path to models for MPXV used by VADR annotation      |        Yes (folder name as string)      |
 
-### Submission
+### Sample Submission
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | --submission_output_dir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
