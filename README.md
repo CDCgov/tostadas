@@ -83,7 +83,7 @@ The environment setup needs to occur within a terminal, or can optionally be han
 * NOTE: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
 * If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
 
-### Non-Scicomp Setup:
+#### Non-Scicomp Setup:
 
 The following steps are for running the pipeline on a non-Scicomp environment.
 
@@ -119,7 +119,7 @@ mamba install -c bioconda nextflow
 ```
 (5.2) Externally to mamba environment following the instructions here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
-### Scicomp Setup:
+#### Scicomp Setup:
 
 The following steps are for running the pipeline on Scicomp.
 
