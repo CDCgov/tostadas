@@ -67,16 +67,16 @@ Submission workflow generates the necessary files for Genbank submission, genera
 
 ### Repository Setup
 
-To clone the code from the repo to your local machine: 
-```bash
-git clone https://github.com/CDCgov/tostadas.git
-```
-
-If the following applies to you:
+Before cloning, check if the following applies to you:
 * CDC user with access to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
 * Require access to available submission config files
 
 Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
+
+Otherwise, proceed with cloning the repo to your local machine: 
+```bash
+git clone https://github.com/CDCgov/tostadas.git
+```
 
 ### Environment Setup 
 The environment setup needs to occur within a terminal, or can optionally be handled by the Nextflow pipeline according to the conda block of the nextflow.config file.
