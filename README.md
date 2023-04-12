@@ -322,7 +322,9 @@ It is preferred to use ```$projectDir``` to prefix the defined paths, which is a
 For example, if your files are located in a directory named **test_files** immediately below the level where main.nf is, with separate directories for fasta, gff, and metadata files (called fasta, gff, and meta)inside it, then you would use the following:
  
 ```submission_only_meta = $projectDir/test_files/meta```
+
 ```submission_only_fasta = $projectDir/test_files/fasta```
+
 ```submission_only_gff = $projectDir/test_files/gff```
 
 You do have the option to use either relative paths (from where you are running the pipeline) or absolute paths, but this may introduce issues when running it on certain cloud/HPC environments.
