@@ -29,6 +29,7 @@
     - [Toggling Submission](#toggling-submission)
     - [More Information on Submission](#more-information-on-submission)
 - [Entrypoints](#entrypoints)
+    - [Required Files for Submission](#required-files-for-submission-entrypoint)
 - [Outputs](#outputs)
     - [Pipeline Overview](#pipeline-overview)
     - [Output Directory Formatting](#output-directory-formatting)
@@ -296,7 +297,7 @@ Table of entrypoints available for the nextflow pipeline:
 | only_validation      | Runs the metadata validation process only                           |
 | only_liftoff      | Runs the liftoff annotation process only                           |
 | only_vadr         | Runs the VADR annotation process only                           |
-| only_submission      | Runs submission sub-workflow only                           |
+| only_submission      | Runs submission sub-workflow only. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                           |
 | only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow               |
 | only_update_submission  | Updates NCBI submissions                                 |
 
@@ -308,6 +309,23 @@ The following command can be used to specify entrypoints for the workflow:
 ```bash
 nextflow run main.nf -profile <param set>,<env> -entry <insert option from table above>
 ```
+
+### Required Files for Submission Entrypoint:
+
+If you are using the ```only_submission``` entrypoint, you must define the paths for the following parameters/files:
+* ```submission_only_meta``` : path to the directory containing validated metadata files (one .tsv per sample)
+* ```submission_only_fasta``` : path to the directory containing split fasta files (one .fasta per sample)
+* ```submission_only_gff``` : path to the directory containing the cleaned and reformatted GFF files (one .gff per sample)
+
+It is preferred to use ```$projectDir``` to prefix the defined paths, which is a built-in variable for encoding the path to the **main.nf** file. Then, you can simply append it with the path relative to main.nf.
+
+For example, if your files are located in a directory named **test_files** immediately below the level where main.nf is, with separate directories for fasta, gff, and metadata files (called fasta, gff, and meta)inside it, then you would use the following:
+ 
+```submission_only_meta = $projectDir/test_files/meta```
+```submission_only_fasta = $projectDir/test_files/fasta```
+```submission_only_gff = $projectDir/test_files/gff```
+
+You do have the option to use either relative paths (from where you are running the pipeline) or absolute paths, but this may introduce issues when running it on certain cloud/HPC environments.
 
 ## Outputs
 The following section walks through the outputs from the pipeline.
