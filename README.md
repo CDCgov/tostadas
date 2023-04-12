@@ -141,7 +141,7 @@ conda activate tostadas
 
 You need the Nextflow package to actually run the pipeline and can install it in the following manner:
 
-(4.1) Using mamba and the bioconda channel:
+Using mamba and the bioconda channel:
 ```bash
 mamba install -c bioconda nextflow
 ```
