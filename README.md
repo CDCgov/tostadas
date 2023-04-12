@@ -116,7 +116,7 @@ You need the Nextflow package to actually run the pipeline and have two options 
 ```bash
 mamba install -c bioconda nextflow
 ```
-(5.2) Externally to Mamba Environment Following the Instructions Here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
+(5.2) Externally to mamba environment following the instructions here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
 ### Scicomp Setup:
 
@@ -139,13 +139,12 @@ conda activate tostadas
 
 #### (4) Install Nextflow:
 
-You need the Nextflow package to actually run the pipeline and have two options for installing it:
+You need the Nextflow package to actually run the pipeline and can install it in the following manner:
 
-(4.1) Using Mamba and the Bioconda Channel:
+(4.1) Using mamba and the bioconda channel:
 ```bash
 mamba install -c bioconda nextflow
 ```
-(4.2) Externally to Mamba Environment Following the Instructions Here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
 ## Quick Start
 
