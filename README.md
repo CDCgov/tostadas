@@ -17,8 +17,8 @@
     - [Submission](#submission)
 - [Setup](#setup)
     - [Environment Setup](#environment-setup)
-        - [Non-Scicomp Setup](#non-scicomp-setup)
-        - [Scicomp Setup](#scicomp-setup)
+        - [Non-CDC Setup](#non-cdc-setup)
+        - [CDC Setup](#cdc-setup)
     - [Repository Setup](#repository-setup)
 - [Quickstart](#quick-start)
 - [Running the Pipeline](#running-the-pipeline)
@@ -67,7 +67,7 @@ Submission workflow generates the necessary files for Genbank submission, genera
 ### Repository Setup
 
 Before cloning, check if the following applies to you:
-* CDC user with access to the Monkeypox group on Gitlab (https://git.biotech.cdc.gov/monkeypox)
+* CDC user with access to the Monkeypox group on Gitlab
 * Require access to available submission config files
 
 Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
@@ -82,9 +82,13 @@ The environment setup needs to occur within a terminal, or can optionally be han
 * NOTE: With mamba and nextflow installed, when you run nextflow it will create the environment from the provided environment.yml. 
 * If you want to create a personalized environment you can create this environment as long as the environment name lines up with the environment name provided in the environment.yml file.
 
-#### Non-Scicomp Setup:
+Based on whether or not you are a CDC user and running on Scicomp servers, the setup steps will differ. 
 
-The following steps are for running the pipeline on a non-Scicomp environment.
+If you are not running the pipeline on CDC HPC, then perform steps directly below: ([Non-CDC Setup](#non-cdc-setup)), else if you are running on Scicomp servers then proceed to the setup steps under [CDC Setup](#cdc-setup)
+
+#### Non-CDC Setup:
+
+The following steps are for running the pipeline on a non-CDC environment.
 
 #### (1) Install Mamba:
 ```bash
@@ -112,15 +116,15 @@ source activate tostadas
 
 You need the Nextflow package to actually run the pipeline and have two options for installing it:
 
-(5.1) Using Mamba and the Bioconda Channel:
+(5a) Using Mamba and the Bioconda Channel:
 ```bash
 mamba install -c bioconda nextflow
 ```
-(5.2) Externally to mamba environment following the instructions here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
+(5b) Externally to mamba environment following the instructions here: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
-#### Scicomp Setup:
+#### CDC Setup:
 
-The following steps are for running the pipeline on Scicomp.
+The following steps are for running the pipeline on CDC environment.
 
 #### (1) Activate the miniconda module:
 ```bash
