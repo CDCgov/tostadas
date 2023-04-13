@@ -57,7 +57,7 @@ submission_only_gff: ""
 submission_only_fasta: ""
 processed_samples: ""
 submission_config: ""
-reg_col_config: ""
+req_col_config: ""
 batch_name: ""
 send_submission_email: null
 submission_database: ""
