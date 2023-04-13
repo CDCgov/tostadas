@@ -89,7 +89,6 @@ def helpMessage() {
 // get the utility processes
 include { VALIDATE_PARAMS } from "$projectDir/nf_modules/utility_mods"
 include { CLEANUP_FILES } from "$projectDir/nf_modules/utility_mods"
-include { SUBMISSION_ENTRY_CHECK } from "$projectDir/nf_modules/utility_mods"
 include { PREP_SUBMISSION_ENTRY } from "$projectDir/nf_modules/utility_mods"
 include { PREP_UPDATE_SUBMISSION_ENTRY } from "$projectDir/nf_modules/utility_mods"
 include { GET_WAIT_TIME } from "$projectDir/nf_modules/utility_mods"
@@ -103,8 +102,10 @@ include { VADR_POST_CLEANUP } from "$projectDir/nf_modules/main_mods"
 include { LIFTOFF } from "$projectDir/nf_modules/main_mods"
 
 // get the subworkflows
+include { CHECKS_4_SUBMISSION_ENTRY } from "$projectDir/nf_subworkflows/submission_entry_check"
 include { LIFTOFF_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
 include { VADR_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
+include { ENTRY_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
 include { RUN_UTILITY } from "$projectDir/nf_subworkflows/utility"
 
 /*
@@ -253,11 +254,13 @@ workflow only_vadr {
 workflow only_submission {
     main:
         // check that certain paths are specified (need to pass in for it to work)
-        SUBMISSION_ENTRY_CHECK ()
+        CHECKS_4_SUBMISSION_ENTRY (
+            'only_submission'
+        )
 
         // get the parameter paths into proper format 
         PREP_SUBMISSION_ENTRY ( 
-            SUBMISSION_ENTRY_CHECK.out,
+            CHECKS_4_SUBMISSION_ENTRY.out,
             params.submission_only_meta, 
             params.submission_only_fasta, 
             params.submission_only_gff, 
@@ -266,15 +269,12 @@ workflow only_submission {
 
         // get the wait time
         GET_WAIT_TIME ( 
-            'dummy meta signal', 
-            'dummy annotation signal', 
+            'dummy meta signal',  
             PREP_SUBMISSION_ENTRY.out.tsv.collect() 
         )
         
         // call the submission workflow
-        RUN_SUBMISSION (
-            'dummy meta signal',
-            'dummy annotation signal',
+        ENTRY_SUBMISSION (
             PREP_SUBMISSION_ENTRY.out.tsv.sort().flatten(),
             PREP_SUBMISSION_ENTRY.out.fasta.sort().flatten(),
             PREP_SUBMISSION_ENTRY.out.gff.sort().flatten(), 
@@ -288,11 +288,13 @@ workflow only_submission {
 workflow only_initial_submission {
     main:        
         // check that certain paths are specified (need to pass in for it to work)
-        SUBMISSION_ENTRY_CHECK ()
+        CHECKS_4_SUBMISSION_ENTRY (
+            'only_initial_submission'
+        )
 
         // get the parameter paths into proper format 
         PREP_SUBMISSION_ENTRY ( 
-            SUBMISSION_ENTRY_CHECK.out,
+            CHECKS_4_SUBMISSION_ENTRY.out,
             params.submission_only_meta, 
             params.submission_only_fasta, 
             params.submission_only_gff, 
@@ -306,7 +308,8 @@ workflow only_initial_submission {
             PREP_SUBMISSION_ENTRY.out.gff.sort().flatten(), 
             true,
             params.submission_config,
-            params.req_col_config
+            params.req_col_config,
+            ''
         )
 }
 
@@ -314,20 +317,23 @@ workflow only_update_submission {
     main:
 
         // call the check specific to submission
-        SUBMISSION_ENTRY_CHECK ()
+        CHECKS_4_SUBMISSION_ENTRY (
+            'only_update_submission'
+        )
 
         // get the parameter paths into proper format 
         PREP_UPDATE_SUBMISSION_ENTRY ( 
-            SUBMISSION_ENTRY_CHECK.out,
+            CHECKS_4_SUBMISSION_ENTRY.out,
             true, 
             params.processed_samples
         )
 
         // call the update submission portion only
         UPDATE_SUBMISSION (
-            SUBMISSION_ENTRY_CHECK.out,
+            'dummy wait signal',
             params.submission_config,
-            PREP_UPDATE_SUBMISSION_ENTRY.out.samples.flatten()
+            PREP_UPDATE_SUBMISSION_ENTRY.out.samples.flatten(),
+            ''
         )
 }
- 
+
