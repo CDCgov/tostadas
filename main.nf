@@ -1,6 +1,24 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                CODEBASE INFORMATION
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    Github  :   https://github.com/CDCgov/tostadas
+
+----------------------------------------------------------------------------------------
+*/
+
+nextflow.enable.dsl=2
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  HELPER FUNCTION
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 def helpMessage() {
   log.info """
         Usage:
@@ -87,26 +105,25 @@ def helpMessage() {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // get the utility processes
-include { VALIDATE_PARAMS } from "$projectDir/nf_modules/utility_mods"
-include { CLEANUP_FILES } from "$projectDir/nf_modules/utility_mods"
-include { PREP_SUBMISSION_ENTRY } from "$projectDir/nf_modules/utility_mods"
-include { PREP_UPDATE_SUBMISSION_ENTRY } from "$projectDir/nf_modules/utility_mods"
-include { GET_WAIT_TIME } from "$projectDir/nf_modules/utility_mods"
-
+include { VALIDATE_PARAMS                                   } from "$projectDir/modules/general_util/validate_params/main"
+include { CLEANUP_FILES                                     } from "$projectDir/modules/general_util/cleanup_files/main"
+include { GET_WAIT_TIME                                     } from "$projectDir/modules/general_util/get_wait_time/main"
+// get the submission entrypoint processes
+include { PREP_SUBMISSION_ENTRY                             } from "$projectDir/modules/submission_entrypoint/prep_sub_entry/main"
+include { PREP_UPDATE_SUBMISSION_ENTRY                      } from "$projectDir/modules/submission_entrypoint/prep_update_sub_entry/main"
 // get the main processes
-include { METADATA_VALIDATION } from "$projectDir/nf_modules/main_mods"
-include { SUBMISSION } from "$projectDir/nf_modules/main_mods"
-include { UPDATE_SUBMISSION } from "$projectDir/nf_modules/main_mods"
-include { VADR } from "$projectDir/nf_modules/main_mods"
-include { VADR_POST_CLEANUP } from "$projectDir/nf_modules/main_mods"
-include { LIFTOFF } from "$projectDir/nf_modules/main_mods"
-
+include { METADATA_VALIDATION                               } from "$projectDir/modules/metadata_validation/main"
+include { SUBMISSION                                        } from "$projectDir/modules/submission/main"
+include { UPDATE_SUBMISSION                                 } from "$projectDir/modules/update_submission/main"
+include { VADR                                              } from "$projectDir/modules/vadr_annotation/main"
+include { VADR_POST_CLEANUP                                 } from "$projectDir/modules/post_vadr_annotation/main"
+include { LIFTOFF                                           } from "$projectDir/modules/liftoff_annotation/main"
 // get the subworkflows
-include { CHECKS_4_SUBMISSION_ENTRY } from "$projectDir/nf_subworkflows/submission_entry_check"
-include { LIFTOFF_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
-include { VADR_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
-include { ENTRY_SUBMISSION } from "$projectDir/nf_subworkflows/submission"
-include { RUN_UTILITY } from "$projectDir/nf_subworkflows/utility"
+include { CHECKS_4_SUBMISSION_ENTRY                         } from "$projectDir/subworkflows/submission_entry_check"
+include { LIFTOFF_SUBMISSION                                } from "$projectDir/subworkflows/submission"
+include { VADR_SUBMISSION                                   } from "$projectDir/subworkflows/submission"
+include { ENTRY_SUBMISSION                                  } from "$projectDir/subworkflows/submission"
+include { RUN_UTILITY                                       } from "$projectDir/subworkflows/utility"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

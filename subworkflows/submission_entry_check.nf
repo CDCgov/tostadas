@@ -6,9 +6,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { GENERAL_SUBMISSION_ENTRY_CHECK } from '../nf_modules/utility_mods'
-include { ONLY_INITIAL_SUBMISSION_ENTRY_CHECK } from '../nf_modules/utility_mods'
-include { ONLY_UPDATE_SUBMISSION_ENTRY_CHECK } from '../nf_modules/utility_mods'
+include { GENERAL_SUBMISSION_ENTRY_CHECK } from '../modules/submission_entrypoint/gen_sub_entry_check/main'
+include { ONLY_INITIAL_SUBMISSION_ENTRY_CHECK } from '../modules/submission_entrypoint/initial_sub_entry_check/main'
+include { ONLY_UPDATE_SUBMISSION_ENTRY_CHECK } from '../modules/submission_entrypoint/update_sub_entry_check/main'
 
 workflow CHECKS_4_SUBMISSION_ENTRY {
 
