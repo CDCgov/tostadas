@@ -1,0 +1,66 @@
+{
+    "help": false,
+    "fasta_path": "",
+    "ref_fasta_path": "",
+    "meta_path": "", 
+    "ref_gff_path": "",
+
+    "env_yml": "",
+    "scicomp": false,
+    "docker_container": "staphb/tostadas:latest",
+    "docker_container_vadr": "staphb/vadr:latest",
+
+    "run_submission": true,
+    "run_vadr": false,
+    "run_liftoff": true,
+    "cleanup": true,
+
+    "clear_nextflow_log": true,
+    "clear_work_dir": true,
+    "clear_conda_env": false,
+    "clear_nf_results": true,
+
+    "output_dir": "nf_test_results",
+    "overwrite_output": true,
+
+    "val_output_dir": "validation_outputs",
+    "val_date_format_flag": "s",
+    "val_keep_pi": true,
+
+    "final_liftoff_output_dir": "liftoff_outputs",
+    "lift_print_version_exit": false,
+    "lift_print_help_exit": false,
+    "lift_parallel_processes": 8,
+    "lift_delete_temp_files": "true",
+    "lift_coverage_threshold": 0.5,
+    "lift_child_feature_align_threshold": 0.5,
+    "lift_unmapped_features_file_name": "output.unmapped_features.txt",
+    "lift_copy_threshold": 1.0,
+    "lift_distance_scaling_factor": 2.0,
+    "lift_flank": 0.0,
+    "lift_overlap": 0.1,
+    "lift_mismatch": 2,
+    "lift_gap_open": 2,
+    "lift_gap_extend": 1,
+    "lift_infer_transcripts": "False",
+    "lift_copies": "False",
+    "lift_minimap_path": "N/A",
+    "lift_feature_database_name": "N/A",
+
+    "vadr_output_dir": "vadr_outputs",
+    "vadr_models_dir": "vadr_files/mpxv-models",
+
+    "submission_output_dir": "submission_outputs",
+    "submission_prod_or_test": "test",
+    "submission_wait_time": 2,
+    "submission_only_meta": "",
+    "submission_only_gff": "",
+    "submission_only_fasta": "",
+    "processed_samples": "",
+    "submission_config": "",
+    "req_col_config": "",
+    "batch_name": "batch1",
+    "send_submission_email": false, 
+    "submission_database": "submit"
+
+}
