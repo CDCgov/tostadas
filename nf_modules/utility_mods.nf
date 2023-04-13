@@ -13,6 +13,9 @@ process VALIDATE_PARAMS {
         } else if ( check == 0 ) {
              throw new Exception("Either docker, conda, or singularity must be selected as profile [docker, conda, singularity]. None passed in.")
         }
+
+        // check that at least one annotator is selected 
+        assert params.run_vadr == true || params.run_liftoff == true
   
         // check paths
         assert params.fasta_path
@@ -27,14 +30,28 @@ process VALIDATE_PARAMS {
         // check batch name 
         assert params.batch_name 
 
-        // check output directory
+        // check output directories
         assert params.output_dir
+        assert params.val_output_dir
+        assert params.submission_output_dir
+        if ( params.run_liftoff == true ) {
+            assert params.final_liftoff_output_dir
+        }
+        if ( params.run_vadr == true ) {
+            assert params.vadr_output_dir
+        }
 
         // check liftoff params with int or float values
         assert params.lift_parallel_processes == 0 || params.lift_parallel_processes
         assert params.lift_mismatch
         assert params.lift_gap_open
         assert params.lift_gap_extend
+
+        // check vadr specific params
+        if ( params.run_vadr == true ) {
+            assert params.docker_container_vadr
+            assert params.docker_container_vadr instanceof String == true 
+        }
 
         // check list of params with bool values
         assert params.scicomp == true || params.scicomp == false
@@ -104,7 +121,8 @@ process VALIDATE_PARAMS {
             "meta_path": params.meta_path,
             "env_yml": params.env_yml,
             "lift_minimap_path": params.lift_minimap_path,
-            "lift_feature_database_name": params.lift_feature_database_name
+            "lift_feature_database_name": params.lift_feature_database_name,
+            "vadr_models_dir": params.vadr_models_dir
         ]
 
         check_path_params.each { key, value ->
@@ -244,7 +262,7 @@ process GET_WAIT_TIME {
                            CHECK FOR SUBMISSION ENTRY POINT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process SUBMISSION_ENTRY_CHECK {
+process GENERAL_SUBMISSION_ENTRY_CHECK {
 
     exec:
         // check the different ways to run params
@@ -252,30 +270,60 @@ process SUBMISSION_ENTRY_CHECK {
         if ( check != 1 && check != 0 ) {
             throw new Exception("More than two profiles between docker, conda, and singularity were passed in. Please pass in only one")
         } else if ( check == 0 ) {
-             throw new Exception("Either docker, conda, or singularity must be selected as profile [docker, conda, singularity]. None passed in.")
+            throw new Exception("Either docker, conda, or singularity must be selected as profile [docker, conda, singularity]. None passed in.")
         }
-        
-        // check that certain paths are specified
+
+        // check that certain variables are specified
+        try {
+            assert params.submission_prod_or_test 
+            assert params.submission_database 
+            assert params.batch_name
+            assert params.submission_config
+        } catch (Exception e) {
+            throw new Exception("Batch name not specified for submission")
+        }
+
+    output:
+        val true
+}
+
+process ONLY_INITIAL_SUBMISSION_ENTRY_CHECK {
+    
+    exec:
+        // check that certain params are specified 
         try {
             assert params.submission_only_meta
             assert params.submission_only_fasta
             assert params.submission_only_gff
-        } catch(Exception e) {
-            throw new Exception("Paths to the (1) validated metadata file, (2) split fasta file, and (3) reformatted gff file must be specified")
+            assert params.submission_output_dir 
+            assert params.submission_wait_time
+            assert params.req_col_config
+            assert params.send_submission_email == true || params.send_submission_email == false
+        } catch (Exception e) {
+            throw new Exception("Paths to the (1) validated metadata file, (2) split fasta file, and (3) reformatted gff file must be specified, as well as submission output directory and wait time")
         }
+
+        // check that paths are strings
         for ( def path : [params.submission_only_meta, params.submission_only_fasta, params.submission_only_gff] ) {
             if ( path instanceof String == false ) {
                 throw new Exception("Value must be of string type: $path used instead")
             }
         }
+    
+    output:
+        val true
+}
 
-        // check that batch_name is specified
+process ONLY_UPDATE_SUBMISSION_ENTRY_CHECK {
+    exec:
+        // check that update_submission specific parameters are specified 
         try {
-            assert params.batch_name
+            assert params.processed_samples
+            assert params.processed_samples instanceof String == true 
         } catch (Exception e) {
-            throw new Exception("Batch name not specified for submission")
+            throw new Exception("The parameter for the path to the directory containing all the processed samples (gffs, fastas, meta files) must be defined")
         }
-
+    
     output:
         val true
 }
