@@ -1,0 +1,28 @@
+name: Tostadas CI
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        conda env create -n tostadas_test -f environment.yml
+        conda activate tostadas_test
+
+
+    - name: Run tests
+      run: pytest
