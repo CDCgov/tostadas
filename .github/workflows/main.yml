@@ -3,26 +3,32 @@ name: Tostadas CI
 on:
   pull_request:
     types: [opened, reopened]
-    branches: [main]
+    branches: [master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: Set up Python
+    - name: Set Up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
-        conda env create -n tostadas_test -f environment.yml
-        conda activate tostadas_test
+        curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+        bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
+        export PATH="$HOME/mambaforge/bin:$PATH"
+        mamba env create -f environment.yml
+        source activate tostadas
+        mamba install -c bioconda nextflow
+    
+    - name: Install Pytest
+      run: pip install pytest
 
-
-    - name: Run tests
-      run: pytest
+    - name: Run Tests
+      run: pytest tests/test.py
