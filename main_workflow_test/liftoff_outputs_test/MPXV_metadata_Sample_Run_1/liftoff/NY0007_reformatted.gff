@@ -1,0 +1,386 @@
+##gff-version 3
+# Liftoff v1.6.3
+# /opt/conda/envs/tostadas/bin/liftoff -p 8 -f liftoff_outputs_test/temp_MPXV_metadata_Sample_Run_1/liftoff/ftypes.liftoff.tmp -u liftoff_outputs_test/temp_MPXV_metadata_Sample_Run_1/errors/output.unmapped_features.txt -g ref.MPXV.NC063383.v7.gff -o liftoff_outputs_test/temp_MPXV_metadata_Sample_Run_1/liftoff/NY0007.liftoff-orig.gff -dir liftoff_outputs_test/temp_MPXV_metadata_Sample_Run_1/liftoff/ -a 0.5 -s 0.5 -flank 0.0 -mismatch 2 -gap_open 2 -gap_extend 1 -cds liftoff_outputs_test/temp_MPXV_metadata_Sample_Run_1/fastaFiles/NY0007.fasta ref.MPXV.NC063383.v7.fasta
+NY0007	Liftoff	repeat_region	1	6418	.	-	.	ID=ITR-NY0007-RPT1;rpt_type=long_terminal_repeat
+NY0007	Liftoff	gene	815	1555	.	-	.	ID=gene-NY0007-001;gene=OPG001;locus_tag=NY0007_001
+NY0007	Liftoff	CDS	815	1555	.	-	.	ID=cds-NY0007-002;Parent=gene-NY0007-001;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp001%3B Chemokine binding protein (Cop-C23L)%3B most abundant secreted protein%3B CC-chemokine binding%3B similar to VACV-WR J1L and VACV-Cop C23L;gene=OPG001;locus_tag=NY0007_001;product=Chemokine binding protein
+NY0007	Liftoff	gene	1682	2731	.	-	.	ID=gene-NY0007-002;gene=OPG002;locus_tag=NY0007_002
+NY0007	Liftoff	CDS	1682	2731	.	-	.	ID=cds-NY0007-003;Parent=gene-NY0007-002;note=Taxonomic breadth: chordopoxvirinae%3B Old product: NBT03_gp002%3B TNF receptor (CrmB)%3B similar to VACV-WR J2L and VACV-Cop C22L;gene=OPG002;locus_tag=NY0007_002;product=Crm-B secreted TNF-alpha-receptor-like protein
+NY0007	Liftoff	gene	2821	4587	.	-	.	ID=gene-NY0007-003;gene=OPG003;locus_tag=NY0007_003
+NY0007	Liftoff	CDS	2821	4587	.	-	.	ID=cds-NY0007-004;Parent=gene-NY0007-003;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp003%3B Ankyrin%3B similar to VACV-WR J3L and VACV-Cop C19L;gene=OPG003;locus_tag=NY0007_003;product=Ankyrin repeat protein (25)
+NY0007	Liftoff	gene	4839	6152	.	-	.	ID=gene-NY0007-004;gene=OPG015;locus_tag=NY0007_004
+NY0007	Liftoff	CDS	4839	6152	.	-	.	ID=cds-NY0007-005;Parent=gene-NY0007-004;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp004%3B Ankyrin%3B similar to VACV-WR D1L and CPXV-017;gene=OPG015;locus_tag=NY0007_004;product=Ankyrin repeat protein (39)
+NY0007	Liftoff	misc_feature	6266	6415	.	-	.	ID=misc_feature_1;note=OPG016
+NY0007	Liftoff	misc_feature	6440	6881	.	-	.	ID=misc_feature_2;note=OPG017
+NY0007	Liftoff	misc_feature	6962	7459	.	-	.	ID=misc_feature_3;note=OPG018
+NY0007	Liftoff	gene	7576	8004	.	+	.	ID=gene-NY0007-005;gene=OPG019;locus_tag=NY0007_005
+NY0007	Liftoff	CDS	7576	8004	.	+	.	ID=cds-NY0007-006;Parent=gene-NY0007-005;note=Taxonomic breadth: chordopoxvirinae%3B secreted growth factor Secreted EGF-like protein%3B similar to VACV-WR D3R and VACV-Cop C11R;gene=OPG019;locus_tag=NY0007_005;product=EGF-like domain protein
+NY0007	Liftoff	misc_feature	8132	9098	.	-	.	ID=misc_feature_4;note=OPG020
+NY0007	Liftoff	gene	9583	10311	.	+	.	ID=gene-NY0007-006;gene=OPG021;locus_tag=NY0007_006
+NY0007	Liftoff	CDS	9583	10311	.	+	.	ID=cds-NY0007-007;Parent=gene-NY0007-006;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp008%3B Zinc finger-like protein%3B zinc binding%3B virosome localization%3B virulence factor%3B inhibition of apoptosis induced by UV irradiation%3B similar to VACV-WR D5R;gene=OPG021;locus_tag=NY0007_006;product=Zinc finger-like protein (2)
+NY0007	Liftoff	gene	10474	10854	.	-	.	ID=gene-NY0007-007;gene=OPG022;locus_tag=NY0007_007
+NY0007	Liftoff	CDS	10474	10854	.	-	.	ID=cds-NY0007-008;Parent=gene-NY0007-007;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp009%3B secreted IL-18 binding protein%3B Soluble IL-18 binding protein (Bsh-D7L)%3B similar to VACV-WR D6L;gene=OPG022;locus_tag=NY0007_007;product=Interleukin-18-binding protein
+NY0007	Liftoff	gene	10914	12896	.	-	.	ID=gene-NY0007-008;gene=OPG023;locus_tag=NY0007_008
+NY0007	Liftoff	CDS	10914	12896	.	-	.	ID=cds-NY0007-009;Parent=gene-NY0007-008;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp010%3B host range%3B ankyrin-like%3B Ankyrin/Host Range (Bang-D8L)%3B similar to VACV-WR D7L;gene=OPG023;locus_tag=NY0007_008;product=Ankyrin repeat protein (2)
+NY0007	Liftoff	gene	13030	13224	.	-	.	ID=gene-NY0007-009;gene=OPG024;locus_tag=NY0007_009
+NY0007	Liftoff	CDS	13030	13224	.	-	.	ID=cds-NY0007-010;Parent=gene-NY0007-009;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp011%3B ANK-containing protein%3B similar to VACV-WR D8L;gene=OPG024;locus_tag=NY0007_009;product=retroviral pseudoprotease like protein
+NY0007	Liftoff	gene	13371	15263	.	-	.	ID=gene-NY0007-010;gene=OPG025;locus_tag=NY0007_010
+NY0007	Liftoff	CDS	13371	15263	.	-	.	ID=cds-NY0007-011;Parent=gene-NY0007-010;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp012%3B ankyrin-like%3B Type I IFN resistance%3B similar to VACV-WR D9L and VACV-Cop C9L;gene=OPG025;locus_tag=NY0007_010;product=Ankyrin repeat protein (14)
+NY0007	Liftoff	misc_feature	15306	15850	.	-	.	ID=misc_feature_5;note=OPG026
+NY0007	Liftoff	gene	15921	16373	.	-	.	ID=gene-NY0007-011;gene=OPG027;locus_tag=NY0007_011
+NY0007	Liftoff	CDS	15921	16373	.	-	.	ID=cds-NY0007-012;Parent=gene-NY0007-011;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp013%3B host range%3B Type 1 IFN inhibitor%3B similar to VACV-WR D10L and VACV-Cop C7L;gene=OPG027;locus_tag=NY0007_011;product=Host range protein
+NY0007	Liftoff	gene	16598	17065	.	-	.	ID=gene-NY0007-012;gene=OPG029;locus_tag=NY0007_012
+NY0007	Liftoff	CDS	16598	17065	.	-	.	ID=cds-NY0007-013;Parent=gene-NY0007-012;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp014%3B Putative tlr signaling inhibitor, IFN-beta inhibitor%3B similar to VACV-WR D11L and VACV-Cop C6L;gene=OPG029;locus_tag=NY0007_012;product=Bcl-2-like protein
+NY0007	Liftoff	gene	17209	17829	.	-	.	ID=gene-NY0007-013;gene=OPG030;locus_tag=NY0007_013
+NY0007	Liftoff	CDS	17209	17829	.	-	.	ID=cds-NY0007-014;Parent=gene-NY0007-013;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp015%3B BTB domain of kelch-like protein%3B Kelch-like protein%3B similar to VACV-WR D12L and VACV-Cop C5L;gene=OPG030;locus_tag=NY0007_013;product=Kelch-like protein (1)
+NY0007	Liftoff	gene	17874	18824	.	-	.	ID=gene-NY0007-014;gene=OPG031;locus_tag=NY0007_014
+NY0007	Liftoff	CDS	17874	18824	.	-	.	ID=cds-NY0007-015;Parent=gene-NY0007-014;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp016%3B IL-1 receptor antagonist%3B similar to VACV-WR D13L and VACV-Cop C10L;gene=OPG031;locus_tag=NY0007_014;product=C4L/C10L-like family protein
+NY0007	Liftoff	misc_feature	18898	19284	.	-	.	ID=misc_feature_6;note=OPG033
+NY0007	Liftoff	gene	19357	20001	.	-	.	ID=gene-NY0007-015;gene=OPG034;locus_tag=NY0007_015
+NY0007	Liftoff	CDS	19357	20001	.	-	.	ID=cds-NY0007-017;Parent=gene-NY0007-015;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp022%3B Putative TLR signalling inhibitor%3B start of ORF is missing approx. 18 AA compared to CPXVs%3B similar to VACV-WR D19L and VACV-Cop C1L;gene=OPG034;locus_tag=NY0007_015;product=Bcl-2-like protein
+NY0007	Liftoff	gene	20047	20400	.	-	.	ID=gene-NY0007-016;gene=OPG035;locus_tag=NY0007_016
+NY0007	Liftoff	CDS	20047	20400	.	-	.	ID=cds-NY0007-018;Parent=gene-NY0007-016;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp023%3B secreted virulence factor%3B Putative tlr signaling inhibitor%3B Anti-apoptotic Bcl-2-like protein%3B similar to VACV-WR P1L and VACV-Cop N1L;gene=OPG035;locus_tag=NY0007_016;product=Bcl-2-like protein
+NY0007	Liftoff	gene	20527	21060	.	-	.	ID=gene-NY0007-017;gene=OPG036;locus_tag=NY0007_017
+NY0007	Liftoff	CDS	20527	21060	.	-	.	ID=cds-NY0007-019;Parent=gene-NY0007-017;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp024%3B Alpha amanatin target protein%3B Putative tlr signaling inhibitor%3B similar to VACV-WR P2L and VACV-Cop N2L;gene=OPG036;locus_tag=NY0007_017;product=Bcl-2-like protein
+NY0007	Liftoff	gene	21101	22429	.	-	.	ID=gene-NY0007-018;gene=OPG037;locus_tag=NY0007_018
+NY0007	Liftoff	CDS	21101	22429	.	-	.	ID=cds-NY0007-020;Parent=gene-NY0007-018;note=Taxonomic breadth: orthopoxvirus%3B Old product: MPXVgp025%3B ankyrin-like%3B ANK-containing protein%3B apoptosis inhibitor%3B start of ORF is missing approx. 31 AA compared to CPXVs%3B similar to VACV-WR O1L and VACV-Cop M1L;gene=OPG037;locus_tag=NY0007_018;product=Ankyrin-like protein (1)
+NY0007	Liftoff	gene	22493	23155	.	-	.	ID=gene-NY0007-019;gene=OPG038;locus_tag=NY0007_019
+NY0007	Liftoff	CDS	22493	23155	.	-	.	ID=cds-NY0007-021;Parent=gene-NY0007-019;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp026%3B NFkB inhibitor%3B similar to VACV-WR O2L and VACV-Cop M2L;gene=OPG038;locus_tag=NY0007_019;product=NFkB inhibitor
+NY0007	Liftoff	gene	23260	24114	.	-	.	ID=gene-NY0007-020;gene=OPG039;locus_tag=NY0007_020
+NY0007	Liftoff	CDS	23260	24114	.	-	.	ID=cds-NY0007-022;Parent=gene-NY0007-020;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp027%3B host range%3B ankyrin-like%3B Ankyrin/NFkB inhibitor%3B similar to VACV-WR C1L and VACV-Cop K1L;gene=OPG039;locus_tag=NY0007_020;product=Ankyrin-like protein (3)
+NY0007	Liftoff	gene	24347	25474	.	-	.	ID=gene-NY0007-021;gene=OPG040;locus_tag=NY0007_021
+NY0007	Liftoff	CDS	24347	25474	.	-	.	ID=cds-NY0007-023;Parent=gene-NY0007-021;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp028%3B serine protease inhibitor-like, SPI-3%3B inhibition of the ability of infected cells to fuse%3B Serpin 1,2,3%3B similar to VACV-WR C2L and VACV-Cop K2L;gene=OPG040;locus_tag=NY0007_021;product=Serpin
+NY0007	Liftoff	misc_feature	25525	25763	.	-	.	ID=misc_feature_7;note=OPG041
+NY0007	Liftoff	gene	25819	27093	.	-	.	ID=gene-NY0007-022;gene=OPG042;locus_tag=NY0007_022
+NY0007	Liftoff	CDS	25819	27093	.	-	.	ID=cds-NY0007-025;Parent=gene-NY0007-022;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp030%3B phospholipase D-like%3B Phospholipase-D-like protein%3B similar to VACV-WR C4L and VACV-Cop K4L;gene=OPG042;locus_tag=NY0007_022;product=Phospholipase-D-like protein
+NY0007	Liftoff	gene	27121	27951	.	-	.	ID=gene-NY0007-023;gene=OPG043;locus_tag=NY0007_023
+NY0007	Liftoff	CDS	27121	27951	.	-	.	ID=cds-NY0007-026;Parent=gene-NY0007-023;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp031%3B lysophospholipase-like%3B Monoglyceride lipase%3B similar to VACV-WR C5L and VACV-Cop K5L;gene=OPG043;locus_tag=NY0007_023;product=Putative monoglyceride lipase
+NY0007	Liftoff	gene	28087	28536	.	+	.	ID=gene-NY0007-024;gene=OPG044;locus_tag=NY0007_024
+NY0007	Liftoff	CDS	28087	28536	.	+	.	ID=cds-NY0007-027;Parent=gene-NY0007-024;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp032%3B Putative tlr signaling inhibitor%3B Host immune response repressor%3B similar to VACV-WR C6R and VACV-Cop K7R;gene=OPG044;locus_tag=NY0007_024;product=Bcl-2-like protein
+NY0007	Liftoff	gene	28599	29258	.	-	.	ID=gene-NY0007-025;gene=OPG045;locus_tag=NY0007_025
+NY0007	Liftoff	CDS	28599	29258	.	-	.	ID=cds-NY0007-028;Parent=gene-NY0007-025;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp033%3B Caspase-9 (apoptosis) inhibitor (mitochondrial- associated)%3B similar to VACV-WR C7L and VACV-Cop F1L;gene=OPG045;locus_tag=NY0007_025;product=Caspase-9 inhibitor
+NY0007	Liftoff	gene	29270	29725	.	-	.	ID=gene-NY0007-026;gene=OPG046;locus_tag=NY0007_026
+NY0007	Liftoff	CDS	29270	29725	.	-	.	ID=cds-NY0007-029;Parent=gene-NY0007-026;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp034%3B deoxyuridine triphosphatase%3B dUTPase%3B similar to VACV-WR C8L and VACV-Cop F2L;gene=OPG046;locus_tag=NY0007_026;product=dUTPase
+NY0007	Liftoff	gene	29742	31190	.	-	.	ID=gene-NY0007-027;gene=OPG047;locus_tag=NY0007_027
+NY0007	Liftoff	CDS	29742	31190	.	-	.	ID=cds-NY0007-030;Parent=gene-NY0007-027;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp035%3B kelch-like%3B Kelch-like protein%3B similar to VACV-WR C9L and VACV-Cop F3L;gene=OPG047;locus_tag=NY0007_027;product=Kelch-like protein (2)
+NY0007	Liftoff	gene	31201	32160	.	-	.	ID=gene-NY0007-028;gene=OPG048;locus_tag=NY0007_028
+NY0007	Liftoff	CDS	31201	32160	.	-	.	ID=cds-NY0007-031;Parent=gene-NY0007-028;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp036%3B Ribonucleotide reductase small subunit, R2%3B similar to VACV-WR C10L and VACV-Cop F4L;gene=OPG048;locus_tag=NY0007_028;product=Ribonucleotide reductase small subunit
+NY0007	Liftoff	gene	32191	33147	.	-	.	ID=gene-NY0007-029;gene=OPG049;locus_tag=NY0007_029
+NY0007	Liftoff	CDS	32191	33147	.	-	.	ID=cds-NY0007-032;Parent=gene-NY0007-029;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp037%3B 36kDa major membrane protein%3B similar to VACV-WR C11L and VACV-Cop F5L;gene=OPG049;locus_tag=NY0007_029;product=Telomere-binding protein I6 (1)
+NY0007	Liftoff	gene	33177	33404	.	-	.	ID=gene-NY0007-030;gene=OPG050;locus_tag=NY0007_030
+NY0007	Liftoff	CDS	33177	33404	.	-	.	ID=cds-NY0007-033;Parent=gene-NY0007-030;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp038%3B Hypothetical protein%3B similar to VACV-WR C12L and VACV-Cop F6L;gene=OPG050;locus_tag=NY0007_030;product=CPXV053 protein
+NY0007	Liftoff	gene	33421	33645	.	-	.	ID=gene-NY0007-031;gene=OPG051;locus_tag=NY0007_031
+NY0007	Liftoff	CDS	33421	33645	.	-	.	ID=cds-NY0007-034;Parent=gene-NY0007-031;note=Taxonomic breadth: orthopoxvirus%3B Old product: MPXVgp039%3B Hypothetical protein%3B similar to VACV-WR C13L and VACV-Cop F7L;gene=OPG051;locus_tag=NY0007_031;product=CPXV054 protein
+NY0007	Liftoff	gene	33797	33991	.	-	.	ID=gene-NY0007-032;gene=OPG052;locus_tag=NY0007_032
+NY0007	Liftoff	CDS	33797	33991	.	-	.	ID=cds-NY0007-035;Parent=gene-NY0007-032;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp040%3B Cytoplasmic protein%3B similar to VACV-WR C14L and VACV-Cop F8L;gene=OPG052;locus_tag=NY0007_032;product=Cytoplasmic protein
+NY0007	Liftoff	gene	34048	34686	.	-	.	ID=gene-NY0007-033;gene=OPG053;locus_tag=NY0007_033
+NY0007	Liftoff	CDS	34048	34686	.	-	.	ID=cds-NY0007-036;Parent=gene-NY0007-033;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp041%3B S-S bond formation pathway protein substrate%3B similar to VACV-WR C15L and VACV-Cop F9L;gene=OPG053;locus_tag=NY0007_033;product=IMV membrane protein L1R
+NY0007	Liftoff	gene	34673	35992	.	-	.	ID=gene-NY0007-034;gene=OPG054;locus_tag=NY0007_034
+NY0007	Liftoff	CDS	34673	35992	.	-	.	ID=cds-NY0007-037;Parent=gene-NY0007-034;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp042%3B serine%3B Essential Ser/Thr kinase morph%3B similar to VACV-WR C16L and VACV-Cop F10L;gene=OPG054;locus_tag=NY0007_034;product=Serine/threonine-protein kinase
+NY0007	Liftoff	gene	36015	37079	.	-	.	ID=gene-NY0007-035;gene=OPG055;locus_tag=NY0007_035
+NY0007	Liftoff	CDS	36015	37079	.	-	.	ID=cds-NY0007-038;Parent=gene-NY0007-035;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp043%3B RhoA signalling inhibitor, virus release protein%3B MC018%3B similar to VACV-WR C17L and VACV-Cop F11L;gene=OPG055;locus_tag=NY0007_035;product=Protein F11
+NY0007	Liftoff	gene	37123	39030	.	-	.	ID=gene-NY0007-036;gene=OPG056;locus_tag=NY0007_036
+NY0007	Liftoff	CDS	37123	39030	.	-	.	ID=cds-NY0007-039;Parent=gene-NY0007-036;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp044%3B actin tail formation%3B EEV maturation protein%3B similar to VACV-WR C18L and VACV-Cop F12L;gene=OPG056;locus_tag=NY0007_036;product=EEV maturation protein
+NY0007	Liftoff	gene	39073	40191	.	-	.	ID=gene-NY0007-037;gene=OPG057;locus_tag=NY0007_037
+NY0007	Liftoff	CDS	39073	40191	.	-	.	ID=cds-NY0007-040;Parent=gene-NY0007-037;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp045%3B major envelope antigen of EEV%3B wrapping of IMV to form IEV%3B phospholipase D-like%3B Palmitylated EEV membrane glycoprotein%3B similar to VACV-WR C19L and VACV-Cop F13L;gene=OPG057;locus_tag=NY0007_037;product=Palmytilated EEV membrane protein
+NY0007	Liftoff	gene	40209	40430	.	-	.	ID=gene-NY0007-038;gene=OPG058;locus_tag=NY0007_038
+NY0007	Liftoff	CDS	40209	40430	.	-	.	ID=cds-NY0007-041;Parent=gene-NY0007-038;note=Taxonomic breadth: orthopoxvirus%3B Old product: MPXVgp046%3B similar to VACV-WR C20L and VACV-Cop F14L;gene=OPG058;locus_tag=NY0007_038;product=Protein F14 (1)
+NY0007	Liftoff	gene	40480	40629	.	-	.	ID=gene-NY0007-039;gene=OPG059;locus_tag=NY0007_039
+NY0007	Liftoff	CDS	40480	40629	.	-	.	ID=cds-NY0007-042;Parent=gene-NY0007-039;note=Taxonomic breadth: poxvirinae%3B IMV protein%3B C20.5L%3B similar to VACV-CopF14.5L;gene=OPG059;locus_tag=NY0007_039;product=Cytochrome C oxidase
+NY0007	Liftoff	gene	40702	41178	.	-	.	ID=gene-NY0007-040;gene=OPG060;locus_tag=NY0007_040
+NY0007	Liftoff	CDS	40702	41178	.	-	.	ID=cds-NY0007-043;Parent=gene-NY0007-040;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp047%3B Unknown conserved protein%3B similar to VACV-WR C21L and VACV-Cop F15L;gene=OPG060;locus_tag=NY0007_040;product=Protein F15
+NY0007	Liftoff	gene	41185	41880	.	-	.	ID=gene-NY0007-041;gene=OPG061;locus_tag=NY0007_041
+NY0007	Liftoff	CDS	41185	41880	.	-	.	ID=cds-NY0007-044;Parent=gene-NY0007-041;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp048%3B Non-functional Serine Recombinase%3B similar to VACV-WR C22L and VACV-Cop F16L;gene=OPG061;locus_tag=NY0007_041;product=Protein F16 (1)
+NY0007	Liftoff	gene	41943	42248	.	+	.	ID=gene-NY0007-042;gene=OPG062;locus_tag=NY0007_042
+NY0007	Liftoff	CDS	41943	42248	.	+	.	ID=cds-NY0007-045;Parent=gene-NY0007-042;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp049%3B virion core DNA-binding phosphoprotein (VP11)%3B mTOR antagonist%3B similar to VACV-WR C23R and VACV-Cop F17R;gene=OPG062;locus_tag=NY0007_042;product=DNA-binding phosphoprotein (1)
+NY0007	Liftoff	gene	42245	43684	.	-	.	ID=gene-NY0007-043;gene=OPG063;locus_tag=NY0007_043
+NY0007	Liftoff	CDS	42245	43684	.	-	.	ID=cds-NY0007-046;Parent=gene-NY0007-043;note=Taxonomic breadth: poxvirinae%3B Old product: MPXVgp050%3B poly-A polymerase, Poly (A) polymerase catalytic subunit (VP55)%3B similar to VACV-WR F1L and VACV-Cop E1L;gene=OPG063;locus_tag=NY0007_043;product=Poly(A) polymerase catalytic subunit (3)
+NY0007	Liftoff	gene	43681	45894	.	-	.	ID=gene-NY0007-044;gene=OPG064;locus_tag=NY0007_044
+NY0007	Liftoff	CDS	43681	45894	.	-	.	ID=cds-NY0007-047;Parent=gene-NY0007-044;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp051%3B IEV morphogenesis%3B similar to VACV-WR F2L and VACV-Cop E2L;gene=OPG064;locus_tag=NY0007_044;product=Iev morphogenesis protein
+NY0007	Liftoff	gene	46018	46479	.	-	.	ID=gene-NY0007-045;gene=OPG065;locus_tag=NY0007_045
+NY0007	Liftoff	CDS	46018	46479	.	-	.	ID=cds-NY0007-048;Parent=gene-NY0007-045;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp052%3B interferon resistance factor%3B two forms (25 kDa and 19 kDa) of the dsRNA-binding protein%3B inhibition of dsRNA-dependent protein kinase and 2-5A-synthet%3B dsRNA-binding protein, IFN resistance/PKR inhibitor (Z-DNA binding)%3B start of ORF is missing approx. 37 AA compared to CPXVs%3B similar to VACV-WR F3L and VACV-Cop E3L;gene=OPG065;locus_tag=NY0007_045;product=Double-stranded RNA binding protein
+NY0007	Liftoff	gene	46645	47424	.	-	.	ID=gene-NY0007-046;gene=OPG066;locus_tag=NY0007_046
+NY0007	Liftoff	CDS	46645	47424	.	-	.	ID=cds-NY0007-049;Parent=gene-NY0007-046;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp053%3B RNA polymerase 30 kDa subunit (RPO30)%3B simultaneously intermediate stage promoter-specific transcription factor, VITF-1%3B similar to VACV-WR F4L and VACV-Cop E4L;gene=OPG066;locus_tag=NY0007_046;product=DNA-directed RNA polymerase 30 kDa polypeptide
+NY0007	Liftoff	misc_feature	47521	48058	.	+	.	ID=misc_feature_8;note=OPG067
+NY0007	Liftoff	gene	48197	49900	.	+	.	ID=gene-NY0007-047;gene=OPG068;locus_tag=NY0007_047
+NY0007	Liftoff	CDS	48197	49900	.	+	.	ID=cds-NY0007-051;Parent=gene-NY0007-047;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp054%3B Virion protein%3B similar to VACV-WR F5R and VACV-Cop E6R;gene=OPG068;locus_tag=NY0007_047;product=IMV membrane protein E6
+NY0007	Liftoff	gene	49982	50482	.	+	.	ID=gene-NY0007-048;gene=OPG069;locus_tag=NY0007_048
+NY0007	Liftoff	CDS	49982	50482	.	+	.	ID=cds-NY0007-052;Parent=gene-NY0007-048;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp055%3B soluble myristylated protein%3B similar to VACV-WR F6R and VACV-Cop E7R;gene=OPG069;locus_tag=NY0007_048;product=Myristoylated protein E7
+NY0007	Liftoff	gene	50586	51407	.	+	.	ID=gene-NY0007-049;gene=OPG070;locus_tag=NY0007_049
+NY0007	Liftoff	CDS	50586	51407	.	+	.	ID=cds-NY0007-053;Parent=gene-NY0007-049;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp056%3B ER-localized membrane protein, virion core protein%3B similar to VACV-WR F7R and VACV-Cop E8R;gene=OPG070;locus_tag=NY0007_049;product=Membrane protein E8
+NY0007	Liftoff	gene	51414	54434	.	-	.	ID=gene-NY0007-050;gene=OPG071;locus_tag=NY0007_050
+NY0007	Liftoff	CDS	51414	54434	.	-	.	ID=cds-NY0007-054;Parent=gene-NY0007-050;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp057%3B DNA polymerase, catalytic subunit%3B similar to VACV-WR F8L and VACV-Cop E9L;gene=OPG071;locus_tag=NY0007_050;product=DNA polymerase (2)
+NY0007	Liftoff	gene	54466	54753	.	+	.	ID=gene-NY0007-051;gene=OPG072;locus_tag=NY0007_051
+NY0007	Liftoff	CDS	54466	54753	.	+	.	ID=cds-NY0007-055;Parent=gene-NY0007-051;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp058%3B protein disulfide bond-forming enzyme%3B Sulfhydryl oxidase (FAD-linked)%3B similar to VACV-WR F9R and VACV-Cop E10R;gene=OPG072;locus_tag=NY0007_051;product=Sulfhydryl oxidase
+NY0007	Liftoff	gene	54748	55137	.	-	.	ID=gene-NY0007-052;gene=OPG073;locus_tag=NY0007_052
+NY0007	Liftoff	CDS	54748	55137	.	-	.	ID=cds-NY0007-056;Parent=gene-NY0007-052;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp059%3B virion core protein%3B similar to VACV-WR F10L and VACV-Cop E11L;gene=OPG073;locus_tag=NY0007_052;product=Virion core protein E11
+NY0007	Liftoff	gene	55124	57121	.	-	.	ID=gene-NY0007-053;gene=OPG074;locus_tag=NY0007_053
+NY0007	Liftoff	CDS	55124	57121	.	-	.	ID=cds-NY0007-057;Parent=gene-NY0007-053;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp060%3B Membrane protein%3B similar to VACV-WR Q1L and VACV-Cop O1L;gene=OPG074;locus_tag=NY0007_053;product=Iev morphogenesis protein
+NY0007	Liftoff	gene	57168	57494	.	-	.	ID=gene-NY0007-054;gene=OPG075;locus_tag=NY0007_054
+NY0007	Liftoff	CDS	57168	57494	.	-	.	ID=cds-NY0007-058;Parent=gene-NY0007-054;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp061%3B virion-associated glutaredoxin%3B glutaredoxin 1%3B similar to VACV-WR Q2L and VACV-Cop O2L;gene=OPG075;locus_tag=NY0007_054;product=Glutaredoxin-1
+NY0007	Liftoff	gene	57519	57626	.	-	.	ID=gene-NY0007-055;gene=OPG076;locus_tag=NY0007_055
+NY0007	Liftoff	CDS	57519	57626	.	-	.	ID=cds-NY0007-183;Parent=gene-NY0007-055;gene=OPG076;locus_tag=NY0007_055;product=MV membrane, EFC component
+NY0007	Liftoff	gene	57641	58579	.	-	.	ID=gene-NY0007-056;gene=OPG077;locus_tag=NY0007_056
+NY0007	Liftoff	CDS	57641	58579	.	-	.	ID=cds-NY0007-059;Parent=gene-NY0007-056;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp062%3B virosomal protein essential for virus multiplication%3B DNA-binding core protein%3B similar to VACV-WR I1L and VACV-Cop I1L;gene=OPG077;locus_tag=NY0007_056;product=Telomere-binding protein I1
+NY0007	Liftoff	gene	58586	58807	.	-	.	ID=gene-NY0007-057;gene=OPG078;locus_tag=NY0007_057
+NY0007	Liftoff	CDS	58586	58807	.	-	.	ID=cds-NY0007-060;Parent=gene-NY0007-057;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp063%3B IMV membrane protein%3B similar to VACV-WR I2L and VACV-Cop I2L;gene=OPG078;locus_tag=NY0007_057;product=IMV membrane protein I2
+NY0007	Liftoff	gene	58808	59617	.	-	.	ID=gene-NY0007-058;gene=OPG079;locus_tag=NY0007_058
+NY0007	Liftoff	CDS	58808	59617	.	-	.	ID=cds-NY0007-061;Parent=gene-NY0007-058;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp064%3B virosomal ssDNA-binding phosphoprotein%3B interacts with R2 subunit of ribonucleotide reductase%3B similar to VACV-WR I3L and VACV-Cop I3L;gene=OPG079;locus_tag=NY0007_058;product=DNA-binding phosphoprotein (2)
+NY0007	Liftoff	gene	59699	62014	.	-	.	ID=gene-NY0007-059;gene=OPG080;locus_tag=NY0007_059
+NY0007	Liftoff	CDS	59699	62014	.	-	.	ID=cds-NY0007-062;Parent=gene-NY0007-059;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp065%3B ribonucleotide reductase, large subunit, R1%3B similar to VACV-WR I4L and VACV-Cop I4L;gene=OPG080;locus_tag=NY0007_059;product=Ribonucleoside-diphosphate reductase (2)
+NY0007	Liftoff	gene	62042	62281	.	-	.	ID=gene-NY0007-060;gene=OPG081;locus_tag=NY0007_060
+NY0007	Liftoff	CDS	62042	62281	.	-	.	ID=cds-NY0007-063;Parent=gene-NY0007-060;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp066%3B IMV surface membrane protein, VP13%3B similar to VACV-WR I5L and VACV-Cop I5L;gene=OPG081;locus_tag=NY0007_060;product=IMV membrane protein I5
+NY0007	Liftoff	gene	62300	63448	.	-	.	ID=gene-NY0007-061;gene=OPG082;locus_tag=NY0007_061
+NY0007	Liftoff	CDS	62300	63448	.	-	.	ID=cds-NY0007-064;Parent=gene-NY0007-061;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp067%3B Telomere-binding protein%3B similar to VACV-WR I6L and VACV-Cop I6L;gene=OPG082;locus_tag=NY0007_061;product=Telomere-binding protein
+NY0007	Liftoff	gene	63441	64712	.	-	.	ID=gene-NY0007-062;gene=OPG083;locus_tag=NY0007_062
+NY0007	Liftoff	CDS	63441	64712	.	-	.	ID=cds-NY0007-065;Parent=gene-NY0007-062;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp068%3B virion core protein%3B similar to DNA topoisomerase II%3B Virion core cysteine protease%3B similar to VACV-WR I7L and VACV-Cop I7L;gene=OPG083;locus_tag=NY0007_062;product=Viral core cysteine proteinase
+NY0007	Liftoff	gene	64718	66748	.	+	.	ID=gene-NY0007-063;gene=OPG084;locus_tag=NY0007_063
+NY0007	Liftoff	CDS	64718	66748	.	+	.	ID=cds-NY0007-066;Parent=gene-NY0007-063;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp069%3B nucleoside triphosphate phosphohydrolase II, NPH-II%3B DNA and RNA helicase%3B DExH-NPH-II domain%3B similar to VACV-WR I8R and VACV-Cop I8R;gene=OPG084;locus_tag=NY0007_063;product=RNA helicase NPH-II (2)
+NY0007	Liftoff	gene	66752	68527	.	-	.	ID=gene-NY0007-064;gene=OPG085;locus_tag=NY0007_064
+NY0007	Liftoff	CDS	66752	68527	.	-	.	ID=cds-NY0007-067;Parent=gene-NY0007-064;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp070%3B proteinase%3B Metalloprotease%3B similar to VACV-WR G1L and VACV-Cop G1L;gene=OPG085;locus_tag=NY0007_064;product=Metalloendopeptidase
+NY0007	Liftoff	gene	68524	68859	.	-	.	ID=gene-NY0007-065;gene=OPG086;locus_tag=NY0007_065
+NY0007	Liftoff	CDS	68524	68859	.	-	.	ID=cds-NY0007-068;Parent=gene-NY0007-065;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp071%3B Entry/fusion complex component%3B similar to VACV-WR G2L and VACV-Cop G3L;gene=OPG086;locus_tag=NY0007_065;product=Entry/fusion complex component
+NY0007	Liftoff	gene	68853	69515	.	+	.	ID=gene-NY0007-066;gene=OPG087;locus_tag=NY0007_066
+NY0007	Liftoff	CDS	68853	69515	.	+	.	ID=cds-NY0007-069;Parent=gene-NY0007-066;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp072%3B VLTF (late transcription elongation factor)%3B similar to VACV-WR G3R and VACV-Cop G2R;gene=OPG087;locus_tag=NY0007_066;product=Late transcription elongation factor
+NY0007	Liftoff	gene	69485	69859	.	-	.	ID=gene-NY0007-067;gene=OPG088;locus_tag=NY0007_067
+NY0007	Liftoff	CDS	69485	69859	.	-	.	ID=cds-NY0007-070;Parent=gene-NY0007-067;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp073%3B virion-associated glutaredoxin%3B Glutaredoxin-like protein%3B similar to VACV-WR G4L and VACV-Cop G4L;gene=OPG088;locus_tag=NY0007_067;product=Glutaredoxin-2
+NY0007	Liftoff	gene	69862	71166	.	+	.	ID=gene-NY0007-068;gene=OPG089;locus_tag=NY0007_068
+NY0007	Liftoff	CDS	69862	71166	.	+	.	ID=cds-NY0007-071;Parent=gene-NY0007-068;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp074%3B FEN1-like nuclease%3B similar to VACV-WR G5R and VACV-Cop G5R;gene=OPG089;locus_tag=NY0007_068;product=FEN1-like nuclease
+NY0007	Liftoff	gene	71175	71366	.	+	.	ID=gene-NY0007-069;gene=OPG090;locus_tag=NY0007_069
+NY0007	Liftoff	CDS	71175	71366	.	+	.	ID=cds-NY0007-072;Parent=gene-NY0007-069;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp075%3B RNA polymerase subunit, 7 kDa subunit (RPO7)%3B similar to VACV-WR G6R and VACV-Cop G5.5R;gene=OPG090;locus_tag=NY0007_069;product=DNA-directed RNA polymerase 7 kDa subunit
+NY0007	Liftoff	gene	71366	71863	.	+	.	ID=gene-NY0007-070;gene=OPG091;locus_tag=NY0007_070
+NY0007	Liftoff	CDS	71366	71863	.	+	.	ID=cds-NY0007-073;Parent=gene-NY0007-070;note=Taxonomic breadth: poxvirinae%3B Old product: MPXVgp076%3B NLPc/P60 superfamily protein%3B similar to VACV-WR G7R and VACV-Cop G6R;gene=OPG091;locus_tag=NY0007_070;product=Nlpc/p60 superfamily protein
+NY0007	Liftoff	gene	71828	72943	.	-	.	ID=gene-NY0007-071;gene=OPG092;locus_tag=NY0007_071
+NY0007	Liftoff	CDS	71828	72943	.	-	.	ID=cds-NY0007-074;Parent=gene-NY0007-071;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp077%3B virion protein%3B Virion phosphoprotein, early morphogenesis%3B similar to VACV-WR G8L and VACV-Cop G7L;gene=OPG092;locus_tag=NY0007_071;product=Assembly protein G7
+NY0007	Liftoff	gene	72974	73756	.	+	.	ID=gene-NY0007-072;gene=OPG093;locus_tag=NY0007_072
+NY0007	Liftoff	CDS	72974	73756	.	+	.	ID=cds-NY0007-075;Parent=gene-NY0007-072;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp078%3B late gene transcription factor, VLTF-1%3B similar to VACV-WR G9R and VACV-Cop G8R;gene=OPG093;locus_tag=NY0007_072;product=Late transcription factor VLTF-1
+NY0007	Liftoff	gene	73776	74798	.	+	.	ID=gene-NY0007-073;gene=OPG094;locus_tag=NY0007_073
+NY0007	Liftoff	CDS	73776	74798	.	+	.	ID=cds-NY0007-076;Parent=gene-NY0007-073;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp079%3B myristylated protein%3B Entry/fusion complex component, myristylprotein%3B similar to VACV-WR G10R and VACV-Cop G9R;gene=OPG094;locus_tag=NY0007_073;product=Myristylated protein
+NY0007	Liftoff	gene	74799	75551	.	+	.	ID=gene-NY0007-074;gene=OPG095;locus_tag=NY0007_074
+NY0007	Liftoff	CDS	74799	75551	.	+	.	ID=cds-NY0007-077;Parent=gene-NY0007-074;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp080%3B myristylated IMV surface membrane protein%3B similar to VACV-WR M1R and VACV-Cop L1R;gene=OPG095;locus_tag=NY0007_074;product=IMV membrane protein L1R
+NY0007	Liftoff	gene	75583	75861	.	+	.	ID=gene-NY0007-075;gene=OPG096;locus_tag=NY0007_075
+NY0007	Liftoff	CDS	75583	75861	.	+	.	ID=cds-NY0007-078;Parent=gene-NY0007-075;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp081%3B Viral membrane assembly proteins (VMAP)%3B similar to VACV-WR M2R and VACV-Cop L2R;gene=OPG096;locus_tag=NY0007_075;product=Crescent membrane and immature virion formation protein
+NY0007	Liftoff	gene	75837	76871	.	-	.	ID=gene-NY0007-076;gene=OPG097;locus_tag=NY0007_076
+NY0007	Liftoff	CDS	75837	76871	.	-	.	ID=cds-NY0007-079;Parent=gene-NY0007-076;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp082%3B Internal virion protein%3B similar to VACV-WR M3L and VACV-Cop L3L;gene=OPG097;locus_tag=NY0007_076;product=Internal virion L3/FP4 protein
+NY0007	Liftoff	gene	76896	77651	.	+	.	ID=gene-NY0007-077;gene=OPG098;locus_tag=NY0007_077
+NY0007	Liftoff	CDS	76896	77651	.	+	.	ID=cds-NY0007-080;Parent=gene-NY0007-077;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp083%3B virion core protein vp8%3B stimulation of I8R helicase activity%3B ss/dsDNA binding protein (VP8)%3B similar to VACV-WR M4R and VACV-Cop L4R;gene=OPG098;locus_tag=NY0007_077;product=Nucleic acid binding protein VP8/L4R
+NY0007	Liftoff	gene	77661	78047	.	+	.	ID=gene-NY0007-078;gene=OPG099;locus_tag=NY0007_078
+NY0007	Liftoff	CDS	77661	78047	.	+	.	ID=cds-NY0007-081;Parent=gene-NY0007-078;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp084%3B Entry and Fusion IMV protein%3B similar to VACV-WR M5R and VACV-Cop L5R;gene=OPG099;locus_tag=NY0007_078;product=Membrane protein CL5
+NY0007	Liftoff	gene	78004	78462	.	+	.	ID=gene-NY0007-079;gene=OPG100;locus_tag=NY0007_079
+NY0007	Liftoff	CDS	78004	78462	.	+	.	ID=cds-NY0007-082;Parent=gene-NY0007-079;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp085%3B Virion morph%3B similar to VACV-WR L1R and VACV-Cop J1R;gene=OPG100;locus_tag=NY0007_079;product=IMV membrane protein J1
+NY0007	Liftoff	gene	78482	79015	.	+	.	ID=gene-NY0007-080;gene=OPG101;locus_tag=NY0007_080
+NY0007	Liftoff	CDS	78482	79015	.	+	.	ID=cds-NY0007-083;Parent=gene-NY0007-080;note=Taxonomic breadth: poxvirinae%3B Old product: MPXVgp086%3B thymidine kinase%3B similar to VACV-WR L2R and VACV-Cop J2R;gene=OPG101;locus_tag=NY0007_080;product=Thymidine kinase
+NY0007	Liftoff	gene	79081	80082	.	+	.	ID=gene-NY0007-081;gene=OPG102;locus_tag=NY0007_081
+NY0007	Liftoff	CDS	79081	80082	.	+	.	ID=cds-NY0007-084;Parent=gene-NY0007-081;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp087%3B poly-A polymerase, stimulatory subunit, simultaneously cap-specific mRNA (nucleoside-O2'-)-methyltransferase%3B Poly (A) polymerase small subunit (VP39)%3B similar to VACV-WR L3R and VACV-Cop J3R;gene=OPG102;locus_tag=NY0007_081;product=Cap-specific mRNA
+NY0007	Liftoff	gene	79997	80554	.	+	.	ID=gene-NY0007-082;gene=OPG103;locus_tag=NY0007_082
+NY0007	Liftoff	CDS	79997	80554	.	+	.	ID=cds-NY0007-085;Parent=gene-NY0007-082;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp088%3B RNA polymerase, 22 kDa subunit (RPO22)%3B similar to VACV-WR L4R and VACV-Cop J4R;gene=OPG103;locus_tag=NY0007_082;product=DNA-directed RNA polymerase subunit
+NY0007	Liftoff	gene	80614	81015	.	-	.	ID=gene-NY0007-083;gene=OPG104;locus_tag=NY0007_083
+NY0007	Liftoff	CDS	80614	81015	.	-	.	ID=cds-NY0007-086;Parent=gene-NY0007-083;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp089%3B essential for virus multiplication%3B IMV membrane protein%3B similar to VACV-WR L5L and VACV-Cop J5L;gene=OPG104;locus_tag=NY0007_083;product=Myristylated protein
+NY0007	Liftoff	gene	81122	84982	.	+	.	ID=gene-NY0007-084;gene=OPG105;locus_tag=NY0007_084
+NY0007	Liftoff	CDS	81122	84982	.	+	.	ID=cds-NY0007-087;Parent=gene-NY0007-084;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp090%3B RNA polymerase, 147 kDa subunit (RPO147)%3B similar to VACV-WR L6R and VACV-Cop J6R;gene=OPG105;locus_tag=NY0007_084;product=DNA-dependent RNA polymerase subunit rpo147
+NY0007	Liftoff	gene	84979	85494	.	-	.	ID=gene-NY0007-085;gene=OPG106;locus_tag=NY0007_085
+NY0007	Liftoff	CDS	84979	85494	.	-	.	ID=cds-NY0007-088;Parent=gene-NY0007-085;note=Taxonomic breadth: poxvirinae%3B Old product: MPXVgp091%3B tyrosine%3B Tyr/Ser phosphatase, IFN-gamma inhibitor%3B similar to VACV-WR H1L and VACV-Cop H1L;gene=OPG106;locus_tag=NY0007_085;product=Tyr/ser protein phosphatase
+NY0007	Liftoff	gene	85508	86077	.	+	.	ID=gene-NY0007-086;gene=OPG107;locus_tag=NY0007_086
+NY0007	Liftoff	CDS	85508	86077	.	+	.	ID=cds-NY0007-089;Parent=gene-NY0007-086;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp092%3B IMV membrane protein%3B similar to VACV-WR H2R and VACV-Cop H2R;gene=OPG107;locus_tag=NY0007_086;product=Entry-fusion complex essential component
+NY0007	Liftoff	gene	86081	87055	.	-	.	ID=gene-NY0007-087;gene=OPG108;locus_tag=NY0007_087
+NY0007	Liftoff	CDS	86081	87055	.	-	.	ID=cds-NY0007-090;Parent=gene-NY0007-087;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp093%3B IMV surface membrane protein%3B IMV heparin binding surface protein%3B similar to VACV-WR H3L and VACV-Cop H3L;gene=OPG108;locus_tag=NY0007_087;product=IMV heparin binding surface protein
+NY0007	Liftoff	gene	87056	89443	.	-	.	ID=gene-NY0007-088;gene=OPG109;locus_tag=NY0007_088
+NY0007	Liftoff	CDS	87056	89443	.	-	.	ID=cds-NY0007-091;Parent=gene-NY0007-088;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp094%3B virion core RNA polymerase-associated protein, RAP94%3B similar to VACV-WR H4L and VACV-Cop H4L;gene=OPG109;locus_tag=NY0007_088;product=RNA polymerase-associated transcription-specificity factor RAP94
+NY0007	Liftoff	gene	89628	90260	.	+	.	ID=gene-NY0007-089;gene=OPG110;locus_tag=NY0007_089
+NY0007	Liftoff	CDS	89628	90260	.	+	.	ID=cds-NY0007-092;Parent=gene-NY0007-089;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp095%3B virosome-associated late gene transcription factor, VLTF-4%3B Ca2+-binding motif%3B similar to VACV-WR H5R and VACV-Cop H5R;gene=OPG110;locus_tag=NY0007_089;product=Late transcription factor VLTF-4 (1)
+NY0007	Liftoff	gene	90261	91205	.	+	.	ID=gene-NY0007-090;gene=OPG111;locus_tag=NY0007_090
+NY0007	Liftoff	CDS	90261	91205	.	+	.	ID=cds-NY0007-093;Parent=gene-NY0007-090;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp096%3B DNA topoisomerase type I%3B similar to VACV-WR H6R and VACV-Cop H6R;gene=OPG111;locus_tag=NY0007_090;product=DNA topoisomerase type I
+NY0007	Liftoff	gene	91243	91683	.	+	.	ID=gene-NY0007-091;gene=OPG112;locus_tag=NY0007_091
+NY0007	Liftoff	CDS	91243	91683	.	+	.	ID=cds-NY0007-094;Parent=gene-NY0007-091;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp097%3B Viral membrane assembly proteins (VMAP)%3B similar to VACV-WR H7R and VACV-Cop H7R;gene=OPG112;locus_tag=NY0007_091;product=Late protein H7
+NY0007	Liftoff	gene	91727	94264	.	+	.	ID=gene-NY0007-092;gene=OPG113;locus_tag=NY0007_092
+NY0007	Liftoff	CDS	91727	94264	.	+	.	ID=cds-NY0007-095;Parent=gene-NY0007-092;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp098%3B mRNA capping enzyme, large subunit%3B RNA 5' triphosphatase and RNA guanylyl transferase activities%3B similar to VACV-WR E1R and VACV-Cop D1R;gene=OPG113;locus_tag=NY0007_092;product=mRNA capping enzyme large subunit
+NY0007	Liftoff	gene	94223	94663	.	-	.	ID=gene-NY0007-093;gene=OPG114;locus_tag=NY0007_093
+NY0007	Liftoff	CDS	94223	94663	.	-	.	ID=cds-NY0007-096;Parent=gene-NY0007-093;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp099%3B virion core protein%3B similar to VACV-WR E2L and VACV-Cop D2L;gene=OPG114;locus_tag=NY0007_093;product=Virion protein D2
+NY0007	Liftoff	gene	94656	95357	.	+	.	ID=gene-NY0007-094;gene=OPG115;locus_tag=NY0007_094
+NY0007	Liftoff	CDS	94656	95357	.	+	.	ID=cds-NY0007-097;Parent=gene-NY0007-094;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp100%3B virion core protein%3B similar to VACV-WR E3R and VACV-Cop D3R;gene=OPG115;locus_tag=NY0007_094;product=Virion core protein D3
+NY0007	Liftoff	gene	95357	96013	.	+	.	ID=gene-NY0007-095;gene=OPG116;locus_tag=NY0007_095
+NY0007	Liftoff	CDS	95357	96013	.	+	.	ID=cds-NY0007-098;Parent=gene-NY0007-095;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp101%3B uracil DNA glycosylase%3B DNA polymerase processivity factor%3B similar to VACV-WR E4R and VACV-Cop D4R;gene=OPG116;locus_tag=NY0007_095;product=Uracil DNA glycosylase superfamily
+NY0007	Liftoff	gene	96045	98402	.	+	.	ID=gene-NY0007-096;gene=OPG117;locus_tag=NY0007_096
+NY0007	Liftoff	CDS	96045	98402	.	+	.	ID=cds-NY0007-099;Parent=gene-NY0007-096;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp102%3B nucleic acid-independent nucleoside triphosphatase%3B NTPase, DNA primase%3B similar to VACV-WR E5R and VACV-Cop D5R;gene=OPG117;locus_tag=NY0007_096;product=NTPase (1)
+NY0007	Liftoff	gene	98442	100355	.	+	.	ID=gene-NY0007-097;gene=OPG118;locus_tag=NY0007_097
+NY0007	Liftoff	CDS	98442	100355	.	+	.	ID=cds-NY0007-100;Parent=gene-NY0007-097;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp103%3B early transcription factor, small subunit, VETF-s%3B Morphogenesis%3B similar to VACV-WR E6R and VACV-Cop D6R;gene=OPG118;locus_tag=NY0007_097;product=Early transcription factor 70 kDa subunit
+NY0007	Liftoff	gene	100382	100867	.	+	.	ID=gene-NY0007-098;gene=OPG119;locus_tag=NY0007_098
+NY0007	Liftoff	CDS	100382	100867	.	+	.	ID=cds-NY0007-101;Parent=gene-NY0007-098;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp104%3B RNA polymerase, 18 kDa subunit (RPO18)%3B similar to VACV-WR E7R and VACV-Cop D7R;gene=OPG119;locus_tag=NY0007_098;product=RNA polymerase subunit RPO18
+NY0007	Liftoff	gene	100830	101744	.	-	.	ID=gene-NY0007-099;gene=OPG120;locus_tag=NY0007_099
+NY0007	Liftoff	CDS	100830	101744	.	-	.	ID=cds-NY0007-102;Parent=gene-NY0007-099;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp105%3B IMV surface membrane 32 kDa protein%3B binding to cell surface chondroitin sulfate%3B IMV adsorption to cell surface%3B GAG-binding IMV membrane protein%3B similar to VACV-WR E8L and VACV-Cop D8L;gene=OPG120;locus_tag=NY0007_099;product=Carbonic anhydrase
+NY0007	Liftoff	gene	101786	102427	.	+	.	ID=gene-NY0007-100;gene=OPG121;locus_tag=NY0007_100
+NY0007	Liftoff	CDS	101786	102427	.	+	.	ID=cds-NY0007-103;Parent=gene-NY0007-100;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp106%3B Mut-like%3B mRNA decapping enzyme%3B similar to VACV-WR E9R and VACV-Cop D9R;gene=OPG121;locus_tag=NY0007_100;product=NUDIX domain protein
+NY0007	Liftoff	gene	102424	103170	.	+	.	ID=gene-NY0007-101;gene=OPG122;locus_tag=NY0007_101
+NY0007	Liftoff	CDS	102424	103170	.	+	.	ID=cds-NY0007-104;Parent=gene-NY0007-101;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp107%3B down regulation of gene expression%3B Mut-like%3B mRNA decapping enzyme%3B similar to VACV-WR E10R and VACV-Cop D10R;gene=OPG122;locus_tag=NY0007_101;product=MutT motif protein
+NY0007	Liftoff	gene	103171	105066	.	-	.	ID=gene-NY0007-102;gene=OPG123;locus_tag=NY0007_102
+NY0007	Liftoff	CDS	103171	105066	.	-	.	ID=cds-NY0007-105;Parent=gene-NY0007-102;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp108%3B nucleoside triphosphate phosphohydrolase I, NPH I%3B DNA-dependent ATPase%3B early gene transcription termination factor%3B similar to VACV-WR E11L and VACV-Cop D11L;gene=OPG123;locus_tag=NY0007_102;product=Nucleoside triphosphatase I
+NY0007	Liftoff	gene	105101	105964	.	-	.	ID=gene-NY0007-103;gene=OPG124;locus_tag=NY0007_103
+NY0007	Liftoff	CDS	105101	105964	.	-	.	ID=cds-NY0007-106;Parent=gene-NY0007-103;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp109%3B mRNA capping enzyme small subunit%3B mRNA (guanine-N7-)-methyl-transferase%3B transcription initiation factor%3B similar to VACV-WR E12L and VACV-Cop D12L;gene=OPG124;locus_tag=NY0007_103;product=mRNA capping enzyme small subunit
+NY0007	Liftoff	gene	105995	107650	.	-	.	ID=gene-NY0007-104;gene=OPG125;locus_tag=NY0007_104
+NY0007	Liftoff	CDS	105995	107650	.	-	.	ID=cds-NY0007-107;Parent=gene-NY0007-104;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp110%3B protein needed for the formation of immature IMV surface membrane%3B Trimeric virion coat protein (rifampicin res)%3B similar to VACV-WR E13L and VACV-Cop D13L;gene=OPG125;locus_tag=NY0007_104;product=Rifampicin resistance protein
+NY0007	Liftoff	gene	107674	108126	.	-	.	ID=gene-NY0007-105;gene=OPG126;locus_tag=NY0007_105
+NY0007	Liftoff	CDS	107674	108126	.	-	.	ID=cds-NY0007-108;Parent=gene-NY0007-105;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp111%3B late gene transcription factor, VLTF-2%3B similar to VACV-WR A1L and VACV-Cop A1L;gene=OPG126;locus_tag=NY0007_105;product=Late transcription factor VLTF-2 (2)
+NY0007	Liftoff	gene	108147	108821	.	-	.	ID=gene-NY0007-106;gene=OPG127;locus_tag=NY0007_106
+NY0007	Liftoff	CDS	108147	108821	.	-	.	ID=cds-NY0007-109;Parent=gene-NY0007-106;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp112%3B late gene transcription factor, VLTF-3%3B zinc binding%3B similar to VACV-WR A2L and VACV-Cop A2L;gene=OPG127;locus_tag=NY0007_106;product=Late transcription factor VLTF-3 (1)
+NY0007	Liftoff	gene	108818	109051	.	-	.	ID=gene-NY0007-107;gene=OPG128;locus_tag=NY0007_107
+NY0007	Liftoff	CDS	108818	109051	.	-	.	ID=cds-NY0007-110;Parent=gene-NY0007-107;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp113%3B S-S bond formation pathway protein%3B similar to VACV-WR A3L and VACV-Cop A2.5L;gene=OPG128;locus_tag=NY0007_107;product=S-S bond formation pathway protein
+NY0007	Liftoff	gene	109066	111000	.	-	.	ID=gene-NY0007-108;gene=OPG129;locus_tag=NY0007_108
+NY0007	Liftoff	CDS	109066	111000	.	-	.	ID=cds-NY0007-111;Parent=gene-NY0007-108;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp114%3B major virion core protein p4b%3B P4b precursor%3B similar to VACV-WR A4L and VACV-Cop A3L;gene=OPG129;locus_tag=NY0007_108;product=Virion core protein P4b
+NY0007	Liftoff	gene	111053	111898	.	-	.	ID=gene-NY0007-109;gene=OPG130;locus_tag=NY0007_109
+NY0007	Liftoff	CDS	111053	111898	.	-	.	ID=cds-NY0007-112;Parent=gene-NY0007-109;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp115%3B 39 kDa immunodominant virion core protein needed for the progression of IV to infectious IMV%3B 39kDa virion core protein%3B similar to VACV-WR A5L and VACV-Cop A4L;gene=OPG130;locus_tag=NY0007_109;product=A5L protein-like
+NY0007	Liftoff	gene	111936	112421	.	+	.	ID=gene-NY0007-110;gene=OPG131;locus_tag=NY0007_110
+NY0007	Liftoff	CDS	111936	112421	.	+	.	ID=cds-NY0007-113;Parent=gene-NY0007-110;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp116%3B precursor of RNA polymerase 22 kDa and 21 kDa%3B RNA polymerase subunit (RPO19)%3B similar to VACV-WR A6R and VACV-Cop A5R;gene=OPG131;locus_tag=NY0007_110;product=DNA-directed RNA polymerase 19 kDa subunit
+NY0007	Liftoff	gene	112418	113536	.	-	.	ID=gene-NY0007-111;gene=OPG132;locus_tag=NY0007_111
+NY0007	Liftoff	CDS	112418	113536	.	-	.	ID=cds-NY0007-114;Parent=gene-NY0007-111;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp117%3B Viral membrane assembly proteins (VMAP), core protein%3B similar to VACV-WR A7L and VACV-Cop A6L;gene=OPG132;locus_tag=NY0007_111;product=Virion morphogenesis protein
+NY0007	Liftoff	gene	113560	115692	.	-	.	ID=gene-NY0007-112;gene=OPG133;locus_tag=NY0007_112
+NY0007	Liftoff	CDS	113560	115692	.	-	.	ID=cds-NY0007-115;Parent=gene-NY0007-112;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp118%3B early transcription factor, large subunit, VETF-L%3B needed for morphogenesis of the virion core%3B similar to VACV-WR A8L and VACV-Cop A7L;gene=OPG133;locus_tag=NY0007_112;product=Early transcription factor 82 kDa subunit
+NY0007	Liftoff	gene	115746	116624	.	+	.	ID=gene-NY0007-113;gene=OPG134;locus_tag=NY0007_113
+NY0007	Liftoff	CDS	115746	116624	.	+	.	ID=cds-NY0007-116;Parent=gene-NY0007-113;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp119%3B intermediate transcription factor, VITF-3 34kda subunit, 34 kDa%3B similar to VACV-WR A9R and VACV-Cop A8R;gene=OPG134;locus_tag=NY0007_113;product=Intermediate transcription factor VITF-3 (1)
+NY0007	Liftoff	gene	116605	116907	.	-	.	ID=gene-NY0007-114;gene=OPG135;locus_tag=NY0007_114
+NY0007	Liftoff	CDS	116605	116907	.	-	.	ID=cds-NY0007-117;Parent=gene-NY0007-114;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp120%3B Viral membrane associated, early morphogenesis protein%3B similar to VACV-WR A10L and VACV-Cop A9L;gene=OPG135;locus_tag=NY0007_114;product=IMV membrane protein A9
+NY0007	Liftoff	gene	116908	119583	.	-	.	ID=gene-NY0007-115;gene=OPG136;locus_tag=NY0007_115
+NY0007	Liftoff	CDS	116908	119583	.	-	.	ID=cds-NY0007-118;Parent=gene-NY0007-115;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp121%3B major virion core protein p4a%3B P4a precursor%3B similar to VACV-WR A11L and VACV-Cop A10L;gene=OPG136;locus_tag=NY0007_115;product=Virion core protein P4a
+NY0007	Liftoff	gene	119598	120554	.	+	.	ID=gene-NY0007-116;gene=OPG137;locus_tag=NY0007_116
+NY0007	Liftoff	CDS	119598	120554	.	+	.	ID=cds-NY0007-119;Parent=gene-NY0007-116;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp122%3B Viral membrane assembly proteins (VMAP)%3B similar to VACV-WR A12R and VACV-Cop A11R;gene=OPG137;locus_tag=NY0007_116;product=Viral membrane formation protein
+NY0007	Liftoff	gene	120556	121128	.	-	.	ID=gene-NY0007-117;gene=OPG138;locus_tag=NY0007_117
+NY0007	Liftoff	CDS	120556	121128	.	-	.	ID=cds-NY0007-120;Parent=gene-NY0007-117;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp123%3B Virion core and cleavage processing protein%3B similar to VACV-WR A13L and VACV-Cop A12L;gene=OPG138;locus_tag=NY0007_117;product=A12 protein
+NY0007	Liftoff	gene	121152	121364	.	-	.	ID=gene-NY0007-118;gene=OPG139;locus_tag=NY0007_118
+NY0007	Liftoff	CDS	121152	121364	.	-	.	ID=cds-NY0007-121;Parent=gene-NY0007-118;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp124%3B IMV inner and outer membrane protein%3B virion maturation%3B similar to VACV-WR A14L and VACV-Cop A13L;gene=OPG139;locus_tag=NY0007_118;product=IMV membrane protein A13L
+NY0007	Liftoff	gene	121470	121742	.	-	.	ID=gene-NY0007-119;gene=OPG140;locus_tag=NY0007_119
+NY0007	Liftoff	CDS	121470	121742	.	-	.	ID=cds-NY0007-122;Parent=gene-NY0007-119;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp125%3B IMV inner membrane protein%3B Essential IMV membrane protein%3B similar to VACV-WR A15L and VACV-Cop A14L;gene=OPG140;locus_tag=NY0007_119;product=IMV membrane protein A14
+NY0007	Liftoff	gene	121759	121920	.	-	.	ID=gene-NY0007-120;gene=OPG141;locus_tag=NY0007_120
+NY0007	Liftoff	CDS	121759	121920	.	-	.	ID=cds-NY0007-123;Parent=gene-NY0007-120;note=Taxonomic breadth: chordopoxvirinae%3B Non-essential IMV membrane protein%3B similar to VACV-WR A15.5L and VACV-Cop A14.5L;gene=OPG141;locus_tag=NY0007_120;product=DUF1029 domain protein
+NY0007	Liftoff	gene	121910	122194	.	-	.	ID=gene-NY0007-121;gene=OPG142;locus_tag=NY0007_121
+NY0007	Liftoff	CDS	121910	122194	.	-	.	ID=cds-NY0007-124;Parent=gene-NY0007-121;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp126%3B Core protein%3B similar to VACV-WR A16L and VACV-Cop A15L;gene=OPG142;locus_tag=NY0007_121;product=Core protein A15
+NY0007	Liftoff	gene	122178	123311	.	-	.	ID=gene-NY0007-122;gene=OPG143;locus_tag=NY0007_122
+NY0007	Liftoff	CDS	122178	123311	.	-	.	ID=cds-NY0007-125;Parent=gene-NY0007-122;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp127%3B soluble myristylated protein%3B essential for entry/fusion%3B similar to VACV-WR A17L and VACV-Cop A16L;gene=OPG143;locus_tag=NY0007_122;product=Myristylated protein
+NY0007	Liftoff	gene	123314	123928	.	-	.	ID=gene-NY0007-123;gene=OPG144;locus_tag=NY0007_123
+NY0007	Liftoff	CDS	123314	123928	.	-	.	ID=cds-NY0007-126;Parent=gene-NY0007-123;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp128%3B IMV surface membrane protein%3B early function in virion morphgenesis%3B similar to VACV-WR A18L and VACV-Cop A17L;gene=OPG144;locus_tag=NY0007_123;product=IMV membrane protein P21
+NY0007	Liftoff	gene	123943	125421	.	+	.	ID=gene-NY0007-124;gene=OPG145;locus_tag=NY0007_124
+NY0007	Liftoff	CDS	123943	125421	.	+	.	ID=cds-NY0007-127;Parent=gene-NY0007-124;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp129%3B virion core associated DNA helicase%3B post-replicative negative transcription elongation factor%3B transcript release factor%3B similar to VACV-WR A19R and VACV-Cop A18R;gene=OPG145;locus_tag=NY0007_124;product=DNA helicase
+NY0007	Liftoff	gene	125402	125635	.	-	.	ID=gene-NY0007-125;gene=OPG146;locus_tag=NY0007_125
+NY0007	Liftoff	CDS	125402	125635	.	-	.	ID=cds-NY0007-128;Parent=gene-NY0007-125;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp130%3B Zinc finger-like protein%3B similar to VACV-WR A20L and VACV-Cop A19L;gene=OPG146;locus_tag=NY0007_125;product=Zinc finger-like protein (1)
+NY0007	Liftoff	gene	125636	125983	.	-	.	ID=gene-NY0007-126;gene=OPG147;locus_tag=NY0007_126
+NY0007	Liftoff	CDS	125636	125983	.	-	.	ID=cds-NY0007-129;Parent=gene-NY0007-126;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp131%3B IMV membrane protein, entry/fusion complex component%3B similar to VACV-WR A21L and VACV-Cop A21L;gene=OPG147;locus_tag=NY0007_126;product=IMV membrane protein A21
+NY0007	Liftoff	gene	125982	127262	.	+	.	ID=gene-NY0007-127;gene=OPG148;locus_tag=NY0007_127
+NY0007	Liftoff	CDS	125982	127262	.	+	.	ID=cds-NY0007-130;Parent=gene-NY0007-127;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp132%3B processivity factor for the viral DNA polymerase, VPF%3B similar to VACV-WR A22R and VACV-Cop A20R;gene=OPG148;locus_tag=NY0007_127;product=DNA polymerase processivity factor
+NY0007	Liftoff	gene	127192	127755	.	+	.	ID=gene-NY0007-128;gene=OPG149;locus_tag=NY0007_128
+NY0007	Liftoff	CDS	127192	127755	.	+	.	ID=cds-NY0007-131;Parent=gene-NY0007-128;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp133%3B Holliday junction resolvase%3B similar to VACV-WR A23R and VACV-Cop A22R;gene=OPG149;locus_tag=NY0007_128;product=Holliday junction resolvase
+NY0007	Liftoff	gene	127775	128923	.	+	.	ID=gene-NY0007-129;gene=OPG150;locus_tag=NY0007_129
+NY0007	Liftoff	CDS	127775	128923	.	+	.	ID=cds-NY0007-132;Parent=gene-NY0007-129;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp134%3B intermediate transcription factor, VITF-3, 45 kDa subunit%3B similar to VACV-WR A24R and VACV-Cop A23R;gene=OPG150;locus_tag=NY0007_129;product=Intermediate transcription factor VITF-3 (2)
+NY0007	Liftoff	gene	128920	132414	.	+	.	ID=gene-NY0007-130;gene=OPG151;locus_tag=NY0007_130
+NY0007	Liftoff	CDS	128920	132414	.	+	.	ID=cds-NY0007-133;Parent=gene-NY0007-130;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp135%3B RNA polymerase, 132 kDa subunit (RPO132)%3B similar to VACV-WR A25R and VACV-Cop A24R;gene=OPG151;locus_tag=NY0007_130;product=DNA-dependent RNA polymerase subunit rpo132
+NY0007	Liftoff	misc_feature	132392	136081	.	-	.	ID=misc_feature_9;note=OPG152
+NY0007	Liftoff	gene	136127	137656	.	-	.	ID=gene-NY0007-131;gene=OPG153;locus_tag=NY0007_131
+NY0007	Liftoff	CDS	136127	137656	.	-	.	ID=cds-NY0007-134;Parent=gene-NY0007-131;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp138%3B major component of IMV surface tubules%3B A-type inclusion protein%3B P4c precursor%3B similar to VACV-WR A28L and VACV-Cop A26L;gene=OPG153;locus_tag=NY0007_131;product=Orthopoxvirus A26L/A30L protein
+NY0007	Liftoff	gene	137707	138039	.	-	.	ID=gene-NY0007-132;gene=OPG154;locus_tag=NY0007_132
+NY0007	Liftoff	CDS	137707	138039	.	-	.	ID=cds-NY0007-135;Parent=gene-NY0007-132;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp139%3B IMV surface membrane 14 kDa fusion protein%3B binding to cell surface heparan%3B similar to VACV-WR A29L and VACV-Cop A27L;gene=OPG154;locus_tag=NY0007_132;product=IMV surface fusion protein
+NY0007	Liftoff	gene	138040	138480	.	-	.	ID=gene-NY0007-133;gene=OPG155;locus_tag=NY0007_133
+NY0007	Liftoff	CDS	138040	138480	.	-	.	ID=cds-NY0007-136;Parent=gene-NY0007-133;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp140%3B IMV MP/Virus entry%3B similar to VACV-WR A30L and VACV-Cop A28L;gene=OPG155;locus_tag=NY0007_133;product=Envelope protein A28 homolog
+NY0007	Liftoff	gene	138481	139398	.	-	.	ID=gene-NY0007-134;gene=OPG156;locus_tag=NY0007_134
+NY0007	Liftoff	CDS	138481	139398	.	-	.	ID=cds-NY0007-137;Parent=gene-NY0007-134;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp141%3B RNA polymerase, 35 kDa subunit (RPO35)%3B similar to VACV-WR A31L and VACV-Cop A29L;gene=OPG156;locus_tag=NY0007_134;product=DNA-directed RNA polymerase 35 kDa subunit
+NY0007	Liftoff	gene	139361	139597	.	-	.	ID=gene-NY0007-135;gene=OPG157;locus_tag=NY0007_135
+NY0007	Liftoff	CDS	139361	139597	.	-	.	ID=cds-NY0007-138;Parent=gene-NY0007-135;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp142%3B IMV protein%3B similar to VACV-WR A32L and VACV-Cop A30L;gene=OPG157;locus_tag=NY0007_135;product=IMV membrane protein A30
+NY0007	Liftoff	gene	139630	139758	.	-	.	ID=gene-NY0007-136;gene=OPG158;locus_tag=NY0007_136
+NY0007	Liftoff	CDS	139630	139758	.	-	.	ID=cds-NY0007-139;Parent=gene-NY0007-136;note=Viral membrane assembly proteins (VMAP)%3B similar to VACV-Cop A30.5L;gene=OPG158;locus_tag=NY0007_136;product=A32.5L
+NY0007	Liftoff	gene	139757	140194	.	+	.	ID=gene-NY0007-137;gene=OPG159;locus_tag=NY0007_137
+NY0007	Liftoff	CDS	139757	140194	.	+	.	ID=cds-NY0007-140;Parent=gene-NY0007-137;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp143%3B Hypothetical protein%3B similar to VACV-WR A33R and VACV-Cop A31R;gene=OPG159;locus_tag=NY0007_137;product=CPXV166 protein
+NY0007	Liftoff	gene	140161	141063	.	-	.	ID=gene-NY0007-138;gene=OPG160;locus_tag=NY0007_138
+NY0007	Liftoff	CDS	140161	141063	.	-	.	ID=cds-NY0007-141;Parent=gene-NY0007-138;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp144%3B DNA packaging into virion%3B NTP-binding motif A%3B ATPase/DNA packaging protein%3B similar to VACV-WR A34L and VACV-Cop A32L;gene=OPG160;locus_tag=NY0007_138;product=ATPase A32
+NY0007	Liftoff	gene	141091	141636	.	+	.	ID=gene-NY0007-139;gene=OPG161;locus_tag=NY0007_139
+NY0007	Liftoff	CDS	141091	141636	.	+	.	ID=cds-NY0007-142;Parent=gene-NY0007-139;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp145%3B EEV envelope glycoprotein, needed for formation of actin-containing microvilli and cell-to-cell spread of virion%3B interacts with VAC A36R%3B EEV membrane phosphoglycoprotein, C-type lectin-like domain%3B similar to VACV-WR A35R and VACV-Cop A33R;gene=OPG161;locus_tag=NY0007_139;product=EEV glycoprotein (1)
+NY0007	Liftoff	gene	141641	142147	.	+	.	ID=gene-NY0007-140;gene=OPG162;locus_tag=NY0007_140
+NY0007	Liftoff	CDS	141641	142147	.	+	.	ID=cds-NY0007-143;Parent=gene-NY0007-140;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp146%3B EEV envelope glycoprotein, lectin-like%3B required for infectivity of EEV, formation of actin-containing microvilli, and cell-to-cell spread of virion%3B C-type lectin-like IEV/EEV glycoprotein%3B similar to VACV-WR A36R and VACV-Cop A34R;gene=OPG162;locus_tag=NY0007_140;product=EEV glycoprotein (2)
+NY0007	Liftoff	gene	142191	142721	.	+	.	ID=gene-NY0007-141;gene=OPG163;locus_tag=NY0007_141
+NY0007	Liftoff	CDS	142191	142721	.	+	.	ID=cds-NY0007-144;Parent=gene-NY0007-141;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp147%3B MHC class II antigen presentation inhibitor%3B similar to VACV-WR A37R and VACV-Cop A35R;gene=OPG163;locus_tag=NY0007_141;product=MHC class II antigen presentation inhibitor
+NY0007	Liftoff	gene	142767	143453	.	+	.	ID=gene-NY0007-142;gene=OPG164;locus_tag=NY0007_142
+NY0007	Liftoff	CDS	142767	143453	.	+	.	ID=cds-NY0007-145;Parent=gene-NY0007-142;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp148%3B IEV but not CEV envelope protein%3B plays critical role for actin tail formation%3B interacts with VAC A33R and A34R%3B IEV transmembrane phosphoprotein%3B similar to VACV-WR A38R and VACV-Cop A36R;gene=OPG164;locus_tag=NY0007_142;product=IEV transmembrane phosphoprotein
+NY0007	Liftoff	gene	143505	144311	.	+	.	ID=gene-NY0007-143;gene=OPG165;locus_tag=NY0007_143
+NY0007	Liftoff	CDS	143505	144311	.	+	.	ID=cds-NY0007-146;Parent=gene-NY0007-143;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp149%3B Hypothetical protein%3B similar to VACV-WR A39R and VACV-Cop A37R;gene=OPG165;locus_tag=NY0007_143;product=CPXV173 protein
+NY0007	Liftoff	gene	144563	145396	.	-	.	ID=gene-NY0007-145;gene=OPG167;locus_tag=NY0007_145
+NY0007	Liftoff	CDS	144563	145396	.	-	.	ID=cds-NY0007-147;Parent=gene-NY0007-145;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp150%3B integral membrane glycoprotein%3B immunoglobulin-like%3B regulation of the influx of extracellular Ca2+%3B CD47-like%3B similar to VACV-WR A40L and VACV-Cop A38L;gene=OPG167;locus_tag=NY0007_145;product=CD47-like protein
+NY0007	Liftoff	misc_feature	145412	145845	.	+	.	ID=misc_feature_10;note=OPG168
+NY0007	Liftoff	misc_feature	145846	146028	.	+	.	ID=misc_feature_11;note=OPG169
+NY0007	Liftoff	gene	146102	146767	.	-	.	ID=gene-NY0007-146;gene=OPG170;locus_tag=NY0007_146
+NY0007	Liftoff	CDS	146102	146767	.	-	.	ID=cds-NY0007-148;Parent=gene-NY0007-146;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp151%3B secreted protein reducing infiltration of inflammatory cells into the infected area%3B Chemokine binding protein%3B similar to VACV-WR A41L and VACV-Cop A41L;gene=OPG170;locus_tag=NY0007_146;product=Chemokine binding protein
+NY0007	Liftoff	gene	146977	147378	.	+	.	ID=gene-NY0007-147;gene=OPG171;locus_tag=NY0007_147
+NY0007	Liftoff	CDS	146977	147378	.	+	.	ID=cds-NY0007-149;Parent=gene-NY0007-147;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp152%3B Profilin-like protein, ATI-localized%3B similar to VACV-WR A42R and VACV-Cop A42R;gene=OPG171;locus_tag=NY0007_147;product=Profilin domain protein
+NY0007	Liftoff	gene	147416	148006	.	+	.	ID=gene-NY0007-148;gene=OPG172;locus_tag=NY0007_148
+NY0007	Liftoff	CDS	147416	148006	.	+	.	ID=cds-NY0007-150;Parent=gene-NY0007-148;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp153%3B Type I membrane glycoprotein%3B similar to VACV-WR A43R and VACV-Cop A43R;gene=OPG172;locus_tag=NY0007_148;product=Type-I membrane glycoprotein
+NY0007	Liftoff	gene	148026	148250	.	+	.	ID=gene-NY0007-149;gene=OPG173;locus_tag=NY0007_149
+NY0007	Liftoff	CDS	148026	148250	.	+	.	ID=cds-NY0007-151;Parent=gene-NY0007-149;note=Old product: MPXVgp154%3B Hypothetical protein%3B similar to VACV-WR A44R and VACV-Cop A43.5R;gene=OPG173;locus_tag=NY0007_149;product=MPXVgp154
+NY0007	Liftoff	gene	148344	149384	.	-	.	ID=gene-NY0007-150;gene=OPG174;locus_tag=NY0007_150
+NY0007	Liftoff	CDS	148344	149384	.	-	.	ID=cds-NY0007-152;Parent=gene-NY0007-150;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp155%3B 3-b-Hydroxy-delta5-steroid dehydrogenase%3B 3 beta-hydroxysteroid dehydrogenase/delta 5->4 isomerase%3B similar to VACV-WR A45L and VACV-Cop A44L;gene=OPG174;locus_tag=NY0007_150;product=Hydroxysteroid dehydrogenase
+NY0007	Liftoff	gene	149431	149808	.	+	.	ID=gene-NY0007-151;gene=OPG175;locus_tag=NY0007_151
+NY0007	Liftoff	CDS	149431	149808	.	+	.	ID=cds-NY0007-153;Parent=gene-NY0007-151;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp156%3B virion core protein%3B Inactive Cu-Zn superoxide dismutase-like virion protein%3B similar to VACV-WR A46R and VACV-Cop A45R;gene=OPG175;locus_tag=NY0007_151;product=Copper/zinc superoxide dismutase
+NY0007	Liftoff	gene	149798	150520	.	+	.	ID=gene-NY0007-152;gene=OPG176;locus_tag=NY0007_152
+NY0007	Liftoff	CDS	149798	150520	.	+	.	ID=cds-NY0007-154;Parent=gene-NY0007-152;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp157%3B IL-1/TLR signaling inhibitor%3B similar to VACV-WR A47R and VACV-Cop A46R;gene=OPG176;locus_tag=NY0007_152;product=Bcl-2-like protein
+NY0007	Liftoff	misc_feature	150656	151379	.	-	.	ID=misc_feature_12;note=OPG177
+NY0007	Liftoff	gene	151481	152095	.	+	.	ID=gene-NY0007-153;gene=OPG178;locus_tag=NY0007_153
+NY0007	Liftoff	CDS	151481	152095	.	+	.	ID=cds-NY0007-155;Parent=gene-NY0007-153;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp159%3B thymidylate kinase%3B start of ORF is missing approx. 37 AA compared to CPXVs%3B similar to VACV-WR A49R and VACV-Cop A48R;gene=OPG178;locus_tag=NY0007_153;product=Thymidylate kinase
+NY0007	Liftoff	misc_feature	152144	152632	.	+	.	ID=misc_feature_13;note=OPG179
+NY0007	Liftoff	gene	152664	154343	.	+	.	ID=gene-NY0007-154;gene=OPG180;locus_tag=NY0007_154
+NY0007	Liftoff	CDS	152664	154343	.	+	.	ID=cds-NY0007-156;Parent=gene-NY0007-154;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp160%3B ATP-dependent DNA ligase%3B similar to VACV-WR A50R and VACV-Cop A50R;gene=OPG180;locus_tag=NY0007_154;product=DNA ligase (2)
+NY0007	Liftoff	gene	154384	155388	.	+	.	ID=gene-NY0007-155;gene=OPG181;locus_tag=NY0007_155
+NY0007	Liftoff	CDS	154384	155388	.	+	.	ID=cds-NY0007-157;Parent=gene-NY0007-155;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp161%3B Hypothetical protein%3B similar to VACV-WR A51R and VACV-Cop A51R;gene=OPG181;locus_tag=NY0007_155;product=M137R
+NY0007	Liftoff	misc_feature	155457	156009	.	+	.	ID=misc_feature_14;note=OPG182
+NY0007	Liftoff	misc_feature	156327	156888	.	+	.	ID=misc_feature_15;note=OPG183
+NY0007	Liftoff	misc_feature	157148	158839	.	+	.	ID=misc_feature_16;note=OPG184
+NY0007	Liftoff	gene	158889	159830	.	+	.	ID=gene-NY0007-156;gene=OPG185;locus_tag=NY0007_156
+NY0007	Liftoff	CDS	158889	159830	.	+	.	ID=cds-NY0007-158;Parent=gene-NY0007-156;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp163%3B EEV envelope and cell membrane glycoprotein hemagglutinin%3B inhibition of the ability of infected cells to fuse%3B interacts with VAC F13L%3B similar to VACV-WR B2R and VACV-Cop A56R;gene=OPG185;locus_tag=NY0007_156;product=Hemagglutinin
+NY0007	Liftoff	misc_feature	159848	160442	.	+	.	ID=misc_feature_17;note=OPG186
+NY0007	Liftoff	gene	160594	161505	.	+	.	ID=gene-NY0007-157;gene=OPG187;locus_tag=NY0007_157
+NY0007	Liftoff	CDS	160594	161505	.	+	.	ID=cds-NY0007-159;Parent=gene-NY0007-157;note=Taxonomic breadth: poxviridae%3B Old product: MPXVgp164%3B serine%3B Ser/Thr Kinase%3B similar to VACV-WR B3R and VACV-Cop B1R;gene=OPG187;locus_tag=NY0007_157;product=Ser/thr kinase
+NY0007	Liftoff	gene	161568	163079	.	+	.	ID=gene-NY0007-158;gene=OPG188;locus_tag=NY0007_158
+NY0007	Liftoff	CDS	161568	163079	.	+	.	ID=cds-NY0007-160;Parent=gene-NY0007-158;note=Taxonomic breadth: orthopoxvirus%3B Old product: MPXVgp165%3B schlafen-like%3B similar to VACV-WR B4R and VACV-Cop B2R;gene=OPG188;locus_tag=NY0007_158;product=Schlafen (1)
+NY0007	Liftoff	gene	163305	164990	.	+	.	ID=gene-NY0007-159;gene=OPG189;locus_tag=NY0007_159
+NY0007	Liftoff	CDS	163305	164990	.	+	.	ID=cds-NY0007-161;Parent=gene-NY0007-159;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp166%3B ankyrin-like%3B similar to VACV-WR B5R and VACV-Cop B4R;gene=OPG189;locus_tag=NY0007_159;product=Ankyrin repeat protein (25)
+NY0007	Liftoff	gene	165094	166047	.	+	.	ID=gene-NY0007-160;gene=OPG190;locus_tag=NY0007_160
+NY0007	Liftoff	CDS	165094	166047	.	+	.	ID=cds-NY0007-162;Parent=gene-NY0007-160;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp167%3B palmitated 42 kDa glycoprotein located both on the membranes of infected cells and on EEV envelope%3B complement control protein-like%3B EEV type-1 membrane glycoprotein, protective antigen%3B similar to VACV-WR B6R and VACV-Cop B5R;gene=OPG190;locus_tag=NY0007_160;product=EEV type-I membrane glycoprotein
+NY0007	Liftoff	gene	166133	166639	.	+	.	ID=gene-NY0007-161;gene=OPG191;locus_tag=NY0007_161
+NY0007	Liftoff	CDS	166133	166639	.	+	.	ID=cds-NY0007-163;Parent=gene-NY0007-161;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp168%3B Ankyrin-like protein%3B similar to VACV-WR B7R and VACV-Cop B6R;gene=OPG191;locus_tag=NY0007_161;product=Ankyrin-like protein (46)
+NY0007	Liftoff	gene	166703	167251	.	+	.	ID=gene-NY0007-162;gene=OPG192;locus_tag=NY0007_162
+NY0007	Liftoff	CDS	166703	167251	.	+	.	ID=cds-NY0007-164;Parent=gene-NY0007-162;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp169%3B Virulence, ER resident%3B similar to VACV-WR B8R and VACV-Cop B7R;gene=OPG192;locus_tag=NY0007_162;product=Virulence protein
+NY0007	Liftoff	gene	167306	168109	.	+	.	ID=gene-NY0007-163;gene=OPG193;locus_tag=NY0007_163
+NY0007	Liftoff	CDS	167306	168109	.	+	.	ID=cds-NY0007-165;Parent=gene-NY0007-163;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp170%3B secreted IFN-g binding protein%3B Soluble IFN-g receptor-like protein%3B similar to VACV-WR B9R and VACV-Cop B8R;gene=OPG193;locus_tag=NY0007_163;product=Soluble interferon-gamma receptor-like protein
+NY0007	Liftoff	gene	168202	168867	.	+	.	ID=gene-NY0007-164;gene=OPG195;locus_tag=NY0007_164
+NY0007	Liftoff	CDS	168202	168867	.	+	.	ID=cds-NY0007-166;Parent=gene-NY0007-164;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp171%3B shope fibroma virus T4 protein-like%3B ER-localized apoptosis regulator%3B similar to VACV-WR B10R and VACV-Cop B9R;gene=OPG195;locus_tag=NY0007_164;product=Intracellular viral protein
+NY0007	Liftoff	misc_feature	168973	169614	.	+	.	ID=misc_feature_18;note=OPG196
+NY0007	Liftoff	gene	169642	169944	.	+	.	ID=gene-NY0007-165;gene=OPG197;locus_tag=NY0007_165
+NY0007	Liftoff	CDS	169642	169944	.	+	.	ID=cds-NY0007-167;Parent=gene-NY0007-165;note=Taxonomic breadth: chordopoxvirinae%3B Hypothetical protein%3B similar to VACV-Cop-B11R;gene=OPG197;locus_tag=NY0007_165;product=CPXV205 protein
+NY0007	Liftoff	gene	170010	170858	.	+	.	ID=gene-NY0007-166;gene=OPG198;locus_tag=NY0007_166
+NY0007	Liftoff	CDS	170010	170858	.	+	.	ID=cds-NY0007-168;Parent=gene-NY0007-166;note=Taxonomic breadth: poxviridae%3B protein kinase-like%3B similar to VACV-WR B11R and VACV-Cop B12R;gene=OPG198;locus_tag=NY0007_166;product=Ser/thr kinase
+NY0007	Liftoff	gene	170960	171994	.	+	.	ID=gene-NY0007-167;gene=OPG199;locus_tag=NY0007_167
+NY0007	Liftoff	CDS	170960	171994	.	+	.	ID=cds-NY0007-169;Parent=gene-NY0007-167;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp173%3B serine protease inhibitor-like, SPI-2%3B inhibition of the IL-1b converting enzyme%3B apoptosis inhibition%3B Serpin 1,2,3%3B similar to VACV-WR B12R and VACV-Cop K2L;gene=OPG199;locus_tag=NY0007_167;product=Serpin
+NY0007	Liftoff	gene	172122	172571	.	+	.	ID=gene-NY0007-168;gene=OPG200;locus_tag=NY0007_168
+NY0007	Liftoff	CDS	172122	172571	.	+	.	ID=cds-NY0007-170;Parent=gene-NY0007-168;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp174%3B Hypothetical protein%3B Putative tlr signaling inhibitor%3B similar to VACV-WR B13R and VACV-Cop C16L and B15R;gene=OPG200;locus_tag=NY0007_168;product=Bcl-2-like protein
+NY0007	Liftoff	misc_feature	172657	173673	.	+	.	ID=misc_feature_19;note=OPG201
+NY0007	Liftoff	misc_feature	173720	174163	.	-	.	ID=misc_feature_20;note=OPG202
+NY0007	Liftoff	misc_feature	174304	174432	.	+	.	ID=misc_feature_21;note=OPG203
+NY0007	Liftoff	gene	174508	175563	.	+	.	ID=gene-NY0007-169;gene=OPG204;locus_tag=NY0007_169
+NY0007	Liftoff	CDS	174508	175563	.	+	.	ID=cds-NY0007-172;Parent=gene-NY0007-169;note=Taxonomic breadth: orthopoxvirus%3B Old product: MPXVgp177%3B cell surface antigen and secreted IFN-a%3B IFN-alpha/beta receptor glycoprotein%3B similar to VACV-WR B16R and VACV-Cop B19R;gene=OPG204;locus_tag=NY0007_169;product=IFN-alpha/beta-receptor-like secreted glycoprotein
+NY0007	Liftoff	gene	175632	177995	.	+	.	ID=gene-NY0007-170;gene=OPG205;locus_tag=NY0007_170
+NY0007	Liftoff	CDS	175632	177995	.	+	.	ID=cds-NY0007-173;Parent=gene-NY0007-170;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp178%3B ankyrin-like%3B similar to VACV-WR B17R and VACV-Cop B20R;gene=OPG205;locus_tag=NY0007_170;product=Ankyrin repeat protein (44)
+NY0007	Liftoff	misc_feature	178094	178892	.	+	.	ID=misc_feature_22;note=OPG206
+NY0007	Liftoff	gene	179224	180297	.	+	.	ID=gene-NY0007-171;gene=OPG208;locus_tag=NY0007_171
+NY0007	Liftoff	CDS	179224	180297	.	+	.	ID=cds-NY0007-174;Parent=gene-NY0007-171;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp180%3B serine protease inhibitor-like, SPI-1%3B apoptosis inhibition%3B Serpin 1,2,3%3B Actual start may be at position 179,074%3B annotated start of ORF is missing approx. 17 AA compared to CPXVs%3B similar to VACV-WR B19R and VACV-Cop K2L;gene=OPG208;locus_tag=NY0007_171;product=Serpin
+NY0007	Liftoff	gene	180476	181048	.	+	.	ID=gene-NY0007-172;gene=OPG209;locus_tag=NY0007_172
+NY0007	Liftoff	CDS	180476	181048	.	+	.	ID=cds-NY0007-175;Parent=gene-NY0007-172;note=Old product: MPXVgp181%3B Hypothetical protein%3B similar to VACV-WR B20R and VACV-Cop C14L;gene=OPG209;locus_tag=NY0007_172;product=Virulence protein
+NY0007	Liftoff	gene	181314	186956	.	+	.	ID=gene-NY0007-173;gene=OPG210;locus_tag=NY0007_173
+NY0007	Liftoff	CDS	181314	186956	.	+	.	ID=cds-NY0007-176;Parent=gene-NY0007-173;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp182%3B Surface glycoprotein%3B putative membrane-associated glycoprotein%3B cadherin-like domain%3B similar to VACV-WR B21R;gene=OPG210;locus_tag=NY0007_173;product=B22R family protein
+NY0007	Liftoff	misc_feature	187275	187701	.	+	.	ID=misc_feature_23;note=OPG212
+NY0007	Liftoff	misc_feature	187780	188256	.	+	.	ID=misc_feature_24;note=OPG213
+NY0007	Liftoff	misc_feature	188416	188921	.	+	.	ID=misc_feature_25;note=OPG214
+NY0007	Liftoff	gene	189157	189618	.	+	.	ID=gene-NY0007-174;gene=OPG005;locus_tag=NY0007_174
+NY0007	Liftoff	CDS	189157	189618	.	+	.	ID=cds-NY0007-177;Parent=gene-NY0007-174;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp185%3B VAC B15R-like%3B Hypothetical protein%3B Putative tlr signaling inhibitor%3B similar to VACV-WR N1R and VACV-Cop C16L and B22R;gene=OPG005;locus_tag=NY0007_174;product=Bcl-2-like protein
+NY0007	Liftoff	gene	190368	190898	.	+	.	ID=gene-NY0007-175;gene=OPG016;locus_tag=NY0007_175
+NY0007	Liftoff	CDS	190368	190898	.	+	.	ID=cds-NY0007-184;Parent=gene-NY0007-175;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp187%3B similar to VACV-WR N3R;gene=OPG016;locus_tag=NY0007_175;product=Brix domain protein
+NY0007	Liftoff	repeat_region	190746	197163	.	+	.	ID=ITR-NY0007-RPT2;rpt_type=long_terminal_repeat
+NY0007	Liftoff	gene	191012	192325	.	+	.	ID=gene-NY0007-176;gene=OPG015;locus_tag=NY0007_176
+NY0007	Liftoff	CDS	191012	192325	.	+	.	ID=cds-NY0007-179;Parent=gene-NY0007-176;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp188%3B ankyrin-like%3B Ankyrin (CPXV-017)%3B similar to VACV-WR N4R;gene=OPG015;locus_tag=NY0007_176;product=Ankyrin repeat protein (39)
+NY0007	Liftoff	gene	192577	194343	.	+	.	ID=gene-NY0007-177;gene=OPG003;locus_tag=NY0007_177
+NY0007	Liftoff	CDS	192577	194343	.	+	.	ID=cds-NY0007-180;Parent=gene-NY0007-177;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp189%3B ankyrin-like%3B similar to VACV-WR J1R and VACV-Cop C19L;gene=OPG003;locus_tag=NY0007_177;product=Ankyrin repeat protein (25)
+NY0007	Liftoff	gene	194433	195482	.	+	.	ID=gene-NY0007-178;gene=OPG002;locus_tag=NY0007_178
+NY0007	Liftoff	CDS	194433	195482	.	+	.	ID=cds-NY0007-181;Parent=gene-NY0007-178;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp190%3B secreted TNF binding protein%3B TNF receptor (CrmB)%3B similar to VACV-WR J2R and VACV-Cop C22L;gene=OPG002;locus_tag=NY0007_178;product=Crm-B secreted TNF-alpha-receptor-like protein
+NY0007	Liftoff	gene	195609	196349	.	+	.	ID=gene-NY0007-179;gene=OPG001;locus_tag=NY0007_179
+NY0007	Liftoff	CDS	195609	196349	.	+	.	ID=cds-NY0007-182;Parent=gene-NY0007-179;note=Taxonomic breadth: chordopoxvirinae%3B Old product: MPXVgp191%3B Chemokine binding protein (Cop-C23L)%3B most abundant secreted protein%3B CC-chemokine binding protein%3B similar to VACV-WR J3R and VACV-Cop C23L and B29R;gene=OPG001;locus_tag=NY0007_179;product=Chemokine binding protein
