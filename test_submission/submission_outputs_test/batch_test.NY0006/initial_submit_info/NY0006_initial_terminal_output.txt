@@ -1,0 +1,10 @@
+
+Processing batch_test.NY0006.
+Processing Files.
+Creating GISAID files.
+Creating Genbank files.
+Creating BioSample/SRA files.
+batch_test.NY0006 complete.
+
+Submitting to SRA/BioSample.
+FTP error: [Errno 2] No such file or directory: '/scicomp/instruments-pure/23-4-631_Illumina-MiSeq-M03083/220611_M03083_0092_000000000-J88KR/Alignment_1/20220613_231902/Fastq/2022-028-7666_S3_L001_R1_001.fastq.gz'

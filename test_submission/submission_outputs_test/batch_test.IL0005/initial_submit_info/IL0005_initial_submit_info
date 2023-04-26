@@ -1,0 +1,1 @@
+ACTUAL COMMAND USED: submission.py --command all --unique_name batch_test --fasta IL0005.fasta                   --metadata IL0005.tsv --gff IL0005_reformatted.gff --config mpxv_config_kk.yaml --test_or_prod test                   --req_col_config required_columns.yaml --send_email false

@@ -1,0 +1,2 @@
+SeqID	StructuredCommentPrefix	Assembly Method	Sequencing Technology	StructuredCommentSuffix
+MPXV_USA_2022_TX0001	Assembly-Data	 ivar 0.1; samtools 1.7; bwa 0.7.17;  SPAdes 3.13.0; CLC 26	Illumina MiSeq	Assembly-Data

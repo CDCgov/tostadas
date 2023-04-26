@@ -1,4 +1,4 @@
-name: Tostadas CI
+name: Tostadas CI (Conda)
 
 on:
   pull_request:
@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
+      with:
+          submodules: 'recursive'
 
     - name: Set Up Python
       uses: actions/setup-python@v2
@@ -24,11 +26,19 @@ jobs:
         bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
         export PATH="$HOME/mambaforge/bin:$PATH"
         mamba env create -f environment.yml
+        mamba clean -a -y
+        echo "source activate tostadas" > ~/.bashrc && \
         source activate tostadas
         mamba install -c bioconda nextflow
+        conda install pandas
     
     - name: Install Pytest
       run: pip install pytest
 
     - name: Run Tests
-      run: pytest -p no:warnings tests/test_main.py
+      run: |
+        conda activate tostadas
+        pytest -p no:warnings tests/test_main.py
+  
+    - name: Deactivate Environment
+      run: conda deactivate

@@ -1,0 +1,2 @@
+docker:
+  password: <PLACE PASSWORD FOR YOUR LOCAL DOCKER HERE>
