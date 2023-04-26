@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<Submission>
+  <Description>
+    <Title>batch_test.NY0006</Title>
+    <Comment>FTP submission</Comment>
+    <Organization type="center" role="owner">
+      <Name>CDC Multi-National Monkeypox Outbreak Response</Name>
+    </Organization>
+  </Description>
+  <Action>
+    <AddFiles target_db="GenBank">
+      <File file_path="batch_test.NY0006.zip">
+        <DataType>genbank-submission-package</DataType>
+      </File>
+      <Attribute name="wizard">None</Attribute>
+      <Attribute name="auto_remove_failed_seqs">no</Attribute>
+      <Identifier>
+        <SPUID spuid_namespace="CDC-MPXV">batch_test.NY0006</SPUID>
+      </Identifier>
+    </AddFiles>
+  </Action>
+</Submission>
