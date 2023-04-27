@@ -95,9 +95,6 @@ def helpMessage() {
 include { VALIDATE_PARAMS                                   } from "../modules/general_util/validate_params/main"
 include { CLEANUP_FILES                                     } from "../modules/general_util/cleanup_files/main"
 include { GET_WAIT_TIME                                     } from "../modules/general_util/get_wait_time/main"
-// get the submission entrypoint processes
-include { PREP_SUBMISSION_ENTRY                             } from "../modules/submission_entrypoint/prep_sub_entry/main"
-include { PREP_UPDATE_SUBMISSION_ENTRY                      } from "../modules/submission_entrypoint/prep_update_sub_entry/main"
 // get the main processes
 include { METADATA_VALIDATION                               } from "../modules/metadata_validation/main"
 include { SUBMISSION                                        } from "../modules/submission/main"
@@ -106,10 +103,8 @@ include { VADR                                              } from "../modules/v
 include { VADR_POST_CLEANUP                                 } from "../modules/post_vadr_annotation/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
 // get the subworkflows
-include { CHECKS_4_SUBMISSION_ENTRY                         } from "../subworkflows/submission_entry_check"
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
-include { ENTRY_SUBMISSION                                  } from "../subworkflows/submission"
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
 
 /*
@@ -117,7 +112,7 @@ include { RUN_UTILITY                                       } from "../subworkfl
                                     MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-workflow MPXV {
+workflow MPXV_MAIN {
 
     // check if help parameter is set
     if ( params.help == true ) {
@@ -197,146 +192,4 @@ workflow MPXV {
     }
 } 
 
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    SUB WORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
 
-workflow only_validate_params {
-    main:
-        // run the process for validating general parameters
-        VALIDATE_PARAMS ()
-}
-
-workflow only_cleanup_files {
-    main:
-        // run process for cleaning up files 
-        CLEANUP_FILES (
-            'dummy validate params signal' 
-        )
-}
-
-workflow only_validation {
-    main:
-        // run metadata validation
-        METADATA_VALIDATION (
-            'dummy signal signal', 
-            params.meta_path, 
-            params.fasta_path
-        )
-}
-
-workflow only_liftoff {
-    main:
-        // run annotation on files
-        LIFTOFF ( 
-            'dummy utility signal', 
-            params.meta_path, 
-            params.fasta_path, 
-            params.ref_fasta_path, 
-            params.ref_gff_path 
-        )
-}
-
-workflow only_vadr {
-    main:
-        // run vadr processes
-        if ( params.run_vadr == true ) {
-            VADR (
-                'dummy utility signal', 
-                params.fasta_path,
-                params.vadr_models_dir
-            )
-            VADR_POST_CLEANUP (
-                VADR.out.vadr_outputs,
-                params.fasta_path
-            )
-        }
-}
-
-workflow only_submission {
-    main:
-        // check that certain paths are specified (need to pass in for it to work)
-        CHECKS_4_SUBMISSION_ENTRY (
-            'only_submission'
-        )
-
-        // get the parameter paths into proper format 
-        PREP_SUBMISSION_ENTRY ( 
-            CHECKS_4_SUBMISSION_ENTRY.out,
-            params.submission_only_meta, 
-            params.submission_only_fasta, 
-            params.submission_only_gff, 
-            false
-        )
-
-        // get the wait time
-        GET_WAIT_TIME ( 
-            'dummy meta signal',  
-            PREP_SUBMISSION_ENTRY.out.tsv.collect() 
-        )
-        
-        // call the submission workflow
-        ENTRY_SUBMISSION (
-            PREP_SUBMISSION_ENTRY.out.tsv.sort().flatten(),
-            PREP_SUBMISSION_ENTRY.out.fasta.sort().flatten(),
-            PREP_SUBMISSION_ENTRY.out.gff.sort().flatten(), 
-            true,
-            params.submission_config,
-            params.req_col_config,
-            GET_WAIT_TIME.out
-        )
-}
-
-workflow only_initial_submission {
-    main:        
-        // check that certain paths are specified (need to pass in for it to work)
-        CHECKS_4_SUBMISSION_ENTRY (
-            'only_initial_submission'
-        )
-
-        // get the parameter paths into proper format 
-        PREP_SUBMISSION_ENTRY ( 
-            CHECKS_4_SUBMISSION_ENTRY.out,
-            params.submission_only_meta, 
-            params.submission_only_fasta, 
-            params.submission_only_gff, 
-            false
-        )
-
-        // call the initial submission portion only
-        SUBMISSION (
-            PREP_SUBMISSION_ENTRY.out.tsv.sort().flatten(),
-            PREP_SUBMISSION_ENTRY.out.fasta.sort().flatten(),
-            PREP_SUBMISSION_ENTRY.out.gff.sort().flatten(), 
-            true,
-            params.submission_config,
-            params.req_col_config,
-            ''
-        )
-}
-
-workflow only_update_submission {
-    main:
-
-        // call the check specific to submission
-        CHECKS_4_SUBMISSION_ENTRY (
-            'only_update_submission'
-        )
-
-        // get the parameter paths into proper format 
-        PREP_UPDATE_SUBMISSION_ENTRY ( 
-            CHECKS_4_SUBMISSION_ENTRY.out,
-            true, 
-            params.processed_samples
-        )
-
-        // call the update submission portion only
-        UPDATE_SUBMISSION (
-            'dummy wait signal',
-            params.submission_config,
-            PREP_UPDATE_SUBMISSION_ENTRY.out.samples.flatten(),
-            ''
-        )
-}
