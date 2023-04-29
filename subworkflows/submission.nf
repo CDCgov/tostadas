@@ -6,9 +6,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { SUBMISSION } from '../nf_modules/main_mods'
-include { UPDATE_SUBMISSION } from '../nf_modules/main_mods'
-include { WAIT } from '../nf_modules/utility_mods'
+include { SUBMISSION } from '../modules/submission/main'
+include { UPDATE_SUBMISSION } from '../modules/update_submission/main'
+include { WAIT } from '../modules/general_util/wait/main'
 
 workflow LIFTOFF_SUBMISSION {
     take:
@@ -47,7 +47,7 @@ workflow VADR_SUBMISSION {
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'vadr', false )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'vadr' )
 }
 
 workflow ENTRY_SUBMISSION {

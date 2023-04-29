@@ -267,7 +267,7 @@ This section walks through the available parameters to customize your workflow.
 ### Customizing Parameters:
 The standard_params.config file found within the conf directory is where parameters can be adjusted based on preference for running the pipeline. First you will want to ensure the file paths are correctly set for the params listed above depending on your preference for submitting your results. 
  * Adjust your file inputs within standard_params.config ensuring accurate file paths for the inputs listed above.
- * The params can be changed within the standard_params.config or you can change the standard.yml/standard.json file inside the nf_params directory and pass it in with: ```-params-file <standard_params.yml or standard_params.json>```
+ * The params can be changed within the standard_params.config or you can change the standard.yml/standard.json file inside the params directory and pass it in with: ```-params-file <standard_params.yml or standard_params.json>```
  * Note: DO NOT EDIT the main.nf file or other paths in the nextflow.config unless familiar with editing nextflow workflows
 
 ### Understanding Profiles and Environments:
