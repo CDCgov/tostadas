@@ -19,7 +19,7 @@ params.projectDir = './'
                                IMPORT NECESSARY WORKFLOWS 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { MPXV_MAIN } from "$projectDir/workflows/MPXV.nf"
+include { MPXV_MAIN } from "$projectDir/workflows/mpxv.nf"
 
 
 /*

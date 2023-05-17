@@ -11,17 +11,14 @@ import shutil
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--wait", type=str, default='false', help='Flag to wait or not')
-    parser.add_argument("--check_submission_config", type=str, default='false', help='Flag for checking whether or not the submission output paths are aligned')
     parser.add_argument("--database", type=str, help='Certain database to submit to')
     parser.add_argument("--wait_time", type=str, help='Length of time to wait in seconds')
     parser.add_argument("--config", type=str, help='Name of submission config file')
-    parser.add_argument("--submission_outputs", type=str, help='Path to the submission outputs')
     parser.add_argument("--prep_submission_entry", type=str, default='false', help='Whether or not to create directory for submission files')
     parser.add_argument("--meta_path", type=str, help='Path to the metadata files for submission entrypoint')
     parser.add_argument("--fasta_path", type=str, help='Path to the fasta files for submission entrypoint')
     parser.add_argument("--gff_path", type=str, help='Path to the gff files for submission entrypoint')
     parser.add_argument("--update_entry", type=str, help='Whether or not it is update submission entry')
-    parser.add_argument("--batch_name", type=str, help='Name of the batch prefix')
     parser.add_argument("--processed_samples", type=str, help='Path to processed samples')
     return parser
 
@@ -52,9 +49,11 @@ def main():
         
         # check the database being submitted to and adjust file check/copy accordingly 
         util.check_database (
-            database_name=parameters['database']
+            database_name=parameters['database'], 
+            config=parameters['config']
         )
 
+        # cycle through the different input files for submission and copy into work directory
         for file_type, key in zip(['tsv', 'fasta', 'gff'], ['meta_path', 'fasta_path', 'gff_path']):
             # make the directory to copy over the files to 
             os.mkdir(f"{file_type}_submit_entry", mode=0o777)
@@ -83,9 +82,14 @@ class Utility():
         time.sleep(time_2_wait)
 
     @staticmethod 
-    def check_database(database_name):
-        """
-        """
+    def check_database(database_name, config):
+        cleaned_name = database_name.lower().strip()
+        if cleaned_name == 'sra':
+            # for SRA specifically, easiest to just create dummy files
+            os.mkdir(f"dummy_gffs", mode=0o777)
+                
+            """
+            """
 
 
 
