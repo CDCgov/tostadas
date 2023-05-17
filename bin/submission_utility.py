@@ -30,19 +30,31 @@ def main():
     # get the parameters 
     args = get_args().parse_args()
     parameters = vars(args)
+
+    # initialize the utility class 
+    util = Utility()
     
     # =================================================================================================================
     #                              CHECK IF YOU NEED TO WAIT... IF SO, THEN WAIT
     # =================================================================================================================
+    
     # check if you need to wait or not
     if parameters['wait'].lower().strip() == 'true':
-        time_2_wait = int(parameters['wait_time'])
-        time.sleep(time_2_wait)
+        util.actually_wait (
+            time_2_wait=int(parameters['wait_time'])
+        )
 
     # =================================================================================================================
     #                        CHECK IF NEED TO CREATE SUBMISSION OUTPUT DIR FOR ENTRYPOINT
     # =================================================================================================================
+    
     if parameters['prep_submission_entry'].lower().strip() == 'true' and parameters['update_entry'].lower().strip() == 'false':
+        
+        # check the database being submitted to and adjust file check/copy accordingly 
+        util.check_database (
+            database_name=parameters['database']
+        )
+
         for file_type, key in zip(['tsv', 'fasta', 'gff'], ['meta_path', 'fasta_path', 'gff_path']):
             # make the directory to copy over the files to 
             os.mkdir(f"{file_type}_submit_entry", mode=0o777)
@@ -59,43 +71,22 @@ def main():
             dir_name = folder.split('/')[-1]
             # copy over the files 
             shutil.copytree(folder, f"update_entry/{dir_name}")
+    
 
+class Utility():
+    def __init__(self):
+        """
+        """
+    
+    @staticmethod 
+    def actually_wait(time_2_wait):
+        time.sleep(time_2_wait)
 
-    """
-    # modify the submission by checking the output paths are aligned + modifying for certain type of submission
-    if parameters['check_submission_config'].lower().strip() == 'true':
+    @staticmethod 
+    def check_database(database_name):
+        """
+        """
 
-        # get the path to the config 
-        root = '/'.join(__file__.split('/')[:-1])
-        path_to_config = f"{root}/config_files/{parameters['config']}"
-
-        # open the config and make some modifications 
-        with open(path_to_config) as sub_config:
-            loaded_conf = yaml.safe_load(sub_config)
-            if loaded_conf['general']['submission_directory'] != parameters['submission_outputs']:
-                loaded_conf['general']['submission_directory'] = parameters['submission_outputs']
-
-            # go through and change the config to match the passed in database submission
-            database_mappings = {
-                'genbank': 'submit_Genbank', 
-                'sra': 'submit_SRA', 
-                'gisaid': 'submit_GISAID', 
-                'biosample': 'submit_BioSample',
-                'joint_sra_biosample': 'joint_SRA_BioSample_submission'
-            }
-
-            if parameters['database'] != 'submit':
-                for key, value in database_mappings.items():
-                    if parameters['database'] == key:
-                        loaded_conf['general'][value] = True
-                    else:
-                        loaded_conf['general'][value] = False
-
-            # now write the new .yaml file with this updated value
-            os.mkdir('config_files')
-            with open('config_files/nextflow_modified.yaml', 'w') as new_config:
-                yaml.dump(loaded_conf, new_config)
-    """
 
 
 if __name__ == "__main__":
