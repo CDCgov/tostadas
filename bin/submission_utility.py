@@ -48,9 +48,10 @@ def main():
     if parameters['prep_submission_entry'].lower().strip() == 'true' and parameters['update_entry'].lower().strip() == 'false':
         
         # check the database being submitted to and adjust file check/copy accordingly 
-        parameters = util.check_database (
-            parameters=parameters
-        )
+        if len(glob.glob(f"{parameters['gff_path']}/*.gff")) == 0:
+            parameters = util.check_database (
+                parameters=parameters
+            )
 
         # cycle through the different input files for submission and copy into work directory
         for file_type, key in zip(['tsv', 'fasta', 'gff'], ['meta_path', 'fasta_path', 'gff_path']):
@@ -90,9 +91,10 @@ class Utility():
                 config_dict = yaml.safe_load(f)
             f.close()
             # cycle through the databases to check if only 'sra' was selected
+            create_dummy_files = True
             for field in ['submit_Genbank', 'submit_GISAID', 'submit_BioSample', 'joint_SRA_BioSample_submission']:
-                if field == True:
-                    create_dummy_files = True
+                if config_dict['general'][field] == True:
+                    create_dummy_files = False
                     break
 
         # check whether to create dummy files or not, if so, then do it 
@@ -104,6 +106,8 @@ class Utility():
                     pass
             # set the gff path to the dummy files created
             parameters['gff_path'] = 'dummy_gffs'
+        else:
+            raise ValueError(f"Missing required GFF files at the provided path encoded by submission_only_gff in params: {parameters['gff_path']}")
     
         return parameters 
 
