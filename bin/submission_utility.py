@@ -48,9 +48,8 @@ def main():
     if parameters['prep_submission_entry'].lower().strip() == 'true' and parameters['update_entry'].lower().strip() == 'false':
         
         # check the database being submitted to and adjust file check/copy accordingly 
-        util.check_database (
-            database_name=parameters['database'], 
-            config=parameters['config']
+        parameters = util.check_database (
+            parameters=parameters
         )
 
         # cycle through the different input files for submission and copy into work directory
@@ -82,14 +81,31 @@ class Utility():
         time.sleep(time_2_wait)
 
     @staticmethod 
-    def check_database(database_name, config):
-        cleaned_name = database_name.lower().strip()
-        if cleaned_name == 'sra':
+    def check_database(parameters):
+        cleaned_name = parameters['database'].lower().strip()
+
+        # read the submission config file in if submit was used for database
+        if cleaned_name == 'submit':
+            with open(parameters['config'], "r") as f:
+                config_dict = yaml.safe_load(f)
+            f.close()
+            # cycle through the databases to check if only 'sra' was selected
+            for field in ['submit_Genbank', 'submit_GISAID', 'submit_BioSample', 'joint_SRA_BioSample_submission']:
+                if field == True:
+                    create_dummy_files = True
+                    break
+
+        # check whether to create dummy files or not, if so, then do it 
+        if cleaned_name == 'sra' or create_dummy_files == True:
             # for SRA specifically, easiest to just create dummy files
             os.mkdir(f"dummy_gffs", mode=0o777)
-                
-            """
-            """
+            for x in range(len(glob.glob(f"{parameters['meta_path']}/*.tsv"))):
+                with open(f"dummy_gffs/gff_{x}.gff", 'w') as f:
+                    pass
+            # set the gff path to the dummy files created
+            parameters['gff_path'] = 'dummy_gffs'
+    
+        return parameters 
 
 
 

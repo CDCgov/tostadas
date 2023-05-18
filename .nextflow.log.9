@@ -1,0 +1,98 @@
+May-17 19:49:33.638 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf -profile test,conda --submission_wait_time 2 -entry only_initial_submission
+May-17 19:49:33.912 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 22.10.0
+May-17 19:49:33.959 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/scicomp/home-pure/ufl1/.nextflow/plugins; core-plugins: nf-amazon@1.11.0,nf-azure@0.14.2,nf-codecommit@0.1.2,nf-console@1.0.4,nf-ga4gh@1.0.4,nf-google@1.4.4,nf-tower@1.5.5,nf-wave@0.5.2
+May-17 19:49:33.981 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+May-17 19:49:33.983 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+May-17 19:49:33.988 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+May-17 19:49:34.008 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+May-17 19:49:34.063 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /scicomp/home-pure/ufl1/tostadas/nextflow.config
+May-17 19:49:34.066 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /scicomp/home-pure/ufl1/tostadas/nextflow.config
+May-17 19:49:34.118 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,conda`
+May-17 19:49:35.696 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [standard, test, conda, singularity, docker]
+May-17 19:49:35.746 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declararion
+May-17 19:49:35.773 [main] INFO  nextflow.cli.CmdRun - Launching `main.nf` [desperate_chandrasekhar] DSL2 - revision: 40d4b741a7
+May-17 19:49:35.774 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+May-17 19:49:35.774 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+May-17 19:49:35.793 [main] DEBUG nextflow.secret.LocalSecretsProvider - Secrets store: /scicomp/home-pure/ufl1/.nextflow/secrets/store.json
+May-17 19:49:35.799 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@999b951] - activable => nextflow.secret.LocalSecretsProvider@999b951
+May-17 19:49:35.929 [main] DEBUG nextflow.Session - Session UUID: aa0ce202-e464-4654-9cae-f78a79c345e5
+May-17 19:49:35.930 [main] DEBUG nextflow.Session - Run name: desperate_chandrasekhar
+May-17 19:49:35.930 [main] DEBUG nextflow.Session - Executor pool size: 32
+May-17 19:49:35.962 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=96; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+May-17 19:49:36.026 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 22.10.0 build 5826
+  Created: 13-10-2022 05:44 UTC (01:44 EDT)
+  System: Linux 3.10.0-1160.88.1.el7.x86_64
+  Runtime: Groovy 3.0.13 on OpenJDK 64-Bit Server VM 11.0.13+7-b1751.21
+  Encoding: UTF-8 (UTF-8)
+  Process: 70697@biolinux.biotech.cdc.gov [10.128.41.131]
+  CPUs: 32 - Mem: 1007.9 GB (167.6 GB) - Swap: 256 GB (244 GB)
+May-17 19:49:36.081 [main] DEBUG nextflow.Session - Work-dir: /scicomp/home-pure/ufl1/tostadas/work [nfs]
+May-17 19:49:36.136 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+May-17 19:49:36.150 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+May-17 19:49:36.242 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+May-17 19:49:36.379 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 33; maxThreads: 1000
+May-17 19:49:36.505 [main] DEBUG nextflow.Session - Session start
+May-17 19:49:36.837 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+May-17 19:49:41.726 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-17 19:49:41.727 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-17 19:49:41.737 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+May-17 19:49:41.745 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=32; memory=1007.9 GB; capacity=32; pollInterval=100ms; dumpInterval=5m
+May-17 19:49:41.876 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-17 19:49:41.877 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-17 19:49:41.908 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-17 19:49:41.908 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-17 19:49:41.976 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-17 19:49:41.976 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-17 19:49:41.983 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: VALIDATE_PARAMS, only_initial_submission:RUN_INITIAL_SUBMISSION:SUBMISSION, CLEANUP_FILES, LIFTOFF, GENERAL_SUBMISSION_ENTRY_CHECK, PREP_SUBMISSION_ENTRY, SUBMISSION, only_initial_submission:RUN_INITIAL_SUBMISSION:PREP_SUBMISSION_ENTRY, UPDATE_SUBMISSION, ONLY_UPDATE_SUBMISSION_ENTRY_CHECK, METADATA_VALIDATION, VADR, only_initial_submission:RUN_INITIAL_SUBMISSION:CHECKS_4_SUBMISSION_ENTRY:GENERAL_SUBMISSION_ENTRY_CHECK, PREP_UPDATE_SUBMISSION_ENTRY, only_initial_submission:RUN_INITIAL_SUBMISSION:CHECKS_4_SUBMISSION_ENTRY:ONLY_INITIAL_SUBMISSION_ENTRY_CHECK, VADR_POST_CLEANUP, GET_WAIT_TIME, ONLY_INITIAL_SUBMISSION_ENTRY_CHECK, WAIT
+May-17 19:49:41.983 [main] DEBUG nextflow.Session - Igniting dataflow network (4)
+May-17 19:49:41.984 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > only_initial_submission:RUN_INITIAL_SUBMISSION:CHECKS_4_SUBMISSION_ENTRY:GENERAL_SUBMISSION_ENTRY_CHECK
+May-17 19:49:41.986 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > only_initial_submission:RUN_INITIAL_SUBMISSION:CHECKS_4_SUBMISSION_ENTRY:ONLY_INITIAL_SUBMISSION_ENTRY_CHECK
+May-17 19:49:41.986 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > only_initial_submission:RUN_INITIAL_SUBMISSION:PREP_SUBMISSION_ENTRY
+May-17 19:49:41.987 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > only_initial_submission:RUN_INITIAL_SUBMISSION:SUBMISSION
+May-17 19:49:41.989 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+May-17 19:49:41.990 [main] DEBUG nextflow.Session - Session await
+May-17 19:49:42.122 [Actor Thread 13] ERROR nextflow.processor.TaskProcessor - Error executing process > 'only_initial_submission:RUN_INITIAL_SUBMISSION:PREP_SUBMISSION_ENTRY'
+
+Caused by:
+  Not a valid path value: 'test'
+
+
+Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
+May-17 19:49:42.129 [Actor Thread 13] DEBUG nextflow.Session - Session aborted -- Cause: Not a valid path value: 'test'
+May-17 19:49:42.151 [Actor Thread 13] DEBUG nextflow.Session - The following nodes are still active:
+[process] only_initial_submission:RUN_INITIAL_SUBMISSION:CHECKS_4_SUBMISSION_ENTRY:GENERAL_SUBMISSION_ENTRY_CHECK
+  status=ACTIVE
+  port 0: (cntrl) -     ; channel: $
+
+[process] only_initial_submission:RUN_INITIAL_SUBMISSION:CHECKS_4_SUBMISSION_ENTRY:ONLY_INITIAL_SUBMISSION_ENTRY_CHECK
+  status=ACTIVE
+  port 0: (cntrl) -     ; channel: $
+
+[process] only_initial_submission:RUN_INITIAL_SUBMISSION:PREP_SUBMISSION_ENTRY
+  status=ACTIVE
+  port 0: (value) bound ; channel: submission_entry_check_signal
+  port 1: (value) bound ; channel: validated_meta
+  port 2: (value) bound ; channel: fasta
+  port 3: (value) bound ; channel: annotated_gff
+  port 4: (value) bound ; channel: submission_config
+  port 5: (value) bound ; channel: database
+  port 6: (value) bound ; channel: update_entry
+  port 7: (cntrl) -     ; channel: $
+
+[process] only_initial_submission:RUN_INITIAL_SUBMISSION:SUBMISSION
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: validated_meta_path
+  port 1: (queue) OPEN  ; channel: lifted_fasta_path
+  port 2: (queue) OPEN  ; channel: lifted_gff_path
+  port 3: (value) bound ; channel: entry_flag
+  port 4: (value) bound ; channel: submission_config
+  port 5: (value) bound ; channel: req_col_config
+  port 6: (value) bound ; channel: annotation_name
+  port 7: (cntrl) -     ; channel: $
+
+May-17 19:49:42.154 [main] DEBUG nextflow.Session - Session await > all processes finished
+May-17 19:49:42.155 [main] DEBUG nextflow.Session - Session await > all barriers passed
+May-17 19:49:42.166 [main] DEBUG nextflow.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=0ms; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=0; peakCpus=0; peakMemory=0; ]
+May-17 19:49:42.355 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+May-17 19:49:42.404 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
