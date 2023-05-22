@@ -3,17 +3,17 @@
                                 CLEANUP FILES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process CREATE_UPLOAD_LOG {
+process MERGE_UPLOAD_LOG {
 
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
 
     input:
-    path signal
+    path submission_files
     val annotation_name
 
     script:
     """
-    submission_utility.py --create_upload_log true
+    submission_utility.py --merge_upload_log true --processed_samples $submission_files
     """
 
     output:
