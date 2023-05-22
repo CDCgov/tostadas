@@ -17,5 +17,5 @@ process CREATE_UPLOAD_LOG {
     """
 
     output:
-    file "upload_log.csv", emit: upload_log
+    path "upload_log.csv", emit: upload_log
 }

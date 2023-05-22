@@ -32,7 +32,7 @@ workflow LIFTOFF_SUBMISSION {
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'liftoff' )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'liftoff',  SUBMISSION.out.upload_log )
 }
 
 workflow VADR_SUBMISSION {
@@ -55,7 +55,7 @@ workflow VADR_SUBMISSION {
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'vadr' )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'vadr', SUBMISSION.out.upload_log )
 }
 
 workflow ENTRY_SUBMISSION {
@@ -78,5 +78,5 @@ workflow ENTRY_SUBMISSION {
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, '' )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, '', SUBMISSION.out.upload_log )
 }

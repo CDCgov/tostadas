@@ -39,5 +39,5 @@ process SUBMISSION {
 
     output:
     path "$params.batch_name.${validated_meta_path.getSimpleName()}", emit: submission_files
-    file "upload_log.csv"
+    path "upload_log.csv", emit: upload_log 
 }
