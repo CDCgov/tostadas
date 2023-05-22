@@ -28,6 +28,7 @@ process SUBMISSION {
     path submission_config
     path req_col_config
     val annotation_name
+    path upload_log
 
     script:
     """
@@ -38,4 +39,5 @@ process SUBMISSION {
 
     output:
     path "$params.batch_name.${validated_meta_path.getSimpleName()}", emit: submission_files
+    file "upload_log.csv"
 }
