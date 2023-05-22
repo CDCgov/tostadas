@@ -25,6 +25,7 @@ process UPDATE_SUBMISSION {
     path submission_config
     path submission_output
     val annotation_name
+    path upload_log
         
     script:
     """

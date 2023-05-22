@@ -23,6 +23,7 @@ def get_args():
     parser.add_argument("--update_entry", type=str, help='Whether or not it is update submission entry')
     parser.add_argument("--batch_name", type=str, help='Name of the batch prefix')
     parser.add_argument("--processed_samples", type=str, help='Path to processed samples')
+    parser.add_argument("--create_upload_log", type=str, default='false', help='Whether to create an upload_log file for submission or not')
     return parser
 
 
@@ -38,6 +39,15 @@ def main():
     if parameters['wait'].lower().strip() == 'true':
         time_2_wait = int(parameters['wait_time'])
         time.sleep(time_2_wait)
+
+    # =================================================================================================================
+    #                    CHECK IF YOU NEED TO CREATE AN UPLOAD LOG FILE FOR SUBMISSION
+    # =================================================================================================================
+    if parameters['create_upload_log'].lower().strip() == 'true':
+        df = pd.DataFrame(columns = ["name", "update_date", "SRA_submission_id", "SRA_submission_date", "SRA_status", "BioSample_submission_id",
+                                     "BioSample_submission_date", "BioSample_status", "Genbank_submission_id", "Genbank_submission_date", "Genbank_status",
+                                     "GISAID_submission_date", "GISAID_submitted_total", "GISAID_failed_total", "directory", "config", "type"])
+        df.to_csv(f"upload_log.csv", header = True, index = False, sep = ",")
 
     # =================================================================================================================
     #                        CHECK IF NEED TO CREATE SUBMISSION OUTPUT DIR FOR ENTRYPOINT

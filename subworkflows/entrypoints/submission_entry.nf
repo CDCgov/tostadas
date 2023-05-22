@@ -31,11 +31,6 @@ workflow RUN_SUBMISSION {
         GET_WAIT_TIME (
             PREP_SUBMISSION_ENTRY.out.tsv.collect() 
         )
-
-        // create the upload log file 
-        CREATE_UPLOAD_LOG (
-            ''
-        )
         
         // call the submission workflow
         ENTRY_SUBMISSION (
