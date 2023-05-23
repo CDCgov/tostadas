@@ -8,6 +8,7 @@ import yaml
 import shutil
 import pandas as pd
 import sys
+import traceback
 
 
 def get_args():
@@ -46,10 +47,31 @@ def main():
     #                    CHECK IF YOU NEED TO CREATE AN UPLOAD LOG FILE FOR SUBMISSION
     # =================================================================================================================
     if parameters['merge_upload_log'].lower().strip() == 'true':
-        df = pd.DataFrame(columns = ["name", "update_date", "SRA_submission_id", "SRA_submission_date", "SRA_status", "BioSample_submission_id",
-                                     "BioSample_submission_date", "BioSample_status", "Genbank_submission_id", "Genbank_submission_date", "Genbank_status",
-                                     "GISAID_submission_date", "GISAID_submitted_total", "GISAID_failed_total", "directory", "config", "type"])
-        df.to_csv(f"upload_log.csv", header = True, index = False, sep = ",")
+        # get all paths to directories within working directory containing batch name
+        current_dir = os.getcwd()
+        upload_log_dirs = [x for x in os.listdir(current_dir) if f"{parameters['batch_name']}." in x]
+        # cycle through the directories and add contents from upload log files to new log file
+        with open('upload_log.csv', 'w') as f:
+            for log_dir in upload_log_dirs:
+                sample_name = log_dir.split('.')[-1]
+                log_file_name = f"{sample_name}_upload_log.csv"
+                #if log_file_name in os.listdir():
+                # open the upload log file and save csv contents
+                log_data = pd.read_csv(f"{log_dir}/{log_file_name}")
+                # check some upload log stuff 
+                try:
+                    assert len(log_data.columns) != 0
+                    assert sorted(set(log_data.columns)) == sorted(set(["name", "update_date", "SRA_submission_id", "SRA_submission_date", 
+                                                        "SRA_status", "BioSample_submission_id", "BioSample_submission_date",
+                                                        "BioSample_status", "Genbank_submission_id", "Genbank_submission_date",
+                                                        "Genbank_status", "GISAID_submission_date", "GISAID_submitted_total", 
+                                                        "GISAID_failed_total", "directory", "config", "type"]))
+                    assert len(log_data.index) != 0
+                except AssertionError:
+                    handle_stacktrace()
+                # 
+                #else:
+                    #pass
 
     # =================================================================================================================
     #                        CHECK IF NEED TO CREATE SUBMISSION OUTPUT DIR FOR ENTRYPOINT
@@ -62,6 +84,7 @@ def main():
             for file in glob.glob(f"{parameters[key]}/*.{file_type}"):
                 file_name = file.split('/')[-1]
                 shutil.copyfile(file, f"{file_type}_submit_entry/{file_name}")
+
     elif parameters['prep_submission_entry'].lower().strip() == 'true' and parameters['update_entry'].lower().strip() == 'true':
         # make the new directory to copy over the files to
         os.mkdir(f"update_entry", mode=0o777)
@@ -73,41 +96,15 @@ def main():
             shutil.copytree(folder, f"update_entry/{dir_name}")
 
 
+def handle_stacktrace():
+    """ Generates, makes verbose, and cleans up the stack trace generated from assertion error
     """
-    # modify the submission by checking the output paths are aligned + modifying for certain type of submission
-    if parameters['check_submission_config'].lower().strip() == 'true':
-
-        # get the path to the config 
-        root = '/'.join(__file__.split('/')[:-1])
-        path_to_config = f"{root}/config_files/{parameters['config']}"
-
-        # open the config and make some modifications 
-        with open(path_to_config) as sub_config:
-            loaded_conf = yaml.safe_load(sub_config)
-            if loaded_conf['general']['submission_directory'] != parameters['submission_outputs']:
-                loaded_conf['general']['submission_directory'] = parameters['submission_outputs']
-
-            # go through and change the config to match the passed in database submission
-            database_mappings = {
-                'genbank': 'submit_Genbank', 
-                'sra': 'submit_SRA', 
-                'gisaid': 'submit_GISAID', 
-                'biosample': 'submit_BioSample',
-                'joint_sra_biosample': 'joint_SRA_BioSample_submission'
-            }
-
-            if parameters['database'] != 'submit':
-                for key, value in database_mappings.items():
-                    if parameters['database'] == key:
-                        loaded_conf['general'][value] = True
-                    else:
-                        loaded_conf['general'][value] = False
-
-            # now write the new .yaml file with this updated value
-            os.mkdir('config_files')
-            with open('config_files/nextflow_modified.yaml', 'w') as new_config:
-                yaml.dump(loaded_conf, new_config)
-    """
+    _, _, tb = sys.exc_info()
+    traceback.print_tb(tb) # Fixed format
+    tb_info = traceback.extract_tb(tb)
+    filename, line, func, text = tb_info[-1]
+    print('An error occurred on line {} in the following statement: {}'.format(line, text))
+    sys.exit(1)
 
 
 if __name__ == "__main__":
