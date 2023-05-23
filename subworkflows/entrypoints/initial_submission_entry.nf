@@ -9,6 +9,7 @@
 include { CHECKS_4_SUBMISSION_ENTRY                         } from "./submission_entry_check"
 include { PREP_SUBMISSION_ENTRY                             } from "../../modules/submission_entrypoint/prep_sub_entry/main"
 include { SUBMISSION                                        } from "../../modules/submission/main"
+include { MERGE_UPLOAD_LOG                                  } from "../../modules/general_util/merge_upload_log/main"
 
 
 workflow RUN_INITIAL_SUBMISSION {
@@ -37,4 +38,7 @@ workflow RUN_INITIAL_SUBMISSION {
             params.req_col_config,
             ''
         )
+
+        // call the merging of the upload log file 
+        MERGE_UPLOAD_LOG ( SUBMISSION.out.submission_files.collect(), '' )
 }

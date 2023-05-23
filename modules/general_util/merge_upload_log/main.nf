@@ -13,7 +13,7 @@ process MERGE_UPLOAD_LOG {
 
     script:
     """
-    submission_utility.py --merge_upload_log true --processed_samples $submission_files
+    submission_utility.py --merge_upload_log true --batch_name $params.batch_name
     """
 
     output:
