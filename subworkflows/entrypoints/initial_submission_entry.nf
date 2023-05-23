@@ -23,7 +23,9 @@ workflow RUN_INITIAL_SUBMISSION {
             CHECKS_4_SUBMISSION_ENTRY.out,
             params.submission_only_meta, 
             params.submission_only_fasta, 
-            params.submission_only_gff, 
+            params.submission_only_gff,
+            params.submission_config,
+            params.submission_database,
             false
         )
 

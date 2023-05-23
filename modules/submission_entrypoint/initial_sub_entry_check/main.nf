@@ -13,7 +13,9 @@ process ONLY_INITIAL_SUBMISSION_ENTRY_CHECK {
         try {
             assert params.submission_only_meta
             assert params.submission_only_fasta
-            assert params.submission_only_gff
+            if ( params.submission_database.toLowerCase().replaceAll("\\s","") != 'sra' ) {
+                assert params.submission_only_gff
+            }
             assert params.submission_output_dir 
             assert params.submission_wait_time
             assert params.req_col_config
@@ -23,7 +25,13 @@ process ONLY_INITIAL_SUBMISSION_ENTRY_CHECK {
         }
 
         // check that paths are strings
-        for ( def path : [params.submission_only_meta, params.submission_only_fasta, params.submission_only_gff] ) {
+        if ( params.submission_database.toLowerCase().replaceAll("\\s","") != 'sra' ) {
+                paths_to_check = [params.submission_only_meta, params.submission_only_fasta, params.submission_only_gff]
+        } else {
+            paths_to_check = [params.submission_only_meta, params.submission_only_fasta]
+        }
+
+        for ( def path : paths_to_check ) {
             if ( path instanceof String == false ) {
                 throw new Exception("Value must be of string type: $path used instead")
             }
