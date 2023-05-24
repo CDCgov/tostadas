@@ -24,6 +24,7 @@ def get_args():
     parser.add_argument("--update_entry", type=str, help='Whether or not it is update submission entry')
     parser.add_argument("--processed_samples", type=str, help='Path to processed samples')
     parser.add_argument("--merge_upload_log", type=str, default='false', help='Whether to create an upload_log file for submission or not')
+    parser.add_argument("--batch_name", type=str, help='Name for batch')
     return parser
 
 
@@ -48,32 +49,39 @@ def main():
     # =================================================================================================================
     #                    CHECK IF YOU NEED TO CREATE AN UPLOAD LOG FILE FOR SUBMISSION
     # =================================================================================================================
+
     if parameters['merge_upload_log'].lower().strip() == 'true':
+
+        expected_cols = ["name", "update_date", "SRA_submission_id", "SRA_submission_date", "SRA_status", "BioSample_submission_id",
+                     "BioSample_submission_date", "BioSample_status", "Genbank_submission_id", "Genbank_submission_date", "Genbank_status",
+                     "GISAID_submission_date", "GISAID_submitted_total", "GISAID_failed_total", "directory", "config", "type"]
+
         # get all paths to directories within working directory containing batch name
         current_dir = os.getcwd()
         upload_log_dirs = [x for x in os.listdir(current_dir) if f"{parameters['batch_name']}." in x]
+
         # cycle through the directories and add contents from upload log files to new log file
-        with open('upload_log.csv', 'w') as f:
-            for log_dir in upload_log_dirs:
-                sample_name = log_dir.split('.')[-1]
-                log_file_name = f"{sample_name}_upload_log.csv"
-                #if log_file_name in os.listdir():
+        merged_df = pd.DataFrame(columns=expected_cols)
+        for log_dir in upload_log_dirs:
+            sample_name = log_dir.split('.')[-1]
+            log_file_name = f"{sample_name}_upload_log.csv"
+            if log_file_name in os.listdir(log_dir):
                 # open the upload log file and save csv contents
                 log_data = pd.read_csv(f"{log_dir}/{log_file_name}")
                 # check some upload log stuff 
                 try:
                     assert len(log_data.columns) != 0
-                    assert sorted(set(log_data.columns)) == sorted(set(["name", "update_date", "SRA_submission_id", "SRA_submission_date", 
-                                                        "SRA_status", "BioSample_submission_id", "BioSample_submission_date",
-                                                        "BioSample_status", "Genbank_submission_id", "Genbank_submission_date",
-                                                        "Genbank_status", "GISAID_submission_date", "GISAID_submitted_total", 
-                                                        "GISAID_failed_total", "directory", "config", "type"]))
+                    assert sorted(set(log_data.columns)) == sorted(set(expected_cols))
                     assert len(log_data.index) != 0
                 except AssertionError:
                     handle_stacktrace()
-                # 
-                #else:
-                    #pass
+                # merge the concatenated df with this upload log file
+                merged_df = pd.concat([merged_df, log_data], ignore_index=True)
+            else:
+                pass
+        
+        # write the final upload log file
+        merged_df.to_csv('upload_log.csv', index=False)
 
     # =================================================================================================================
     #                        CHECK IF NEED TO CREATE SUBMISSION OUTPUT DIR FOR ENTRYPOINT
