@@ -7,8 +7,8 @@ process PREP_SUBMISSION_ENTRY {
 
     label 'main'
 
-    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    maxRetries 5
+    //errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    //maxRetries 5
 
     if ( params.run_conda == true ) {
         try {
@@ -23,11 +23,14 @@ process PREP_SUBMISSION_ENTRY {
         path validated_meta
         path fasta
         path annotated_gff
+        path submission_config
+        val database
         val update_entry
-
+ 
     script:
         """
-        submission_utility.py --prep_submission_entry true --update_entry $update_entry --meta_path $validated_meta --fasta_path $fasta --gff_path $annotated_gff
+        submission_utility.py --prep_submission_entry true --update_entry $update_entry --meta_path $validated_meta --fasta_path $fasta --gff_path $annotated_gff \
+        --database $database --config $submission_config
         """
      
     output: 
