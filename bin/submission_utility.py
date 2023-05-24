@@ -33,8 +33,9 @@ def main():
     args = get_args().parse_args()
     parameters = vars(args)
 
-    # initialize the utility class 
+    # initialize the necessary classes
     util = Utility()
+    checks = AssertChecks()
     
     # =================================================================================================================
     #                              CHECK IF YOU NEED TO WAIT... IF SO, THEN WAIT
@@ -70,12 +71,7 @@ def main():
                 # open the upload log file and save csv contents
                 log_data = pd.read_csv(f"{log_dir}/{log_file_name}")
                 # check some upload log stuff 
-                try:
-                    assert len(log_data.columns) != 0
-                    assert sorted(set(log_data.columns)) == sorted(set(expected_cols))
-                    assert len(log_data.index) != 0
-                except AssertionError:
-                    util.handle_stacktrace()
+                checks.check_upload_log(log_data=log_data, expected_cols=expected_cols)
                 # merge the concatenated df with this upload log file
                 merged_df = pd.concat([merged_df, log_data], ignore_index=True)
             else:
@@ -155,6 +151,20 @@ class Utility():
             raise ValueError(f"Missing required GFF files at the provided path encoded by submission_only_gff in params: {parameters['gff_path']}")
     
         return parameters 
+
+
+class AssertChecks():
+    def __init__(self):
+        """
+        """
+    
+    def check_upload_log(self, log_data, expected_cols):
+        try:
+            assert len(log_data.columns) != 0
+            assert sorted(set(log_data.columns)) == sorted(set(expected_cols))
+            assert len(log_data.index) != 0
+        except AssertionError:
+            handle_stacktrace()
 
     @staticmethod
     def handle_stacktrace():
