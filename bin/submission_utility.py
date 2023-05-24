@@ -112,7 +112,8 @@ def main():
             # get the dir name 
             dir_name = folder.split('/')[-1]
             # copy over the files 
-            shutil.copytree(folder, f"update_entry/{dir_name}")
+            if dir_name != 'upload_log.csv':
+                shutil.copytree(folder, f"update_entry/{dir_name}")
     
 
 class Utility():
