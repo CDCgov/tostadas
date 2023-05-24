@@ -60,9 +60,10 @@ def main():
         current_dir = os.getcwd()
         upload_log_dirs = [x for x in os.listdir(current_dir) if f"{parameters['batch_name']}." in x]
 
-        # cycle through the directories and add contents from upload log files to new log file
+        # cycle through the directories and add contents from upload log files to a merged dataframe
         merged_df = pd.DataFrame(columns=expected_cols)
         for log_dir in upload_log_dirs:
+            # get sample information and log file information
             sample_name = log_dir.split('.')[-1]
             log_file_name = f"{sample_name}_upload_log.csv"
             if log_file_name in os.listdir(log_dir):
