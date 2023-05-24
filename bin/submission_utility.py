@@ -75,7 +75,7 @@ def main():
                     assert sorted(set(log_data.columns)) == sorted(set(expected_cols))
                     assert len(log_data.index) != 0
                 except AssertionError:
-                    handle_stacktrace()
+                    util.handle_stacktrace()
                 # merge the concatenated df with this upload log file
                 merged_df = pd.concat([merged_df, log_data], ignore_index=True)
             else:
@@ -156,15 +156,16 @@ class Utility():
     
         return parameters 
 
-def handle_stacktrace():
-    """ Generates, makes verbose, and cleans up the stack trace generated from assertion error
-    """
-    _, _, tb = sys.exc_info()
-    traceback.print_tb(tb) # Fixed format
-    tb_info = traceback.extract_tb(tb)
-    filename, line, func, text = tb_info[-1]
-    print('An error occurred on line {} in the following statement: {}'.format(line, text))
-    sys.exit(1)
+    @staticmethod
+    def handle_stacktrace():
+        """ Generates, makes verbose, and cleans up the stack trace generated from assertion error
+        """
+        _, _, tb = sys.exc_info()
+        traceback.print_tb(tb) # Fixed format
+        tb_info = traceback.extract_tb(tb)
+        filename, line, func, text = tb_info[-1]
+        print('An error occurred on line {} in the following statement: {}'.format(line, text))
+        sys.exit(1)
 
 
 if __name__ == "__main__":
