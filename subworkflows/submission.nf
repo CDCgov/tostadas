@@ -9,6 +9,8 @@
 include { SUBMISSION } from '../modules/submission/main'
 include { UPDATE_SUBMISSION } from '../modules/update_submission/main'
 include { WAIT } from '../modules/general_util/wait/main'
+include { MERGE_UPLOAD_LOG } from "../modules/general_util/merge_upload_log/main"
+
 
 workflow LIFTOFF_SUBMISSION {
     take:
@@ -27,7 +29,11 @@ workflow LIFTOFF_SUBMISSION {
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
+        // process for updating the submitted samples
         UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'liftoff' )
+
+        // combine the different upload_log csv files together 
+        MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'liftoff' )
 }
 
 workflow VADR_SUBMISSION {
@@ -47,7 +53,11 @@ workflow VADR_SUBMISSION {
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
+        // process for updating the submitted samples
         UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'vadr' )
+
+        // combine the different upload_log csv files together 
+        MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'vadr' )
 }
 
 workflow ENTRY_SUBMISSION {
@@ -67,5 +77,9 @@ workflow ENTRY_SUBMISSION {
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
+        // process for updating the submitted samples
         UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, '' )
+
+        // combine the different upload_log csv files together 
+        MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
 }

@@ -37,5 +37,5 @@ process SUBMISSION {
     """
 
     output:
-    path "$params.batch_name.${validated_meta_path.getSimpleName()}", emit: submission_files
+    path "$params.batch_name.${validated_meta_path.getSimpleName()}", emit: submission_files 
 }

@@ -66,8 +66,10 @@ def biosample_sra_process_report(unique_name, ncbi_sub_type):
 #Update log csv
 def update_csv(unique_name,config,type,Genbank_submission_id=None,Genbank_submission_date=None,Genbank_status=None,SRA_submission_id=None,SRA_status=None,SRA_submission_date=None,Biosample_submission_id=None,Biosample_status=None,Biosample_submission_date=None,GISAID_submission_date=None,GISAID_submitted_total=None,GISAID_failed_total=None):
     curr_time = datetime.now()
-    if os.path.isfile(f"{unique_name}/upload_log.csv"):
-        df = pd.read_csv(f"{unique_name}/upload_log.csv", header = 0, dtype = str, sep = ",")
+    # get the sample name 
+    sample_name = unique_name.split('.')[-1]
+    if os.path.isfile(f"{unique_name}/{sample_name}_upload_log.csv"):
+        df = pd.read_csv(f"{unique_name}/{sample_name}_upload_log.csv", header = 0, dtype = str, sep = ",")
     else:
         df = pd.DataFrame(columns = ["name","update_date","SRA_submission_id","SRA_submission_date","SRA_status","BioSample_submission_id","BioSample_submission_date","BioSample_status","Genbank_submission_id","Genbank_submission_date","Genbank_status","GISAID_submission_date","GISAID_submitted_total","GISAID_failed_total","directory","config","type"])
     #Check if row exists in log to update instead of write new
@@ -123,7 +125,7 @@ def update_csv(unique_name,config,type,Genbank_submission_id=None,Genbank_submis
         # df = df.append(new_entry, ignore_index = True)
         new_df = pd.DataFrame([new_entry])
         df = pd.concat([df, new_df], axis=0, ignore_index=True)
-    df.to_csv(f"{unique_name}/upload_log.csv", header = True, index = False, sep = ",")
+    df.to_csv(f"{unique_name}/{sample_name}_upload_log.csv", header = True, index = False, sep = ",")
 
 
 def check_if_update(df, database_name):
@@ -143,11 +145,14 @@ def check_if_update(df, database_name):
 # Update log status
 def update_log(unique_name):
 
+    # get the sample name 
+    sample_name = unique_name.split('.')[-1]
+
     # find the upload_log file
-    if os.path.isfile(f"{unique_name}/upload_log.csv"):
-        main_df = pd.read_csv(f"{unique_name}/upload_log.csv", header = 0, dtype = str, sep = ",")
+    if os.path.isfile(f"{unique_name}/{sample_name}_upload_log.csv"):
+        main_df = pd.read_csv(f"{unique_name}/{sample_name}_upload_log.csv", header = 0, dtype = str, sep = ",")
     else:
-        print("Error: Either a submission has not been made or upload_log.csv has been moved from " + f"{unique_name}/upload_log.csv", file=sys.stderr)
+        print("Error: Either a submission has not been made or upload_log.csv has been moved from " + f"{unique_name}/{sample_name}_upload_log.csv", file=sys.stderr)
         return
         
     # get the update status for biosample, sra, and genbank

@@ -30,8 +30,7 @@ workflow RUN_SUBMISSION {
         )
 
         // get the wait time
-        GET_WAIT_TIME ( 
-            'dummy meta signal',  
+        GET_WAIT_TIME (
             PREP_SUBMISSION_ENTRY.out.tsv.collect() 
         )
         

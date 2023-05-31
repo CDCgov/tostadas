@@ -33,5 +33,4 @@ process METADATA_VALIDATION {
     output:
     path "$params.val_output_dir/*/tsv_per_sample/*.tsv", emit: tsv_Files
     path "$params.val_output_dir/*/errors", emit: errors
-    val true, emit: meta_signal
 }

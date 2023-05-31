@@ -159,8 +159,7 @@ workflow MPXV_MAIN {
     if ( params.run_submission == true ) {
 
         // pre submission process + get wait time (parallel)
-        GET_WAIT_TIME ( 
-            METADATA_VALIDATION.out.meta_signal, 
+        GET_WAIT_TIME (
             METADATA_VALIDATION.out.tsv_Files.collect() 
         )
 
