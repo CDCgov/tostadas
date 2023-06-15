@@ -531,18 +531,22 @@ def submit_biosample_sra(unique_name, config, test, ncbi_sub_type, overwrite):
 
 # Start submission into automated pipeline
 def start_submission(unique_name, config, test, overwrite, send_email):
-    if config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True and config_dict["general"]["joint_SRA_BioSample_submission"] == True:
-        submit_biosample_sra(unique_name, config, test, "biosample_sra", overwrite)
-    elif config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True and config_dict["general"]["joint_SRA_BioSample_submission"] == False:
-        submit_biosample_sra(unique_name, config, test, "biosample", overwrite)
-        submit_biosample_sra(unique_name, config, test, "sra", overwrite)
+
+    if config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True:
+        if config_dict["general"]["joint_SRA_BioSample_submission"] == True:
+            submit_biosample_sra(unique_name, config, test, "biosample_sra", overwrite)
+        elif config_dict["general"]["joint_SRA_BioSample_submission"] == False:
+            submit_biosample_sra(unique_name, config, test, "biosample", overwrite)
+            submit_biosample_sra(unique_name, config, test, "sra", overwrite)
     elif config_dict["general"]["submit_BioSample"] == True:
         submit_biosample_sra(unique_name, config, test, "biosample", overwrite)
     elif config_dict["general"]["submit_SRA"] == True:
         submit_biosample_sra(unique_name, config, test, "sra", overwrite)
-    elif config_dict["general"]["submit_Genbank"] == True:
+
+    if config_dict["general"]["submit_Genbank"] == True:
         submit_genbank(unique_name=unique_name, config=config, test=test, overwrite=overwrite, send_email=send_email)
-    elif config_dict["general"]["submit_GISAID"] == True:
+    
+    if config_dict["general"]["submit_GISAID"] == True:
         submit_gisaid(unique_name=unique_name, config=config, test=test)
     """
     # go through the different database submissions and call the appropriate functions
