@@ -67,13 +67,13 @@ class SubmitToDatabase:
         """ Calls update submission
         """
         unique_dir_name = f"{self.parameters['unique_name']}.{self.parameters['sample_name']}"
-        os.makedirs("update_submit_info")
+        os.makedirs(f"{unique_dir_name}/update_submit_info", exist_ok=True)
 
         # get the command
         command = f"submission.py --command update_submissions --config {self.parameters['config']} --unique_name {unique_dir_name}"
         
         # call the subprocess for update submission
-        file_ = open(f"update_submit_info/{self.parameters['sample_name']}_update_terminal_output.txt", "w+")
+        file_ = open(f"{unique_dir_name}/update_submit_info/{self.parameters['sample_name']}_update_terminal_output.txt", "w+")
         subprocess.run(command, shell=True, stdout=file_)
         file_.close()
         
