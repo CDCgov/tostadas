@@ -32,6 +32,5 @@ process UPDATE_SUBMISSION {
     """
 
     output:
-    path "update_submit_info/${submission_output.getExtension()}_update_terminal_output.txt"
     path "$params.batch_name.${submission_output.getExtension()}", emit: submission_files
 } 
