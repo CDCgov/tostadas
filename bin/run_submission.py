@@ -72,6 +72,11 @@ class SubmitToDatabase:
         # get the command
         command = f"submission.py --command update_submissions --config {self.parameters['config']} --unique_name {unique_dir_name}"
         
+        # open a txt file and write the command 
+        with open(f"{unique_dir_name}/update_submit_info/{self.parameters['sample_name']}_update_submit_info", "w") as f:
+            f.write(f"ACTUAL COMMAND USED: {command}\n")
+        f.close()
+
         # call the subprocess for update submission
         file_ = open(f"{unique_dir_name}/update_submit_info/{self.parameters['sample_name']}_update_terminal_output.txt", "w+")
         subprocess.run(command, shell=True, stdout=file_)
