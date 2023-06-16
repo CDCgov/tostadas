@@ -539,11 +539,9 @@ def write_ncbi_names(unique_name, main_df, config_dict):
     tmp.to_csv(os.path.join(unique_name, "accessions.csv"), header = True, index = False, sep = ",")
 
 def process_submission(unique_name, fasta_file, metadata_file, gff_file, config, req_col_config, config_dict):
-    print("\nProcessing " + unique_name + ".")
+    print("Processing " + unique_name + f"\n")
 
     initialize_required_columns(req_col_config)
-    
-    print("Processing Files.")
 
     main_df = merge(fasta_file, metadata_file, config_dict)
 
@@ -561,36 +559,35 @@ def process_submission(unique_name, fasta_file, metadata_file, gff_file, config,
     os.makedirs(os.path.join(unique_name), exist_ok = True)
 
     if config_dict["general"]["submit_GISAID"] == True:
-        print("Creating GISAID files.")
         os.makedirs(os.path.join(unique_name, "gisaid"), exist_ok = True)
         gisaid_write(unique_name, main_df, config_dict)
+        print(f"\tCreated GISAID Files\n")
 
     if config_dict["general"]["submit_Genbank"] == True:
-        print("Creating Genbank files.")
         os.makedirs(os.path.join(unique_name, "genbank"), exist_ok = True)
         write_metadata_files(unique_name, main_df, config_dict)
         write_submission_files(unique_name, main_df, config_dict)
         ncbi_write(unique_name, main_df, gff_file, config_dict)
+        print(f"\tCreated Genbank Files\n")
 
     if config_dict["general"]["submit_BioSample"] == True and config_dict["general"]["submit_SRA"] == True and config_dict["general"]["joint_SRA_BioSample_submission"] == True:
-        print("Creating BioSample/SRA files.")
         os.makedirs(os.path.join(unique_name, "biosample_sra"), exist_ok = True)
         generate_XML(unique_name = unique_name, main_df = main_df, generate_biosample = True, generate_sra = True, config_dict=config_dict)
         write_sra_file_path(unique_name, main_df, config_dict)
+        print(f"\tCreated BioSample/SRA Files\n")
 
     else:
         if config_dict["general"]["submit_BioSample"] == True:
-            print("Creating BioSample files.")
             os.makedirs(os.path.join(unique_name, "biosample_sra"), exist_ok = True)
             generate_XML(unique_name = unique_name, main_df = main_df, generate_biosample = True, generate_sra = False, config_dict=config_dict)
-
+            print(f"\tCreated BioSample Files\n")
         if config_dict["general"]["submit_SRA"] == True:
-            print("Creating SRA files.")
             os.makedirs(os.path.join(unique_name, "biosample_sra"), exist_ok = True)
             generate_XML(unique_name = unique_name, main_df = main_df, generate_biosample = False, generate_sra = True, config_dict=config_dict)
             write_sra_file_path(unique_name, main_df, config_dict)
+            print(f"\tCreated SRA Files\n")
 
     if config_dict["general"]["submit_BioSample"] == True or config_dict["general"]["submit_SRA"] == True or config_dict["general"]["submit_Genbank"] == True:
         write_ncbi_names(unique_name, main_df, config_dict)
 
-    print(unique_name + " complete.\n")
+    print(f"\t{unique_name} Finished Processing\n")
