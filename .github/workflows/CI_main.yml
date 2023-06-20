@@ -1,0 +1,48 @@
+name: Tostadas CI
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+          submodules: 'recursive'
+          ref: ${{ github.event.pull_request.head.ref }}
+
+    - name: Set Up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install Miniconda
+      run: |
+        curl -s -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+        bash Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda
+        export PATH="$HOME/miniconda/bin:$PATH"
+
+    - name: Verify Conda installation
+      run: conda --version
+
+    - name: Initialize Conda shell
+      run: |
+        echo ". $HOME/miniconda/etc/profile.d/conda.sh" >> $HOME/.bashrc
+        echo "conda activate base" >> $HOME/.bashrc
+
+    - name: Create Environment and Run Tests 
+      run: |
+        source ~/miniconda/etc/profile.d/conda.sh
+        conda install mamba --quiet -n base -c conda-forge
+        mamba env create --quiet -n ci_tostadas -f environment.yml
+        conda activate ci_tostadas
+        mamba install --quiet -c bioconda nextflow
+        conda install --quiet -y pytest
+        conda install --quiet -y pandas 
+        conda install --quiet -y glob2
+        pytest -p no:warnings tests/test_main.py

@@ -2,15 +2,17 @@ import os
 import pytest
 import glob
 import shutil
+import pandas as pd
 
-# import the module for splitting fasta
+# import the module for general utility functions for annotation
 import sys
 sys.path.append(".")
 sys.path.append("..")
 from bin.annotation_utility import MainUtility as main_util
 
 
-def test_main():
+@pytest.mark.parametrize("run_method", ["conda", "docker"])
+def test_main(run_method):
 
     # initialize a few parameters to test
     dir_name = 'test_main_workflow'
@@ -18,18 +20,18 @@ def test_main():
     lift_dir_name = 'test_liftoff_outputs'
     sub_dir_name = 'test_sub_outputs'
     batch_name = 'batch_test'
+    util = UtilityFunctions()
 
     # initialize the checks class/methods + for utility
     metadata_checks = Metadata(path_to_meta_dir=f"{dir_name}/{meta_dir_name}")
     liftoff_checks = Liftoff(path_to_lift_dir=f"{dir_name}/{lift_dir_name}")
     submission_checks = Submission(path_to_sub_dir=f"{dir_name}/{sub_dir_name}/liftoff", batch_name=batch_name)
-    util = UtilityFunctions()
 
     # run the main workflow command + output directory = main workflow
     os.system (
-        f"nextflow run main.nf -profile test,docker --submission_wait_time 2 --submission_database all --output_dir {dir_name} " + \
+        f"nextflow run main.nf -profile test,{run_method} --submission_wait_time 2 --submission_database all --output_dir {dir_name} " + \
         f"--val_output_dir {meta_dir_name} --final_liftoff_output_dir {lift_dir_name} --submission_output_dir {sub_dir_name} " + \
-        f"--batch_name {batch_name} --submission_database all"
+        f"--batch_name {batch_name}"
     )
 
     # check that the proper outputs are generated in the custom output directory
@@ -50,48 +52,59 @@ def test_main():
         meta_dir_name=meta_dir_name,
         lift_dir_name=lift_dir_name,
         sub_dir_name=sub_dir_name,
-        batch_name=batch_name
+        batch_name=batch_name,
+        run_method=run_method
     )
 
     # run the submission check 
     submission_checks = Submission(path_to_sub_dir=f"{dir_name}/{sub_dir_name}", batch_name=batch_name)
     submission_checks.submission_check_main(initial_or_update='both')
 
+    # remove the entire previous directory
+    util.remove_files(dir_2_remove=dir_name)
+
 
 @pytest.mark.run(order=1)
-def test_meta_val():
+@pytest.mark.parametrize("run_method", ["docker", "conda"])
+def test_meta_val(run_method):
 
     # initialize some other variables
     output_dir = "test_meta_val"
     meta_dir = "metadata_outputs_test"
+    util = UtilityFunctions()
 
     # initialize the checks class/methods + for utility
     metadata_checks = Metadata(path_to_meta_dir=f"{output_dir}/{meta_dir}")
 
     # run metadata validation entrypoint
     os.system (
-        f"nextflow run main.nf -profile test,docker -entry only_validation --output_dir {output_dir} " + \
+        f"nextflow run main.nf -profile test,{run_method} -entry only_validation --output_dir {output_dir} " + \
         f"--val_output_dir {meta_dir}"
     )
 
     # run the metadata checks 
     metadata_checks.meta_check_main()
 
+    # delete the docker outputs 
+    if run_method == 'docker':
+        util.remove_files(dir_2_remove=output_dir)
+
 
 @pytest.mark.run(order=2)
-def test_liftoff():
+@pytest.mark.parametrize("run_method", ["docker", "conda"])
+def test_liftoff(run_method):
 
     # initialize some other variables
     output_dir = "test_liftoff"
     lift_dir = "liftoff_outputs_test"
+    util = UtilityFunctions()
 
     # initialize the checks class/methods + for utility
     liftoff_checks = Liftoff(path_to_lift_dir=f"{output_dir}/{lift_dir}")
-    util = UtilityFunctions()
 
     # run liftoff entrypoint
     os.system (
-        f"nextflow run main.nf -profile test,docker -entry only_liftoff --output_dir {output_dir} " + \
+        f"nextflow run main.nf -profile test,{run_method} -entry only_liftoff --output_dir {output_dir} " + \
         f"--final_liftoff_output_dir {lift_dir}"
     )
     assert os.path.exists(f"{output_dir}/{lift_dir}")
@@ -99,9 +112,14 @@ def test_liftoff():
     # check the liftoff outputs 
     liftoff_checks.liftoff_check_main()
 
+    # delete the docker outputs 
+    if run_method == 'docker':
+        util.remove_files(dir_2_remove=output_dir)
+
 
 @pytest.mark.run(order=3)
-def test_initial_sub():
+@pytest.mark.parametrize("run_method", ["docker", "conda"])
+def test_initial_sub(run_method):
 
     # initialize some other variables
     output_dir = "test_submission"
@@ -109,14 +127,14 @@ def test_initial_sub():
     lift_dir = "test_liftoff/liftoff_outputs_test"
     sub_dir = "submission_outputs_test"
     batch_name = "batch_test"
+    util = UtilityFunctions()
 
     # initialize the checks class/methods
     submission_checks = Submission(path_to_sub_dir=f"{output_dir}/{sub_dir}", batch_name=batch_name)
-    util = UtilityFunctions()
 
     # run the initial submission entrypoint
     os.system (
-        f"nextflow run main.nf -profile test,docker -entry only_initial_submission --output_dir {output_dir} " + \
+        f"nextflow run main.nf -profile test,{run_method} -entry only_initial_submission --output_dir {output_dir} " + \
         f"--submission_output_dir {sub_dir} --batch_name {batch_name} --submission_database all --submission_only_meta {util.root_dir}/{meta_dir}/*/tsv_per_sample " + \
         f"--submission_only_fasta {util.root_dir}/{lift_dir}/*/fasta --submission_only_gff {util.root_dir}/{lift_dir}/*/liftoff"
     )
@@ -124,27 +142,38 @@ def test_initial_sub():
     # run the submission checks
     submission_checks.submission_check_main(initial_or_update='initial')
 
+    # delete the docker outputs 
+    if run_method == 'docker':
+        util.remove_files(dir_2_remove=output_dir)
+
 
 @pytest.mark.run(order=4)
-def test_update_sub():
+@pytest.mark.parametrize("run_method", ["conda", "docker"])
+def test_update_sub(run_method):
 
     # initialize some other variables
-    output_dir = "test_update_submission"
+    output_dir = "test_submission"
     batch_name = "batch_test"
+    sub_dir = "submission_outputs_test"
+    util = UtilityFunctions()
 
     # initialize the checks class/methods
-    submission_checks = Submission(path_to_sub_dir=f"test_submission/submission_outputs_test", batch_name=batch_name)
-    util = UtilityFunctions()
+    submission_checks = Submission(path_to_sub_dir=f"{output_dir}/{sub_dir}", batch_name=batch_name)
 
     # run the update submission entrypoint
     os.system (
-        f"nextflow run main.nf -profile test,docker -entry only_update_submission " + \
-        f"--batch_name {batch_name} --processed_samples {util.root_dir}/test_submission/submission_outputs_test/"
+        f"nextflow run main.nf -profile test,{run_method} -entry only_update_submission " + \
+        f"--batch_name {batch_name} --processed_samples {util.root_dir}/test_submission/submission_outputs_test " + \
+        f"--output_dir {output_dir} --submission_output_dir {sub_dir}"
     )
 
     # run the submission checks
     submission_checks.submission_check_main(initial_or_update='update')
 
+    # remove files 
+    for folder in submission_checks.batch_dirs:
+        util.remove_files(dir_2_remove=f"{folder}/update_submit_info")
+    
 
 class OutputChecks(object):
     def __init__(self):
@@ -228,22 +257,10 @@ class Liftoff(OutputChecks):
                 assert glob.glob(f"{self.path_to_lift_dir}/*/{dir_name}/{sub_file}")[0] in sub_dir_ls
 
     def check_fasta(self, dir_name):
-        # create the test fasta directory 
-        if os.path.exists("test_fasta"):
-            shutil.rmtree("test_fasta")
-        os.mkdir("test_fasta")
-
-        # split the fasta and get sample names + use the default one
-        self.util.ext_util.split_fasta (
-            fasta_path=f"{self.util.root_dir}/input_files/trialData.fasta",
-            fasta_output=f"test_fasta/"
-        )
-
+        
         # check that it worked fine 
-        new_fastas = glob.glob('test_fasta/*')
         orig_fastas = glob.glob(f"{self.path_to_lift_dir}/*/{dir_name}/*")
         assert len(orig_fastas) == 7
-        assert len(orig_fastas) == len(new_fastas)
         for file_name in orig_fastas:
             fasta_lines = self.util.read_file_lines (
                 path_to_file=file_name
@@ -284,11 +301,19 @@ class Submission(OutputChecks):
         self.path_to_sub_dir = path_to_sub_dir
         self.batch_name = batch_name
         self.list_of_samples = ['FL0004', 'FL0015', 'IL0005', 'NY0006', 'NY0007', 'OH0002', 'TX0001']
+        self.batch_dirs = None
     
     def submission_check_main(self, initial_or_update):
+
+        # get the directories for the batch.sample_name 
         batch_dirs = glob.glob(f"{self.path_to_sub_dir}/*")
-        assert len(batch_dirs) == 7
-        for directory in batch_dirs:
+        self.batch_dirs = [x for x in batch_dirs if x.split('/')[-1].split('.')[0].strip() == 'batch_test']
+        assert len(self.batch_dirs) == 7
+
+        # check that there is an upload log generated + do global check
+        assert os.path.isfile(f"{self.path_to_sub_dir}/upload_log.csv")
+
+        for directory in self.batch_dirs:
             # check that proper batch name was used 
             assert directory.split('/')[-1].split('.')[0].strip() == 'batch_test'
             # check that the proper sample names was used 
@@ -304,19 +329,20 @@ class Submission(OutputChecks):
 
     @staticmethod
     def check_submit_info(initial_or_update, directory, sample_name):
+        # assert os.path.isfile(f"{directory}/{sample_name}_upload_log.csv")
         if initial_or_update == 'initial' or initial_or_update == 'both':
-            assert os.path.exists(f"{directory}/initial_submit_info/{sample_name}_initial_submit_info")
+            assert os.path.exists(f"{directory}/initial_submit_info/{sample_name}_initial_submit_info.txt")
             assert os.path.exists(f"{directory}/initial_submit_info/{sample_name}_initial_terminal_output.txt")
-        elif initial_or_update == 'update' or initial_or_update == 'both':
+        if initial_or_update == 'update' or initial_or_update == 'both':
+            assert os.path.exists(f"{directory}/update_submit_info/{sample_name}_update_submit_info.txt")
             assert os.path.exists(f"{directory}/update_submit_info/{sample_name}_update_terminal_output.txt")
 
 
 class UtilityFunctions():
     def __init__(self):
         self.root_dir = '/'.join(__file__.split('/')[:-2])
-        self.ext_util = main_util()
 
-    def call_submission(self, output_dir, meta_dir_name, lift_dir_name, sub_dir_name, batch_name):
+    def call_submission(self, output_dir, meta_dir_name, lift_dir_name, sub_dir_name, batch_name, run_method):
         # initialize the checks class/methods
         output_checks = OutputChecks()
 
@@ -328,7 +354,7 @@ class UtilityFunctions():
 
         # call the submission entrypoint
         os.system (
-            f"nextflow run main.nf -profile test,docker -entry only_submission --submission_wait_time 2 --output_dir {output_dir} " + \
+            f"nextflow run main.nf -profile test,{run_method} -entry only_submission --submission_wait_time 2 --output_dir {output_dir} " + \
             f"--submission_only_meta {self.root_dir}/{output_dir}/{meta_dir_name}/*/tsv_per_sample/ --submission_only_fasta {self.root_dir}/{output_dir}/{lift_dir_name}/*/fasta/ " + \
             f"--submission_only_gff {self.root_dir}/{output_dir}/{lift_dir_name}/*/liftoff/ --submission_output_dir {sub_dir_name} --batch_name {batch_name} " + \
             f"--submission_database all"
@@ -342,8 +368,11 @@ class UtilityFunctions():
         return lines
     
     @staticmethod
-    def remove_all_files():
-        """.DS_Store"""
+    def remove_files(dir_2_remove):
+        os.system (
+            f"rm -rf {dir_2_remove}"
+        )
+        assert not os.path.exists(f"{dir_2_remove}")
 
 
 if __name__ == "__main__":
