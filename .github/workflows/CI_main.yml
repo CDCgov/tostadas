@@ -26,14 +26,10 @@ jobs:
         bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
         export PATH="$HOME/mambaforge/bin:$PATH"
 
-    - name: Verify Mamba installation
+    - name: Create Environment and Run Tests 
       run: |
         source $HOME/mambaforge/etc/profile.d/conda.sh
         conda activate
-        mamba --version
-
-    - name: Create Environment and Run Tests 
-      run: |
         mamba env create --quiet -n ci_tostadas -f environment.yml
         conda activate ci_tostadas
         mamba install --quiet -c bioconda nextflow
