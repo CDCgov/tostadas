@@ -22,26 +22,17 @@ jobs:
 
     - name: Install Miniconda
       run: |
-        curl -s -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-        bash Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda
-        export PATH="$HOME/miniconda/bin:$PATH"
+        curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+        bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
+        export PATH="$HOME/mambaforge/bin:$PATH
 
-    - name: Verify Conda installation
-      run: conda --version
-
-    - name: Initialize Conda shell
-      run: |
-        echo ". $HOME/miniconda/etc/profile.d/conda.sh" >> $HOME/.bashrc
-        echo "conda activate base" >> $HOME/.bashrc
+    - name: Verify Mamba installation
+      run: mamba --version
 
     - name: Create Environment and Run Tests 
       run: |
-        source ~/miniconda/etc/profile.d/conda.sh
-        conda install mamba --quiet -n base -c conda-forge
         mamba env create --quiet -n ci_tostadas -f environment.yml
         conda activate ci_tostadas
         mamba install --quiet -c bioconda nextflow
-        conda install --quiet -y pytest
-        conda install --quiet -y pandas 
-        conda install --quiet -y glob2
+        conda install --quiet -y pytest pandas glob2
         pytest -p no:warnings tests/test_main.py
