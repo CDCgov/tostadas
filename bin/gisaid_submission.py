@@ -56,15 +56,12 @@ def check_authentication_date():
 #Run gisaid upload script and saves output to submission location
 def run_uploader(unique_name, config, test):
     initialize_global_variables(config)
-    if test == True:
-        # print("Performing test submission to CID: " + cid)
-        print("If this is not a test CID interrupt submission immediately.")
-        time.sleep(10)
-    print("Submitting now to gisaid.")
+    print(f"\tSubmitting to GISAID\n")
     #Run gisaid_uploader.py and submit to gisaid.
     #try submission two times before erroring out
     attempts = 1
     complete = False
+    error_holder = []
     while attempts < 3 and complete == False:
         proc = subprocess.run("python " + os.path.join(os.path.dirname(os.path.abspath(__file__)), "gisaid_uploader.py") + " --debug -l " +
             os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + ".log") + " COV upload --fasta " +
@@ -74,16 +71,26 @@ def run_uploader(unique_name, config, test):
             env = os.environ.copy(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
         #print(proc.args)
         if proc.returncode != 0:
-            print(proc.stdout)
-            print(proc.stderr)
+            error_holder.append(f"\t\t{proc.stderr}\n")
             attempts += 1
-            print("Gisaid submission attempt: " + str(attempts))
         else:
             complete = True
+    
+    if attempts == 3:
+        print(f"\t\tGISAID Submission Unsuccessful After {attempts-1} Attempts")
+    else:
+        print(f"\t\tAfter {attempts-1} GISAID Submission Attempts, Submission Was Successful\n")
+    
+    if len(error_holder) != 0:
+        print(f"\t\tErrors From Unsuccessful Attempts:\n")
+        for error in set(error_holder):
+            for line in error.split('\n'):
+                print(f"\t\t{line}")
+
     if complete == True:
-        print("Waiting for file to write.")
+        print(f"\t\tWaiting for File to Write\n")
         #Wait until completion log written
         while not os.path.exists(os.path.join(config_dict["general"]["submission_directory"], unique_name, "gisaid", unique_name + ".log")):
             time.sleep(10)
     else:
-        print("Submission errored out.")
+        print(f"\t\tSubmission Errored Out\n")
