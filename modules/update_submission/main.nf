@@ -10,7 +10,7 @@ process UPDATE_SUBMISSION {
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5
 
-    publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name/$params.batch_name.${submission_output.getExtension()}", mode: 'copy', overwrite: true
+    publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: true
 
     if ( params.run_conda == true ) {
         try {
@@ -32,6 +32,5 @@ process UPDATE_SUBMISSION {
     """
 
     output:
-    path "update_submit_info/${submission_output.getExtension()}_update_terminal_output.txt"
     path "$params.batch_name.${submission_output.getExtension()}", emit: submission_files
 } 
