@@ -33,5 +33,5 @@ jobs:
         conda create -n ci_tostadas python=3.9
         conda activate ci_tostadas
         mamba install --quiet -c bioconda nextflow
-        conda install --quiet -y pytest pandas glob2
+        conda install --quiet -y pytest pandas glob2 yaml
         pytest -p no:warnings tests/test_main.py
