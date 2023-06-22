@@ -32,7 +32,4 @@ jobs:
         conda activate
         mamba env create -f tests/test_env.yml python=3.9
         conda activate tostadas_tests
-        mamba install --quiet -c bioconda nextflow
-        mamba install --quiet -y pytest pandas glob2
-        pip install pyyaml
         pytest -p no:warnings tests/test_main.py
