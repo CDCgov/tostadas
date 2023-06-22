@@ -30,8 +30,8 @@ jobs:
       run: |
         source $HOME/mambaforge/etc/profile.d/conda.sh
         conda activate
-        conda create -n ci_tostadas python=3.9
-        conda activate ci_tostadas
+        mamba env create -f tests/test_env.yml python=3.9
+        conda activate tostadas_tests
         mamba install --quiet -c bioconda nextflow
         mamba install --quiet -y pytest pandas glob2
         pip install pyyaml
