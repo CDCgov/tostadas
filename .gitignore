@@ -119,3 +119,9 @@ bin/__pycache__
 .DS_Store
 app/.DS_Store
 bin/.DS_Store
+
+# CI related things
+/test_fasta
+/test_liftoff
+/test_meta_val 
+/test_submission
