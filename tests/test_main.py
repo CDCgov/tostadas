@@ -11,10 +11,13 @@ sys.path.append("..")
 from bin.annotation_utility import MainUtility as main_util
 
 
+# get the directory for 
+
+
 @pytest.mark.parametrize("run_method, input_fasta", [
-                        ("conda", "assets/trialData.fasta"), 
-                        ("docker", "assets/trialData.fasta"),
-                        ("docker", "assets/trialData.fq.gz")
+                        ("conda", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta")), 
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta")),
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fq.gz"))
                         ])
 def test_main(run_method, input_fasta):
 
@@ -70,9 +73,9 @@ def test_main(run_method, input_fasta):
 
 @pytest.mark.run(order=1)
 @pytest.mark.parametrize("run_method, input_fasta", [
-                        ("conda", "assets/trialData.fasta"), 
-                        ("docker", "assets/trialData.fasta"),
-                        ("docker", "assets/trialData.fq.gz")
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta")),
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fq.gz")),
+                        ("conda", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta"))
                         ])
 def test_meta_val(run_method, input_fasta):
 
@@ -100,9 +103,9 @@ def test_meta_val(run_method, input_fasta):
 
 @pytest.mark.run(order=2)
 @pytest.mark.parametrize("run_method, input_fasta", [
-                        ("docker", "assets/trialData.fasta"),
-                        ("docker", "assets/trialData.fq.gz"),
-                        ("conda", "assets/trialData.fasta")
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta")),
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fq.gz")),
+                        ("conda", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta"))
                         ])
 def test_liftoff(run_method, input_fasta):
 
