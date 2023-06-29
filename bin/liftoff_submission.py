@@ -182,12 +182,13 @@ class AnnotationPrep:
 		self.parameters = parameters
 		self.sample_seq_lengths = {}
 		self.sample_list = []
+		self.main_util = main_util()
 
 	def prep_main(self):
 		""" Main prep function for calling split_fasta, split gff for itr mapping, and load_meta
 		"""
 		# split the fasta file
-		main_util.split_fasta (
+		self.main_util.split_fasta (
 			fasta_path=f"{self.parameters['fasta_path']}",
 			fasta_output=f"{self.parameters['fasta_temp']}"
 		)
@@ -266,6 +267,9 @@ class AnnotationTransfer:
 		self.get_next_one = False
 		self.dict_for_codon_lines = None
 		self.bad_codon_fields = ['missing_start_codon', 'missing_stop_codon', 'inframe_stop_codon']
+
+		# get the other utility function
+		self.main_util = main_util()
 
 		# get the utility functions
 		self.utility_functions = utility_functions
@@ -376,7 +380,7 @@ class AnnotationTransfer:
 			# pass the new gff to the reformatting
 			self.reformat_gff(samp_name, gff_lines)
 			# pass the gff from reformatting function for gff --> tbl
-			main_util.gff2tbl(
+			self.main_util.gff2tbl(
 				samp_name=samp_name,
 				gff_loc=f"{self.parameters['liftoff_temp']}{samp_name}_reformatted.gff",
 				tbl_output=self.parameters['tbl_temp']
