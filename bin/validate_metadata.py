@@ -3,6 +3,7 @@
 # Adapted from Perl scripts by MH Seabolt and Python scripts by J Heuser
 # Refactored and updated by AK Gupta and KA O'Connell
 
+# necessary packages
 import os
 import pandas as pd
 import warnings
@@ -13,6 +14,10 @@ import argparse
 import sys
 import math
 import stat
+import glob
+
+# module level import
+from annotation_utility import MainUtility as main_util
 
 
 def metadata_validation_main():
@@ -78,6 +83,8 @@ class GetParams:
 		self.fasta_path = self.parameters['fasta_path']
 		# get the file name and put it in parameters dict
 		self.parameters['file_name'] = self.parameters['meta_path'].split("/")[-1].split(".")[0]
+		# get the main utility class 
+		self.main_util = main_util()
 
 	def get_parameters(self):
 		""" Main function for calling others in getting parameters
@@ -156,19 +163,10 @@ class GetParams:
 	def get_fasta_names(self):
 		""" opens up the multiFasta file based on inputted path and gets the names inside of the file
 		"""
-		fasta_file = open(self.fasta_path, "r")
-		fasta_names = []
-		while True:
-			line = fasta_file.readline()
-			if not line:
-				break
-			if line[0] == ">" and line.strip()[1:].split('_')[0] != 'no' and line.strip()[1:].split('_')[0] != 'not':
-				name = line.strip()[1:]
-				fasta_names.append(name)
-		try:
-			assert bool(fasta_names) is True
-		except AssertionError:
-			raise AssertionError(f'The names in the fasta file could not be properly parsed')
+		# check if the fasta file needs to be unzipped first
+		if self.fasta_path.split('/')[-1].split('.')[-1] == 'gz':
+			self.fasta_path = self.main_util.unzip_fasta(fasta_path=self.fasta_path)
+		fasta_names = self.main_util.get_fasta_sample_names(fasta_path=self.fasta_path)
 		return fasta_names
 
 
