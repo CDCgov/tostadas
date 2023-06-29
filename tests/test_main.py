@@ -74,7 +74,7 @@ def test_main(run_method, input_fasta):
                         ("docker", "assets/trialData.fasta"),
                         ("docker", "assets/trialData.fq.gz")
                         ])
-def test_meta_val(run_method):
+def test_meta_val(run_method, input_fasta):
 
     # initialize some other variables
     output_dir = "test_meta_val"
@@ -87,7 +87,7 @@ def test_meta_val(run_method):
     # run metadata validation entrypoint
     os.system (
         f"nextflow run main.nf -profile test,{run_method} -entry only_validation --output_dir {output_dir} " + \
-        f"--val_output_dir {meta_dir}"
+        f"--val_output_dir {meta_dir} --fasta_path {input_fasta}"
     )
 
     # run the metadata checks 
@@ -104,7 +104,7 @@ def test_meta_val(run_method):
                         ("docker", "assets/trialData.fq.gz"),
                         ("conda", "assets/trialData.fasta")
                         ])
-def test_liftoff(run_method):
+def test_liftoff(run_method, input_fasta):
 
     # initialize some other variables
     output_dir = "test_liftoff"
@@ -117,7 +117,7 @@ def test_liftoff(run_method):
     # run liftoff entrypoint
     os.system (
         f"nextflow run main.nf -profile test,{run_method} -entry only_liftoff --output_dir {output_dir} " + \
-        f"--final_liftoff_output_dir {lift_dir}"
+        f"--final_liftoff_output_dir {lift_dir} --fasta_path {input_fasta}"
     )
     assert os.path.exists(f"{output_dir}/{lift_dir}")
 
