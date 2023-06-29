@@ -17,7 +17,8 @@ from bin.annotation_utility import MainUtility as main_util
 @pytest.mark.parametrize("run_method, input_fasta", [
                         ("conda", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta")), 
                         ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta")),
-                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fq.gz"))
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fq.gz")),
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta.gz"))
                         ])
 def test_main(run_method, input_fasta):
 
@@ -75,6 +76,7 @@ def test_main(run_method, input_fasta):
 @pytest.mark.parametrize("run_method, input_fasta", [
                         ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta")),
                         ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fq.gz")),
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta.gz")),
                         ("conda", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta"))
                         ])
 def test_meta_val(run_method, input_fasta):
@@ -105,6 +107,7 @@ def test_meta_val(run_method, input_fasta):
 @pytest.mark.parametrize("run_method, input_fasta", [
                         ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta")),
                         ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fq.gz")),
+                        ("docker", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta.gz")),
                         ("conda", os.path.join('/'.join(__file__.split('/')[:-2]), "assets/trialData.fasta"))
                         ])
 def test_liftoff(run_method, input_fasta):
