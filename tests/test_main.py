@@ -11,8 +11,12 @@ sys.path.append("..")
 from bin.annotation_utility import MainUtility as main_util
 
 
-@pytest.mark.parametrize("run_method", ["conda", "docker"])
-def test_main(run_method):
+@pytest.mark.parametrize("run_method, input_fasta", [
+                        ("conda", "assets/trialData.fasta"), 
+                        ("docker", "assets/trialData.fasta"),
+                        ("docker", "assets/trialData.fq.gz")
+                        ])
+def test_main(run_method, input_fasta):
 
     # initialize a few parameters to test
     dir_name = 'test_main_workflow'
@@ -31,7 +35,7 @@ def test_main(run_method):
     os.system (
         f"nextflow run main.nf -profile test,{run_method} --submission_wait_time 2 --submission_database all --output_dir {dir_name} " + \
         f"--val_output_dir {meta_dir_name} --final_liftoff_output_dir {lift_dir_name} --submission_output_dir {sub_dir_name} " + \
-        f"--batch_name {batch_name}"
+        f"--batch_name {batch_name} --fasta_path {input_fasta}"
     )
 
     # check that the proper outputs are generated in the custom output directory
@@ -65,7 +69,11 @@ def test_main(run_method):
 
 
 @pytest.mark.run(order=1)
-@pytest.mark.parametrize("run_method", ["docker", "conda"])
+@pytest.mark.parametrize("run_method, input_fasta", [
+                        ("conda", "assets/trialData.fasta"), 
+                        ("docker", "assets/trialData.fasta"),
+                        ("docker", "assets/trialData.fq.gz")
+                        ])
 def test_meta_val(run_method):
 
     # initialize some other variables
@@ -91,7 +99,11 @@ def test_meta_val(run_method):
 
 
 @pytest.mark.run(order=2)
-@pytest.mark.parametrize("run_method", ["docker", "conda"])
+@pytest.mark.parametrize("run_method, input_fasta", [
+                        ("docker", "assets/trialData.fasta"),
+                        ("docker", "assets/trialData.fq.gz"),
+                        ("conda", "assets/trialData.fasta")
+                        ])
 def test_liftoff(run_method):
 
     # initialize some other variables
