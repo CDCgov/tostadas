@@ -125,3 +125,6 @@ bin/.DS_Store
 /test_liftoff
 /test_meta_val 
 /test_submission
+
+# Testing related
+/test_main_workflow
