@@ -27,10 +27,12 @@ def helpMessage() {
          --scicomp                              Flag for whether running on scicomp server or not (accepts bool: true/false)
          --docker_container                     Name of the docker container (accepts string)
          --docker_container_vadr                Name of the docker container to run VADR annotation (accepts string)
+         --docker_container_bakta               Name of the docker container to run BAKTA annotation (accepts string)
 
          --run_submission                       Flag for whether to run submission portion or not (accepts bool: true/false)
          --run_vadr                             Flag for whether to run VADR annotation or not (accepts bool: true/false)
          --run_liftoff                          Flag for whether to run LIFTOFF annotation or not (accepts bool: true/false)
+         --run_bakta                            Flag for whether to run BAKTA annotation or not (accepts bool: true/false)
          --cleanup                              Flag for whether to run the cleanup process (accepts bool: true/false)
 
          --clear_nextflow_log                   Defines the cleanup process further: whether to clear the nextflow log files (accepts bool: true/false)
@@ -69,6 +71,8 @@ def helpMessage() {
          --vadr_output_dir                      Name of output directory for results from VADR annotation (accepts string)
          --vadr_models_dir                      Name of directory containing necessary model information to complete VADR annotation (accepts string; default is tostadas/vadr_files/mpxv-models)
 
+         --bakta_output_dir                     Name of output directory for results from BAKTA annotation (accepts string)
+
          --submission_only_meta                 Path to the validated metadata directory if calling submission entrypoint (accepts string)
          --submission_only_gff                  Path to the reformatted gff directory if calling submission entrypoint (accepts string)
          --submission_only_fasta                Path to the split fasta files directory if calling submission entrypoint (accepts string)
@@ -102,9 +106,11 @@ include { UPDATE_SUBMISSION                                 } from "../modules/u
 include { VADR                                              } from "../modules/vadr_annotation/main"
 include { VADR_POST_CLEANUP                                 } from "../modules/post_vadr_annotation/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
+include { BAKTA                                             } from "../modules/bakta_annotation/main"
 // get the subworkflows
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
+include { BAKTA_SUBMISSION                                  } from "../subworkflows/submission"
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
 
 /*
@@ -138,6 +144,13 @@ workflow MPXV_MAIN {
             params.fasta_path, 
             params.ref_fasta_path, 
             params.ref_gff_path 
+        )
+    }
+
+    if ( params.run_bakta == true ) {
+        BAKTA (
+            """
+            """
         )
     }
 
