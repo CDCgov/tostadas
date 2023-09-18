@@ -52,8 +52,7 @@ process VALIDATE_PARAMS {
         assert params.lift_mismatch
         assert params.lift_gap_open
         assert params.lift_gap_extend
-	}
-	
+
         // check vadr specific params
         if ( params.run_vadr == true ) {
             assert params.docker_container_vadr

@@ -102,9 +102,11 @@ include { UPDATE_SUBMISSION                                 } from "../modules/u
 include { VADR                                              } from "../modules/vadr_annotation/main"
 include { VADR_POST_CLEANUP                                 } from "../modules/post_vadr_annotation/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
+include { BAKTA                                             } from "../modules/bakta_annotation/main"
 // get the subworkflows
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
+include { BAKTA_SUBMISSION                                  } from "../subworkflows/submission"
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
 
 /*
@@ -154,6 +156,16 @@ workflow MPXV_MAIN {
             params.fasta_path
         )
     }
+        
+   // run bakta annotation process
+    if ( params.run_bakta == true ) {
+        BAKTA (
+            RUN_UTILITY.out,
+            params.meta_path,
+            params.fasta_path,
+            params.db_path
+        )
+    }
 
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
@@ -186,6 +198,19 @@ workflow MPXV_MAIN {
                 params.submission_config, 
                 params.req_col_config, 
                 GET_WAIT_TIME.out 
+            )
+        }
+
+        //call the submission workflow for bakta
+        if ( params.run_bakta  == true ) {
+             BAKTA_SUBMISSION (
+                METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
+                BAKTA.out.fasta.sort().flatten(),
+                BAKTA.out.gff.sort().flatten(),
+                false,
+                params.submission_config,
+                params.req_col_config,
+                GET_WAIT_TIME.out
             )
         }
     }

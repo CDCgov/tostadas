@@ -56,6 +56,7 @@ include { CLEANUP_FILES } from "$projectDir/modules/general_util/cleanup_files/m
 include { RUN_VALIDATION } from "$projectDir/subworkflows/entrypoints/validation_entry"
 include { RUN_LIFTOFF } from "$projectDir/subworkflows/entrypoints/liftoff_entry"
 include { RUN_VADR } from "$projectDir/subworkflows/entrypoints/vadr_entry"
+include { RUN_BAKTA } from "$projectDir/subworkflows/entrypoints/bakta_entry"
 include { RUN_SUBMISSION } from "$projectDir/subworkflows/entrypoints/submission_entry"
 include { RUN_INITIAL_SUBMISSION } from "$projectDir/subworkflows/entrypoints/initial_submission_entry"
 include { RUN_UPDATE_SUBMISSION } from "$projectDir/subworkflows/entrypoints/update_submission_entry"
@@ -85,6 +86,12 @@ workflow only_liftoff {
     main: 
         // run subworkflow for liftoff entrypoint
         RUN_LIFTOFF ()
+}
+
+workflow only_bakta {
+    main:
+        // run subworkflow for bakta entrypoint
+        RUN_BAKTA ()
 }
 
 workflow only_vadr {
