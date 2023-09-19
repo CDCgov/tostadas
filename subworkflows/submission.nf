@@ -60,6 +60,30 @@ workflow VADR_SUBMISSION {
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'vadr' )
 }
 
+workflow BAKTA_SUBMISSION {
+    take:
+         meta_files
+         bakta_fasta_files
+         bakta_gff_files
+         entry_flag
+         submission_config
+         req_col_config
+         wait_time
+
+    main:
+        // submit the files to database of choice (after fixing config and getting wait time)
+        SUBMISSION ( meta_files, bakta_fasta_files, bakta_gff_files, entry_flag, submission_config, req_col_config, 'bakta' )
+
+        // actual process to initiate wait
+        WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
+
+        // process for updating the submitted samples
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'bakta' )
+
+        // combine the different upload_log csv files together
+        MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'bakta' )
+}
+
 workflow ENTRY_SUBMISSION {
     take:
         entry_meta_files

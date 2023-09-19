@@ -12,7 +12,9 @@ workflow RUN_BAKTA {
 
     main: 
         BAKTA (
-            """
-            """
+            'dummy utility signal',
+            params.meta_path,
+            params.fasta_path,
+            params.db_path
         )
 }

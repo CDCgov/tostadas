@@ -167,6 +167,16 @@ workflow MPXV_MAIN {
             params.fasta_path
         )
     }
+        
+   // run bakta annotation process
+    if ( params.run_bakta == true ) {
+        BAKTA (
+            RUN_UTILITY.out,
+            params.meta_path,
+            params.fasta_path,
+            params.db_path
+        )
+    }
 
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
@@ -199,6 +209,19 @@ workflow MPXV_MAIN {
                 params.submission_config, 
                 params.req_col_config, 
                 GET_WAIT_TIME.out 
+            )
+        }
+
+        //call the submission workflow for bakta
+        if ( params.run_bakta  == true ) {
+             BAKTA_SUBMISSION (
+                METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
+                BAKTA.out.fasta.sort().flatten(),
+                BAKTA.out.gff.sort().flatten(),
+                false,
+                params.submission_config,
+                params.req_col_config,
+                GET_WAIT_TIME.out
             )
         }
     }
