@@ -5,7 +5,7 @@
 */
 process BAKTA {
 
-    label = 'main'
+    label = 'bakta'
 
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5
