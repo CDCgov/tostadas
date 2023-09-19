@@ -6,15 +6,20 @@ From: continuumio/miniconda3
 
 %post
     # install mamba and create .yml file
-    /opt/conda/bin/conda install -c conda-forge mamba
-    /opt/conda/bin/mamba env create -f environment.yml
+    wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+    bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
+    export PATH="$HOME/mambaforge/bin:$PATH"
+    # source $HOME/mambaforge/etc/profile.d/conda.sh
+    # conda activate
+    mamba env create -f environment.yml
 
     # change the singularity environment variable to the conda env (start env by default)
-    echo ". /opt/conda/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT
-    echo "conda activate tostadas" >> $SINGULARITY_ENVIRONMENT
+    # echo ". /opt/conda/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT
+    # echo "conda activate tostadas" >> $SINGULARITY_ENVIRONMENT
 
     # check if it worked
-    . /opt/conda/etc/profile.d/conda.sh
+    . $HOME/mambaforge/etc/profile.d/conda.sh
+    conda activate
     conda activate tostadas
     printf "\n\n******** LIST OF PACKAGES IN TOSTADAS ENV ********\n\n"
     conda list

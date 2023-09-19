@@ -11,6 +11,7 @@
 /vcs.xml
 /webServers.xml
 /workspace.xml
+/assets/tostadas.code-workspace
 
 # Editor-based HTTP Client requests
 /httpRequests/
@@ -34,6 +35,9 @@
 /.nextflow.log.8
 /nf_test_results
 /tests/work
+/var_work/
+/var_work
+app/environment.yml
 /tests/.nextflow
 /tests/.nextflow
 /tests/.nextflow.log
