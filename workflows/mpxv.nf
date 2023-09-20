@@ -147,13 +147,6 @@ workflow MPXV_MAIN {
         )
     }
 
-    if ( params.run_bakta == true ) {
-        BAKTA (
-            """
-            """
-        )
-    }
-
     // run vadr processes
     if ( params.run_vadr == true ) {
         VADR (
