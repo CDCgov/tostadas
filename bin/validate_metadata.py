@@ -125,6 +125,8 @@ class GetParams:
 		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v'],
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
+		parser.add_argument("--custom_field_values", type=list, help="Specified custom fields to check are present / populated within samplesheet")
+		parser.add_argument("--custom_field_types", type=list, help="Specified dtypes for the custom fields")
 		return parser
 
 	def get_restrictions(self):
