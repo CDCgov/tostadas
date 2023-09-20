@@ -127,6 +127,7 @@ class GetParams:
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
 		parser.add_argument("--custom_field_values", type=list, help="Specified custom fields to check are present / populated within samplesheet")
 		parser.add_argument("--custom_field_types", type=list, help="Specified dtypes for the custom fields")
+		parser.add_argument("--samples_to_apply_custom", type=list, help="List containing samples to apply custom fields check to")
 		return parser
 
 	def get_restrictions(self):
@@ -267,6 +268,8 @@ class ValidateChecks:
 		for name in self.metadata_df['sample_name'].tolist():
 			self.sample_error_msg = f"\n\t{str(name)}:"
 			sample_info = self.metadata_df.loc[self.metadata_df['sample_name'] == name]
+
+			# first check that 
 
 			# check the meta code for the sample line
 			self.check_meta_core(sample_info)
