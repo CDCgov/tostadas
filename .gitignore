@@ -81,6 +81,12 @@ tests/__pycache__
 /bin/vadr_outputs
 /bin/vadr_outputs/
 
+# bakta related
+/assets
+/assets/bakta_database
+/assets/bakta_database/db_light
+/assets/bakta_database/db_light/
+
 # add singularity related stuff
 /app/singularity/containers/
 

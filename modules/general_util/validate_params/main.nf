@@ -22,7 +22,7 @@ process VALIDATE_PARAMS {
         assert params.ref_fasta_path
         assert params.ref_gff_path
         assert params.meta_path
-	      assert params.db_path
+        assert params.db_path
 
         // check script params
         assert params.env_yml
@@ -88,7 +88,7 @@ process VALIDATE_PARAMS {
             "ref_fasta_path": params.ref_fasta_path,
             "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-	    "db_path": params.db_path,
+            "db_path": params.db_path,
             "env_yml": params.env_yml,
             "output_dir": params.output_dir,
             "lift_minimap_path": params.lift_minimap_path,
