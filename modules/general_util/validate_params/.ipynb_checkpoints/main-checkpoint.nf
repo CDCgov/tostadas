@@ -18,12 +18,18 @@ process VALIDATE_PARAMS {
         assert params.run_vadr == true || params.run_liftoff == true || params.run_bakta == true
   
         // check paths
-        assert params.fasta_path
-        assert params.ref_fasta_path
-        assert params.ref_gff_path
-        assert params.meta_path
-        assert params.db_path
-
+        if ( params.run_liftoff == true ) {
+            assert params.fasta_path
+            assert params.ref_fasta_path
+            assert params.ref_gff_path
+            assert params.meta_path
+        } 
+        if ( params.run_bakta == true ) {
+            assert params.fasta_path
+            assert params.meta_path
+            assert params.db_path
+        }
+        
         // check script params
         assert params.env_yml
 
@@ -34,6 +40,7 @@ process VALIDATE_PARAMS {
         assert params.output_dir
         assert params.val_output_dir
         assert params.submission_output_dir
+        
         if ( params.run_liftoff == true ) {
             assert params.final_liftoff_output_dir
         }
@@ -41,18 +48,18 @@ process VALIDATE_PARAMS {
             assert params.vadr_output_dir
         }
         if ( params.run_bakta == true ) {
+            assert params.split_output_dir
             assert params.bakta_output_dir
         }
 
         // check liftoff params with int or float values
-
         if ( params.run_liftoff == true ) {
             assert params.docker_container
             assert params.docker_container instanceof String == true 
             assert params.lift_parallel_processes == 0 || params.lift_parallel_processes
             assert params.lift_mismatch
             assert params.lift_gap_open
-            assert params.lift_gap_extend
+            assert params.lift_gap_extend        
         }
 
         // check vadr specific params
@@ -65,7 +72,16 @@ process VALIDATE_PARAMS {
         // check bakta specific params 
         if ( params.run_bakta == true ) {
             assert params.docker_container_bakta 
-            assert params.docker_container_bakta instanceof String == true
+            assert params.docker_container_bakta instanceof String == true 
+            assert params.bakta_min_contig_length
+            assert params.bakta_translation_table
+            assert params.bakta_threads
+            assert params.bakta_genus
+            assert params.bakta_species
+            assert params.bakta_strain
+            assert params.bakta_plasmid
+            assert params.bakta_locus
+            assert params.bakta_locus_tag
         }
 
         // check list of params with bool values
@@ -92,7 +108,7 @@ process VALIDATE_PARAMS {
             "env_yml": params.env_yml,
             "output_dir": params.output_dir,
             "lift_minimap_path": params.lift_minimap_path,
-            "lift_feature_database_name": params.lift_feature_database_name
+            "lift_feature_database_name": params.lift_feature_database_name     
         ]
 
         expected_integers = [
@@ -132,13 +148,8 @@ process VALIDATE_PARAMS {
         // Check input path parameters to see if they exist
         check_path_params = [
             "fasta_path": params.fasta_path,
-            "ref_fasta_path": params.ref_fasta_path,
-            "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-            "db_path": params.db_path,
             "env_yml": params.env_yml,
-            "lift_minimap_path": params.lift_minimap_path,
-            "lift_feature_database_name": params.lift_feature_database_name,
             "vadr_models_dir": params.vadr_models_dir
         ]
 
