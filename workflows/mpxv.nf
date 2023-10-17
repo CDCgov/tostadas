@@ -23,6 +23,7 @@ def helpMessage() {
          --fasta_path                           Path to the fasta file (accepts string)
          --ref_fasta_path                       Path to the reference fasta file (accepts string)
          --ref_gff_path                         Path to the reference gff file (accepts string)
+	 --db_path				Path to reference database for bakta 
 
          --scicomp                              Flag for whether running on scicomp server or not (accepts bool: true/false)
          --docker_container                     Name of the docker container (accepts string)
@@ -106,7 +107,6 @@ include { UPDATE_SUBMISSION                                 } from "../modules/u
 include { VADR                                              } from "../modules/vadr_annotation/main"
 include { VADR_POST_CLEANUP                                 } from "../modules/post_vadr_annotation/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
-include { SPLIT_FASTA                                       } from "../modules/split_multi_fasta/main"
 include { BAKTA                                             } from "../modules/bakta_annotation/main"
 // get the subworkflows
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
@@ -162,18 +162,12 @@ workflow MPXV_MAIN {
         )
     }
 
-
    // run bakta annotation process
     if ( params.run_bakta == true ) {
-        SPLIT_FASTA (
-            'dummy utility signal',
-            params.fasta_path
-        )
-        
         BAKTA (
             RUN_UTILITY.out,
             params.db_path,
-            SPLIT_FASTA.out.flatten()
+            params.fasta_path
         )
     }
 

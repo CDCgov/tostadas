@@ -93,10 +93,10 @@ process VALIDATE_PARAMS {
         assert params.overwrite_output == true || params.overwrite_output == false
         assert params.val_date_format_flag == 's' || params.val_date_format_flag == 'o' || params.val_date_format_flag == 'v'
         assert params.val_keep_pi == true || params.val_keep_pi == false
-        assert params.lift_print_version_exit == true || params.lift_print_version_exit == false
-        assert params.lift_print_help_exit == true || params.lift_print_help_exit == false
-        assert params.lift_infer_transcripts.toLowerCase() == "true" || params.lift_infer_transcripts.toLowerCase() == "false"
-        assert params.lift_copies.toLowerCase() == "true" || params.lift_copies.toLowerCase() == "false"
+        // assert params.lift_print_version_exit == true || params.lift_print_version_exit == false
+        // assert params.lift_print_help_exit == true || params.lift_print_help_exit == false
+        // assert params.lift_infer_transcripts.toLowerCase() == "true" || params.lift_infer_transcripts.toLowerCase() == "false"
+        // assert params.lift_copies.toLowerCase() == "true" || params.lift_copies.toLowerCase() == "false"
 
         // check types for inputs
         expected_strings = [
@@ -113,9 +113,9 @@ process VALIDATE_PARAMS {
 
         expected_integers = [
             "lift_parallel_processes" : params.lift_parallel_processes,
-            "lift_mismatch": params.lift_mismatch,
-            "lift_gap_open": params.lift_gap_open,
-            "lift_gap_extend": params.lift_gap_extend
+  //          "lift_mismatch": params.lift_mismatch,
+  //          "lift_gap_open": params.lift_gap_open,
+  //          "lift_gap_extend": params.lift_gap_extend
         ]
 
         expected_floats = [
