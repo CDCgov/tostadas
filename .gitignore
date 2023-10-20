@@ -128,3 +128,4 @@ bin/.DS_Store
 
 # Testing related
 /test_main_workflow
+/validation_outputs/
