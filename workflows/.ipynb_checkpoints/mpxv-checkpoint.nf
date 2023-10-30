@@ -23,6 +23,7 @@ def helpMessage() {
          --fasta_path                           Path to the fasta file (accepts string)
          --ref_fasta_path                       Path to the reference fasta file (accepts string)
          --ref_gff_path                         Path to the reference gff file (accepts string)
+	 --db_path				Path to reference database for bakta 
 
          --scicomp                              Flag for whether running on scicomp server or not (accepts bool: true/false)
          --docker_container                     Name of the docker container (accepts string)
@@ -106,8 +107,8 @@ include { UPDATE_SUBMISSION                                 } from "../modules/u
 include { VADR                                              } from "../modules/vadr_annotation/main"
 include { VADR_POST_CLEANUP                                 } from "../modules/post_vadr_annotation/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
-include { SPLIT_FASTA                                       } from "../modules/split_multi_fasta/main"
 include { BAKTA                                             } from "../modules/bakta_annotation/main"
+include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
 // get the subworkflows
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
@@ -162,19 +163,18 @@ workflow MPXV_MAIN {
         )
     }
 
-
    // run bakta annotation process
     if ( params.run_bakta == true ) {
-        SPLIT_FASTA (
-            'dummy utility signal',
-            params.fasta_path
-        )
-        
         BAKTA (
             RUN_UTILITY.out,
             params.db_path,
-            SPLIT_FASTA.out.flatten()
+            params.fasta_path
         )
+	BAKTA_POST_CLEANUP (
+		BAKTA.out.bakta_results,
+		params.meta_path,
+		params.fasta_path
+	)
     }
 
     // run submission for the annotated samples 
@@ -214,9 +214,9 @@ workflow MPXV_MAIN {
         //call the submission workflow for bakta
         if ( params.run_bakta  == true ) {
              BAKTA_SUBMISSION (
-                METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                BAKTA.out.fasta.sort().flatten(),
-                BAKTA.out.gff.sort().flatten(),
+                METADATA_VALIDATION.out.tsv_Files,
+                BAKTA_POST_CLEANUP.out.fasta,
+                BAKTA_POST_CLEANUP.out.gff3,
                 false,
                 params.submission_config,
                 params.req_col_config,

@@ -1,0 +1,116 @@
+---
+general:
+  submission_directory: ''
+  submit_Genbank: 'True'
+  submit_GISAID: 'False'
+  submit_SRA: 'True'
+  submit_BioSample: 'True'
+  joint_SRA_BioSample_submission: 'False'
+  contact_email1: ''
+  contact_email2: ''
+  organization_name: ''
+  authorset:
+  - first: ''
+    last: ''
+    middle: ''
+    initials: ''
+    suffix: ''
+    title: ''
+  - first: ''
+    last: ''
+    middle: ''
+    initials: ''
+    suffix: ''
+    title: ''
+  ncbi_org_id: ''
+  submitter_info:
+    first: ''
+    last: ''
+    middle: ''
+    initials: ''
+    suffix: ''
+    title: ''
+  organism_name: 
+  metadata_file_sep: ''
+  fasta_sample_name_col: 'sample_name'
+  collection_date_col: 'collection_date'
+  baseline_surveillance: 'True'
+ncbi:
+  hostname: ftp-private.ncbi.nlm.nih.gov
+  api_url: https://submit.ncbi.nlm.nih.gov/api/2.0/files/FILE_ID/?format=attachment
+  username: ''
+  password: ''
+  publication_title: ''
+  ncbi_ftp_path_to_submission_folders: ''
+  BioProject: ''
+  BioSample_sample_name_col: 'ncbi_sequence_name_biosample_genbank'
+  SRA_sample_name_col: 'ncbi_sequence_name_sra'
+  Genbank_sample_name_col: 'ncbi_sequence_name_biosample_genbank'
+  BioSample_package: 
+  Center_title: ''
+  Genbank_organization_type: center
+  Genbank_organization_role: owner
+  Genbank_spuid_namespace: 
+  Genbank_auto_remove_sequences_that_fail_qc: 'True'
+  Genbank_wizard: 
+  citation_address:
+    affil: ''
+    div: ''
+    city: ''
+    sub: ''
+    country: ''
+    street: ''
+    postal-code: ''
+    email: ''
+    phone: ''
+  SRA_file_location: 
+  SRA_file_column1: 'sra_file_path_1'
+  SRA_file_column2: 'sra_file_path_2'
+genbank_src_metadata:
+  column_names:
+    isolate: isolate
+    country: geo_location
+    host: host
+    isolation-source: sample_type
+genbank_cmt_metadata:
+  create_cmt: 'True'
+  column_names:
+    StructuredCommentPrefix: structuredcomment
+    Assembly Method: assembly_method
+    Sequencing Technology: sequencing_instrument
+    StructuredCommentSuffix: StructuredComment
+BioSample_attributes:
+  column_names:
+    organism: organism
+    isolate: ncbi_sequence_name_biosample_genbank
+    collected_by: collected_by
+    geo_loc_name: geo_location
+    host: host
+    host_disease: host_disease
+    lat_lon: lat_lon
+    
+SRA_attributes:
+  column_names:
+    assembly: assembly_protocol
+    library_construction_protocol: library_protocol
+    library_strategy: library_strategy
+    library_source: library_source
+    library_selection: library_selection
+    library_layout: library_protocol
+    instrument_model: sequencing_instrument
+    
+gisaid:
+  column_names:
+    covv_location: geo_location
+    covv_host: host
+    covv_gender: sex
+    covv_patient_age: age
+    covv_specimen: sample_type
+    covv_seq_technology: sequencing_instrument
+    covv_assembly_method: assembly_method
+  gisaid_sample_name_col: 'ncbi_sequence_name_biosample_genbank'
+  cid: 
+  username: ''
+  password: ''
+  type: 
+  Update_sequences_on_Genbank_auto_removal: 'True'

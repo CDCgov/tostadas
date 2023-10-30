@@ -16,7 +16,7 @@ process BAKTA {
         System.err.println("WARNING: Cannot pull the following docker container: $params.docker_container_bakta to run BAKTA")
     }
 
-    publishDir "$params.output_dir/$params.bakta_output_dir", mode: 'copy', overwrite: params.overwrite_output
+    // publishDir "$params.output_dir/$params.bakta_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
 
     input:
