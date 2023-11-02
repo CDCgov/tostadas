@@ -83,7 +83,7 @@ class BAKTAFuncs:
 			new_ID = str(row['type'].lower() + '-' + ID[1])
 			df['attributes'] = df['attributes'].str.replace(ID[1], new_ID, regex=True)
 
-		with open(f"{self.parameters['output_path']}/gff/{fasta_header}_reformatted.gff3", 'a') as final_gff:
+		with open(f"{self.parameters['output_path']}/gff/{fasta_header}_reformatted.gff", 'a') as final_gff:
 			for line in gff_HeaderLines:
 				final_gff.write(line+'\n')
 			df.to_csv(final_gff, header=False, index=False, sep='\t' )

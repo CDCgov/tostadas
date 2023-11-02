@@ -216,7 +216,7 @@ workflow MPXV_MAIN {
              BAKTA_SUBMISSION (
                 METADATA_VALIDATION.out.tsv_Files,
                 BAKTA_POST_CLEANUP.out.fasta,
-                BAKTA_POST_CLEANUP.out.gff3,
+                BAKTA_POST_CLEANUP.out.gff,
                 false,
                 params.submission_config,
                 params.req_col_config,

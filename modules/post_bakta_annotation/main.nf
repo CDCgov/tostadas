@@ -32,6 +32,6 @@ process BAKTA_POST_CLEANUP {
 
     output:
     path "$params.bakta_output_dir/*/fasta/*.fasta", emit: fasta
-    path "$params.bakta_output_dir/*/gff/*.gff3", emit: gff3
+    path "$params.bakta_output_dir/*/gff/*.gff", emit: gff
     path "$params.bakta_output_dir/*/tbl/*.tbl", emit: tbl
 }
