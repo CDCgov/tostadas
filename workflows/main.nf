@@ -112,7 +112,7 @@ include { RUN_UTILITY                                       } from "../subworkfl
                                     MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-workflow MPXV_MAIN {
+workflow MAIN {
 
     // check if help parameter is set
     if ( params.help == true ) {
