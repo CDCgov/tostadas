@@ -256,7 +256,7 @@ This section walks through the available parameters to customize your workflow.
 | metadata    | .xlsx     | Multi-sample metadata matching metadata spreadsheets provided in input_files              |
 | ref_fasta   | .fasta    | Reference genome to use for the  liftoff_submission branch of the pipeline                |
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
-| db          |  folder   | Path to Bakta reference database                                                          |
+| db          |  folder   | Bakta reference database used for bakta annotation                                        |
 
 #### (B) This table lists the required files to run with submission: 
 | Input files | File type | Description                                                                               |
