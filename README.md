@@ -527,6 +527,8 @@ When changing these parameters pay attention to the required inputs and make sur
    :link: Liftoff Documentation: https://github.com/agshumate/Liftoff
    
    :link: VADR Documentation:  https://github.com/ncbi/vadr.git
+
+   :link: Bakta Documentation:  https://github.com/oschwengers/bakta
    
    :link: table2asn Documentation: https://github.com/svn2github/NCBI_toolkit/blob/master/src/app/table2asn/table2asn.cpp
 
