@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+## Written by Swarnali Louha
+## Post bakta transformation of gff and fasta files,generation of tbl file
+## Date: 11/01/2023
+
 import argparse
 import os
 import re
