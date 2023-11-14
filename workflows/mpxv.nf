@@ -101,6 +101,7 @@ include { SUBMISSION                                        } from "../modules/s
 include { UPDATE_SUBMISSION                                 } from "../modules/update_submission/main"
 include { VADR                                              } from "../modules/vadr_annotation/main"
 include { VADR_POST_CLEANUP                                 } from "../modules/post_vadr_annotation/main"
+include { REPEATMASKER                                      } from "../modules/repeatmasker_annotation/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
 // get the subworkflows
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
@@ -132,12 +133,18 @@ workflow MPXV_MAIN {
         
     // run liftoff annotation process 
     if ( params.run_liftoff == true ) {
+	REPEATMASKER ( 
+            RUN_UTILITY.out, 
+            params.fasta_path, 
+            params.repeat_lib
+        )
         LIFTOFF ( 
             RUN_UTILITY.out, 
             params.meta_path, 
             params.fasta_path, 
             params.ref_fasta_path, 
-            params.ref_gff_path 
+            params.ref_gff_path,
+	    REPEATMASKER.out.gff 
         )
     }
 
