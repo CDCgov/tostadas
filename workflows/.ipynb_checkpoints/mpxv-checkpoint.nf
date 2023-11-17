@@ -102,9 +102,12 @@ include { UPDATE_SUBMISSION                                 } from "../modules/u
 include { VADR                                              } from "../modules/vadr_annotation/main"
 include { VADR_POST_CLEANUP                                 } from "../modules/post_vadr_annotation/main"
 include { REPEATMASKER                                      } from "../modules/repeatmasker_annotation/main"
+include { LIFTOFF_CLI                                       } from "../modules/liftoff_cli_annotation/main"
+include { CONCAT_GFFS                                       } from "../modules/concat_gffs/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
 // get the subworkflows
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
+include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
 
@@ -113,6 +116,12 @@ include { RUN_UTILITY                                       } from "../subworkfl
                                     MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+// Channel
+//      .fromPath(params.fasta_path)
+//      .splitFasta( record: [id: true, seqString: true ])
+//      .set { ch_fasta }
+     
 workflow MPXV_MAIN {
 
     // check if help parameter is set
@@ -130,21 +139,36 @@ workflow MPXV_MAIN {
         params.meta_path, 
         params.fasta_path 
     )
-        
+    
+    // run liftoff annotation process 
+    if ( params.run_repeatmasker_liftoff == true ) {
+        REPEATMASKER (
+           RUN_UTILITY.out,
+           params.fasta_path,
+           params.repeat_lib
+        )
+        LIFTOFF_CLI ( 
+            RUN_UTILITY.out,  
+            params.fasta_path, 
+            params.ref_fasta_path, 
+            params.ref_gff_path 
+        )
+        CONCAT_GFFS (
+           RUN_UTILITY.out,
+           params.ref_gff_path,
+           REPEATMASKER.out.gff,
+           CLI_LIFTOFF.out.gff
+        )
+    }  
+    
     // run liftoff annotation process 
     if ( params.run_liftoff == true ) {
-	REPEATMASKER ( 
-            RUN_UTILITY.out, 
-            params.fasta_path, 
-            params.repeat_lib
-        )
         LIFTOFF ( 
             RUN_UTILITY.out, 
             params.meta_path, 
             params.fasta_path, 
             params.ref_fasta_path, 
-            params.ref_gff_path,
-	    REPEATMASKER.out.gff 
+            params.ref_gff_path 
         )
     }
 
@@ -195,6 +219,19 @@ workflow MPXV_MAIN {
                 GET_WAIT_TIME.out 
             )
         }
+        
+        if ( params.run_repeatmasker_liftoff == true ) {
+        REPEAT_MASKER_LIFTOFF_SUBMISSION(
+            METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
+            LIFTOFF_CLI.out.fasta.sort().flatten(),
+            CONCAT_GFFS.out.gff.sort().flatten(),
+            false,
+            params.submission_config, 
+            params.req_col_config, 
+            GET_WAIT_TIME.out   
+       )
+    }  
+        
     }
 } 
 
