@@ -29,7 +29,11 @@ process REPEATMASKER {
 	"""
 
 	output:
-	path "$params.repeatmasker_output_dir",   emit: repeatmasker_results
+	path "$params.repeatmasker_output_dir/*.cat", emit: cat
+	path "$params.repeatmasker_output_dir/*.masked", emit: masked
+	path "$params.repeatmasker_output_dir/*.out",   emit: out
+	path "$params.repeatmasker_output_dir/*.gff", emit: gff
+	path "$params.repeatmasker_output_dir/*.tbl", emit: tbl
 
 }
 
