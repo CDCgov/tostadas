@@ -17,6 +17,9 @@ process LIFTOFF_CLI {
             System.err.println("WARNING: Unable to use conda env from $params.env_yml")
         }
     }
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/liftoff:1.6.3--pyhdfd78af_0' :
+        'quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_0'}"
 
     publishDir "$params.output_dir/final_annotation_outputs", mode: "copy", overwrite: params.overwrite_output,
         saveAs: { filename ->

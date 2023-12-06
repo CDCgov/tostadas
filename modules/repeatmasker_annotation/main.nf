@@ -9,12 +9,17 @@ process REPEATMASKER {
 	
 	errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
 	maxRetries 2
+	if ( params.run_conda == true ) {
+        try {
+            conda params.env_yml
+        } catch (Exception e) {
+            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
+        }
+    }
 
-	try {
-		container 'quay.io/biocontainers/repeatmasker:4.1.5--pl5321hdfd78af_0'
-	} catch (Exception e) {
-		System.err.println("WARNING: Cannot pull the Repeatmasker docker container")
-	}
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/repeatmasker:4.1.5--pl5321hdfd78af_1' :
+        'quay.io/biocontainers/repeatmasker:4.1.5--pl5321hdfd78af_0'}"
 
 // publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
