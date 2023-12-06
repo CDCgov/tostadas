@@ -30,6 +30,6 @@ jobs:
       run: |
         source $HOME/mambaforge/etc/profile.d/conda.sh
         conda activate
-        mamba env create -f tests/test_env.yml python=3.9
+        mamba env create -f tests/test_env.yml
         conda activate tostadas_tests
         pytest -p no:warnings tests/test_main.py

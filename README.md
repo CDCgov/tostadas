@@ -1,7 +1,6 @@
 # TOSTADAS &#8594; <span style="color:blue"><u>**T**</u></span>oolkit for <span style="color:blue"><u>**O**</u></span>pen <span style="color:blue"><u>**S**</u></span>equence <span style="color:blue"><u>**T**</u></span>riage, <span style="color:blue"><u>**A**</u></span>nnotation and <span style="color:blue"><u>**DA**</u></span>tabase <span style="color:blue"><u>**S**</u></span>ubmission :dna: :computer:
 
 ## PATHOGEN ANNOTATION AND SUBMISSION PIPELINE
-## TEST
 
 <!-- [![GitHub Downloads](https://img.shields.io/github/downloads/CDCgov/tostadas/total.svg?style=social&logo=github&label=Download)](https://github.com/CDCgov/tostadas/releases) -->
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
@@ -60,7 +59,7 @@ Currently, consists of two annotation options:
 * (1) Liftoff 
     * The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes.
 * (2) VADR
-    * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your multi-sample fasta, metadata in .xlsx format, and reference information for the pathogen genome which is included within this repository (found [here](https://github.com/CDCgov/tostadas/tree/lets_add_vadrv2/vadr_files/mpxv-models)). VADR is an existing package that was integrated into the pipeline and you can find more information about this tool at the following link: [VADR Git Repo](https://github.com/ncbi/vadr).
+    * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your multi-sample fasta, metadata in .xlsx format, and reference information for the pathogen genome which is included within this repository (found [here](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models)). VADR is an existing package that was integrated into the pipeline and you can find more information about this tool at the following link: [VADR Git Repo](https://github.com/ncbi/vadr).
 
 ### Submission 
 Submission workflow generates the necessary files for Genbank submission, generates a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
