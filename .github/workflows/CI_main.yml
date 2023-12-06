@@ -3,7 +3,7 @@ name: Tostadas CI
 on:
   pull_request:
     types: [opened, reopened]
-    branches: [master]
+    branches: [master, dev]
 
 jobs:
   build:
