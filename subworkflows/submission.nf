@@ -60,6 +60,30 @@ workflow VADR_SUBMISSION {
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'vadr' )
 }
 
+workflow REPEAT_MASKER_LIFTOFF_SUBMISSION {
+    take:
+        meta_files
+        liftoff_cli_fasta_files
+        concat_gff_files
+        entry_flag
+        submission_config
+        req_col_config
+        wait_time
+
+    main:
+        // submit the files to database of choice (after fixing config and getting wait time)
+        SUBMISSION ( meta_files, liftoff_cli_fasta_files, concat_gff_files, entry_flag, submission_config, req_col_config, 'liftoff' )
+
+        // actual process to initiate wait 
+        WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
+
+        // process for updating the submitted samples
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'repeatmasker_liftoff' )
+
+        // combine the different upload_log csv files together 
+        MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'repeatmasker_liftoff' )
+}
+
 workflow ENTRY_SUBMISSION {
     take:
         entry_meta_files
