@@ -39,7 +39,6 @@ process REPEATMASKER {
     path "*.out",   emit: out
 	path "*.gff", emit: gff
     path "*.tbl", emit: tbl
-
 }
 
 
