@@ -8,7 +8,7 @@ process BAKTADBDOWNLOAD {
 
 
     output:
-    path "bakta*"              , emit: db
+    path "bakta*"           , emit: db
     path "versions.yml"     , emit: versions
 
     when:

@@ -8,9 +8,9 @@ process BAKTA {
         'biocontainers/bakta:1.8.2--pyhdfd78af_0' }"
 
     input:
-    path db
-    path proteins
-    path prodigal_tf
+    // path db
+    // path proteins
+    // path prodigal_tf
 
     output:
     tuple val(meta), path("${prefix}.embl")             , emit: embl
@@ -39,9 +39,9 @@ process BAKTA {
         $args \\
         --threads $task.cpus \\
         --prefix $prefix \\
-        $proteins_opt \\
-        $prodigal_tf \\
-        --db $db
+        ${params.proteins} \\
+        ${params.prodigal_tf} \\
+        --db ${params.bakta_db_path}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
