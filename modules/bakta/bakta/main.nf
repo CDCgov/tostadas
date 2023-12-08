@@ -10,19 +10,17 @@ process BAKTA {
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5
     
-    try {
-        container "$params.docker_container_bakta"
-    } catch (Exception e) {
-        System.err.println("WARNING: Cannot pull the following docker container: $params.docker_container_bakta to run BAKTA")
-    }
+    //conda "bioconda::bakta==1.9.1"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/bakta:1.9.1--pyhdfd78af_0' :
+        'quay.io/biocontainers/bakta:1.9.1--pyhdfd78af_0' }"
+
 
     // publishDir "$params.output_dir/$params.bakta_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
 
     input:
     val signal
-    path db_path
-    path fasta
 
     script:
     def args = task.ext.args  ?: ''
@@ -39,3 +37,4 @@ process BAKTA {
     output:
     path "${fasta.getSimpleName()}",   emit: bakta_results
 }
+
