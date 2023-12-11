@@ -82,6 +82,8 @@ workflow BAKTA_SUBMISSION {
 
         // combine the different upload_log csv files together
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'bakta' )
+}
+
 workflow REPEAT_MASKER_LIFTOFF_SUBMISSION {
     take:
         meta_files
