@@ -1233,7 +1233,6 @@ class CustomFieldsChecks():
 
 		# check that sample name is within the list of sample names from metadata file
 		if samples != ['all']:
-			if field_name == 'test_field_2':
 			if set(samples) != set(samp_names):
 				# sample names mentioned in list but not in metadata file
 				in_list_not_meta = list(set(samples) - set(samp_names))
