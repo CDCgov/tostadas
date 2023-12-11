@@ -21,6 +21,8 @@ process BAKTA {
 
     input:
     val signal
+    path db_path
+    path fasta
 
     script:
     def args = task.ext.args  ?: ''
