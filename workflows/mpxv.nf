@@ -108,13 +108,17 @@ include { VADR                                              } from "../modules/v
 include { VADR_POST_CLEANUP                                 } from "../modules/post_vadr_annotation/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
 include { BAKTA                                             } from "../modules/bakta/bakta/main"
-include { BAKTADBDOWNLOAD                                    } from "../modules/bakta/baktadbdownload/main"
+include { BAKTADBDOWNLOAD                                   } from "../modules/bakta/baktadbdownload/main"
 include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
 // get the subworkflows
+include { INPUT_CHECK                                       } from '../subworkflows/input_check'
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
 include { BAKTA_SUBMISSION                                  } from "../subworkflows/submission"
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
+
+// Check mandatory parameters
+if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input file not specified!' }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,6 +127,9 @@ include { RUN_UTILITY                                       } from "../subworkfl
 */
 workflow MPXV_MAIN {
 
+    
+    INPUT_CHECK (ch_input).fastas.set { ch_fasta }
+
     // check if help parameter is set
     if ( params.help == true ) {
         helpMessage()
@@ -130,11 +137,11 @@ workflow MPXV_MAIN {
     }
 
     // run cleanup
-    RUN_UTILITY()
+    // RUN_UTILITY()
 
     // run metadata validation process
     METADATA_VALIDATION ( 
-        RUN_UTILITY.out, 
+       // RUN_UTILITY.out, 
         params.meta_path, 
         params.fasta_path 
     )
@@ -142,7 +149,7 @@ workflow MPXV_MAIN {
     // run liftoff annotation process 
     if ( params.run_liftoff == true ) {
         LIFTOFF ( 
-            RUN_UTILITY.out, 
+           // RUN_UTILITY.out, 
             params.meta_path, 
             params.fasta_path, 
             params.ref_fasta_path, 
@@ -153,7 +160,7 @@ workflow MPXV_MAIN {
     // run vadr processes
     if ( params.run_vadr == true ) {
         VADR (
-            RUN_UTILITY.out, 
+           // RUN_UTILITY.out, 
             params.fasta_path,
             params.vadr_models_dir
         )
@@ -168,7 +175,7 @@ workflow MPXV_MAIN {
     if ( params.run_bakta == true ) {
         BAKTADBDOWNLOAD ()
         BAKTA (
-            RUN_UTILITY.out,
+            // RUN_UTILITY.out,
         )
 	    BAKTA_POST_CLEANUP (
 		    BAKTA.out.bakta_results,

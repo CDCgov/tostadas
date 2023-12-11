@@ -20,21 +20,21 @@ process BAKTA {
 
 
     input:
-    db_path
+    //
+    //fasta
 
     script:
     def args = task.ext.args  ?: ''
     """
-    bakta  --db $db_path  --min-contig-length $params.bakta_min_contig_length --prefix ${fasta.getSimpleName()} \
-    --output ${fasta.getSimpleName()} --threads $params.bakta_threads \
-    --genus $params.bakta_genus --species $params.bakta_species --strain $params.bakta_strain \
-    --plasmid $params.bakta_plasmid  --locus $params.bakta_locus --locus-tag $params.bakta_locus_tag \
-    --translation-table $params.bakta_translation_table \
+    bakta  --db ${params.bakta_db_path}  --min-contig-length ${params.bakta_min_contig_length} --prefix ${params.fasta_path} \
+    --output ${params.fasta_path} --threads ${params.bakta_threads} \
+    --genus ${params.bakta_genus} --species ${params.bakta_species} --strain ${params.bakta_strain} \
+    --plasmid ${params.bakta_plasmid}  --locus ${params.bakta_locus} --locus-tag ${params.bakta_locus_tag} \
+    --translation-table ${params.bakta_translation_table} \
     $args \
-    $fasta
+    ${params.fasta_path}
     """
     
     output:
-    path "${fasta.getSimpleName()}",   emit: bakta_results
+    path "${params.fasta_path}",   emit: bakta_results
 }
-

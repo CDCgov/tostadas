@@ -17,7 +17,7 @@ process VADR {
     }
 
     input:
-    val signal
+    // val signal
     path fasta_path
     path vadr_models_dir
 
