@@ -48,6 +48,7 @@ process VALIDATE_PARAMS {
             assert params.vadr_output_dir
         }
         if ( params.run_bakta == true ) {
+            assert params.split_output_dir
             assert params.bakta_output_dir
         }
 

@@ -11,6 +11,7 @@
 /vcs.xml
 /webServers.xml
 /workspace.xml
+/assets/tostadas.code-workspace
 
 # Editor-based HTTP Client requests
 /httpRequests/
@@ -25,6 +26,9 @@
 /.nextflow.log*
 /nf_test_results
 /tests/work
+/var_work/
+/var_work
+app/environment.yml
 /tests/.nextflow
 /tests/.nextflow
 /tests/.nextflow.log*
@@ -51,6 +55,12 @@ tests/__pycache__
 /vadr_testing_outdir
 /bin/vadr_outputs
 /bin/vadr_outputs/
+
+# bakta related
+/assets
+/assets/bakta_database
+/assets/bakta_database/db_light
+/assets/bakta_database/db_light/
 
 # add singularity related stuff
 /app/singularity/containers/
