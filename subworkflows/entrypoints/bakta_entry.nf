@@ -25,7 +25,7 @@ workflow RUN_BAKTA {
         }
         else {
             BAKTA (
-               // params.bakta_db_path
+               params.bakta_db_path
                 // params.proteins
                 // params.prodigal_tf
         )
