@@ -52,7 +52,7 @@ workflow MAIN {
         METADATA_VALIDATION ( 
             RUN_UTILITY.out, 
             params.meta_path, 
-            params.fasta_path 
+            params.fasta_path
         )
         
         // run liftoff annotation process 

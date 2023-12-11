@@ -60,6 +60,8 @@ Currently, consists of two annotation options:
     * The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes.
 * (2) VADR
     * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your multi-sample fasta, metadata in .xlsx format, and reference information for the pathogen genome which is included within this repository (found [here](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models)). VADR is an existing package that was integrated into the pipeline and you can find more information about this tool at the following link: [VADR Git Repo](https://github.com/ncbi/vadr).
+* (3) Bakta
+    * The Bakta workflow annotates input fasta-formatted bacterial genomes & plasmids and generates gff / tbl files. The inputs into this workflow are single-sample fasta, metadata in .xlsx format, and a reference database used for annotation (found [here](https://zenodo.org/records/7669534)). Bakta is an existing bacterial annotation tool that was integrated into the pipeline. You can find more information about this tool at the following link: [Bakta Git Repo](https://github.com/CDCgov/tostadas/tree/master#gene-annotation).
 
 ### Submission 
 Submission workflow generates the necessary files for Genbank submission, generates a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
@@ -254,6 +256,7 @@ This section walks through the available parameters to customize your workflow.
 | metadata    | .xlsx     | Multi-sample metadata matching metadata spreadsheets provided in input_files              |
 | ref_fasta   | .fasta    | Reference genome to use for the  liftoff_submission branch of the pipeline                |
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
+| db          |  folder   | Bakta reference database used for bakta annotation                                        |
 
 #### (B) This table lists the required files to run with submission: 
 | Input files | File type | Description                                                                               |
@@ -298,6 +301,7 @@ Table of entrypoints available for the nextflow pipeline:
 | only_validation      | Runs the metadata validation process only                           |
 | only_liftoff      | Runs the liftoff annotation process only                           |
 | only_vadr         | Runs the VADR annotation process only                           |
+| only_bakta        | Runs the Bakta annotation process only                          |
 | only_submission      | Runs submission sub-workflow only. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                           |
 | only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)               |
 | only_update_submission  | Updates NCBI submissions. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                                 |
@@ -371,6 +375,11 @@ The outputs are recorded in the directory specified within the nextflow.config f
         * fasta
         * gffs
         * tbl
+* bakta_outputs (**name configurable with bakta_output_dir)
+    * name of metadata sample file
+        * fasta
+        * gff
+        * tbl
 * submission_outputs (**name and path configurable with submission_output_dir)
     * name of annotation results (Liftoff or VADR, etc.)
         * individual_sample_batch_info
@@ -405,7 +414,8 @@ When changing these parameters pay attention to the required inputs and make sur
 | --ref_fasta_path           | Reference Sequence file path                            |        Yes (path as string)      |
 | --meta_path                | Meta-data file path for samples                         |        Yes (path as string)      |
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
-| --env_yml                  | Path to environment.yml file                            |        Yes (path as string)       |
+| --db_path                  | Path to Bakta reference database                        |        Yes (path as string)      |
+| --env_yml                  | Path to environment.yml file                            |        Yes (path as string)      |
 
 ### Run Environment
 | Param                    | Description                                             | Input Required   |
@@ -413,6 +423,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --scicomp           | Flag for whether running on Scicomp or not                            | Yes (true/false as bool) |
 | --docker_container           | Name of the Docker container                            | Yes, if running with docker profile (name as string) |
 | --docker_container_vadr           | Name of the Docker container to run VADR annotation                            | Yes, if running with docker profile (name as string) |
+| --docker_container_bakta           | Name of the Docker container to run Bakta annotation                          | Yes, if running with docker profile (name as string) |
 
 ### General Subworkflow
 | Param                    | Description                                             | Input Required   |
@@ -420,6 +431,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --run_submission           | Toggle for running submission                            | Yes (true/false as bool) |
 | --run_liftoff           | Toggle for running liftoff annotation                            | Yes (true/false as bool) |
 | --run_vadr           | Toggle for running vadr annotation                            | Yes (true/false as bool) |
+| --run_bakta           | Toggle for running Bakta annotation                            | Yes (true/false as bool) |
 | --cleanup                  | Toggle for running cleanup subworkflows                 | Yes (true/false as bool) |
 
 ### Cleanup Subworkflow
@@ -474,6 +486,20 @@ When changing these parameters pay attention to the required inputs and make sur
 | --vadr_output_dir  | File path to vadr specific sub-workflow outputs      |        Yes (folder name as string)      |
 | --vadr_models_dir  | File path to models for MPXV used by VADR annotation      |        Yes (folder name as string)      |
 
+### Bakta
+| Param                       | Description                                             | Input Required   |
+|-----------------------------|---------------------------------------------------------|------------------|
+| --bakta_output_dir  | File path to bakta specific sub-workflow outputs     |        Yes (folder name as string)      |
+| --bakta_min_contig_length  | Minimum contig size                           |        Yes (integer)      |
+| --bakta_threads    | Number of threads to use while running annotation        |     Yes (integer)     |
+| --bakta_genus      | Organism genus name                                      |     Yes (N/A or name as string)      |
+| --bakta_species    | Organism species name                                    |     Yes (N/A or name as string)      |
+| --bakta_strain     | Organism strain name                                     |     Yes (N/A or name as string)      |
+| --bakta_plasmid    | Name of plasmid                                          |     Yes (unnamed or name as string)     |
+| --bakta_locus      | Locus prefix                                             |     Yes (contig or name as string)      |
+| --bakta_locus_tag  | Locus tag prefix                                         |     Yes (autogenerated or name as string)     |
+| --bakta_translation_table  | Translation table                                |     Yes (integer)     |
+
 ### Sample Submission
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
@@ -501,6 +527,8 @@ When changing these parameters pay attention to the required inputs and make sur
    :link: Liftoff Documentation: https://github.com/agshumate/Liftoff
    
    :link: VADR Documentation:  https://github.com/ncbi/vadr.git
+
+   :link: Bakta Documentation:  https://github.com/oschwengers/bakta
    
    :link: table2asn Documentation: https://github.com/svn2github/NCBI_toolkit/blob/master/src/app/table2asn/table2asn.cpp
 
@@ -533,7 +561,7 @@ When changing these parameters pay attention to the required inputs and make sur
   Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison\
   Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Ankush Gupta\
   Kyle O'Connell | Yesh Kulasekarapandian |  Cole Tindall | Lynsey Kovar | Hunter Seabolt\
-  Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva\
+  Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Swarnali Louha\
   Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
 
 

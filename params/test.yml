@@ -25,6 +25,8 @@ overwrite_output: true
 val_output_dir: "validation_outputs"
 val_date_format_flag: "s"
 val_keep_pi: false
+validate_custom_fields: false
+custom_fields_file: ""
 
 final_liftoff_output_dir: "liftoff_outputs"
 lift_print_version_exit: false

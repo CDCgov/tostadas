@@ -22,41 +22,16 @@
 
 # nextflow
 /.nextflow/
-/.nextflow
-/.nextflow.log
-/.nextflow.log.1
-/.nextflow.log.2
-/.nextflow.log.3
-/.nextflow.log.4
-/.nextflow.log.5
-/.nextflow.log.6
-/.nextflow.log.7
-/.nextflow.log.8
+/.nextflow.log*
 /nf_test_results
 /tests/work
 /tests/.nextflow
 /tests/.nextflow
-/tests/.nextflow.log
-/tests/.nextflow.log.1
-/tests/.nextflow.log.2
-/tests/.nextflow.log.3
-/tests/.nextflow.log.4
-/tests/.nextflow.log.5
-/tests/.nextflow.log.6
-/tests/.nextflow.log.7
-/tests/.nextflow.log.8
+/tests/.nextflow.log*
 /submission_scripts/upload_log.csv
 
 /bin/.nextflow
-/bin/.nextflow.log
-/bin/.nextflow.log.1
-/bin/.nextflow.log.2
-/bin/.nextflow.log.3
-/bin/.nextflow.log.4
-/bin/.nextflow.log.5
-/bin/.nextflow.log.6
-/bin/.nextflow.log.7
-/bin/.nextflow.log.8
+/bin/.nextflow.log*
 /bin/upload_log.csv
 
 /submission_scripts/__pycache__/
@@ -91,18 +66,7 @@ tests/__pycache__
 /submission_scripts/config_files
 
 # add aspen related stuff
-/aspen/.nextflow.log.1
-/aspen/.nextflow.log.2
-/aspen/.nextflow.log.3
-/aspen/.nextflow.log.4
-/aspen/.nextflow.log.5
-/aspen/.nextflow.log.6
-/aspen/.nextflow.log.7
-/aspen/.nextflow.log.8
-/aspen/.nextflow.log.9
-/aspen/.nextflow.log.10
-/aspen/.nextflow.log.11
-/aspen/.nextflow.log.12
+/aspen/.nextflow.log*
 
 /tests/nf_test_results
 
@@ -128,3 +92,4 @@ bin/.DS_Store
 
 # Testing related
 /test_main_workflow
+/validation_outputs/
