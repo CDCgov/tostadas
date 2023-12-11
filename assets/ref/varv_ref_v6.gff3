@@ -1,0 +1,415 @@
+##gff-version 3
+# Liftoff v1.6.3
+# /scicomp/home-pure/jzm0/.conda/envs/liftoff/bin/liftoff -g /scicomp/home-pure/jzm0/variola/reference/varv_ref_v4.gff3 -o /scicomp/home-pure/jzm0/variola/fix_varv_ref/liftoff_output/varv_on_DQ -f /scicomp/home-pure/jzm0/variola/liftoff/feature_types.txt /scicomp/home-pure/jzm0/variola/reference/DQ437582_geneious.fasta /scicomp/home-pure/jzm0/variola/reference/varv.fasta
+VARV	Liftoff	repeat_region	1	728	.	-	.	ID=ITR-VARV_RPT1;note=terminal%3B terminal repeat region;gbkey=repeat_region;rpt_type=inverted
+VARV	Liftoff	gene	1008	1469	.	-	.	ID=gene-VARV_001;gbkey=gene;locus_tag=VARV_001
+VARV	Liftoff	CDS	1008	1469	.	-	.	ID=cds-VARV_001;gbkey=CDS;Parent=gene-VARV_001;note=similar to VACV-COP-C16L/B22R;locus_tag=VARV_001;product=hypothetical protein
+VARV	Liftoff	gene	1868	2254	.	-	.	ID=gene-VARV_002;gbkey=gene;locus_tag=VARV_002
+VARV	Liftoff	CDS	1868	2254	.	-	.	ID=cds-VARV_002;gbkey=CDS;Parent=gene-VARV_002;note=CMLV-M96-009%3B similar to CPXV-BR-019;locus_tag=VARV_002;product=hypothetical protein
+VARV	Liftoff	gene	2489	2911	.	+	.	ID=gene-VARV_003;gbkey=gene;locus_tag=VARV_003
+VARV	Liftoff	CDS	2489	2911	.	+	.	ID=cds-VARV_003;gbkey=CDS;Parent=gene-VARV_003;note=VACV-COP-C11R%3B binds EGF receptor%3B similar to VACV-WR-009;locus_tag=VARV_003;product=secreted epidermal growth factor-like protein
+VARV	Liftoff	gene	3075	4067	.	-	.	ID=gene-VARV_004;gbkey=gene;locus_tag=VARV_004
+VARV	Liftoff	CDS	3075	4067	.	-	.	ID=cds-VARV_004;gbkey=CDS;Parent=gene-VARV_004;note=VACV-COP-C10L%3B similar to VACV-WR-010;locus_tag=VARV_004;product=hypothetical protein
+VARV	Liftoff	gene	4568	5296	.	+	.	ID=gene-VARV_005;gbkey=gene;locus_tag=VARV_005
+VARV	Liftoff	CDS	4568	5296	.	+	.	ID=cds-VARV_005;gbkey=CDS;Parent=gene-VARV_005;note=E3 ubiquitin ligase%3B host defense modulator%3B involved in apoptosis%3B similar to VACV-WR-011;locus_tag=VARV_005;product=zinc finger-like protein
+VARV	Liftoff	gene	5448	5828	.	-	.	ID=gene-VARV_006;gbkey=gene;locus_tag=VARV_006
+VARV	Liftoff	CDS	5448	5828	.	-	.	ID=cds-VARV_006;gbkey=CDS;Parent=gene-VARV_006;note=absent from VACV-COP%3B host defense modulator%3B similar to VACV-WR-012;locus_tag=VARV_006;product=interleukin-18-binding protein
+VARV	Liftoff	gene	6066	7244	.	-	.	ID=gene-VARV_007;gbkey=gene;locus_tag=VARV_007
+VARV	Liftoff	CDS	6066	7244	.	-	.	ID=cds-VARV_007;gbkey=CDS;Parent=gene-VARV_007;note=77kDa cowpox host-range%3B part of CPXV-BR-024%3B similar to VACV-WR-014;locus_tag=VARV_007;product=ankyrin-like protein
+VARV	Liftoff	gene	7379	7555	.	-	.	ID=gene-VARV_008;gbkey=Gene;locus_tag=VARV_008
+VARV	Liftoff	CDS	7379	7555	.	-	.	ID=cds-VARV_008;Parent=gene-VARV_008;locus_tag=VARV_008;product=ankyrin-like protein
+VARV	Liftoff	gene	7723	7998	.	-	.	ID=gene-VARV_009;gbkey=gene;locus_tag=VARV_009
+VARV	Liftoff	CDS	7723	7998	.	-	.	ID=cds-VARV_009;gbkey=CDS;Parent=gene-VARV_009;note=part of VACV-COP-C9L%3B similar to myxoma NFkB associated protein%3B similar to part of VACV-WR-019;locus_tag=VARV_009;product=ankyrin-like protein
+VARV	Liftoff	gene	8173	8634	.	-	.	ID=gene-VARV_010;gbkey=gene;locus_tag=VARV_010
+VARV	Liftoff	CDS	8173	8634	.	-	.	ID=cds-VARV_010;gbkey=CDS;Parent=gene-VARV_010;note=part of VACV-COP-C9L%3B similar to myxoma NFkB associated protein%3B similar to part of VACV-WR-019;locus_tag=VARV_010;product=ankyrin-like protein
+VARV	Liftoff	gene	9287	9739	.	-	.	ID=gene-VARV_011;gbkey=gene;locus_tag=VARV_011
+VARV	Liftoff	CDS	9287	9739	.	-	.	ID=cds-VARV_011;gbkey=CDS;Parent=gene-VARV_011;note=VACV-COP-C7L%3B host-range%3B possible host defense modulator%3B similar to VACV-WR-021;locus_tag=VARV_011;product=hypothetical protein
+VARV	Liftoff	gene	9969	10439	.	-	.	ID=gene-VARV_012;gbkey=gene;locus_tag=VARV_012
+VARV	Liftoff	CDS	9969	10439	.	-	.	ID=cds-VARV_012;gbkey=CDS;Parent=gene-VARV_012;note=VACV-COP-C6L%3B similar to VACV-WR-022;locus_tag=VARV_012;product=hypothetical protein
+VARV	Liftoff	gene	10795	11199	.	-	.	ID=gene-VARV_013;gbkey=gene;locus_tag=VARV_013
+VARV	Liftoff	CDS	10795	11199	.	-	.	ID=cds-VARV_013;gbkey=CDS;Parent=gene-VARV_013;note=MIPP-related protein may interact with microtubules%3B VACV-COP-C5L%3B actin filaments%3B similar to VACV-WR-023;locus_tag=VARV_013;product=kelch-like protein
+VARV	Liftoff	gene	11252	12202	.	-	.	ID=gene-VARV_014;gbkey=gene;locus_tag=VARV_014
+VARV	Liftoff	CDS	11252	12202	.	-	.	ID=cds-VARV_014;gbkey=CDS;Parent=gene-VARV_014;note=VACV-COP-C4L%3B similar to VACV-WR-024;locus_tag=VARV_014;product=hypothetical protein
+VARV	Liftoff	gene	12267	13058	.	-	.	ID=gene-VARV_015;gbkey=gene;locus_tag=VARV_015
+VARV	Liftoff	CDS	12267	13058	.	-	.	ID=cds-VARV_015;gbkey=CDS;Parent=gene-VARV_015;note=VACV-COP-C3L%3B binds C3b/C4b%3B blocks complement activation%3B host defense modulator%3B similar to VACV-WR-025;locus_tag=VARV_015;product=secreted protein
+VARV	Liftoff	gene	13182	13787	.	-	.	ID=gene-VARV_016;gbkey=gene;locus_tag=VARV_016
+VARV	Liftoff	CDS	13182	13787	.	-	.	ID=cds-VARV_016;gbkey=CDS;Parent=gene-VARV_016;note=part of VACV-COP-C2L%3B potential immune modulator also affects infected-cell adhesion%3B similar to part of VACV-WR-026;locus_tag=VARV_016;product=kelch-like protein
+VARV	Geneious	repeat_region	13806	13815	.	+	.	ID=ITR-VARV_RPT2;note=hypervariable T repeat region;gbkey=repeat_region
+VARV	Liftoff	gene	13920	14159	.	-	.	ID=gene-VARV_017;gbkey=gene;locus_tag=VARV_017
+VARV	Liftoff	CDS	13920	14159	.	-	.	ID=cds-VARV_017;gbkey=CDS;Parent=gene-VARV_017;note=part of VACV-COP-C2L%3B potential immune modulator also affects infected-cell adhesion%3B similar to part of VACV-WR-026;locus_tag=VARV_017;product=kelch-like protein
+VARV	Liftoff	gene	14620	15258	.	-	.	ID=gene-VARV_018;gbkey=gene;locus_tag=VARV_018
+VARV	Liftoff	CDS	14620	15258	.	-	.	ID=cds-VARV_018;gbkey=CDS;Parent=gene-VARV_018;note=VACV-COP-C1L%3B similar to VACV-WR-027;locus_tag=VARV_018;product=hypothetical protein
+VARV	Liftoff	gene	15307	15660	.	-	.	ID=gene-VARV_019;gbkey=gene;locus_tag=VARV_019
+VARV	Liftoff	CDS	15307	15660	.	-	.	ID=cds-VARV_019;gbkey=CDS;Parent=gene-VARV_019;note=VACV-COP-N1L%3B host defense modulator%3B inhibits signaling by Toll/IL-receptor family%3B similar to VACV-WR-028%3B targets I-kB kinase complex;locus_tag=VARV_019;product=hypothetical protein
+VARV	Liftoff	gene	15787	16320	.	-	.	ID=gene-VARV_020;gbkey=gene;locus_tag=VARV_020
+VARV	Liftoff	CDS	15787	16320	.	-	.	ID=cds-VARV_020;gbkey=CDS;Parent=gene-VARV_020;note=VACV-COP-N2L%3B similar to VACV-WR-029;locus_tag=VARV_020;product=alpha-amanitin target protein
+VARV	Liftoff	gene	16362	17702	.	-	.	ID=gene-VARV_021;gbkey=gene;locus_tag=VARV_021
+VARV	Liftoff	CDS	16362	17702	.	-	.	ID=cds-VARV_021;gbkey=CDS;Parent=gene-VARV_021;note=VACV-COP-M1L%3B may be promiscously transcribed%3B similar to VACV-WR-030;locus_tag=VARV_021;product=ankyrin-like protein
+VARV	Liftoff	gene	17747	18409	.	-	.	ID=gene-VARV_022;gbkey=gene;locus_tag=VARV_022
+VARV	Liftoff	CDS	17747	18409	.	-	.	ID=cds-VARV_022;gbkey=CDS;Parent=gene-VARV_022;note=VACV-COP-M2L%3B may be promiscously transcribed%3B similar to VACV-WR-031%3B truncated protein;locus_tag=VARV_022;product=hypothetical protein
+VARV	Liftoff	gene	18659	18871	.	-	.	ID=gene-VARV_023;gbkey=gene;locus_tag=VARV_023
+VARV	Liftoff	CDS	18659	18871	.	-	.	ID=cds-VARV_023;gbkey=CDS;Parent=gene-VARV_023;note=intact protein inhibits NF-kB activation by preventing I-kB-alpha degredation%3B part of VACV-COP-K1L%3B similar to part of VACV-WR-032;locus_tag=VARV_023;product=ankyrin-like protein
+VARV	Liftoff	gene	19189	19389	.	-	.	ID=gene-VARV_024;gbkey=gene;locus_tag=VARV_024
+VARV	Liftoff	CDS	19189	19389	.	-	.	ID=cds-VARV_024;gbkey=CDS;Parent=gene-VARV_024;note=intact protein inhibits NF-kB activation by preventing I-kB-alpha degredation%3B part of VACV-COP-K1L%3B similar to part of VACV-WR-032;locus_tag=VARV_024;product=ankyrin-like protein
+VARV	Liftoff	gene	19563	20684	.	-	.	ID=gene-VARV_025;gbkey=gene;locus_tag=VARV_025
+VARV	Liftoff	CDS	19563	20684	.	-	.	ID=cds-VARV_025;gbkey=CDS;Parent=gene-VARV_025;note=VACV-COP-K2L%3B host defense modulator%3B host range%3B similar to VACV-WR-033%3B with hemagglutinin prevents syncytia;locus_tag=VARV_025;product=SPI-3 serine protease inhibitor-like protein
+VARV	Liftoff	gene	20735	21001	.	-	.	ID=gene-VARV_026;gbkey=gene;locus_tag=VARV_026
+VARV	Liftoff	CDS	20735	21001	.	-	.	ID=cds-VARV_026;gbkey=CDS;Parent=gene-VARV_026;note=VACV-COP-K3L%3B host defense modulator%3B similar to VACV-WR-034;locus_tag=VARV_026;product=interferon resistance protein
+VARV	Liftoff	gene	21267	21716	.	+	.	ID=gene-VARV_027;gbkey=gene;locus_tag=VARV_027
+VARV	Liftoff	CDS	21267	21716	.	+	.	ID=cds-VARV_027;gbkey=CDS;Parent=gene-VARV_027;note=VACV-COP-K7R%3B similar to VACV-WR-039;locus_tag=VARV_027;product=hypothetical protein
+VARV	Liftoff	gene	21770	22600	.	-	.	ID=gene-VARV_028;gbkey=gene;locus_tag=VARV_028
+VARV	Liftoff	CDS	21770	22600	.	-	.	ID=cds-VARV_028;gbkey=CDS;Parent=gene-VARV_028;note=VACV-COP-F1L%3B interferes with apoptosis%3B locates tomitochondria%3B similar to VACV-WR-040,VACV-COP-F2L%3B similar to VACV-WR-041;locus_tag=VARV_028;product=hypothetical protein,dUTPase
+VARV	Liftoff	gene	22600	23043	.	-	.	ID=gene-VARV_029;gbkey=gene;locus_tag=VARV_029
+VARV	Liftoff	CDS	22600	23043	.	-	.	ID=cds-VARV_029;gbkey=CDS;Parent=gene-VARV_029;note=VACV-COP-F1L%3B interferes with apoptosis%3B locates tomitochondria%3B similar to VACV-WR-040,VACV-COP-F2L%3B similar to VACV-WR-041;locus_tag=VARV_029;product=hypothetical protein,dUTPase
+VARV	Liftoff	gene	23182	23667	.	-	.	ID=gene-VARV_030;gbkey=gene;locus_tag=VARV_030
+VARV	Liftoff	CDS	23182	23667	.	-	.	ID=cds-VARV_030;gbkey=CDS;Parent=gene-VARV_030;note=VACV-COP-F3L%3B similar to VACV-WR-042;locus_tag=VARV_030;product=kelch-like protein
+VARV	Liftoff	gene	24514	25473	.	-	.	ID=gene-VARV_031;gbkey=gene;locus_tag=VARV_031
+VARV	Liftoff	CDS	24514	25473	.	-	.	ID=cds-VARV_031;gbkey=CDS;Parent=gene-VARV_031;note=VACV-COP-F4L%3B similar to VACV-WR-043;locus_tag=VARV_031;product=ribonucleotide reductase small subunit
+VARV	Liftoff	gene	25504	26550	.	-	.	ID=gene-VARV_032;gbkey=gene;locus_tag=VARV_032
+VARV	Liftoff	CDS	25504	26550	.	-	.	ID=cds-VARV_032;gbkey=CDS;Parent=gene-VARV_032;note=VACV-COP-F5L%3B VACV-MVA-033L%3B similar to VACV-WR-044;locus_tag=VARV_032;product=36.5kDa major membrane precursor protein
+VARV	Liftoff	gene	26507	26725	.	-	.	ID=gene-VARV_033;gbkey=gene;locus_tag=VARV_033
+VARV	Liftoff	CDS	26507	26725	.	-	.	ID=cds-VARV_033;gbkey=CDS;Parent=gene-VARV_033;note=VACV-COP-F6L%3B similar to VACV-WR-045;locus_tag=VARV_033;product=hypothetical protein
+VARV	Liftoff	gene	26742	26981	.	-	.	ID=gene-VARV_034;gbkey=gene;locus_tag=VARV_034
+VARV	Liftoff	CDS	26742	26981	.	-	.	ID=cds-VARV_034;gbkey=CDS;Parent=gene-VARV_034;note=VACV-COP-F7L%3B similar to VACV-WR-046;locus_tag=VARV_034;product=hypothetical protein
+VARV	Liftoff	gene	27131	27328	.	-	.	ID=gene-VARV_035;gbkey=gene;locus_tag=VARV_035
+VARV	Liftoff	CDS	27131	27328	.	-	.	ID=cds-VARV_035;gbkey=CDS;Parent=gene-VARV_035;note=VACV-COP-F8L%3B contains iActA-like proline repeats%3B not required for actin tail formation%3B similar to VACV-WR-047;locus_tag=VARV_035;product=hypothetical protein
+VARV	Liftoff	gene	27396	28034	.	-	.	ID=gene-VARV_036;gbkey=gene;locus_tag=VARV_036
+VARV	Liftoff	CDS	27396	28034	.	-	.	ID=cds-VARV_036;gbkey=CDS;Parent=gene-VARV_036;note=VACV-COP-F9L%3B involved in disulfide bond formation pathway%3B similar to VACV-WR-048%3B thiol substrate;locus_tag=VARV_036;product=hypothetical protein
+VARV	Liftoff	gene	28021	29340	.	-	.	ID=gene-VARV_037;gbkey=gene;locus_tag=VARV_037
+VARV	Liftoff	CDS	28021	29340	.	-	.	ID=cds-VARV_037;gbkey=CDS;Parent=gene-VARV_037;note=IMV formation%3B VACV-COP-F10L%3B similar to VACV-WR-049;locus_tag=VARV_037;product=ser/thr kinase
+VARV	Liftoff	gene	29363	30427	.	-	.	ID=gene-VARV_038;gbkey=gene;locus_tag=VARV_038
+VARV	Liftoff	CDS	29363	30427	.	-	.	ID=cds-VARV_038;gbkey=CDS;Parent=gene-VARV_038;note=VACV-COP-F11L%3B similar to VACV-WR-050;locus_tag=VARV_038;product=hypothetical protein
+VARV	Liftoff	gene	30470	32377	.	-	.	ID=gene-VARV_039;gbkey=gene;locus_tag=VARV_039
+VARV	Liftoff	CDS	30470	32377	.	-	.	ID=cds-VARV_039;gbkey=CDS;Parent=gene-VARV_039;note=involved in plaque and EEV formation%3B not CEV%2C IV or IMV%3B on IEV%3B similar to VACV-WR-051%3BVACV-COP-F12L;locus_tag=VARV_039;product=hypothetical protein
+VARV	Liftoff	gene	32420	33538	.	-	.	ID=gene-VARV_040;gbkey=gene;locus_tag=VARV_040
+VARV	Liftoff	CDS	32420	33538	.	-	.	ID=cds-VARV_040;gbkey=CDS;Parent=gene-VARV_040;note=IEV formation%3B VACV-COP-F13L%3B phospholipase motif%3B similar to VACV-WR-052;locus_tag=VARV_040;product=palmytilated EEV membrane protein
+VARV	Liftoff	gene	33557	33778	.	-	.	ID=gene-VARV_041;gbkey=gene;locus_tag=VARV_041
+VARV	Liftoff	CDS	33557	33778	.	-	.	ID=cds-VARV_041;gbkey=CDS;Parent=gene-VARV_041;note=VACV-COP-F14L%3B similar to VACV-WR-053;locus_tag=VARV_041;product=hypothetical protein
+VARV	Liftoff	gene	34047	34532	.	-	.	ID=gene-VARV_042;gbkey=gene;locus_tag=VARV_042
+VARV	Liftoff	CDS	34047	34532	.	-	.	ID=cds-VARV_042;gbkey=CDS;Parent=gene-VARV_042;note=VACV-COP-F15L%3B similar to VACV-WR-054;locus_tag=VARV_042;product=hypothetical protein
+VARV	Liftoff	gene	34529	35224	.	-	.	ID=gene-VARV_043;gbkey=gene;locus_tag=VARV_043
+VARV	Liftoff	CDS	34529	35224	.	-	.	ID=cds-VARV_043;gbkey=CDS;Parent=gene-VARV_043;note=VACV-COP-F16L%3B similar to VACV-WR-055;locus_tag=VARV_043;product=hypothetical protein
+VARV	Liftoff	gene	35287	35592	.	+	.	ID=gene-VARV_044;gbkey=gene;locus_tag=VARV_044
+VARV	Liftoff	CDS	35287	35592	.	+	.	ID=cds-VARV_044;gbkey=CDS;Parent=gene-VARV_044;note=VACV-COP-F17R%3B found in virus core%3B similar to VACV-WR-056;locus_tag=VARV_044;product=11kDa DNA-binding phosphoprotein
+VARV	Liftoff	gene	35589	37028	.	-	.	ID=gene-VARV_045;gbkey=gene;locus_tag=VARV_045
+VARV	Liftoff	CDS	35589	37028	.	-	.	ID=cds-VARV_045;gbkey=CDS;Parent=gene-VARV_045;note=VACV-COP-E1L%3B similar to VACV-WR-057;locus_tag=VARV_045;product=polyA polymerase catalytic subunit VP55
+VARV	Liftoff	gene	37025	39238	.	-	.	ID=gene-VARV_046;gbkey=gene;locus_tag=VARV_046
+VARV	Liftoff	CDS	37025	39238	.	-	.	ID=cds-VARV_046;gbkey=CDS;Parent=gene-VARV_046;note=VACV-COP-E2L%3B similar to VACV-WR-058;locus_tag=VARV_046;product=hypothetical protein
+VARV	Liftoff	gene	39358	39936	.	-	.	ID=gene-VARV_047;gbkey=gene;locus_tag=VARV_047
+VARV	Liftoff	CDS	39358	39936	.	-	.	ID=cds-VARV_047;gbkey=CDS;Parent=gene-VARV_047;note=VACV-COP-E3L%3B host defense modulator%3B host-range determinant%3B inhibits antiviral activities of interferon%3B similar to VACV-WR-059;locus_tag=VARV_047;product=double-stranded RNA binding protein
+VARV	Liftoff	gene	39991	40770	.	-	.	ID=gene-VARV_048;gbkey=gene;locus_tag=VARV_048
+VARV	Liftoff	CDS	39991	40770	.	-	.	ID=cds-VARV_048;gbkey=CDS;Parent=gene-VARV_048;note=TFIIS-like%3B VACV-COP-E4L%3B intermediate-gene transcription factor VITF1%3B similar to VACV-WR-060;locus_tag=VARV_048;product=DNA-dependent RNA polymerase subunit rpo30
+VARV	Liftoff	gene	40819	41844	.	+	.	ID=gene-VARV_049;gbkey=gene;locus_tag=VARV_049
+VARV	Liftoff	CDS	40819	41844	.	+	.	ID=cds-VARV_049;gbkey=CDS;Parent=gene-VARV_049;note=VACV-COP-E5R%3B abundant component of virosome%3B similar to VACV-WR-061;locus_tag=VARV_049;product=hypothetical protein
+VARV	Liftoff	gene	41962	43665	.	+	.	ID=gene-VARV_050;gbkey=gene;locus_tag=VARV_050
+VARV	Liftoff	CDS	41962	43665	.	+	.	ID=cds-VARV_050;gbkey=CDS;Parent=gene-VARV_050;note=VACV-COP-E6R%3B similar to VACV-WR-062;locus_tag=VARV_050;product=IMV protein
+VARV	Liftoff	gene	43936	44166	.	-	.	ID=gene-VARV_051;gbkey=gene;locus_tag=VARV_051
+VARV	Liftoff	CDS	43936	44166	.	-	.	ID=cds-VARV_051;gbkey=CDS;Parent=gene-VARV_051;note=similar to VACV-COP-E orf C;locus_tag=VARV_051;product=hypothetical protein
+VARV	Liftoff	gene	44051	44233	.	+	.	ID=gene-VARV_052;gbkey=gene;locus_tag=VARV_052
+VARV	Liftoff	CDS	44051	44233	.	+	.	ID=cds-VARV_052;Parent=gene-VARV_052;locus_tag=VARV_052;product=myristylprotein
+VARV	Liftoff	gene	44358	45179	.	+	.	ID=gene-VARV_053;gbkey=gene;locus_tag=VARV_053
+VARV	Liftoff	CDS	44358	45179	.	+	.	ID=cds-VARV_053;gbkey=CDS;Parent=gene-VARV_053;note=F10L kinasesubstrate%3B IMV%3Bcores%3B VACV-COP-E8R%3B associates with IV%3B localizes viral DNA on ER%3B similar to VACV-WR-064;locus_tag=VARV_053;product=membrane phosphoprotein
+VARV	Liftoff	gene	45185	48202	.	-	.	ID=gene-VARV_054;gbkey=gene;locus_tag=VARV_054
+VARV	Liftoff	CDS	45185	48202	.	-	.	ID=cds-VARV_054;gbkey=CDS;Parent=gene-VARV_054;note=VACV-COP-E9L%3B similar to VACV-WR-065;locus_tag=VARV_054;product=DNA polymerase
+VARV	Liftoff	gene	48234	48521	.	+	.	ID=gene-VARV_055;gbkey=gene;locus_tag=VARV_055
+VARV	Liftoff	CDS	48234	48521	.	+	.	ID=cds-VARV_055;gbkey=CDS;Parent=gene-VARV_055;note=VACV-COP-E10R%3B involved in disulfide bond formationpathway%3B similar to VACV-WR-066%3B substrates L1R/F9L;locus_tag=VARV_055;product=sulfhydryl oxidase
+VARV	Liftoff	gene	48516	48905	.	-	.	ID=gene-VARV_056;gbkey=gene;locus_tag=VARV_056
+VARV	Liftoff	CDS	48516	48905	.	-	.	ID=cds-VARV_056;gbkey=CDS;Parent=gene-VARV_056;note=VACV-COP-E11L%3B similar to VACV-WR-067;locus_tag=VARV_056;product=virion core protein
+VARV	Liftoff	gene	48892	50892	.	-	.	ID=gene-VARV_057;gbkey=gene;locus_tag=VARV_057
+VARV	Liftoff	CDS	48892	50892	.	-	.	ID=cds-VARV_057;gbkey=CDS;Parent=gene-VARV_057;note=VACV-COP-O1L%3B leucine zipper and bipartite nuclear target motif%3B similar to VACV-WR-068;locus_tag=VARV_057;product=hypothetical protein
+VARV	Liftoff	gene	50939	51265	.	-	.	ID=gene-VARV_058;gbkey=gene;locus_tag=VARV_058
+VARV	Liftoff	CDS	50939	51265	.	-	.	ID=cds-VARV_058;gbkey=CDS;Parent=gene-VARV_058;note=VACV-COP-O2L%3B nonessential%3B not part of E10R-G4L disulfide bond formation pathway%3B similar to VACV-WR-069;locus_tag=VARV_058;product=glutaredoxin
+VARV	Liftoff	gene	51412	52350	.	-	.	ID=gene-VARV_059;gbkey=gene;locus_tag=VARV_059
+VARV	Liftoff	CDS	51412	52350	.	-	.	ID=cds-VARV_059;gbkey=CDS;Parent=gene-VARV_059;note=VACV-COP-I1L%3B similar to VACV-WR-070;locus_tag=VARV_059;product=DNA-binding core protein
+VARV	Liftoff	gene	52357	52578	.	-	.	ID=gene-VARV_060;gbkey=gene;locus_tag=VARV_060
+VARV	Liftoff	CDS	52357	52578	.	-	.	ID=cds-VARV_060;gbkey=CDS;Parent=gene-VARV_060;note=VACV-COP-I2L%3B similar to VACV-WR-071;locus_tag=VARV_060;product=IMV membrane protein
+VARV	Liftoff	gene	52579	53388	.	-	.	ID=gene-VARV_061;gbkey=gene;locus_tag=VARV_061
+VARV	Liftoff	CDS	52579	53388	.	-	.	ID=cds-VARV_061;gbkey=CDS;Parent=gene-VARV_061;note=VACV-COP-I3L%3B similar to VACV-WR-072;locus_tag=VARV_061;product=ssDNA-binding phosphoprotein
+VARV	Liftoff	gene	53471	55786	.	-	.	ID=gene-VARV_062;gbkey=gene;locus_tag=VARV_062
+VARV	Liftoff	CDS	53471	55786	.	-	.	ID=cds-VARV_062;gbkey=CDS;Parent=gene-VARV_062;note=VACV-COP-I4L%3B similar to VACV-WR-073;locus_tag=VARV_062;product=ribonucleotide reductase large subunit
+VARV	Liftoff	gene	55814	56053	.	-	.	ID=gene-VARV_063;gbkey=gene;locus_tag=VARV_063
+VARV	Liftoff	CDS	55814	56053	.	-	.	ID=cds-VARV_063;gbkey=CDS;Parent=gene-VARV_063;note=VACV-COP-I5L%3B similar to VACV-WR-074;locus_tag=VARV_063;product=IMV protein VP13
+VARV	Liftoff	gene	56072	57220	.	-	.	ID=gene-VARV_064;gbkey=gene;locus_tag=VARV_064
+VARV	Liftoff	CDS	56072	57220	.	-	.	ID=cds-VARV_064;gbkey=CDS;Parent=gene-VARV_064;note=VACV-COP-I6L%3B binds viral DNA telomere ends%3B potential role in viral DNA encapsidation%3B similar to VACV-WR-075;locus_tag=VARV_064;product=hypothetical protein
+VARV	Liftoff	gene	57213	58484	.	-	.	ID=gene-VARV_065;gbkey=gene;locus_tag=VARV_065
+VARV	Liftoff	CDS	57213	58484	.	-	.	ID=cds-VARV_065;gbkey=CDS;Parent=gene-VARV_065;note=VACV-COP-I7L%3B similar to VACV-WR-076;locus_tag=VARV_065;product=viral core cysteine proteinase
+VARV	Liftoff	gene	58490	60520	.	+	.	ID=gene-VARV_066;gbkey=gene;locus_tag=VARV_066
+VARV	Liftoff	CDS	58490	60520	.	+	.	ID=cds-VARV_066;gbkey=CDS;Parent=gene-VARV_066;note=DExH-NPH-II DNA-helicase aided by L4R%3B VACV-COP-I8R%3B similar to VACV-WR-077;locus_tag=VARV_066;product=RNA-helicase
+VARV	Liftoff	gene	60524	62299	.	-	.	ID=gene-VARV_067;gbkey=gene;locus_tag=VARV_067
+VARV	Liftoff	CDS	60524	62299	.	-	.	ID=cds-VARV_067;gbkey=CDS;Parent=gene-VARV_067;note=VACV-COP-G1L%3B has ENE and HLLEH inverse of HXXEX sites%3B similar to VACV-WR-078;locus_tag=VARV_067;product=insulin metalloproteinase-like protein
+VARV	Liftoff	gene	62296	62631	.	-	.	ID=gene-VARV_068;gbkey=gene;locus_tag=VARV_068
+VARV	Liftoff	CDS	62296	62631	.	-	.	ID=cds-VARV_068;gbkey=CDS;Parent=gene-VARV_068;note=VACV-COP-G3L%3B involved in viral-cell entry and virus-infected cell-cell fusion%3B similar to VACV-WR-079;locus_tag=VARV_068;product=IMV membrane protein
+VARV	Liftoff	gene	62625	63287	.	+	.	ID=gene-VARV_069;gbkey=gene;locus_tag=VARV_069
+VARV	Liftoff	CDS	62625	63287	.	+	.	ID=cds-VARV_069;gbkey=CDS;Parent=gene-VARV_069;note=VACV-COP-G2R%3B similar to VACV-WR-080;locus_tag=VARV_069;product=late transcription elongation factor
+VARV	Liftoff	gene	63257	63631	.	-	.	ID=gene-VARV_070;gbkey=gene;locus_tag=VARV_070
+VARV	Liftoff	CDS	63257	63631	.	-	.	ID=cds-VARV_070;gbkey=CDS;Parent=gene-VARV_070;note=VACV-COP-G4L%3B involved in disulfide bond formation pathway%3B similar to VACV-WR-081;locus_tag=VARV_070;product=thioredoxin-like protein
+VARV	Liftoff	gene	63634	64938	.	+	.	ID=gene-VARV_071;gbkey=gene;locus_tag=VARV_071
+VARV	Liftoff	CDS	63634	64938	.	+	.	ID=cds-VARV_071;gbkey=CDS;Parent=gene-VARV_071;note=contains Flap Endonuclease motifs%3B putative proteinacts in DNA metabolism%3B similar to VACV-COP-G5R;locus_tag=VARV_071;product=hypothetical protein
+VARV	Liftoff	gene	64946	65137	.	+	.	ID=gene-VARV_072;gbkey=gene;locus_tag=VARV_072
+VARV	Liftoff	CDS	64946	65137	.	+	.	ID=cds-VARV_072;gbkey=CDS;Parent=gene-VARV_072;note=VACV-COP-G5.5R%3B similar to VACV-WR-083;locus_tag=VARV_072;product=DNA-dependent RNA polymerase subunit rpo7
+VARV	Liftoff	gene	65139	65636	.	+	.	ID=gene-VARV_073;gbkey=gene;locus_tag=VARV_073
+VARV	Liftoff	CDS	65139	65636	.	+	.	ID=cds-VARV_073;gbkey=CDS;Parent=gene-VARV_073;note=VACV-COP-G6R%3B similar to VACV-WR-084;locus_tag=VARV_073;product=hypothetical protein
+VARV	Liftoff	gene	65601	66716	.	-	.	ID=gene-VARV_074;gbkey=gene;locus_tag=VARV_074
+VARV	Liftoff	CDS	65601	66716	.	-	.	ID=cds-VARV_074;gbkey=CDS;Parent=gene-VARV_074;note=IMV formation%3B VACV-COP-G7L%3B similar to VACV-WR-085;locus_tag=VARV_074;product=virion structural protein
+VARV	Liftoff	gene	66747	67529	.	+	.	ID=gene-VARV_075;gbkey=gene;locus_tag=VARV_075
+VARV	Liftoff	CDS	66747	67529	.	+	.	ID=cds-VARV_075;gbkey=CDS;Parent=gene-VARV_075;note=VACV-COP-G8R%3B similar to VACV-WR-086;locus_tag=VARV_075;product=late transcription factor VLTF-1
+VARV	Liftoff	gene	67549	68571	.	+	.	ID=gene-VARV_076;gbkey=gene;locus_tag=VARV_076
+VARV	Liftoff	CDS	67549	68571	.	+	.	ID=cds-VARV_076;gbkey=CDS;Parent=gene-VARV_076;note=IMV membrane protein%3B VACV-COP-G9R%3B involved in viral-cell entry and virus-infected cell-cell fusion%3B similar to VACV-WR-087;locus_tag=VARV_076;product=myristylprotein
+VARV	Liftoff	gene	68572	69324	.	+	.	ID=gene-VARV_077;gbkey=gene;locus_tag=VARV_077
+VARV	Liftoff	CDS	68572	69324	.	+	.	ID=cds-VARV_077;gbkey=CDS;Parent=gene-VARV_077;note=IMV membrane protein%3B VACV-COP-L1R%3B disulfide bond formation pathway thiol substrate%3B similar to VACV-WR-088%3B target of neutralizing antibody;locus_tag=VARV_077;product=myristylprotein
+VARV	Liftoff	gene	69356	69619	.	+	.	ID=gene-VARV_078;gbkey=gene;locus_tag=VARV_078
+VARV	Liftoff	CDS	69356	69619	.	+	.	ID=cds-VARV_078;gbkey=CDS;Parent=gene-VARV_078;note=VACV-COP-L2R%3B similar to VACV-WR-089;locus_tag=VARV_078;product=hypothetical protein
+VARV	Liftoff	gene	69609	70658	.	-	.	ID=gene-VARV_079;gbkey=gene;locus_tag=VARV_079
+VARV	Liftoff	CDS	69609	70658	.	-	.	ID=cds-VARV_079;gbkey=CDS;Parent=gene-VARV_079;note=VACV-COP-L3L%3B similar to VACV-WR-090;locus_tag=VARV_079;product=IMV protein
+VARV	Liftoff	gene	70683	71438	.	+	.	ID=gene-VARV_080;gbkey=gene;locus_tag=VARV_080
+VARV	Liftoff	CDS	70683	71438	.	+	.	ID=cds-VARV_080;gbkey=CDS;Parent=gene-VARV_080;note=VACV-COP-L4R%3B microtubule-associated%3B similar to VACV-WR-091%3B ssRNA/ssDNA-binding protein;locus_tag=VARV_080;product=core protein vp8
+VARV	Liftoff	gene	71448	71834	.	+	.	ID=gene-VARV_081;gbkey=gene;locus_tag=VARV_081
+VARV	Liftoff	CDS	71448	71834	.	+	.	ID=cds-VARV_081;gbkey=CDS;Parent=gene-VARV_081;note=VACV-COP-L5R%3B involved in viral-cell entry and virus-infected cell-cell fusion%3B putative%3B similar to VACV-WR-092;locus_tag=VARV_081;product=IMV membrane protein
+VARV	Liftoff	gene	71791	72270	.	+	.	ID=gene-VARV_082;gbkey=gene;locus_tag=VARV_082
+VARV	Liftoff	CDS	71791	72270	.	+	.	ID=cds-VARV_082;gbkey=CDS;Parent=gene-VARV_082;note=IMV formation%3B VACV-COP-J1R%3B similar to VACV-WR-093;locus_tag=VARV_082;product=virion protein
+VARV	Liftoff	gene	72267	72800	.	+	.	ID=gene-VARV_083;gbkey=gene;locus_tag=VARV_083
+VARV	Liftoff	CDS	72267	72800	.	+	.	ID=cds-VARV_083;gbkey=CDS;Parent=gene-VARV_083;note=VACV-COP-J2R%3B similar to VACV-WR-094;locus_tag=VARV_083;product=thymidine kinase
+VARV	Liftoff	gene	72866	73867	.	+	.	ID=gene-VARV_084;gbkey=gene;locus_tag=VARV_084
+VARV	Liftoff	CDS	72866	73867	.	+	.	ID=cds-VARV_084;gbkey=CDS;Parent=gene-VARV_084;note=VACV-COP-J3R%3B cap methyltransferase%3B similar to VACV-WR-095%3B transcription elongation factor;locus_tag=VARV_084;product=polyA polymerase subunit
+VARV	Liftoff	gene	73782	74339	.	+	.	ID=gene-VARV_085;gbkey=gene;locus_tag=VARV_085
+VARV	Liftoff	CDS	73782	74339	.	+	.	ID=cds-VARV_085;gbkey=CDS;Parent=gene-VARV_085;note=VACV-COP-J4R%3B similar to VACV-WR-096;locus_tag=VARV_085;product=DNA-dependent RNA polymerase subunit rpo22
+VARV	Liftoff	gene	74390	74791	.	-	.	ID=gene-VARV_086;gbkey=gene;locus_tag=VARV_086
+VARV	Liftoff	CDS	74390	74791	.	-	.	ID=cds-VARV_086;gbkey=CDS;Parent=gene-VARV_086;note=VACV-COP-J5L%3B involved in viral-cell entry and virus-infected cell-cell fusion%3B putative%3B similar to VACV-WR-097;locus_tag=VARV_086;product=IMV membrane protein
+VARV	Liftoff	gene	74898	78758	.	+	.	ID=gene-VARV_087;gbkey=gene;locus_tag=VARV_087
+VARV	Liftoff	CDS	74898	78758	.	+	.	ID=cds-VARV_087;gbkey=CDS;Parent=gene-VARV_087;note=VACV-COP-J6R%3B similar to VACV-WR-098;locus_tag=VARV_087;product=DNA-dependent RNA polymerase subunit rpo147
+VARV	Liftoff	gene	78755	79270	.	-	.	ID=gene-VARV_088;gbkey=gene;locus_tag=VARV_088
+VARV	Liftoff	CDS	78755	79270	.	-	.	ID=cds-VARV_088;gbkey=CDS;Parent=gene-VARV_088;note=VACV-COP-H1L%3B similar to VACV-WR-099;locus_tag=VARV_088;product=tyr/ser protein phosphatase
+VARV	Liftoff	gene	79284	79853	.	+	.	ID=gene-VARV_089;gbkey=gene;locus_tag=VARV_089
+VARV	Liftoff	CDS	79284	79853	.	+	.	ID=cds-VARV_089;gbkey=CDS;Parent=gene-VARV_089;note=VACV-COP-H2R%3B involved in viral-cell entry and virus-infected cell-cell fusion%3B putative%3B similar to VACV-WR-100;locus_tag=VARV_089;product=IMV membrane protein
+VARV	Liftoff	gene	79856	80833	.	-	.	ID=gene-VARV_090;gbkey=gene;locus_tag=VARV_090
+VARV	Liftoff	CDS	79856	80833	.	-	.	ID=cds-VARV_090;gbkey=CDS;Parent=gene-VARV_090;note=VACV-COP-H3L%3B involved in IMV maturation%3B similar to VACV-WR-101%3B target for IMV neutralizing antibody;locus_tag=VARV_090;product=IMV heparin binding surface protein
+VARV	Liftoff	gene	80834	83221	.	-	.	ID=gene-VARV_091;gbkey=gene;locus_tag=VARV_091
+VARV	Liftoff	CDS	80834	83221	.	-	.	ID=cds-VARV_091;gbkey=CDS;Parent=gene-VARV_091;note=VACV-COP-H4L%3B similar to VACV-WR-102;locus_tag=VARV_091;product=RNA polymerase subunit RAP94
+VARV	Liftoff	gene	83407	84069	.	+	.	ID=gene-VARV_092;gbkey=gene;locus_tag=VARV_092
+VARV	Liftoff	CDS	83407	84069	.	+	.	ID=cds-VARV_092;gbkey=CDS;Parent=gene-VARV_092;note=VACV-COP-H5R%3B morphogenesis factor%3B phosphoprotein%3Bsimilar to VACV-WR-103;locus_tag=VARV_092;product=VLTF-4 viral late transcription factor
+VARV	Liftoff	gene	84070	85014	.	+	.	ID=gene-VARV_093;gbkey=gene;locus_tag=VARV_093
+VARV	Liftoff	CDS	84070	85014	.	+	.	ID=cds-VARV_093;gbkey=CDS;Parent=gene-VARV_093;note=VACV-COP-H6R%3B similar to VACV-WR-104;locus_tag=VARV_093;product=topoisomerase type IB
+VARV	Liftoff	gene	85051	85491	.	+	.	ID=gene-VARV_094;gbkey=gene;locus_tag=VARV_094
+VARV	Liftoff	CDS	85051	85491	.	+	.	ID=cds-VARV_094;gbkey=CDS;Parent=gene-VARV_094;note=VACV-COP-H7R%3B similar to VACV-WR-105;locus_tag=VARV_094;product=hypothetical protein
+VARV	Liftoff	gene	85535	88069	.	+	.	ID=gene-VARV_095;gbkey=gene;locus_tag=VARV_095
+VARV	Liftoff	CDS	85535	88069	.	+	.	ID=cds-VARV_095;gbkey=CDS;Parent=gene-VARV_095;note=VACV-COP-D1R%3B similar to VACV-WR-106%3B transcriptiontermination factor VTF;locus_tag=VARV_095;product=large subunit of mRNA capping enzyme
+VARV	Liftoff	gene	88028	88468	.	-	.	ID=gene-VARV_096;gbkey=gene;locus_tag=VARV_096
+VARV	Liftoff	CDS	88028	88468	.	-	.	ID=cds-VARV_096;gbkey=CDS;Parent=gene-VARV_096;note=IMV formation%3B VACV-COP-D2L%3B similar to VACV-WR-107;locus_tag=VARV_096;product=virion core protein
+VARV	Liftoff	gene	88461	89174	.	+	.	ID=gene-VARV_097;gbkey=gene;locus_tag=VARV_097
+VARV	Liftoff	CDS	88461	89174	.	+	.	ID=cds-VARV_097;gbkey=CDS;Parent=gene-VARV_097;note=IMV formation%3B VACV-COP-D3R%3B similar to VACV-WR-108,VACV-COP-D4R%3B essential for DNA replication%3B interacts with A20R%3B similar to VACV-WR-109;locus_tag=VARV_097;product=virion core protein,uracil-DNA glycosylase
+VARV	Liftoff	gene	89174	89830	.	+	.	ID=gene-VARV_098;gbkey=gene;locus_tag=VARV_098
+VARV	Liftoff	CDS	89174	89830	.	+	.	ID=cds-VARV_098;gbkey=CDS;Parent=gene-VARV_098;note=IMV formation%3B VACV-COP-D3R%3B similar to VACV-WR-108,VACV-COP-D4R%3B essential for DNA replication%3B interacts with A20R%3B similar to VACV-WR-109;locus_tag=VARV_098;product=virion core protein,uracil-DNA glycosylase
+VARV	Liftoff	gene	89862	92219	.	+	.	ID=gene-VARV_099;gbkey=gene;locus_tag=VARV_099
+VARV	Liftoff	CDS	89862	92219	.	+	.	ID=cds-VARV_099;gbkey=CDS;Parent=gene-VARV_099;note=VACV-COP-D5R%3B essential for DNA replication%3B interacts with A20R%3B similar to VACV-WR-110;locus_tag=VARV_099;product=NTPase
+VARV	Liftoff	gene	92260	94173	.	+	.	ID=gene-VARV_100;gbkey=gene;locus_tag=VARV_100
+VARV	Liftoff	CDS	92260	94173	.	+	.	ID=cds-VARV_100;gbkey=CDS;Parent=gene-VARV_100;note=VACV-COP-D6R%3B similar to VACV-WR-111;locus_tag=VARV_100;product=70kDa small subunit of early transcriptioninitiation factor VETF
+VARV	Liftoff	gene	94200	94685	.	+	.	ID=gene-VARV_101;gbkey=gene;locus_tag=VARV_101
+VARV	Liftoff	CDS	94200	94685	.	+	.	ID=cds-VARV_101;gbkey=CDS;Parent=gene-VARV_101;note=VACV-COP-D7R%3B similar to VACV-WR-112;locus_tag=VARV_101;product=DNA-dependent RNA polymerase subunit rpo18
+VARV	Liftoff	gene	94648	95562	.	-	.	ID=gene-VARV_102;gbkey=gene;locus_tag=VARV_102
+VARV	Liftoff	CDS	94648	95562	.	-	.	ID=cds-VARV_102;gbkey=CDS;Parent=gene-VARV_102;note=VACV-COP-D8L%3B binds cell surface chondroitin%3B may effect viral entry%3B similar to VACV-WR-113;locus_tag=VARV_102;product=IMV membrane protein
+VARV	Liftoff	gene	95604	96245	.	+	.	ID=gene-VARV_103;gbkey=gene;locus_tag=VARV_103
+VARV	Liftoff	CDS	95604	96245	.	+	.	ID=cds-VARV_103;gbkey=CDS;Parent=gene-VARV_103;note=VACV-COP-D9R%3B contains mutT-like motif of NTP-phosphohydrolase for DNA repair%3B similar to VACV-WR-114;locus_tag=VARV_103;product=hypothetical protein
+VARV	Liftoff	gene	96242	96988	.	+	.	ID=gene-VARV_104;gbkey=gene;locus_tag=VARV_104
+VARV	Liftoff	CDS	96242	96988	.	+	.	ID=cds-VARV_104;gbkey=CDS;Parent=gene-VARV_104;note=VACV-COP-D10R%3B contains mutT-like motif of NTP-phosphohydrolase for DNA repair%3B similar to VACV-WR-115;locus_tag=VARV_104;product=hypothetical protein
+VARV	Liftoff	gene	96989	98884	.	-	.	ID=gene-VARV_105;gbkey=gene;locus_tag=VARV_105
+VARV	Liftoff	CDS	96989	98884	.	-	.	ID=cds-VARV_105;gbkey=CDS;Parent=gene-VARV_105;note=VACV-COP-D11L%3B release factor%3B similar to VACV-WR-116%3B termination%3B transcription elongation;locus_tag=VARV_105;product=ATPase%2C nucleoside triphosphatephosphohydrolase-I
+VARV	Liftoff	gene	98918	99781	.	-	.	ID=gene-VARV_106;gbkey=gene;locus_tag=VARV_106
+VARV	Liftoff	CDS	98918	99781	.	-	.	ID=cds-VARV_106;gbkey=CDS;Parent=gene-VARV_106;note=VACV-COP-D12L%3B similar to VACV-WR-117%3B transcription termination factor VTF;locus_tag=VARV_106;product=small stimulatory subunit of mRNA cappingenzyme
+VARV	Liftoff	gene	99812	101467	.	-	.	ID=gene-VARV_107;gbkey=gene;locus_tag=VARV_107
+VARV	Liftoff	CDS	99812	101467	.	-	.	ID=cds-VARV_107;gbkey=CDS;Parent=gene-VARV_107;note=VACV-COP-D13L%3B rifampicin target associates with inner surface immature virus membrane%3B similar to VACV-WR-118;locus_tag=VARV_107;product=hypothetical protein
+VARV	Liftoff	gene	101491	101943	.	-	.	ID=gene-VARV_108;gbkey=gene;locus_tag=VARV_108
+VARV	Liftoff	CDS	101491	101943	.	-	.	ID=cds-VARV_108;gbkey=CDS;Parent=gene-VARV_108;note=VACV-COP-A1L%3B similar to VACV-WR-119;locus_tag=VARV_108;product=late gene transcription factor VLTF-2
+VARV	Liftoff	gene	101964	102638	.	-	.	ID=gene-VARV_109;gbkey=gene;locus_tag=VARV_109
+VARV	Liftoff	CDS	101964	102638	.	-	.	ID=cds-VARV_109;gbkey=CDS;Parent=gene-VARV_109;note=VACV-COP-A2L%3B similar to VACV-WR-120;locus_tag=VARV_109;product=late gene transcription factor VLTF-3
+VARV	Liftoff	gene	102635	102865	.	-	.	ID=gene-VARV_110;gbkey=gene;locus_tag=VARV_110
+VARV	Liftoff	CDS	102635	102865	.	-	.	ID=cds-VARV_110;gbkey=CDS;Parent=gene-VARV_110;note=CxxxClinks SH-oxidase E10R and thioredoxin G4L%3B involved in disulfide bond formation pathway%3B similar toVACV-WR-121;locus_tag=VARV_110;product=hypothetical protein
+VARV	Liftoff	gene	102880	104814	.	-	.	ID=gene-VARV_111;gbkey=gene;locus_tag=VARV_111
+VARV	Liftoff	CDS	102880	104814	.	-	.	ID=cds-VARV_111;gbkey=CDS;Parent=gene-VARV_111;note=VACV-COP-A3L%3B similar to VACV-WR-122;locus_tag=VARV_111;product=p4b precursor of core protein 4b
+VARV	Liftoff	gene	104867	105652	.	-	.	ID=gene-VARV_112;gbkey=gene;locus_tag=VARV_112
+VARV	Liftoff	CDS	104867	105652	.	-	.	ID=cds-VARV_112;gbkey=CDS;Parent=gene-VARV_112;note=VACV-COP-A4L%3B complexes with core protein p4a/4a%3B similar to VACV-WR-123;locus_tag=VARV_112;product=39kDa core protein
+VARV	Liftoff	gene	105690	106184	.	+	.	ID=gene-VARV_113;gbkey=gene;locus_tag=VARV_113
+VARV	Liftoff	CDS	105690	106184	.	+	.	ID=cds-VARV_113;gbkey=CDS;Parent=gene-VARV_113;note=VACV-COP-A5R%3B similar to VACV-WR-124;locus_tag=VARV_113;product=DNA-dependent RNA polymerase subunit rpo19
+VARV	Liftoff	gene	106181	107299	.	-	.	ID=gene-VARV_114;gbkey=gene;locus_tag=VARV_114
+VARV	Liftoff	CDS	106181	107299	.	-	.	ID=cds-VARV_114;gbkey=CDS;Parent=gene-VARV_114;note=VACV-COP-A6L%3B similar to VACV-WR-125;locus_tag=VARV_114;product=hypothetical protein
+VARV	Liftoff	gene	107323	109455	.	-	.	ID=gene-VARV_115;gbkey=gene;locus_tag=VARV_115
+VARV	Liftoff	CDS	107323	109455	.	-	.	ID=cds-VARV_115;gbkey=CDS;Parent=gene-VARV_115;note=VACV-COP-A7L%3B similar to VACV-WR-126;locus_tag=VARV_115;product=early gene transcriptionfactor VETF 82kDa large subunit
+VARV	Liftoff	gene	109509	110375	.	+	.	ID=gene-VARV_116;gbkey=gene;locus_tag=VARV_116
+VARV	Liftoff	CDS	109509	110375	.	+	.	ID=cds-VARV_116;gbkey=CDS;Parent=gene-VARV_116;note=VACV-COP-A8R%3B similar to VACV-WR-127%3B used for intermediate gene expression;locus_tag=VARV_116;product=32kDa small subunit of transcription factorVITF-3
+VARV	Liftoff	gene	110372	110659	.	-	.	ID=gene-VARV_117;gbkey=gene;locus_tag=VARV_117
+VARV	Liftoff	CDS	110372	110659	.	-	.	ID=cds-VARV_117;gbkey=CDS;Parent=gene-VARV_117;note=VACV-COP-A9L%3B morphogenesisfactor%3B similar to VACV-WR-128;locus_tag=VARV_117;product=IMV membrane protein
+VARV	Liftoff	gene	110660	113338	.	-	.	ID=gene-VARV_118;gbkey=gene;locus_tag=VARV_118
+VARV	Liftoff	CDS	110660	113338	.	-	.	ID=cds-VARV_118;gbkey=CDS;Parent=gene-VARV_118;note=VACV-COP-A10L%3B complexes with A4L core protein%3B similar to VACV-WR-129;locus_tag=VARV_118;product=p4a precursor of IMV core protein 4a
+VARV	Liftoff	gene	113353	114312	.	+	.	ID=gene-VARV_119;gbkey=gene;locus_tag=VARV_119
+VARV	Liftoff	CDS	113353	114312	.	+	.	ID=cds-VARV_119;gbkey=CDS;Parent=gene-VARV_119;note=VACV-COP-A11R%3B similar to VACV-WR-130;locus_tag=VARV_119;product=hypothetical protein
+VARV	Liftoff	gene	114314	114883	.	-	.	ID=gene-VARV_120;gbkey=gene;locus_tag=VARV_120
+VARV	Liftoff	CDS	114314	114883	.	-	.	ID=cds-VARV_120;gbkey=CDS;Parent=gene-VARV_120;note=VACV-COP-A12L%3B similar to VACV-WR-131;locus_tag=VARV_120;product=core protein
+VARV	Liftoff	gene	114907	115113	.	-	.	ID=gene-VARV_121;gbkey=gene;locus_tag=VARV_121
+VARV	Liftoff	CDS	114907	115113	.	-	.	ID=cds-VARV_121;gbkey=CDS;Parent=gene-VARV_121;note=VACV-COP-A13L%3B similar to VACV-WR-132;locus_tag=VARV_121;product=IMV membrane-associated morphogenesisphosphoprotein
+VARV	Liftoff	gene	115221	115493	.	-	.	ID=gene-VARV_122;gbkey=gene;locus_tag=VARV_122
+VARV	Liftoff	CDS	115221	115493	.	-	.	ID=cds-VARV_122;gbkey=CDS;Parent=gene-VARV_122;note=VACV-COP-A14L%3B morphogenesis factor%3B similar to VACV-WR-133;locus_tag=VARV_122;product=phosphorylated IMV membrane protein
+VARV	Liftoff	gene	115510	115671	.	-	.	ID=gene-VARV_123;gbkey=Gene;locus_tag=VARV_123
+VARV	Liftoff	CDS	115510	115671	.	-	.	ID=cds-VARV_123;Parent=gene-VARV_123;locus_tag=VARV_123;product=hydrophobic IV and IMV membrane protein
+VARV	Liftoff	gene	115661	115945	.	-	.	ID=gene-VARV_124;gbkey=gene;locus_tag=VARV_124
+VARV	Liftoff	CDS	115661	115945	.	-	.	ID=cds-VARV_124;gbkey=CDS;Parent=gene-VARV_124;note=VACV-COP-A15L%3B similar to VACV-WR-135;locus_tag=VARV_124;product=virion core-associated protein
+VARV	Liftoff	gene	115929	117062	.	-	.	ID=gene-VARV_125;gbkey=gene;locus_tag=VARV_125
+VARV	Liftoff	CDS	115929	117062	.	-	.	ID=cds-VARV_125;gbkey=CDS;Parent=gene-VARV_125;note=IMV membrane protein%3B VACV-COP-A16L%3B involved in viral-cell entry and virus-infected cell-cell fusion%3B similar to VACV-WR-136;locus_tag=VARV_125;product=myristylprotein
+VARV	Liftoff	gene	117065	117676	.	-	.	ID=gene-VARV_126;gbkey=gene;locus_tag=VARV_126
+VARV	Liftoff	CDS	117065	117676	.	-	.	ID=cds-VARV_126;gbkey=CDS;Parent=gene-VARV_126;note=IMV membrane protein%3B VACV-COP-A17L%3B morphogenesis factor%3B similar to VACV-WR-137%3B undergoes phosphorylation and proteolytic processing;locus_tag=VARV_126;product=phosphoprotein
+VARV	Liftoff	gene	117691	119172	.	+	.	ID=gene-VARV_127;gbkey=gene;locus_tag=VARV_127
+VARV	Liftoff	CDS	117691	119172	.	+	.	ID=cds-VARV_127;gbkey=CDS;Parent=gene-VARV_127;note=VACV-COP-A18R%3B effects elongation and termination of postreplicative viral transcription%3B similar to VACV-WR-138;locus_tag=VARV_127;product=DNA helicase
+VARV	Liftoff	gene	119153	119383	.	-	.	ID=gene-VARV_128;gbkey=gene;locus_tag=VARV_128
+VARV	Liftoff	CDS	119153	119383	.	-	.	ID=cds-VARV_128;gbkey=CDS;Parent=gene-VARV_128;note=VACV-COP-A19L%3B similar to VACV-WR-139;locus_tag=VARV_128;product=hypothetical protein
+VARV	Liftoff	gene	119384	119737	.	-	.	ID=gene-VARV_129;gbkey=gene;locus_tag=VARV_129
+VARV	Liftoff	CDS	119384	119737	.	-	.	ID=cds-VARV_129;gbkey=CDS;Parent=gene-VARV_129;note=IMV membrane protein%3B VACV-COP-A21L%3B involved in viral-cell entry and virus-infected cell-cell fusion%3B similar to VACV-WR-140;locus_tag=VARV_129;product=fusion protein
+VARV	Liftoff	gene	119736	121016	.	+	.	ID=gene-VARV_130;gbkey=gene;locus_tag=VARV_130
+VARV	Liftoff	CDS	119736	121016	.	+	.	ID=cds-VARV_130;gbkey=CDS;Parent=gene-VARV_130;note=VACV-COP-A20R%3B interacts with other replication factors%3B similar to VACV-WR-141;locus_tag=VARV_130;product=viral DNA polymerase processivity factor
+VARV	Liftoff	gene	120946	121509	.	+	.	ID=gene-VARV_131;gbkey=gene;locus_tag=VARV_131
+VARV	Liftoff	CDS	120946	121509	.	+	.	ID=cds-VARV_131;gbkey=CDS;Parent=gene-VARV_131;note=VACV-COP-A22R%3B resolves viral DNA concatemers into unit length genomes%3B similar to VACV-WR-142;locus_tag=VARV_131;product=Holiday junction resolvase palmitylprotein
+VARV	Liftoff	gene	121529	122677	.	+	.	ID=gene-VARV_132;gbkey=gene;locus_tag=VARV_132
+VARV	Liftoff	CDS	121529	122677	.	+	.	ID=cds-VARV_132;gbkey=CDS;Parent=gene-VARV_132;note=VACV-COP-A23R%3B similar to VACV-WR-143;locus_tag=VARV_132;product=45kDa large subunit of intermediate genetranscription factor VITF-3
+VARV	Liftoff	gene	122674	126168	.	+	.	ID=gene-VARV_133;gbkey=gene;locus_tag=VARV_133
+VARV	Liftoff	CDS	122674	126168	.	+	.	ID=cds-VARV_133;gbkey=CDS;Parent=gene-VARV_133;note=VACV-COP-A24R%3B similar to VACV-WR-144;locus_tag=VARV_133;product=DNA-dependent RNA polymerase subunit rpo132
+VARV	Liftoff	gene	126436	126726	.	-	.	ID=gene-VARV_134;gbkey=gene;locus_tag=VARV_134
+VARV	Liftoff	CDS	126436	126726	.	-	.	ID=cds-VARV_134;gbkey=CDS;Parent=gene-VARV_134;note=part of CPXV-BR-158%3B part of VACV-COP-A25L%3B similarto VACV-WR-145;locus_tag=VARV_134;product=cowpox A-type inclusion protein
+VARV	Liftoff	gene	126769	126966	.	-	.	ID=gene-VARV_135;gbkey=gene;locus_tag=VARV_135
+VARV	Liftoff	CDS	126769	126966	.	-	.	ID=cds-VARV_135;gbkey=CDS;Parent=gene-VARV_135;note=part of CPXV-BR-158%3B part of VACV-COP-A25L%3B similarto VACV-WR-146;locus_tag=VARV_135;product=cowpox A-type inclusion protein
+VARV	Liftoff	gene	127118	127702	.	-	.	ID=gene-VARV_136;gbkey=gene;locus_tag=VARV_136
+VARV	Liftoff	CDS	127118	127702	.	-	.	ID=cds-VARV_136;gbkey=CDS;Parent=gene-VARV_136;note=part of CPXV-BR-158%3B part of VACV-COP-A25L%3B similarto VACV-WR-147;locus_tag=VARV_136;product=cowpox A-type inclusion protein
+VARV	Liftoff	gene	127770	129878	.	-	.	ID=gene-VARV_137;gbkey=gene;locus_tag=VARV_137
+VARV	Liftoff	CDS	127770	129878	.	-	.	ID=cds-VARV_137;gbkey=CDS;Parent=gene-VARV_137;note=part of CPXV-BR-158%3B part of VACV-COP-A25L%3B similarto VACV-WR-148;locus_tag=VARV_137;product=cowpox A-type inclusion protein
+VARV	Liftoff	gene	129923	131419	.	-	.	ID=gene-VARV_138;gbkey=gene;locus_tag=VARV_138
+VARV	Liftoff	CDS	129923	131419	.	-	.	ID=cds-VARV_138;gbkey=CDS;Parent=gene-VARV_138;note=part of CPXV-BR-158%3B part of VACV-COP-A26L%3B similarto VACV-WR-149;locus_tag=VARV_138;product=cowpox A-type inclusion protein
+VARV	Liftoff	gene	131470	131802	.	-	.	ID=gene-VARV_139;gbkey=gene;locus_tag=VARV_139
+VARV	Liftoff	CDS	131470	131802	.	-	.	ID=cds-VARV_139;gbkey=CDS;Parent=gene-VARV_139;note=VACV-COP-A27L%3B may be involved in IMV-to-cell attachment%3B similar to VACV-WR-150;locus_tag=VARV_139;product=IMV surface protein
+VARV	Liftoff	gene	131803	132243	.	-	.	ID=gene-VARV_140;gbkey=gene;locus_tag=VARV_140
+VARV	Liftoff	CDS	131803	132243	.	-	.	ID=cds-VARV_140;gbkey=CDS;Parent=gene-VARV_140;note=IMV membrane protein%3B VACV-COP-A28L%3B involved in viral-cell entry and virus-infected cell-cell fusion%3B similar to VACV-WR-151;locus_tag=VARV_140;product=fusion protein
+VARV	Liftoff	gene	132244	133161	.	-	.	ID=gene-VARV_141;gbkey=gene;locus_tag=VARV_141
+VARV	Liftoff	CDS	132244	133161	.	-	.	ID=cds-VARV_141;gbkey=CDS;Parent=gene-VARV_141;note=VACV-COP-A29L%3B similar to VACV-WR-152;locus_tag=VARV_141;product=DNA-dependent RNA polymerase subunit rpo35
+VARV	Liftoff	gene	133124	133357	.	-	.	ID=gene-VARV_142;gbkey=gene;locus_tag=VARV_142
+VARV	Liftoff	CDS	133124	133357	.	-	.	ID=cds-VARV_142;gbkey=CDS;Parent=gene-VARV_142;note=IMV core protein%3B VACV-COP-A30L%3B involved in the association of dense viroplasm withviral membranes during morphogenesis%3B similar toVACV-WR-153;locus_tag=VARV_142;product=phosphoprotein
+VARV	Liftoff	gene	133517	133930	.	+	.	ID=gene-VARV_143;gbkey=gene;locus_tag=VARV_143
+VARV	Liftoff	CDS	133517	133930	.	+	.	ID=cds-VARV_143;gbkey=CDS;Parent=gene-VARV_143;note=VACV-COP-A31R%3B similar to VACV-WR-154;locus_tag=VARV_143;product=hypothetical protein
+VARV	Liftoff	gene	133897	134709	.	-	.	ID=gene-VARV_144;gbkey=gene;locus_tag=VARV_144
+VARV	Liftoff	CDS	133897	134709	.	-	.	ID=cds-VARV_144;gbkey=CDS;Parent=gene-VARV_144;note=VACV-COP-A32L%3B involved in DNA packaging%3B putative%3Bsimilar to VACV-WR-155;locus_tag=VARV_144;product=ATPase
+VARV	Liftoff	gene	134827	135381	.	+	.	ID=gene-VARV_145;gbkey=gene;locus_tag=VARV_145
+VARV	Liftoff	CDS	134827	135381	.	+	.	ID=cds-VARV_145;gbkey=CDS;Parent=gene-VARV_145;note=EEV membrane protein%3B VACV-COP-A33R%3B associates with A36R%3B involved in CEV-cell adherence and actin tail formation%3B similar to VACV-WR-156;locus_tag=VARV_145;product=phosphoglycoprotein
+VARV	Liftoff	gene	135405	135911	.	+	.	ID=gene-VARV_146;gbkey=gene;locus_tag=VARV_146
+VARV	Liftoff	CDS	135405	135911	.	+	.	ID=cds-VARV_146;gbkey=CDS;Parent=gene-VARV_146;note=IEV and EEV outer membrane lectin-like protein%3B VACV-COP-A34R%3B involved in CEV cell adherence and actin tail formation%3B similar to VACV-WR-157;locus_tag=VARV_146;product=glycoprotein
+VARV	Liftoff	gene	135953	136135	.	+	.	ID=gene-VARV_147;gbkey=Gene;locus_tag=VARV_147
+VARV	Liftoff	CDS	135953	136135	.	+	.	ID=cds-VARV_147;Parent=gene-VARV_147;locus_tag=VARV_147;product=hypothetical protein
+VARV	Liftoff	gene	136548	137198	.	+	.	ID=gene-VARV_148;gbkey=gene;locus_tag=VARV_148
+VARV	Liftoff	CDS	136548	137198	.	+	.	ID=cds-VARV_148;gbkey=CDS;Parent=gene-VARV_148;note=IEV transmembrane protein%3B VACV-COP-A36R%3B interactswith A33R and needed for actin tail formation%3B similar toVACV-WR-159;locus_tag=VARV_148;product=phosphoprotein
+VARV	Liftoff	gene	137119	137352	.	-	.	ID=gene-VARV_149;gbkey=gene;locus_tag=VARV_149
+VARV	Liftoff	CDS	137119	137352	.	-	.	ID=cds-VARV_149;gbkey=CDS;Parent=gene-VARV_149;note=similar to CMLV-CMS-154R;locus_tag=VARV_149;product=hypothetical protein
+VARV	Liftoff	gene	137386	137592	.	+	.	ID=gene-VARV_150;gbkey=gene;locus_tag=VARV_150
+VARV	Liftoff	CDS	137386	137592	.	+	.	ID=cds-VARV_150;gbkey=CDS;Parent=gene-VARV_150;note=VACV-COP-A37R%3B similar to VACV-WR-160;locus_tag=VARV_150;product=hypothetical protein
+VARV	Liftoff	gene	138117	138299	.	+	.	ID=gene-VARV_151;gbkey=Gene;locus_tag=VARV_151
+VARV	Liftoff	CDS	138117	138299	.	+	.	ID=cds-VARV_151;Parent=gene-VARV_151;locus_tag=VARV_151;product=hypothetical protein
+VARV	Liftoff	gene	138296	139129	.	-	.	ID=gene-VARV_152;gbkey=gene;locus_tag=VARV_152
+VARV	Liftoff	CDS	138296	139129	.	-	.	ID=cds-VARV_152;gbkey=CDS;Parent=gene-VARV_152;note=CD47-like%3B VACV-COP-A38L%3B similar to VACV-WR-162;locus_tag=VARV_152;product=membrane protein
+VARV	Liftoff	gene	139145	139369	.	+	.	ID=gene-VARV_153;gbkey=Gene;locus_tag=VARV_153
+VARV	Liftoff	CDS	139145	139369	.	+	.	ID=cds-VARV_153;Parent=gene-VARV_153;locus_tag=VARV_153;product=semaphorin-like protein
+VARV	Liftoff	gene	139568	139936	.	+	.	ID=gene-VARV_154;gbkey=gene;locus_tag=VARV_154
+VARV	Liftoff	CDS	139568	139936	.	+	.	ID=cds-VARV_154;gbkey=CDS;Parent=gene-VARV_154;note=host defense modulator%3B intact protein proinflammatory in VAC-mouse skin lesion model%3B part of VACV-COP-A39R%3B similar to VACV-WR-164;locus_tag=VARV_154;product=semaphorin-like protein
+VARV	Liftoff	gene	139923	140342	.	+	.	ID=gene-VARV_155;gbkey=gene;locus_tag=VARV_155
+VARV	Liftoff	CDS	139923	140342	.	+	.	ID=cds-VARV_155;gbkey=CDS;Parent=gene-VARV_155;note=host defense modulator%3B intact protein proinflammatory in VAC-mouse skin lesion model%3B similar to part of VACV-COP-A39R;locus_tag=VARV_155;product=semaphorin-like protein
+VARV	Liftoff	gene	140369	140554	.	+	.	ID=gene-VARV_156;gbkey=Gene;locus_tag=VARV_156
+VARV	Liftoff	CDS	140369	140554	.	+	.	ID=cds-VARV_156;Parent=gene-VARV_156;locus_tag=VARV_156;product=type-II membrane protein
+VARV	Liftoff	gene	140947	141603	.	-	.	ID=gene-VARV_157;gbkey=gene;locus_tag=VARV_157
+VARV	Liftoff	CDS	140947	141603	.	-	.	ID=cds-VARV_157;gbkey=CDS;Parent=gene-VARV_157;note=VACV-COP-A41L%3B deletion causes more severe lesion and enhanced viral clearance in VAC-mouse skin model%3B host defense modulator%3B secreted%3B similar to VACV-WR-166;locus_tag=VARV_157;product=glycoprotein
+VARV	Liftoff	gene	141789	142190	.	+	.	ID=gene-VARV_158;gbkey=gene;locus_tag=VARV_158
+VARV	Liftoff	CDS	141789	142190	.	+	.	ID=cds-VARV_158;gbkey=CDS;Parent=gene-VARV_158;note=VACV-COP-A42R%3B similar to VACV-WR-167;locus_tag=VARV_158;product=profilin-like protein
+VARV	Liftoff	gene	142228	142815	.	+	.	ID=gene-VARV_159;gbkey=gene;locus_tag=VARV_159
+VARV	Liftoff	CDS	142228	142815	.	+	.	ID=cds-VARV_159;gbkey=CDS;Parent=gene-VARV_159;note=VACV-COP-A43R%3B putative protein%3B similar to VACV-WR-168;locus_tag=VARV_159;product=type-I membrane glycoprotein
+VARV	Liftoff	gene	143367	143825	.	-	.	ID=gene-VARV_160;gbkey=gene;locus_tag=VARV_160
+VARV	Liftoff	CDS	143367	143825	.	-	.	ID=cds-VARV_160;gbkey=CDS;Parent=gene-VARV_160;note=part of VACV-COP-A44L%3B similar to part of VACV-WR-170;locus_tag=VARV_160;product=hydroxysteroid dehydrogenase
+VARV	Liftoff	gene	143994	144179	.	-	.	ID=gene-VARV_161;gbkey=Gene;locus_tag=VARV_161
+VARV	Liftoff	CDS	143994	144179	.	-	.	ID=cds-VARV_161;Parent=gene-VARV_161;locus_tag=VARV_161;product=hydroxysteroid dehydrogenase
+VARV	Liftoff	gene	144229	144606	.	+	.	ID=gene-VARV_162;gbkey=gene;locus_tag=VARV_162
+VARV	Liftoff	CDS	144229	144606	.	+	.	ID=cds-VARV_162;gbkey=CDS;Parent=gene-VARV_162;note=VACV-COP-A45R%3B inactive in virion%3B similar to VACV-WR-171;locus_tag=VARV_162;product=Cu-Zn superoxide dismutase-like protein
+VARV	Liftoff	gene	144596	145318	.	+	.	ID=gene-VARV_163;gbkey=gene;locus_tag=VARV_163
+VARV	Liftoff	CDS	144596	145318	.	+	.	ID=cds-VARV_163;gbkey=CDS;Parent=gene-VARV_163;note=VACV-COP-A46R%3B host defense modulator%3B inhibits signaling by targeting multiple Toll/IL-receptor adaptors%3B similar to VACV-WR-172;locus_tag=VARV_163;product=hypothetical protein
+VARV	Liftoff	gene	145403	146137	.	-	.	ID=gene-VARV_164;gbkey=gene;locus_tag=VARV_164
+VARV	Liftoff	CDS	145403	146137	.	-	.	ID=cds-VARV_164;gbkey=CDS;Parent=gene-VARV_164;note=VACV-COP-A47L%3B similar to VACV-WR-173;locus_tag=VARV_164;product=hypothetical protein
+VARV	Liftoff	gene	146235	146852	.	+	.	ID=gene-VARV_165;gbkey=gene;locus_tag=VARV_165
+VARV	Liftoff	CDS	146235	146852	.	+	.	ID=cds-VARV_165;gbkey=CDS;Parent=gene-VARV_165;note=VACV-COP-A48R%3B similar to VACV-WR-174;locus_tag=VARV_165;product=thymidylate kinase
+VARV	Liftoff	gene	146902	147390	.	+	.	ID=gene-VARV_166;gbkey=gene;locus_tag=VARV_166
+VARV	Liftoff	CDS	146902	147390	.	+	.	ID=cds-VARV_166;gbkey=CDS;Parent=gene-VARV_166;note=VACV-COP-A49R%3B similar to VACV-WR-175;locus_tag=VARV_166;product=hypothetical protein
+VARV	Liftoff	gene	147422	149080	.	+	.	ID=gene-VARV_167;gbkey=gene;locus_tag=VARV_167
+VARV	Liftoff	CDS	147422	149080	.	+	.	ID=cds-VARV_167;gbkey=CDS;Parent=gene-VARV_167;note=VACV-COP-A50R%3B similar to VACV-WR-176;locus_tag=VARV_167;product=DNA ligase
+VARV	Liftoff	gene	149133	150137	.	+	.	ID=gene-VARV_168;gbkey=gene;locus_tag=VARV_168
+VARV	Liftoff	CDS	149133	150137	.	+	.	ID=cds-VARV_168;gbkey=CDS;Parent=gene-VARV_168;note=VACV-COP-A51R%3B similar to VACV-WR-177;locus_tag=VARV_168;product=hypothetical protein
+VARV	Liftoff	gene	150373	150672	.	+	.	ID=gene-VARV_169;gbkey=Gene;locus_tag=VARV_169
+VARV	Liftoff	CDS	150373	150672	.	+	.	ID=cds-VARV_169;Parent=gene-VARV_169;locus_tag=VARV_169;product=hypothetical protein
+VARV	Liftoff	gene	150893	151108	.	+	.	ID=gene-VARV_170;gbkey=Gene;locus_tag=VARV_170
+VARV	Liftoff	CDS	150893	151108	.	+	.	ID=cds-VARV_170;Parent=gene-VARV_170;locus_tag=VARV_170;product=kelch-like ring canal protein
+VARV	Liftoff	gene	151124	151642	.	+	.	ID=gene-VARV_171;gbkey=gene;locus_tag=VARV_171
+VARV	Liftoff	CDS	151124	151642	.	+	.	ID=cds-VARV_171;gbkey=CDS;Parent=gene-VARV_171;note=part of VACV-COP-A55R%3B similar to part of VACV-WR-180;locus_tag=VARV_171;product=kelch-like ring canal protein
+VARV	Liftoff	gene	151722	152663	.	+	.	ID=gene-VARV_172;gbkey=gene;locus_tag=VARV_172
+VARV	Liftoff	CDS	151722	152663	.	+	.	ID=cds-VARV_172;gbkey=CDS;Parent=gene-VARV_172;note=VACV-COP-A56R%3B in the EEV%3B inhibits cell fusion%3B similar to VACV-WR-181%3B type-I membrane glycoprotein;locus_tag=VARV_172;product=hemagglutinin protein
+VARV	Liftoff	gene	152807	153262	.	+	.	ID=gene-VARV_173;gbkey=gene;locus_tag=VARV_173
+VARV	Liftoff	CDS	152807	153262	.	+	.	ID=cds-VARV_173;gbkey=CDS;Parent=gene-VARV_173;note=VACV-COP-A57R%3B inactive probably due to deleted ATP-binding site%3B similar to VACV-WR-182;locus_tag=VARV_173;product=guanylate kinase-like protein
+VARV	Liftoff	gene	153420	154322	.	+	.	ID=gene-VARV_174;gbkey=gene;locus_tag=VARV_174
+VARV	Liftoff	CDS	153420	154322	.	+	.	ID=cds-VARV_174;gbkey=CDS;Parent=gene-VARV_174;note=VACV-COP-B1R%3B essential for viral DNA replication%3B similar to VACV-WR-183;locus_tag=VARV_174;product=ser/thr kinase
+VARV	Liftoff	gene	154736	154936	.	-	.	ID=gene-VARV_175;gbkey=gene;locus_tag=VARV_175
+VARV	Liftoff	CDS	154736	154936	.	-	.	ID=cds-VARV_175;gbkey=CDS;Parent=gene-VARV_175;note=similar to VACV-COP-B NA B;locus_tag=VARV_175;product=hypothetical protein
+VARV	Liftoff	gene	154882	155079	.	-	.	ID=gene-VARV_176;gbkey=gene;locus_tag=VARV_176
+VARV	Liftoff	CDS	154882	155079	.	-	.	ID=cds-VARV_176;gbkey=CDS;Parent=gene-VARV_176;note=similar to VACV-COP-B NA C;locus_tag=VARV_176;product=hypothetical protein
+VARV	Liftoff	gene	155446	155703	.	-	.	ID=gene-VARV_177;gbkey=gene;locus_tag=VARV_177
+VARV	Liftoff	CDS	155446	155703	.	-	.	ID=cds-VARV_177;gbkey=CDS;Parent=gene-VARV_177;locus_tag=VARV_177;product=hypothetical protein
+VARV	Liftoff	gene	156124	157800	.	+	.	ID=gene-VARV_178;gbkey=gene;locus_tag=VARV_178
+VARV	Liftoff	CDS	156124	157800	.	+	.	ID=cds-VARV_178;gbkey=CDS;Parent=gene-VARV_178;note=VACV-COP-B4R%3B similar to VACV-WR-186;locus_tag=VARV_178;product=ankyrin-like protein
+VARV	Liftoff	gene	157903	158856	.	+	.	ID=gene-VARV_179;gbkey=gene;locus_tag=VARV_179
+VARV	Liftoff	CDS	157903	158856	.	+	.	ID=cds-VARV_179;gbkey=CDS;Parent=gene-VARV_179;note=EEV membrane protein%3B VACV-COP-B5R%3B needed for trans-Golgi endosome membrane wrapping of IMV%3B similar to VACV-WR-187%3B target for EEV neutralizing antibody;locus_tag=VARV_179;product=glycoprotein
+VARV	Liftoff	gene	158954	159127	.	+	.	ID=gene-VARV_180;gbkey=Gene;locus_tag=VARV_180
+VARV	Liftoff	CDS	158954	159127	.	+	.	ID=cds-VARV_180;Parent=gene-VARV_180;locus_tag=VARV_180;product=ankyrin-like protein
+VARV	Liftoff	gene	159261	159431	.	+	.	ID=gene-VARV_181;gbkey=gene;locus_tag=VARV_181
+VARV	Liftoff	CDS	159261	159431	.	+	.	ID=cds-VARV_181;gbkey=CDS;Parent=gene-VARV_181;note=part of VACV-COP-B6R%3B similar to part of VACV-WR-188;locus_tag=VARV_181;product=ankyrin-like protein
+VARV	Liftoff	gene	160091	160891	.	+	.	ID=gene-VARV_182;gbkey=gene;locus_tag=VARV_182
+VARV	Liftoff	CDS	160091	160891	.	+	.	ID=cds-VARV_182;gbkey=CDS;Parent=gene-VARV_182;note=VACV-COP-B8R%3B host defense modulator%3B similar to VACV-WR-190;locus_tag=VARV_182;product=interferon-gamma receptor-like soluble protein
+VARV	Liftoff	gene	161583	161807	.	+	.	ID=gene-VARV_183;gbkey=gene;locus_tag=VARV_183
+VARV	Liftoff	CDS	161583	161807	.	+	.	ID=cds-VARV_183;gbkey=CDS;Parent=gene-VARV_183;locus_tag=VARV_183;product=hypothetical protein
+VARV	Liftoff	gene	161891	162088	.	+	.	ID=gene-VARV_184;gbkey=gene;locus_tag=VARV_184
+VARV	Liftoff	CDS	161891	162088	.	+	.	ID=cds-VARV_184;gbkey=CDS;Parent=gene-VARV_184;locus_tag=VARV_184;product=hypothetical protein
+VARV	Liftoff	gene	162346	162750	.	+	.	ID=gene-VARV_185;gbkey=gene;locus_tag=VARV_185
+VARV	Liftoff	CDS	162346	162750	.	+	.	ID=cds-VARV_185;gbkey=CDS;Parent=gene-VARV_185;note=VACV-COP-B12R%3B similar to VACV-WR-194;locus_tag=VARV_185;product=ser/thr kinase-like protein
+VARV	Liftoff	gene	162647	163681	.	+	.	ID=gene-VARV_186;gbkey=gene;locus_tag=VARV_186
+VARV	Liftoff	CDS	162647	163681	.	+	.	ID=cds-VARV_186;gbkey=CDS;Parent=gene-VARV_186;note=fragmented VACV-COP-B13R/B14R%3B inhibits Fas-mediated apoptosis%3B involved in lipoxygenase pathway%3B similar to VACV-WR-195;locus_tag=VARV_186;product=SPI-2/CrmA%2C IL-1 convertase
+VARV	Liftoff	gene	163788	164237	.	+	.	ID=gene-VARV_187;gbkey=gene;locus_tag=VARV_187
+VARV	Liftoff	CDS	163788	164237	.	+	.	ID=cds-VARV_187;gbkey=CDS;Parent=gene-VARV_187;note=VACV-COP-B15R%3B similar to VACV-WR-196;locus_tag=VARV_187;product=hypothetical protein
+VARV	Liftoff	gene	164476	164607	.	+	.	ID=gene-VARV_188;gbkey=Gene;locus_tag=VARV_188
+VARV	Liftoff	CDS	164476	164607	.	+	.	ID=cds-VARV_188;Parent=gene-VARV_188;locus_tag=VARV_188;product=IL-1-beta-inhibitor
+VARV	Liftoff	gene	164705	164866	.	+	.	ID=gene-VARV_189;gbkey=Gene;locus_tag=VARV_189
+VARV	Liftoff	CDS	164705	164866	.	+	.	ID=cds-VARV_189;Parent=gene-VARV_189;locus_tag=VARV_189;product=IL-1-beta-inhibitor
+VARV	Geneious	repeat_region	164866	164905	.	+	.	ID=ITR-VARV_RPT3;note=hypervariable AT repeat region;gbkey=repeat_region
+VARV	Liftoff	gene	164975	165184	.	+	.	ID=gene-VARV_190;gbkey=Gene;locus_tag=VARV_190
+VARV	Liftoff	CDS	164975	165184	.	+	.	ID=cds-VARV_190;Parent=gene-VARV_190;locus_tag=VARV_190;product=IL-1-beta-inhibitor
+VARV	Liftoff	gene	165319	166341	.	-	.	ID=gene-VARV_191;gbkey=gene;locus_tag=VARV_191
+VARV	Liftoff	CDS	165319	166341	.	-	.	ID=cds-VARV_191;gbkey=CDS;Parent=gene-VARV_191;note=VACV-COP-B17L%3B similar to VACV-WR-198;locus_tag=VARV_191;product=hypothetical protein
+VARV	Liftoff	gene	166482	168206	.	+	.	ID=gene-VARV_192;gbkey=gene;locus_tag=VARV_192
+VARV	Liftoff	CDS	166482	168206	.	+	.	ID=cds-VARV_192;gbkey=CDS;Parent=gene-VARV_192;note=VACV-COP-B18R%3B similar to VACV-WR-199;locus_tag=VARV_192;product=ankyrin-like protein
+VARV	Liftoff	gene	168273	169337	.	+	.	ID=gene-VARV_193;gbkey=gene;locus_tag=VARV_193
+VARV	Liftoff	CDS	168273	169337	.	+	.	ID=cds-VARV_193;gbkey=CDS;Parent=gene-VARV_193;note=VACV-COP-B19R%3B binds type-I interferons%3B host defense modulator%3B immunoglobulin superfamily secreted protein%3B similar to VACV-WR-200;locus_tag=VARV_193;product=glycoprotein
+VARV	Liftoff	gene	169406	171769	.	+	.	ID=gene-VARV_194;gbkey=gene;locus_tag=VARV_194
+VARV	Liftoff	CDS	169406	171769	.	+	.	ID=cds-VARV_194;gbkey=CDS;Parent=gene-VARV_194;note=VACV-COP-B20R%3B similar to VACV-WR-202;locus_tag=VARV_194;product=ankyrin-like protein
+VARV	Liftoff	gene	172067	172279	.	+	.	ID=gene-VARV_195;gbkey=gene;locus_tag=VARV_195
+VARV	Liftoff	CDS	172067	172279	.	+	.	ID=cds-VARV_195;gbkey=CDS;Parent=gene-VARV_195;locus_tag=VARV_195;product=kelch-like protein
+VARV	Liftoff	gene	172261	172551	.	+	.	ID=gene-VARV_196;gbkey=Gene;locus_tag=VARV_196
+VARV	Liftoff	CDS	172261	172551	.	+	.	ID=cds-VARV_196;Parent=gene-VARV_196;locus_tag=VARV_196;product=hypothetical protein
+VARV	Liftoff	gene	172693	172959	.	+	.	ID=gene-VARV_197;gbkey=gene;locus_tag=VARV_197
+VARV	Liftoff	CDS	172693	172959	.	+	.	ID=cds-VARV_197;gbkey=CDS;Parent=gene-VARV_197;locus_tag=VARV_197;product=hypothetical protein
+VARV	Liftoff	gene	172956	174074	.	+	.	ID=gene-VARV_198;gbkey=gene;locus_tag=VARV_198
+VARV	Liftoff	CDS	172956	174074	.	+	.	ID=cds-VARV_198;gbkey=CDS;Parent=gene-VARV_198;note=VACV-COP-C12L%3B complexes with cathepsin-G affects apoptosis%3B host defense modulator%3B similar to VACV-WR-205;locus_tag=VARV_198;product=SPI-1 serine protease inhibitor-like protein
+VARV	Liftoff	gene	175080	180770	.	+	.	ID=gene-VARV_199;gbkey=gene;locus_tag=VARV_199
+VARV	Liftoff	CDS	175080	180770	.	+	.	ID=cds-VARV_199;gbkey=CDS;Parent=gene-VARV_199;note=putative 7-transmembrane-G-protein-coupled-receptor-like;locus_tag=VARV_199;product=hypothetical protein
+VARV	Liftoff	gene	180998	181111	.	+	.	ID=gene-VARV_200;gbkey=Gene;locus_tag=VARV_200
+VARV	Liftoff	CDS	180998	181111	.	+	.	ID=cds-VARV_200;Parent=gene-VARV_200;locus_tag=VARV_200;product=ankyrin-like protein
+VARV	Liftoff	gene	181423	183180	.	+	.	ID=gene-VARV_201;gbkey=gene;locus_tag=VARV_201
+VARV	Liftoff	CDS	181423	183180	.	+	.	ID=cds-VARV_201;gbkey=CDS;Parent=gene-VARV_201;note=similar to VACV-COP-B25R;locus_tag=VARV_201;product=ankyrin-like protein
+VARV	Liftoff	gene	183262	184311	.	+	.	ID=gene-VARV_202;gbkey=gene;locus_tag=VARV_202
+VARV	Liftoff	CDS	183262	184311	.	+	.	ID=cds-VARV_202;gbkey=CDS;Parent=gene-VARV_202;note=host defense modulator%3B similar to VACV-WR-215;locus_tag=VARV_202;product=Crm-B secreted TNF-alpha-receptor-like protein
+VARV	Liftoff	gene	184437	185195	.	+	.	ID=gene-VARV_203;gbkey=gene;locus_tag=VARV_203
+VARV	Liftoff	CDS	184437	185195	.	+	.	ID=cds-VARV_203;gbkey=CDS;Parent=gene-VARV_203;note=VACV-COP-C23L/B29R%3B host defense modulator%3B similarto VACV-WR-218;locus_tag=VARV_203;product=CC-chemokine-binding protein
+VARV	Liftoff	gene	185382	185948	.	+	.	ID=gene-VARV_204;gbkey=Gene;locus_tag=VARV_204
+VARV	Liftoff	CDS	185382	185948	.	+	.	ID=cds-VARV_204;Parent=gene-VARV_204;locus_tag=VARV_204;product=hypothetical protein
+VARV	Liftoff	repeat_region	185941	186668	.	+	.	ID=ITR-VARV_RPT4;note=terminal%3B terminal repeat region;gbkey=repeat_region;rpt_type=inverted
