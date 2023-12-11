@@ -944,6 +944,13 @@ class CustomFieldsFuncs:
 	def read_custom_fields_file(self):
 		""" Reads the JSON file to get the information from it
 		"""
+		# get the encoding of the JSON file 
+		"""
+		with open(self.parameters['custom_fields_file'], 'rb') as custom_file_encoding:
+			result = chardet.detect(custom_file_encoding.read())
+			encoding = result['encoding']
+		"""
+
 		# read the JSON file in
 		with open(self.parameters['custom_fields_file'], 'r') as custom_file:
 			data = json.load(custom_file)
