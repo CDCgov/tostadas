@@ -7,8 +7,8 @@ process METADATA_VALIDATION {
 
     label 'main'
 
-    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    maxRetries 5
+    //errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    //maxRetries 5
 
     if ( params.run_conda == true ) {
         try {
