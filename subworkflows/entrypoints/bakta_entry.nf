@@ -18,18 +18,19 @@ workflow RUN_BAKTA {
     if (params.download_bakta_db) {
         BAKTADBDOWNLOAD ()
         BAKTA (
-            'dummy variable',
+            'dummy utility signal',
             BAKTADBDOWNLOAD.out.db,
             params.fasta_path
         )
             }
         else {
             BAKTA (
-                'dummy variable',
+                'dummy utility signal',
                 params.bakta_db_path,
                 params.fasta_path
             )
         }
+        
 	    BAKTA_POST_CLEANUP (
 		    BAKTA.out.bakta_results,
 		    params.meta_path,

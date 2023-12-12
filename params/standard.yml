@@ -25,6 +25,8 @@ overwrite_output: null
 val_output_dir: ""
 val_date_format_flag: ""
 val_keep_pi: ""
+validate_custom_fields: false
+custom_fields_file: ""
 
 final_liftoff_output_dir: ""
 lift_print_version_exit: null
