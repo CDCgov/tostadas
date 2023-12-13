@@ -1,13 +1,14 @@
-process BAKTA_BAKTADBDOWNLOAD {
+process BAKTADBDOWNLOAD {
     label 'process_single'
 
-    conda "${moduleDir}/environment.yml"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        conda (params.enable_conda ? conda_env : null)
+    container "${ workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bakta:1.8.2--pyhdfd78af_0' :
-        'biocontainers/bakta:1.8.2--pyhdfd78af_0' }"
+        'quay.io/biocontainers/bakta:1.8.2--pyhdfd78af_0' }"
+
 
     output:
-    path "db*"              , emit: db
+    path "bakta*"           , emit: db
     path "versions.yml"     , emit: versions
 
     when:
@@ -18,7 +19,8 @@ process BAKTA_BAKTADBDOWNLOAD {
     """
     bakta_db \\
         download \\
-        $args
+        --type "${params.bakta_db_type}" \\
+        --output bakta
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -39,4 +39,3 @@ process BAKTA {
     output:
     path "${fasta.getSimpleName()}",   emit: bakta_results
 }
-
