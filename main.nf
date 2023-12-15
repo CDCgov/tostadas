@@ -61,7 +61,6 @@ include { RUN_SUBMISSION } from "$projectDir/subworkflows/entrypoints/submission
 include { RUN_INITIAL_SUBMISSION } from "$projectDir/subworkflows/entrypoints/initial_submission_entry"
 include { RUN_UPDATE_SUBMISSION } from "$projectDir/subworkflows/entrypoints/update_submission_entry"
 
-
 workflow only_validate_params {
     main:
         // run the process for validating general parameters
