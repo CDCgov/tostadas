@@ -6,7 +6,7 @@
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
 ## Overview
-  The Pathogen Annotation and Submission pipeline facilitates the running of several Python scripts, which validate metadata (QC), annotate assembled genomes, and submit to NCBI. Current implementation was tested using MPOX but future testing will seek to made the pipeline pathogen-agnostic. 
+  The Pathogen Annotation and Submission pipeline facilitates the running of several Python scripts, which validate metadata (QC), annotate assembled genomes, and submit to NCBI. Current implementation has been tested with Pox virus sequences as well as some bacteria. Ongoing development aims to make the pipeline pathogen agnostic.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -55,13 +55,13 @@ The validation workflow checks if metadata conforms to NCBI standards and matche
 
 ### Gene Annotation
 
-Currently, consists of two annotation options:
+Currently, consists of three annotation options:
 * (1) Liftoff 
-    * The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes.
+    * The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes. We recently integrated [RepeatMaster](https://www.repeatmasker.org/) into this workflow, and the updated workflow used RepeatMasker to annotate repeats, and Liftoff to annotate functional regions, then combines the GFF outputs. RepeatMasker was added to support variola in addition to MPOX. Be sure to specifiy the correct database in the params for this option.
 * (2) VADR
-    * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your multi-sample fasta, metadata in .xlsx format, and reference information for the pathogen genome which is included within this repository (found [here](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models)). VADR is an existing package that was integrated into the pipeline and you can find more information about this tool at the following link: [VADR Git Repo](https://github.com/ncbi/vadr).
+    * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your multi-sample fasta, metadata in .xlsx format, and reference information for the pathogen genome which is included within [this repository](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models). Find out more at the [VADR GitHub Repo](https://github.com/ncbi/vadr).
 * (3) Bakta
-    * The Bakta workflow annotates input fasta-formatted bacterial genomes & plasmids and generates gff / tbl files. The inputs into this workflow are single-sample fasta, metadata in .xlsx format, and a reference database used for annotation (found [here](https://zenodo.org/records/7669534)). Bakta is an existing bacterial annotation tool that was integrated into the pipeline. You can find more information about this tool at the following link: [Bakta Git Repo](https://github.com/CDCgov/tostadas/tree/master#gene-annotation).
+    * The Bakta workflow annotates input fasta-formatted bacterial genomes & plasmids and generates gff / tbl files. The inputs into this workflow are single-sample fasta files, metadata in .xlsx format, and a reference database used for annotation (found [here](https://zenodo.org/records/7669534)). Bakta is an existing bacterial annotation tool that was integrated into the pipeline. You can find more information about this tool at the following link: [Bakta Git Repo](https://github.com/CDCgov/tostadas/tree/master#gene-annotation).
 
 ### Submission 
 Submission workflow generates the necessary files for Genbank submission, generates a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
@@ -118,7 +118,7 @@ mamba env create -n tostadas -f environment.yml
 ```bash
 source activate tostadas
 ```
-** NOTE: You can check which environment is active by running the following conda command: ```conda env list```  . The active environment will be denoted with an asterisk ```*```
+:exclamation: You can check which environment is active by running the following conda command: `conda env list`  . The active environment will be denoted with an asterisk `*`
 
 #### (5) Install Nextflow:
 
@@ -179,9 +179,9 @@ nextflow version 22.10.0.5826
 #### (2) Check that you are in the project directory (Tostadas).
 This is the default directory set in the nextflow.config file to allow for running the nextflow pipeline with the provided test input files.
 
-#### (3) Change the ```submission_config``` parameter within ```test_params.config``` to the location of your personal submission config file.
+#### (3) Change the ```submission_config``` parameter within ```{taxon}_test_params.config``` to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.
 
-** NOTE: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: [More Information on Submission](#more-information-on-submission)
+:exclamation: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: [More Information on Submission](#more-information-on-submission)
 
 #### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
 
@@ -191,7 +191,7 @@ nextflow run main.nf -profile test,conda
 
 The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory (update this in the standard params set for a different output path).
 
-** NOTE: Running the pipeline with default parameters (test) will trigger a wait time equal to # of samples * 180 seconds. This default parameter can be overridden by running the following command instead:
+:exclamation: Running the pipeline with default parameters (test) will trigger a wait time equal to # of samples * 180 seconds. This default parameter can be overridden by running the following command instead:
 
 ```bash
 nextflow run main.nf -profile test,conda --submission_wait_time <place integer value here in seconds>
@@ -224,24 +224,24 @@ Either one of the above commands will launch the nextflow pipeline and show the 
 N E X T F L O W  ~  version 22.10.0
 Launching `main.nf` [festering_spence] DSL2 - revision: 3441f714f2
 executor >  local (7)
-[e5/9dbcbc] process > VALIDATE_PARAMS                                  [100%] 1 of 1 âœ”
-[53/a833be] process > CLEANUP_FILES                                    [100%] 1 of 1 âœ”
-[e4/a50c97] process > with_submission:METADATA_VALIDATION (1)          [100%] 1 of 1 âœ”
-[81/badd3b] process > with_submission:LIFTOFF (1)                      [100%] 1 of 1 âœ”
-[d7/16d16a] process > with_submission:RUN_SUBMISSION:SUBMISSION (1)    [100%] 1 of 1 âœ”
-[3c/8c7ba4] process > with_submission:RUN_SUBMISSION:GET_WAIT_TIME (1) [100%] 1 of 1 âœ”
+[e5/9dbcbc] process > VALIDATE_PARAMS                                  [100%] 1 of 1 
+[53/a833be] process > CLEANUP_FILES                                    [100%] 1 of 1
+[e4/a50c97] process > with_submission:METADATA_VALIDATION (1)          [100%] 1 of 1
+[81/badd3b] process > with_submission:LIFTOFF (1)                      [100%] 1 of 1
+[d7/16d16a] process > with_submission:RUN_SUBMISSION:SUBMISSION (1)    [100%] 1 of 1
+[3c/8c7ba4] process > with_submission:RUN_SUBMISSION:GET_WAIT_TIME (1) [100%] 1 of 1
 [13/85f6f3] process > with_submission:RUN_SUBMISSION:WAIT (1)          [  0%] 0 of 1
 [-        ] process > with_submission:RUN_SUBMISSION:UPDATE_SUBMISSION -
 USING CONDA
 
 ````
-** NOTE: The default wait time between initial submission and updating the submitted samples is three minutes or 180 seconds per sample. To override this default calculation, you can modify the submission_wait_time parameter within your config or through the command line (in terms of seconds):
+:exclamation: The default wait time between initial submission and updating the submitted samples is three minutes or 180 seconds per sample. To override this default calculation, you can modify the submission_wait_time parameter within your config or through the command line (in terms of seconds):
  
  ```bash
 nextflow run main.nf -profile <param set>,<env> --submission_wait_time 360
  ```
  
-Outputs will be generated in the nf_test_results folder (if running the test parameter set) unless otherwise specified in your standard_params.config file as output_dir param. 
+Outputs will be generated in the nf_test_results folder (if running the test parameter set) unless otherwise specified in your standard_params.config file as output_dir param. Or you can specify `--output_dir` on the command line.
 
 ## Profile Options & Input Files
 
@@ -268,45 +268,46 @@ This section walks through the available parameters to customize your workflow.
 | submission_config| .yaml    | configuration file for submitting to NCBI, sample versions can be found in repo       |
 
 ### Customizing Parameters:
-The standard_params.config file found within the conf directory is where parameters can be adjusted based on preference for running the pipeline. First you will want to ensure the file paths are correctly set for the params listed above depending on your preference for submitting your results. 
+The standard_params.config file found within the `conf/` directory is where parameters can be adjusted based on preference for running the pipeline. First you will want to ensure the file paths are correctly set for the params listed above depending on your preference for submitting your results. 
  * Adjust your file inputs within standard_params.config ensuring accurate file paths for the inputs listed above.
  * The params can be changed within the standard_params.config or you can change the standard.yml/standard.json file inside the params directory and pass it in with: ```-params-file <standard_params.yml or standard_params.json>```
- * Note: DO NOT EDIT the main.nf file or other paths in the nextflow.config unless familiar with editing nextflow workflows
+ * :exclamation: DO NOT EDIT the main.nf file or other paths in the nextflow.config unless familiar with editing nextflow workflows
 
 ### Understanding Profiles and Environments:
 Within the nextflow pipeline the ```-profile``` option is required as an input. The profile options with the pipeline include test and standard. These two options can be seen listed in the nextflow.config file. The test params should remain the same for testing purposes, but the standard profile can be changed to fit user preferences. Also within the nextflow pipeline there is the use of varying run environments as the second profile input. Nextflow expects at least one option for both of these configurations to be passed in: ```-profile <test/standard>,<conda/docker/singularity>```
 
 ### Toggling Submission:
 Now that your file paths are set within your standard.yml or standard.json or standard_params.config file, you will want to define whether to run the full pipeline with submission or without submission. This is defined within the standard_params.config file underneath the subworkflow section as run_submission ```run_submission = true/false```
- * Apart from this main bifurcation, there exists entrypoints that you can use to access specific processes. More information is listed in the table below.
+ * Apart from this main bifurcation, there exist entrypoints that you can use to access specific processes. More information is listed in the table below.
 
 ### More Information on Submission:
-The submission piece of the pipeline uses the processes that are directly integrated from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline. It has been developed to allow the user to create a config file to select which databases they would like to upload to and allows for any possible metadata fields by using a YAML to pair the database's metadata fields which your personal metadata field columns. The requirements for this portion of the pipeline to run are listed below.
+The submission component of the pipeline uses the processes that are directly integrated from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline. It has been developed to allow the user to create a config file to select which databases they would like to upload to and allows for any possible metadata fields by using a YAML to pair the database's metadata fields with your personal metadata field columns. The requirements for this portion of the pipeline to run are listed below.
 
 (A) Create Appropriate Accounts as needed for the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline integrated into TOSTADAS:
-* NCBI: If uploading to NCBI, an account is required along with a center account approved for submitting via FTP. Contact the following for account creation:gb-admin@ncbi.nlm.nih.gov.
+* NCBI: If uploading to NCBI, an account is required along with a center account approved for submitting via FTP. Contact the following for account creation : `gb-admin@ncbi.nlm.nih.gov`.
 * GISAID: A GISAID account is required for submission to GISAID, you can register for an account at https://www.gisaid.org/. Test submissions are first required before a final submission can be made. When your first test submission is complete contact GISAID at hcov-19@gisaid.org to recieve a personal CID. GISAID support is not yet implemented but it may be added in the future.
 
 (B) Config File Set-up:
-* The template for the submission config file can be found in bin/default_config_files within the repo. This is where you can edit the various parameters you want to include in your submission.
+* The template for the submission config file can be found in bin/default_config_files within the repo. This is where you can edit the various parameters you want to include in your submission. Read more at the [SeqSender docs](https://cdcgov.github.io/seqsender/#id_3-config-file-creation).
 
 ## Entrypoints:
 
-Table of entrypoints available for the nextflow pipeline:
+Table of available entrypoints:
 
-| Workflow             | Description                                                 |
+| Entrypoint           | Description                                                 |
 |----------------------|-------------------------------------------------------------|
 | only_validate_params | Validates parameters utilizing the validate params process within the utility sub-workflow |
 | only_cleanup_files   | Cleans-up files utilizing the clean-up process within the utility sub-workflow             |
 | only_validation      | Runs the metadata validation process only                           |
 | only_liftoff      | Runs the liftoff annotation process only                           |
+| only_repeatmasker_liftoff | Runs repeatmasker for repeats and liftoff for functional regions, then combines the GFF outputs | 
 | only_vadr         | Runs the VADR annotation process only                           |
 | only_bakta        | Runs the Bakta annotation process only                          |
 | only_submission      | Runs submission sub-workflow only. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                           |
 | only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)               |
 | only_update_submission  | Updates NCBI submissions. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                                 |
 
-* Documentation for using entrypoints with NF can be found at [Nextflow_Entrypoints](https://www.nextflow.io/blog/2020/cli-docs-release.html) under section 5. 
+* Documentation for using entrypoints with Nextflow can be found at [Nextflow_Entrypoints](https://www.nextflow.io/blog/2020/cli-docs-release.html) under section 5. 
 
 
 The following command can be used to specify entrypoints for the workflow:
@@ -319,9 +320,9 @@ nextflow run main.nf -profile <param set>,<env> -entry <insert option from table
 
 If you are using the ```only_submission``` or  ```only_initial_submission``` entrypoint, you must define the paths for the following parameters:
 
-* ```submission_only_meta``` : path to the directory containing validated metadata files (one .tsv per sample)
-* ```submission_only_fasta``` : path to the directory containing split fasta files (one .fasta per sample)
-* ```submission_only_gff``` : path to the directory containing the cleaned and reformatted GFF files (one .gff per sample)
+* ```submission_only_meta``` : path to the directory containing validated metadata files (one .tsv per sample). It may be easiest to first run the metadata validation entrypoint to help generate these files in the proper format.
+* ```submission_only_fasta``` : path to the directory containing split fasta files (one .fasta per sample). This requires no special formatting, except that the sample name needs to match the metadata sample name.
+* ```submission_only_gff``` : path to the directory containing the cleaned and reformatted GFF files (one .gff per sample). GFF files need to be free of stop codons and features need to extend to the both ends. For example, the first feature needs to extend to coordinate 1. 
 
 It is preferred to use ```$projectDir``` to prefix the defined paths, which is a built-in variable for encoding the path to the **main.nf** file. Then, you can simply append it with the path relative to main.nf.
 
@@ -359,28 +360,28 @@ The workflow will generate outputs in the following order:
 
 ### Output Directory Formatting:
 The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:
-* validation_outputs (**name configurable with val_output_dir)
+* validation_outputs (name configurable with `val_output_dir`)
     * name of metadata sample file
         * errors
         * tsv_per_sample
-* liftoff_outputs (**name configurable with final_liftoff_output_dir)
+* liftoff_outputs (name configurable with `final_liftoff_output_dir`)
     * name of metadata sample file
         * errors
         * fasta
         * liftoff
         * tbl
-* vadr_outputs (**name configurable with vadr_output_dir)
+* vadr_outputs (name configurable with `vadr_output_dir`)
     * name of metadata sample file
         * errors
         * fasta
         * gffs
         * tbl
-* bakta_outputs (**name configurable with bakta_output_dir)
+* bakta_outputs (name configurable with `bakta_output_dir`)
     * name of metadata sample file
         * fasta
         * gff
         * tbl
-* submission_outputs (**name and path configurable with submission_output_dir)
+* submission_outputs (name and path configurable with `submission_output_dir`)
     * name of annotation results (Liftoff or VADR, etc.)
         * individual_sample_batch_info
             * biosample_sra
@@ -390,14 +391,14 @@ The outputs are recorded in the directory specified within the nextflow.config f
         * commands_used
 
 ### Understanding Pipeline Outputs:
-The pipeline outputs inlcude: 
+The pipeline outputs include: 
 * metadata.tsv files for each sample 
 * separate fasta files for each sample
 * separate gff files for each sample 
 * separate tbl files containing feature information for each sample
 * submission log file
     * This output is found in the submission_outputs file in your specified output_directory
-    * If the file can not be found you can run the only_update_submission entrypoint for the pipeline 
+    * If the file can not be found you can run the `only_update_submission` entrypoint for the pipeline 
 
 ## Parameters:
 Default parameters are given in the nextflow.config file. This table lists the parameters that can be changed to a value, path or true/false. 
@@ -479,6 +480,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --lift_copies               |Look for extra gene copies in the target genome          |  Yes (True/False as string) |
 | --lift_minimap_path         |Path to minimap if you did not use conda or pip          |        Yes (N/A or path as string)       |
 |--lift_feature_database_name |Name of the feature database, if none, then will use ref gff path to construct one|        Yes (N/A or name as string)      |
+|--repeat_lib                 |Path to repeatmasker library                             | No, default is mpox |
 
 ### VADR
 | Param                       | Description                                             | Input Required   |
@@ -515,7 +517,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --req_col_config | Path to the required_columns.yaml file | Yes (path as string)           |
 | --processed_samples | Path to the directory containing processed samples for update only submission entrypoint (containing <batch_name>.<sample_name> dirs) | Yes (path as string)           |
 
-** Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'
+*Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'*
 
 ## Helpful Links for Resources and Software Integrated with TOSTADAS:     
    :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/
