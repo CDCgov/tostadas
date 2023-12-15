@@ -21,19 +21,10 @@ include { LIFTOFF                                           } from "../modules/l
 include { BAKTA                                             } from "../modules/bakta/bakta/main"
 include { BAKTADBDOWNLOAD                                   } from "../modules/bakta/baktadbdownload/main"
 include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
-// get the subworkflows
-include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
-include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
-include { BAKTA_SUBMISSION                                  } from "../subworkflows/submission"
-include { RUN_UTILITY                                       } from "../subworkflows/utility"
-
-// Check mandatory parameters
-
-=======
 include { REPEATMASKER                                      } from "../modules/repeatmasker_annotation/main"
 include { LIFTOFF_CLI                                       } from "../modules/liftoff_cli_annotation/main"
 include { CONCAT_GFFS                                       } from "../modules/concat_gffs/main"
-include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
+
 // get the subworkflows
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"
@@ -171,5 +162,5 @@ workflow MAIN {
                     params.req_col_config, 
                     GET_WAIT_TIME.out   
                 )
-            }  
-  }
+            }
+}
