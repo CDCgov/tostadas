@@ -28,8 +28,6 @@ include { BAKTA_SUBMISSION                                  } from "../subworkfl
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
 
 // Check mandatory parameters
-
-=======
 include { REPEATMASKER                                      } from "../modules/repeatmasker_annotation/main"
 include { LIFTOFF_CLI                                       } from "../modules/liftoff_cli_annotation/main"
 include { CONCAT_GFFS                                       } from "../modules/concat_gffs/main"
