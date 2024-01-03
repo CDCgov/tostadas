@@ -19,7 +19,7 @@ params.projectDir = './'
                                IMPORT NECESSARY WORKFLOWS 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { MAIN } from "$projectDir/workflows/main.nf"
+include { MAIN_WORKFLOW } from "$projectDir/workflows/main.nf"
 
 
 /*
@@ -28,8 +28,8 @@ include { MAIN } from "$projectDir/workflows/main.nf"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 workflow {
-    // main workflow for mpxv pipeline
-    MAIN ()
+    // main workflow for the pipeline
+    MAIN_WORKFLOW()
 }
 
 
@@ -40,7 +40,7 @@ workflow {
 */
 
 workflow MAIN {
-    MAIN ()
+    MAIN_WORKFLOW()
 }
 
 
