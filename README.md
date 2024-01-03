@@ -53,6 +53,15 @@
 ### Metadata Validation
 The validation workflow checks if metadata conforms to NCBI standards and matches the input fasta file. The script also splits a multi-sample xlsx file into a separate .tsv file for each individual.
 
+Recently, we have added the ability to pass in the names of custom metadata fields, in order to carry out a variety of checks and modifications. You have the ability to specify check/modifcation properties for each custom field within a .JSON file and consists of the following:
+* Name of samples to apply checks/mods
+* Data type check and potential casting
+* Populated vs empty check
+* Replacement for empty values
+* New name for field 
+
+More information about custom metadata fields can be found here: ** INSERT THE RELATIVE PATH TO GUIDE HERE **
+
 ### Gene Annotation
 
 Currently, consists of three annotation options:
