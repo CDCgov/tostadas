@@ -9,7 +9,6 @@
     - [Personal Fields](#personal-fields)
     - [General Fields](#general-fields)
     - [General NCBI Fields](#general-ncbi-fields)
-    - [General GISAID Fields](#general-gisaid-fields)
     - [NCBI Databases Fields (General)](#ncbi-databases-fields-general)
     - [NCBI Databases Fields (Specific)](#ncbi-databases-fields-specific)
 
@@ -92,13 +91,6 @@ notif_email_recipient3: 'randomemail3@random.com'
 | baseline_surveillance  |  Whether baseline surveillance occurred or not   |    Yes (bool)      |
 
 ### General NCBI Fields 
-
-  ncbi_org_id: '30206'
-  hostname: ftp-private.ncbi.nlm.nih.gov
-  api_url: https://submit.ncbi.nlm.nih.gov/api/2.0/files/FILE_ID/?format=attachment
-  ncbi_ftp_path_to_submission_folders: 'submit'
-
-
 
 | Field Name                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
