@@ -30,6 +30,7 @@ include { CONCAT_GFFS                                       } from "../modules/c
 include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
 
 // get the subworkflows
+
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
@@ -94,6 +95,7 @@ workflow MAIN_WORKFLOW {
 
    // run bakta annotation process
     if ( params.run_bakta == true ) {
+
       if ( params.download_bakta_db ) {
         BAKTADBDOWNLOAD ()
         BAKTA (
