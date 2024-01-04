@@ -546,6 +546,7 @@ When changing these parameters pay attention to the required inputs and make sur
    
    :link: table2asn Documentation: https://github.com/svn2github/NCBI_toolkit/blob/master/src/app/table2asn/table2asn.cpp
 
+   :link: RepeatMasker Documentation: https://www.repeatmasker.org/
 
   ## Get in Touch
 
