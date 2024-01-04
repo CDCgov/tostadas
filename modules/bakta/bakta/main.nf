@@ -5,12 +5,12 @@
 */
 process BAKTA {
 
-    label = 'bakta'
+    label 'bakta'
 
-    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    // errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5
     
-    //conda "bioconda::bakta==1.9.1"
+    conda "bioconda::bakta==1.9.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bakta:1.9.1--pyhdfd78af_0' :
         'quay.io/biocontainers/bakta:1.9.1--pyhdfd78af_0' }"

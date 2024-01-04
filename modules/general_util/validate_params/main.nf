@@ -15,7 +15,7 @@ process VALIDATE_PARAMS {
         }
 
         // check that at least one annotator is selected 
-        assert params.run_vadr == true || params.run_liftoff == true || params.run_bakta == true
+        assert params.bacteria == true || params.virus == true
   
         // check paths
         if ( params.run_liftoff == true ) {
@@ -27,7 +27,7 @@ process VALIDATE_PARAMS {
         if ( params.run_bakta == true ) {
             assert params.fasta_path
             assert params.meta_path
-            assert params.db_path
+            assert params.bakta_db_path
         }
         
         // check script params
@@ -53,25 +53,59 @@ process VALIDATE_PARAMS {
 
         // check liftoff params with int or float values
         if ( params.run_liftoff == true ) {
-            assert params.docker_container
-            assert params.docker_container instanceof String == true 
+            // Check whether populated or not 
             assert params.lift_parallel_processes == 0 || params.lift_parallel_processes
             assert params.lift_mismatch
             assert params.lift_gap_open
-            assert params.lift_gap_extend        
-        }
+            assert params.lift_gap_extend  
+            assert params.lift_print_version_exit == true || params.lift_print_version_exit == false
+            assert params.lift_print_help_exit == true || params.lift_print_help_exit == false
+            assert params.lift_infer_transcripts.toLowerCase() == "true" || params.lift_infer_transcripts.toLowerCase() == "false"
+            assert params.lift_copies.toLowerCase() == "true" || params.lift_copies.toLowerCase() == "false"  
 
-        // check vadr specific params
-        if ( params.run_vadr == true ) {
-            assert params.docker_container_vadr
-            assert params.docker_container_vadr instanceof String == true 
-        }
+            // Check data types 
+            expected_liftoff_strings = [
+                "lift_minimap_path": params.lift_minimap_path,
+                "lift_feature_database_name": params.lift_feature_database_name     
+            ]
 
+            expected_liftoff_integers = [
+                "lift_parallel_processes" : params.lift_parallel_processes,
+                "lift_mismatch": params.lift_mismatch,
+                "lift_gap_open": params.lift_gap_open,
+                "lift_gap_extend": params.lift_gap_extend
+            ]
+
+            expected_liftoff_floats = [
+                "lift_coverage_threshold": params.lift_coverage_threshold,
+                "lift_child_feature_align_threshold": params.lift_child_feature_align_threshold,
+                "lift_copy_threshold": params.lift_copy_threshold,
+                "lift_distance_scaling_factor": params.lift_distance_scaling_factor,
+                "lift_flank": params.lift_flank,
+                "lift_overlap": params.lift_overlap
+            ]
+
+            expected_liftoff_strings.each { key, value ->
+                if ( expected_liftoff_strings[key] instanceof String == false ) {
+                    throw new Exception("Value must be of string type: $value used for $key parameter")
+                }
+            }
+
+            expected_liftoff_integers.each { key, value ->
+                if ( expected_liftoff_integers[key] instanceof Integer == false ) {
+                    throw new Exception("Value must be of integer type: $value used for $key parameter")
+                }
+            }
+
+            expected_liftoff_floats.each { key, value ->
+                if ( expected_liftoff_floats[key] instanceof Integer == true || expected_liftoff_floats[key] instanceof String == true ) {
+                    throw new Exception("Value must be of float type and not integer or string: $value used for $key parameter")
+                }
+            }    
+        }
 
         // check bakta specific params 
         if ( params.run_bakta == true ) {
-            assert params.docker_container_bakta 
-            assert params.docker_container_bakta instanceof String == true 
             assert params.bakta_min_contig_length
             assert params.bakta_translation_table
             assert params.bakta_threads
@@ -81,6 +115,9 @@ process VALIDATE_PARAMS {
             assert params.bakta_plasmid
             assert params.bakta_locus
             assert params.bakta_locus_tag
+            if ( params.bakta_db_path instanceof String == false ) {
+                throw new Exception("Value must be of string type: $value used for $key parameter")
+            }
         }
 
         // check list of params with bool values
@@ -92,10 +129,6 @@ process VALIDATE_PARAMS {
         assert params.overwrite_output == true || params.overwrite_output == false
         assert params.val_date_format_flag == 's' || params.val_date_format_flag == 'o' || params.val_date_format_flag == 'v'
         assert params.val_keep_pi == true || params.val_keep_pi == false
-        // assert params.lift_print_version_exit == true || params.lift_print_version_exit == false
-        // assert params.lift_print_help_exit == true || params.lift_print_help_exit == false
-        // assert params.lift_infer_transcripts.toLowerCase() == "true" || params.lift_infer_transcripts.toLowerCase() == "false"
-        // assert params.lift_copies.toLowerCase() == "true" || params.lift_copies.toLowerCase() == "false"
 
         // check types for inputs
         expected_strings = [
@@ -103,44 +136,12 @@ process VALIDATE_PARAMS {
             "ref_fasta_path": params.ref_fasta_path,
             "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-            "db_path": params.db_path,
             "env_yml": params.env_yml,
-            "output_dir": params.output_dir,
-            "lift_minimap_path": params.lift_minimap_path,
-            "lift_feature_database_name": params.lift_feature_database_name     
+            "output_dir": params.output_dir,    
         ]
-
-        expected_integers = [
-            "lift_parallel_processes" : params.lift_parallel_processes,
-  //          "lift_mismatch": params.lift_mismatch,
-  //          "lift_gap_open": params.lift_gap_open,
-  //          "lift_gap_extend": params.lift_gap_extend
-        ]
-
-        expected_floats = [
-            "lift_coverage_threshold": params.lift_coverage_threshold,
-            "lift_child_feature_align_threshold": params.lift_child_feature_align_threshold,
-            "lift_copy_threshold": params.lift_copy_threshold,
-            "lift_distance_scaling_factor": params.lift_distance_scaling_factor,
-            "lift_flank": params.lift_flank,
-            "lift_overlap": params.lift_overlap
-        ]
-
         expected_strings.each { key, value ->
             if ( expected_strings[key] instanceof String == false ) {
                 throw new Exception("Value must be of string type: $value used for $key parameter")
-            }
-        }
-
-        expected_integers.each { key, value ->
-            if ( expected_integers[key] instanceof Integer == false ) {
-                throw new Exception("Value must be of integer type: $value used for $key parameter")
-            }
-        }
-
-        expected_floats.each { key, value ->
-            if ( expected_floats[key] instanceof Integer == true || expected_floats[key] instanceof String == true ) {
-                throw new Exception("Value must be of float type and not integer or string: $value used for $key parameter")
             }
         }
 
@@ -153,22 +154,13 @@ process VALIDATE_PARAMS {
         ]
 
         check_path_params.each { key, value ->
-            if ( key == "lift_minimap_path" || key == "lift_feature_database_name" ) {
-                try {
-                    file ( check_path_params[key], checkIfExists: true )
-                } catch(Exception e) {
-                    if ( check_path_params[key] != "N/A" && check_path_params[key] != "n/a" && check_path_params[key] != "None" ) {
-                        throw new Exception("Following path does not exist and is not one of the empty vals (N/A, n/a, or None) for: $value used for $key")
-                    }
-                }
-            } else {
                 try {
                     file( check_path_params[key], checkIfExists: true )
                 } catch(Exception e) {
-                     throw new Exception("Following path does not exist: $value used for $key parameter")
+                        throw new Exception("Following path does not exist: $value used for $key parameter")
                 }
-            }
         }
+
     output:
         val true
 }
