@@ -26,9 +26,8 @@ include { BAKTADBDOWNLOAD                                   } from "../modules/b
 include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
 include { CONCAT_GFFS                                       } from "../modules/concat_gffs/main"
 
-// get repeat masker / variola related processes
-include { REPEATMASKER                                      } from "../modules/repeatmasker_annotation/main"
-include { LIFTOFF_CLI                                       } from "../modules/liftoff_cli_annotation/main"
+// get repeat masker / variola related subworkflow
+include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
 
 // get the subworkflows
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
@@ -62,13 +61,20 @@ workflow MAIN_WORKFLOW {
     )
         
     // run liftoff annotation process 
-    if ( params.run_liftoff) {
+    if ( params.run_liftoff == true ) {
         LIFTOFF ( 
             RUN_UTILITY.out, 
             params.meta_path, 
             params.fasta_path, 
             params.ref_fasta_path, 
             params.ref_gff_path 
+        )
+    }
+
+    // run liftoff annotation process + repeatmasker 
+    if ( params.run_repeatmasker_liftoff == true ) {
+        RUN_REPEATMASKER_LIFTOFF (
+            RUN_UTILITY.out
         )
     }
 
@@ -88,7 +94,7 @@ workflow MAIN_WORKFLOW {
 
    // run bakta annotation process
     if ( params.run_bakta == true ) {
-      if (params.download_bakta_db) {
+      if ( params.download_bakta_db ) {
         BAKTADBDOWNLOAD ()
         BAKTA (
             'dummy utility signal',
@@ -131,7 +137,6 @@ workflow MAIN_WORKFLOW {
                 GET_WAIT_TIME.out
             )
         }
-        }
 
         // call the submission workflow for vadr 
         if ( params.run_vadr  == true ) {
@@ -146,7 +151,7 @@ workflow MAIN_WORKFLOW {
             )
         }
 
-        //call the submission workflow for bakta
+        // call the submission workflow for bakta
         if ( params.run_bakta  == true ) {
             BAKTA_SUBMISSION (
                 METADATA_VALIDATION.out.tsv_Files,
@@ -158,15 +163,18 @@ workflow MAIN_WORKFLOW {
                 GET_WAIT_TIME.out
             )
         }
+
+        // call the submission workflow process for liftoff + repeatmasker 
         if ( params.run_repeatmasker_liftoff == true ) {
-                REPEAT_MASKER_LIFTOFF_SUBMISSION(
-                    METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                    LIFTOFF_CLI.out.fasta.sort().flatten(),
-                    CONCAT_GFFS.out.gff.sort().flatten(),
-                    false,
-                    params.submission_config, 
-                    params.req_col_config, 
-                    GET_WAIT_TIME.out   
-                )
-            }  
-  }
+            REPEAT_MASKER_LIFTOFF_SUBMISSION(
+                METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
+                RUN_REPEATMASKER_LIFTOFF.out[0],
+                RUN_REPEATMASKER_LIFTOFF.out[1],
+                false,
+                params.submission_config, 
+                params.req_col_config, 
+                GET_WAIT_TIME.out   
+            )
+        }  
+    }
+}
