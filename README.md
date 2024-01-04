@@ -61,7 +61,7 @@ Recently, we have added the ability to pass in the names of custom metadata fiel
 * Replacement for empty values
 * New name for field 
 
-More information about custom metadata fields can be found here: ** INSERT THE RELATIVE PATH TO GUIDE HERE **
+** A comprehensive guide for custom metadata fields can be found here: [Custom Metadata Guide](./docs/custom_metadata_guide.md)
 
 ### Gene Annotation
 
@@ -469,6 +469,8 @@ When changing these parameters pay attention to the required inputs and make sur
 | --val_output_dir         | File path for outputs specific to validate sub-workflow |        Yes (folder name as string)      |
 | --val_date_format_flag   | Flag to change date output                               |  Yes (-s, -o, or -v as string)   |
 | --val_keep_pi            | Flag to keep personal identifying info, if provided otherwise it will return an error|        Yes (true/false as bool)      |
+| --validate_custom_fields            | Toggle checks/transformations for custom metadata fields on/off |     No (true/false as bool) 
+| --custom_fields_file  |  Path to the JSON file containing custom metadata fields and their information | No (path as string)
 
 
 ### Liftoff
