@@ -19,7 +19,7 @@ params.projectDir = './'
                                IMPORT NECESSARY WORKFLOWS 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { MAIN } from "$projectDir/workflows/main.nf"
+include { MAIN_WORKFLOW } from "$projectDir/workflows/main.nf"
 
 
 /*
@@ -28,8 +28,8 @@ include { MAIN } from "$projectDir/workflows/main.nf"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 workflow {
-    // main workflow for mpxv pipeline
-    MAIN ()
+    // main workflow for the pipeline
+    MAIN_WORKFLOW()
 }
 
 
@@ -40,7 +40,7 @@ workflow {
 */
 
 workflow MAIN {
-    MAIN ()
+    MAIN_WORKFLOW()
 }
 
 
@@ -55,7 +55,7 @@ include { CLEANUP_FILES } from "$projectDir/modules/general_util/cleanup_files/m
 // include necessary subworkflows
 include { RUN_VALIDATION } from "$projectDir/subworkflows/entrypoints/validation_entry"
 include { RUN_LIFTOFF } from "$projectDir/subworkflows/entrypoints/liftoff_entry"
-include { RUN_REPEATMASKER_LIFTOFF } from "$projectDir/subworkflows/entrypoints/repeatmasker_liftoff.nf"
+include { RUN_REPEATMASKER_LIFTOFF } from "$projectDir/subworkflows/repeatmasker_liftoff"
 include { RUN_VADR } from "$projectDir/subworkflows/entrypoints/vadr_entry"
 include { RUN_SUBMISSION } from "$projectDir/subworkflows/entrypoints/submission_entry"
 include { RUN_INITIAL_SUBMISSION } from "$projectDir/subworkflows/entrypoints/initial_submission_entry"
@@ -91,7 +91,7 @@ workflow only_liftoff {
 workflow only_repeatmasker_liftoff {
     main: 
         // run subworkflow for repeatmasker liftoff entrypoint
-        RUN_REPEATMASKER_LIFTOFF ()
+        RUN_REPEATMASKER_LIFTOFF ('dummy utility signal')
 }
 
 workflow only_vadr {

@@ -6,6 +6,8 @@ general:
   submit_SRA: 'False'
   submit_BioSample: 'True'
   joint_SRA_BioSample_submission: 'True'
+  notif_email_recipient1: ''
+  notif_email_recipient2: ''
   contact_email1: ''
   contact_email2: ''
   organization_name: ''
