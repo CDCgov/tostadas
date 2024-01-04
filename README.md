@@ -301,6 +301,7 @@ The submission component of the pipeline uses the processes that are directly in
 
 (B) Config File Set-up:
 * The template for the submission config file can be found in bin/default_config_files within the repo. This is where you can edit the various parameters you want to include in your submission. Read more at the [SeqSender docs](https://cdcgov.github.io/seqsender/#id_3-config-file-creation).
+* You can find more information on how to setup your own submission config and additional information on fields in the following guide: [Submission Config Guide](./docs/submission_config_guide.md).
 
 ## Entrypoints:
 
