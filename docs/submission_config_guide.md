@@ -104,11 +104,11 @@ notif_email_recipient3: 'randomemail3@random.com'
 
 | Field Name                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
-| SRA_file_location               | Location of SRA file              |        Yes (path as string)      |
-| SRA_file_column(1-3)              | Name of column containing SRA file information              |        Yes (path as string)      |
-| Genbank_organization_type               | Type of organization for Genbank              |        Yes (path as string)      |
-| Genbank_organization_role               | Role for Genbank              |        Yes (path as string)      |
-| Genbank_spuid_namespace               | The namespace for Genbank              |        Yes (path as string)      |
+| SRA_file_location               | Location of SRA file              |        Yes (string)      |
+| SRA_file_column(1-3)              | Name of column containing SRA file information              |        Yes (string)      |
+| Genbank_organization_type               | Type of organization for Genbank              |        Yes (string)      |
+| Genbank_organization_role               | Role for Genbank              |        Yes (string)      |
+| Genbank_spuid_namespace               | The namespace for Genbank              |        Yes (string)      |
 | Genbank_auto_remove_sequences_that_fail_qc               | Whether or not to remove sequences that fail QC for Genbank              |        Yes (bool)      |
 
 ### NCBI Databases Fields (Specific)
