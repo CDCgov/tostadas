@@ -22,9 +22,7 @@ include { LIFTOFF                                           } from "../modules/l
 include { BAKTA                                             } from "../modules/bakta/bakta/main"
 
 // get BAKTA related processes
-include { BAKTADBDOWNLOAD                                   } from "../modules/bakta/baktadbdownload/main"
-include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
-include { CONCAT_GFFS                                       } from "../modules/concat_gffs/main"
+include { RUN_BAKTA                                         } from "$projectDir/subworkflows/entrypoints/bakta_entry"
 
 // get repeat masker / variola related subworkflow
 include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
@@ -95,28 +93,9 @@ workflow MAIN_WORKFLOW {
 
    // run bakta annotation process
     if ( params.run_bakta == true ) {
-
-      if ( params.download_bakta_db ) {
-        BAKTADBDOWNLOAD ()
-        BAKTA (
-            'dummy utility signal',
-            BAKTADBDOWNLOAD.out.db,
-            params.fasta_path
+      RUN_BAKTA (
+        RUN_UTILITY.out
         )
-            }
-        else {
-            BAKTA (
-                'dummy utility signal',
-                params.bakta_db_path,
-                params.fasta_path
-            )
-        }
-        
-	     BAKTA_POST_CLEANUP (
-		    BAKTA.out.bakta_results,
-		    params.meta_path,
-		    params.fasta_path
-	    )   
     }
     
     // run submission for the annotated samples 
@@ -157,8 +136,8 @@ workflow MAIN_WORKFLOW {
         if ( params.run_bakta  == true ) {
             BAKTA_SUBMISSION (
                 METADATA_VALIDATION.out.tsv_Files,
-                BAKTA_POST_CLEANUP.out.fasta,
-                BAKTA_POST_CLEANUP.out.gff,
+                RUN_BAKTA.out.cleaned_fasta,
+                RUN_BAKTA.out.cleaned_gff,
                 false,
                 params.submission_config,
                 params.req_col_config,
