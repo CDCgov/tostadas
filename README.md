@@ -13,7 +13,7 @@
 - [Table of Contents](#table-of-contents)
 - [Pipeline Summary](#pipeline-summary)
     - [Metadata Validation](#metadata-validation)
-    - [Liftoff](#liftoff)
+    - [Gene Annotation](#gene-annotation)
     - [Submission](#submission)
 - [Setup](#setup)
     - [Environment Setup](#environment-setup)
@@ -43,6 +43,7 @@
     - [Metadata Validation](#metadata-validation)
     - [Liftoff](#liftoff)
     - [VADR](#vadr)
+    - [Bakta](#bakta)
     - [Submission](#sample-submission)
 - [Helpful Links](#helpful-links)
 - [Get in Touch](#get-in-touch)
@@ -66,9 +67,9 @@ More information about custom metadata fields can be found here: ** INSERT THE R
 
 Currently, consists of three annotation options:
 * (1) Liftoff 
-    * The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff and your multi-sample fasta and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes. We recently integrated [RepeatMaster](https://www.repeatmasker.org/) into this workflow, and the updated workflow used RepeatMasker to annotate repeats, and Liftoff to annotate functional regions, then combines the GFF outputs. RepeatMasker was added to support variola in addition to MPOX. Be sure to specifiy the correct database in the params for this option.
+    * The liftoff workflow annotates input fasta-formatted genomes and produces accompanying gff and genbank tbl files. The input includes the reference genome fasta, reference gff, single-sample fasta files, and metadata in .xlsx format. The [Liftoff](https://github.com/agshumate/Liftoff) workflow was brought over and integrated from the Liftoff tool, responsible for accurately mapping annotations for assembled genomes. We recently integrated [RepeatMaster](https://www.repeatmasker.org/) into this workflow, and the updated workflow used RepeatMasker to annotate repeats, and Liftoff to annotate functional regions, then combines the GFF outputs. RepeatMasker was added to support variola in addition to MPOX. Be sure to specifiy the correct database in the params for this option.
 * (2) VADR
-    * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your multi-sample fasta, metadata in .xlsx format, and reference information for the pathogen genome which is included within [this repository](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models). Find out more at the [VADR GitHub Repo](https://github.com/ncbi/vadr).
+    * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your single-sample fasta files, metadata in .xlsx format, and reference information for the pathogen genome which is included within [this repository](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models). Find out more at the [VADR GitHub Repo](https://github.com/ncbi/vadr).
 * (3) Bakta
     * The Bakta workflow annotates input fasta-formatted bacterial genomes & plasmids and generates gff / tbl files. The inputs into this workflow are single-sample fasta files, metadata in .xlsx format, and a reference database used for annotation (found [here](https://zenodo.org/records/7669534)). Bakta is an existing bacterial annotation tool that was integrated into the pipeline. You can find more information about this tool at the following link: [Bakta Git Repo](https://github.com/CDCgov/tostadas/tree/master#gene-annotation).
 
@@ -261,11 +262,13 @@ This section walks through the available parameters to customize your workflow.
 #### (A) This table lists the required files to run metadata validation and annotation:
 | Input files | File type | Description                                                                               |
 |-------------|-----------|-------------------------------------------------------------------------------------------|
-| fasta       | .fasta    | Multi-sample fasta file with your input sequences                                         |
+| fasta       | .fasta    | Single sample fasta files with your input sequences                                         |
 | metadata    | .xlsx     | Multi-sample metadata matching metadata spreadsheets provided in input_files              |
 | ref_fasta   | .fasta    | Reference genome to use for the  liftoff_submission branch of the pipeline                |
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
 | db          |  folder   | Bakta reference database used for bakta annotation                                        |
+
+** Please note that the pipeline expects ONLY pre-split FASTA files, where each FASTA file contains only the sequence(s) associated with its corresponding sample
 
 #### (B) This table lists the required files to run with submission: 
 | Input files | File type | Description                                                                               |
