@@ -23,7 +23,7 @@ process BAKTA {
     script:
     def args = task.ext.args  ?: ''
     """
-    bakta --db $db_path  --min-contig-length $params.bakta_min_contig_length --prefix ${fasta.getSimpleName()} \
+    bakta --db $db_path/*  --min-contig-length $params.bakta_min_contig_length --prefix ${fasta.getSimpleName()} \
     --output ${fasta.getSimpleName()} --threads $params.bakta_threads \
     --genus $params.bakta_genus --species $params.bakta_species --strain $params.bakta_strain \
     --plasmid $params.bakta_plasmid  --locus $params.bakta_locus --locus-tag $params.bakta_locus_tag \
