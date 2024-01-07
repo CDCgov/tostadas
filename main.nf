@@ -52,6 +52,7 @@ workflow MAIN {
 // include necessary processes 
 include { VALIDATE_PARAMS } from "$projectDir/modules/general_util/validate_params/main"
 include { CLEANUP_FILES } from "$projectDir/modules/general_util/cleanup_files/main"
+
 // include necessary subworkflows
 include { RUN_VALIDATION } from "$projectDir/subworkflows/entrypoints/validation_entry"
 include { RUN_LIFTOFF } from "$projectDir/subworkflows/entrypoints/liftoff_entry"
