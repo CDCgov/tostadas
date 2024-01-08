@@ -251,7 +251,7 @@ USING CONDA
 :exclamation: The default wait time between initial submission and updating the submitted samples is three minutes or 180 seconds per sample. To override this default calculation, you can modify the submission_wait_time parameter within your config or through the command line (in terms of seconds):
  
  ```bash
-nextflow run main.nf -profile <param set>,<env> --submission_wait_time 360
+nextflow run main.nf -profile <test/standard>,<conda/docker/singularity>,<virus/bacteria> --submission_wait_time 360
  ```
  
 Outputs will be generated in the nf_test_results folder (if running the test parameter set) unless otherwise specified in your standard_params.config file as output_dir param. Or you can specify `--output_dir` on the command line.
