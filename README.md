@@ -45,6 +45,7 @@
     - [VADR](#vadr)
     - [Bakta](#bakta)
     - [Submission](#sample-submission)
+    - [Entrypoint and User Provided Annotation](#entrypoint-and-user-provided-annotation)
 - [Helpful Links](#helpful-links)
 - [Get in Touch](#get-in-touch)
 - [Acknowledgements](#acknowledgements)
@@ -262,18 +263,21 @@ This section walks through the available parameters to customize your workflow.
 #### (A) This table lists the required files to run metadata validation and annotation:
 | Input files | File type | Description                                                                               |
 |-------------|-----------|-------------------------------------------------------------------------------------------|
-| fasta       | .fasta    | Single sample fasta files with your input sequences                                         |
+| fasta       | .fasta    | Single sample fasta sequence file(s)                                         |
 | metadata    | .xlsx     | Multi-sample metadata matching metadata spreadsheets provided in input_files              |
 | ref_fasta   | .fasta    | Reference genome to use for the  liftoff_submission branch of the pipeline                |
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
 | db          |  folder   | Bakta reference database used for bakta annotation                                        |
 
-** Please note that the pipeline expects ONLY pre-split FASTA files, where each FASTA file contains only the sequence(s) associated with its corresponding sample
+
+** Please note that the pipeline expects ONLY pre-split FASTA files, where each FASTA file contains only the sequence(s) associated with its corresponding sample. The name of each FASTA file corresponding to a particular sample must be placed within your metadata sheet under **fasta_file_name**. 
+
+[Here](assets/custom_meta_fields/custom_fields_MPXV_metadata_Sample_Run_1.xlsx) is an example of how this would look like. 
 
 #### (B) This table lists the required files to run with submission: 
 | Input files | File type | Description                                                                               |
 |-------------|-----------|-------------------------------------------------------------------------------------------|
-| fasta       | .fasta    | Multi-sample fasta file with your input sequences                                         |
+| fasta       | .fasta    | Single sample fasta sequence file(s) sequences                                        |
 | metadata    | .xlsx     | Multi-sample metadata matching metadata spreadsheets provided in input_files              |
 | ref_fasta   | .fasta    | Reference genome to use for the  liftoff_submission branch of the pipeline                |
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
@@ -376,6 +380,7 @@ The outputs are recorded in the directory specified within the nextflow.config f
 * validation_outputs (name configurable with `val_output_dir`)
     * name of metadata sample file
         * errors
+        * fasta
         * tsv_per_sample
 * liftoff_outputs (name configurable with `final_liftoff_output_dir`)
     * name of metadata sample file
@@ -424,7 +429,7 @@ When changing these parameters pay attention to the required inputs and make sur
 
 | Param                      | Description                                             | Input Required   |
 |----------------------------|---------------------------------------------------------|------------------|
-| --fasta_path               | Path to fasta file                                      |        Yes (path as string)      |
+| --fasta_path               | Path to directory containing single sample fasta files                                      |        Yes (path as string)      |
 | --ref_fasta_path           | Reference Sequence file path                            |        Yes (path as string)      |
 | --meta_path                | Meta-data file path for samples                         |        Yes (path as string)      |
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
@@ -463,7 +468,6 @@ When changing these parameters pay attention to the required inputs and make sur
 | --output_dir               | File path to submit outputs from pipeline              |        Yes (path as string)      |
 | --overwrite_output         | Toggle to overwriting output files in directory        | Yes (true/false as bool) |
 
-
 ### Metadata Validation
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
@@ -472,7 +476,6 @@ When changing these parameters pay attention to the required inputs and make sur
 | --val_keep_pi            | Flag to keep personal identifying info, if provided otherwise it will return an error|        Yes (true/false as bool)      |
 | --validate_custom_fields            | Toggle checks/transformations for custom metadata fields on/off |     No (true/false as bool) 
 | --custom_fields_file  |  Path to the JSON file containing custom metadata fields and their information | No (path as string)
-
 
 ### Liftoff
 | Param                       | Description                                             | Input Required   |
@@ -522,9 +525,6 @@ When changing these parameters pay attention to the required inputs and make sur
 |--------------------------|---------------------------------------------------------|------------------|
 | --submission_output_dir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
 | --submission_prod_or_test | Whether to submit samples for test or actual production | Yes (prod or test as string) |
-| --submission_only_meta   | Full path directly to the dirs containing validate metadata files|        Yes (path as string)      |
-| --submission_only_gff    | Full path directly to the directory with reformatted GFFs    |        Yes (path as string)      |
-| --submission_only_fasta  | Full path directly to the directory with split fastas for each sample|        Yes (path as string)      |
 | --submission_config      | Configuration file for submission to public repos       |        Yes (path as string)      |
 | --submission_wait_time |Calculated based on sample number (3 * 60 secs * sample_num) | integer (seconds)       |
 | --batch_name | Name of the batch to prefix samples with during submission | Yes (name as string)
@@ -533,6 +533,13 @@ When changing these parameters pay attention to the required inputs and make sur
 | --processed_samples | Path to the directory containing processed samples for update only submission entrypoint (containing <batch_name>.<sample_name> dirs) | Yes (path as string)           |
 
 *Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'*
+
+### Entrypoint and User Provided Annotation
+| Param                    | Description                                             | Input Required   |
+|--------------------------|---------------------------------------------------------|------------------|
+| --final_split_metas_path   | Full path directly to the directory containing validated metadata file(s) (1 per sample) |        Yes (path as string)      |
+| --final_annotated_files_path    | Full path directly to the directory containing annotation file(s) (1 per sample)    |        Yes (path as string)      |
+| -- final_split_fastas_path  | Full path directly to the directory containing fasta(s) (1 per sample) |        Yes (path as string)      |
 
 ## Helpful Links for Resources and Software Integrated with TOSTADAS:     
    :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/

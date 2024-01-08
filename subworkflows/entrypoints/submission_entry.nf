@@ -9,7 +9,7 @@
 include { CHECKS_4_SUBMISSION_ENTRY                         } from "./submission_entry_check"
 include { PREP_SUBMISSION_ENTRY                             } from "../../modules/submission_entrypoint/prep_sub_entry/main"
 include { GET_WAIT_TIME                                     } from "../../modules/general_util/get_wait_time/main"
-include { ENTRY_SUBMISSION                                  } from "../submission"
+include { GENERAL_SUBMISSION                                } from "../submission"
 
 workflow RUN_SUBMISSION {
     main:
@@ -21,9 +21,9 @@ workflow RUN_SUBMISSION {
         // get the parameter paths into proper format 
         PREP_SUBMISSION_ENTRY ( 
             CHECKS_4_SUBMISSION_ENTRY.out,
-            params.submission_only_meta, 
-            params.submission_only_fasta, 
-            params.submission_only_gff, 
+            params.final_split_metas_path,
+            params.final_split_fastas_path,
+            params.final_annotated_files_path,
             params.submission_config,
             params.submission_database,
             false
@@ -35,7 +35,7 @@ workflow RUN_SUBMISSION {
         )
         
         // call the submission workflow
-        ENTRY_SUBMISSION (
+        GENERAL_SUBMISSION (
             PREP_SUBMISSION_ENTRY.out.tsv.sort().flatten(),
             PREP_SUBMISSION_ENTRY.out.fasta.sort().flatten(),
             PREP_SUBMISSION_ENTRY.out.gff.sort().flatten(), 

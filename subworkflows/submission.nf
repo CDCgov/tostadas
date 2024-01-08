@@ -17,14 +17,13 @@ workflow LIFTOFF_SUBMISSION {
         meta_files
         liftoff_fasta_files
         liftoff_gff_files
-        entry_flag
         submission_config
         req_col_config
         wait_time
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
-        SUBMISSION ( meta_files, liftoff_fasta_files, liftoff_gff_files, entry_flag, submission_config, req_col_config, 'liftoff' )
+        SUBMISSION ( meta_files, liftoff_fasta_files, liftoff_gff_files, submission_config, req_col_config, 'liftoff' )
 
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
@@ -41,14 +40,13 @@ workflow VADR_SUBMISSION {
         meta_files
         vadr_fasta_files
         vadr_gff_files
-        entry_flag
         submission_config
         req_col_config
         wait_time
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
-        SUBMISSION ( meta_files, vadr_fasta_files, vadr_gff_files, entry_flag, submission_config, req_col_config, 'vadr' )
+        SUBMISSION ( meta_files, vadr_fasta_files, vadr_gff_files, submission_config, req_col_config, 'vadr' )
 
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
@@ -65,14 +63,13 @@ workflow BAKTA_SUBMISSION {
          meta_files
          bakta_fasta_files
          bakta_gff_files
-         entry_flag
          submission_config
          req_col_config
          wait_time
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
-        SUBMISSION ( meta_files, bakta_fasta_files, bakta_gff_files, entry_flag, submission_config, req_col_config, 'bakta' )
+        SUBMISSION ( meta_files, bakta_fasta_files, bakta_gff_files, submission_config, req_col_config, 'bakta' )
 
         // actual process to initiate wait
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
@@ -89,14 +86,13 @@ workflow REPEAT_MASKER_LIFTOFF_SUBMISSION {
         meta_files
         liftoff_cli_fasta_files
         concat_gff_files
-        entry_flag
         submission_config
         req_col_config
         wait_time
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
-        SUBMISSION ( meta_files, liftoff_cli_fasta_files, concat_gff_files, entry_flag, submission_config, req_col_config, 'liftoff' )
+        SUBMISSION ( meta_files, liftoff_cli_fasta_files, concat_gff_files, submission_config, req_col_config, 'liftoff' )
 
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
@@ -108,19 +104,18 @@ workflow REPEAT_MASKER_LIFTOFF_SUBMISSION {
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'repeatmasker_liftoff' )
 }
 
-workflow ENTRY_SUBMISSION {
+workflow GENERAL_SUBMISSION {
     take:
-        entry_meta_files
-        entry_fasta_files
-        entry_gff_files
-        entry_flag
+        meta_files
+        fasta_files
+        gff_files
         submission_config
         req_col_config
         wait_time
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
-        SUBMISSION ( entry_meta_files, entry_fasta_files, entry_gff_files, entry_flag, submission_config, req_col_config, '' )
+        SUBMISSION ( meta_files, fasta_files, gff_files, submission_config, req_col_config, '' )
 
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
