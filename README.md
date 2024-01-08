@@ -189,7 +189,7 @@ nextflow version 22.10.0.5826
 #### (2) Check that you are in the project directory (Tostadas).
 This is the default directory set in the nextflow.config file to allow for running the nextflow pipeline with the provided test input files.
 
-#### (3) Change the ```submission_config``` parameter within ```{taxon}_test_params.config``` to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.
+#### (3) Optional: Change the ```submission_config``` parameter within ```{taxon}_test_params.config``` to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.
 
 :exclamation: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: [More Information on Submission](#more-information-on-submission)
 
