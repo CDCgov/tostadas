@@ -132,7 +132,7 @@ workflow MAIN_WORKFLOW {
             if ( params.run_liftoff == true ) {
                 LIFTOFF_SUBMISSION (
                     METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
-                    LIFTOFF.out.fasta.sort().flatten(), 
+                    METADATA_VALIDATION.out.fasta.sort().flatten(), 
                     LIFTOFF.out.gff.sort().flatten(),
                     params.submission_config, 
                     params.req_col_config, 
@@ -144,7 +144,7 @@ workflow MAIN_WORKFLOW {
             if ( params.run_vadr  == true ) {
                 VADR_SUBMISSION (
                     METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
-                    VADR_POST_CLEANUP.out.fasta.sort().flatten(), 
+                    METADATA_VALIDATION.out.fasta.sort().flatten(), 
                     VADR_POST_CLEANUP.out.gff.sort().flatten(),
                     params.submission_config, 
                     params.req_col_config, 
@@ -156,7 +156,7 @@ workflow MAIN_WORKFLOW {
             if ( params.run_bakta  == true ) {
                 BAKTA_SUBMISSION (
                     METADATA_VALIDATION.out.tsv_Files,
-                    BAKTA_POST_CLEANUP.out.fasta,
+                    METADATA_VALIDATION.out.fasta,
                     BAKTA_POST_CLEANUP.out.gff,
                     params.submission_config,
                     params.req_col_config,
@@ -168,7 +168,7 @@ workflow MAIN_WORKFLOW {
             if ( params.run_repeatmasker_liftoff == true ) {
                 REPEAT_MASKER_LIFTOFF_SUBMISSION(
                     METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                    RUN_REPEATMASKER_LIFTOFF.out[0],
+                    METADATA_VALIDATION.out.fasta.sort().flatten(),
                     RUN_REPEATMASKER_LIFTOFF.out[1],
                     params.submission_config, 
                     params.req_col_config, 
@@ -184,7 +184,7 @@ workflow MAIN_WORKFLOW {
                 // call the general submission workflow 
                 GENERAL_SUBMISSION (
                     METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                    params.fasta_path,
+                    METADATA_VALIDATION.out.fasta.sort().flatten(),
                     params.final_annotated_files_path,
                     params.submission_config, 
                     params.req_col_config, 
