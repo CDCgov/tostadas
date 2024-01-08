@@ -82,7 +82,7 @@ Submission workflow generates the necessary files for Genbank submission, genera
 ### Repository Setup
 
 Before cloning, check if the following applies to you:
-* CDC user with access to the Monkeypox group on Gitlab
+* CDC user with access to the MPOX group on Gitlab
 * Require access to available submission config files
 
 Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
@@ -147,7 +147,7 @@ The following steps are for running the pipeline on Scicomp at the CDC.
 
 If you want to create the full-conda environment needed to run the pipeline outside of Nextflow (enables you to run individual python scripts), then proceed with the steps listed below [here](#1-activate-the-miniconda-module). 
 
-If you simply want to run the pipeline using Nextflow only (this will be most users), then you would simply initialize the nextflow module (skip all steps below):
+If you simply want to run the pipeline using Nextflow only (this will be most users), then you would simply initialize the nextflow module (skip **steps 1-4** below):
 ```bash
 ml nextflow
 ```
@@ -180,7 +180,7 @@ mamba install -c bioconda nextflow
 
 The configs are set-up to run the default params with the test option
 
-#### (1) Ensure nextflow was installed successfully by running ```Nextflow -v```
+#### (1) Ensure nextflow was installed successfully by running ```nextflow -v```
 
 Expected Output:
 ```
@@ -194,10 +194,13 @@ This is the default directory set in the nextflow.config file to allow for runni
 
 :exclamation: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: [More Information on Submission](#more-information-on-submission)
 
-#### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
+#### (4) Run one of the following nextflow command to execute the scripts with default parameters and with local run environment: 
 
 ```bash
-nextflow run main.nf -profile test,conda
+# for virus reads
+nextflow run main.nf -profile test,conda,virus
+# for bacteria reads
+nextflow run main.nf -profile test,conda,bacteria
 ```
 
 The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory (update this in the standard params set for a different output path).
