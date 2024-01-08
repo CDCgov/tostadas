@@ -34,6 +34,7 @@ include { LIFTOFF_SUBMISSION                                } from "../subworkfl
 include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
 include { BAKTA_SUBMISSION                                  } from "../subworkflows/submission"
+include { GENERAL_SUBMISSION                                } from "../subworkflows/submission"
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
 
 /*
@@ -59,7 +60,7 @@ workflow MAIN_WORKFLOW {
         params.meta_path, 
         params.fasta_path 
     )
-        
+
     // run liftoff annotation process 
     if ( params.run_liftoff == true ) {
         LIFTOFF ( 
@@ -92,29 +93,28 @@ workflow MAIN_WORKFLOW {
         )
     }
 
-   // run bakta annotation process
+    // run bakta annotation process
     if ( params.run_bakta == true ) {
-      if ( params.download_bakta_db ) {
+        if ( params.download_bakta_db ) {
         BAKTADBDOWNLOAD ()
         BAKTA (
             'dummy utility signal',
             BAKTADBDOWNLOAD.out.db,
             params.fasta_path
         )
-            }
-        else {
+        } else {
             BAKTA (
                 'dummy utility signal',
                 params.bakta_db_path,
                 params.fasta_path
             )
         }
-        
-	     BAKTA_POST_CLEANUP (
-		    BAKTA.out.bakta_results,
-		    params.meta_path,
-		    params.fasta_path
-	    )   
+    
+        BAKTA_POST_CLEANUP (
+            BAKTA.out.bakta_results,
+            params.meta_path,
+            params.fasta_path
+        )   
     }
     
     // run submission for the annotated samples 
@@ -125,56 +125,78 @@ workflow MAIN_WORKFLOW {
             METADATA_VALIDATION.out.tsv_Files.collect() 
         )
 
-        // call the submission workflow for liftoff 
-        if ( params.run_liftoff == true ) {
-            LIFTOFF_SUBMISSION (
-                METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
-                LIFTOFF.out.fasta.sort().flatten(), 
-                LIFTOFF.out.gff.sort().flatten(), 
-                false, 
-                params.submission_config, 
-                params.req_col_config, 
-                GET_WAIT_TIME.out
-            )
-        }
+         // check if all annotations are set to false 
+        if ([params.run_bakta, params.run_liftoff, params.run_vadr, params.run_repeatmasker_liftoff].any { it }) {
 
-        // call the submission workflow for vadr 
-        if ( params.run_vadr  == true ) {
-            VADR_SUBMISSION (
-                METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
-                VADR_POST_CLEANUP.out.fasta.sort().flatten(), 
-                VADR_POST_CLEANUP.out.gff.sort().flatten(), 
-                false, 
-                params.submission_config, 
-                params.req_col_config, 
-                GET_WAIT_TIME.out 
-            )
-        }
+            // call the submission workflow for liftoff 
+            if ( params.run_liftoff == true ) {
+                LIFTOFF_SUBMISSION (
+                    METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
+                    LIFTOFF.out.fasta.sort().flatten(), 
+                    LIFTOFF.out.gff.sort().flatten(),
+                    params.submission_config, 
+                    params.req_col_config, 
+                    GET_WAIT_TIME.out
+                )
+            }
 
-        // call the submission workflow for bakta
-        if ( params.run_bakta  == true ) {
-            BAKTA_SUBMISSION (
-                METADATA_VALIDATION.out.tsv_Files,
-                BAKTA_POST_CLEANUP.out.fasta,
-                BAKTA_POST_CLEANUP.out.gff,
-                false,
-                params.submission_config,
-                params.req_col_config,
-                GET_WAIT_TIME.out
-            )
-        }
+            // call the submission workflow for vadr 
+            if ( params.run_vadr  == true ) {
+                VADR_SUBMISSION (
+                    METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
+                    VADR_POST_CLEANUP.out.fasta.sort().flatten(), 
+                    VADR_POST_CLEANUP.out.gff.sort().flatten(),
+                    params.submission_config, 
+                    params.req_col_config, 
+                    GET_WAIT_TIME.out 
+                )
+            }
 
-        // call the submission workflow process for liftoff + repeatmasker 
-        if ( params.run_repeatmasker_liftoff == true ) {
-            REPEAT_MASKER_LIFTOFF_SUBMISSION(
-                METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                RUN_REPEATMASKER_LIFTOFF.out[0],
-                RUN_REPEATMASKER_LIFTOFF.out[1],
-                false,
-                params.submission_config, 
-                params.req_col_config, 
-                GET_WAIT_TIME.out   
-            )
-        }  
+            // call the submission workflow for bakta
+            if ( params.run_bakta  == true ) {
+                BAKTA_SUBMISSION (
+                    METADATA_VALIDATION.out.tsv_Files,
+                    BAKTA_POST_CLEANUP.out.fasta,
+                    BAKTA_POST_CLEANUP.out.gff,
+                    params.submission_config,
+                    params.req_col_config,
+                    GET_WAIT_TIME.out
+                )
+            }
+
+            // call the submission workflow process for liftoff + repeatmasker 
+            if ( params.run_repeatmasker_liftoff == true ) {
+                REPEAT_MASKER_LIFTOFF_SUBMISSION(
+                    METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
+                    RUN_REPEATMASKER_LIFTOFF.out[0],
+                    RUN_REPEATMASKER_LIFTOFF.out[1],
+                    params.submission_config, 
+                    params.req_col_config, 
+                    GET_WAIT_TIME.out   
+                )
+            }  
+
+        } else {
+
+            // all annotations are false, therefore first check if user annotations are provided
+            if ( params.final_annotated_files_path != "" ) {
+
+                // call the general submission workflow 
+                GENERAL_SUBMISSION (
+                    METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
+                    params.fasta_path,
+                    params.final_annotated_files_path,
+                    params.submission_config, 
+                    params.req_col_config, 
+                    GET_WAIT_TIME.out 
+                )
+
+            } else {
+
+                // final annotations path not provided, need to create dummy GFF files to pass
+
+
+            }
+        }
     }
 }
