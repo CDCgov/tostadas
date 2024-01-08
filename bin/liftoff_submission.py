@@ -183,19 +183,29 @@ class AnnotationPrep:
 		self.sample_seq_lengths = {}
 		self.sample_list = []
 		self.main_util = main_util()
+		self.meta_df = ""
 
 	def prep_main(self):
-		""" Main prep function for calling split_fasta, split gff for itr mapping, and load_meta
+		""" Main prep function for split gff for itr mapping + load_meta
 		"""
-		# split the fasta file
-		self.main_util.split_fasta (
-			fasta_path=f"{self.parameters['fasta_path']}",
-			fasta_output=f"{self.parameters['fasta_temp']}"
-		)
 		# split the ref gff file
 		self.split_gff()
+
 		# load the meta data file
 		self.load_meta()
+
+		# checks whether samples are shared between meta and fasta
+		fasta_column = self.main_util.check_fasta_path (
+			meta_df=self.meta_df, 
+			fasta_path=self.parameters['fasta_path']
+		)
+		# checks the name of the fasta file is aligned with sample name
+		self.main_util.check_fasta_names (
+			meta_df=self.meta_df, 
+			input_fasta_path=self.parameters['fasta_path'], 
+			output_fasta_path=f"{self.parameters['fasta_temp']}",
+			fasta_column=fasta_column
+		)
 		# get the length of sequences for each sample
 		self.get_seq_lens()
 	
@@ -224,8 +234,8 @@ class AnnotationPrep:
 	def load_meta(self):
 		""" Imports the Excel file and puts it into a dataframe
 		"""
-		idf = pd.read_excel(self.parameters['meta_path'], header=[1], sheet_name=0)
-		df = idf.set_index("sample_name", drop=False)
+		self.meta_df = pd.read_excel(self.parameters['meta_path'], header=[1], sheet_name=0)
+		df = self.meta_df.set_index("sample_name", drop=False)
 		self.sample_list = df.loc[:, "sample_name"]
 
 	def get_seq_lens(self):
