@@ -208,7 +208,7 @@ The outputs of the pipeline will appear in the "nf_test_results" folder within t
 :exclamation: Running the pipeline with default parameters (test) will trigger a wait time equal to # of samples * 180 seconds. This default parameter can be overridden by running the following command instead:
 
 ```bash
-nextflow run main.nf -profile test,conda --submission_wait_time <place integer value here in seconds>
+nextflow run main.nf -profile test,conda,virus --submission_wait_time <place integer value here in seconds>
 ```
 
 More information on the ```submission_wait_time``` parameter can be found under [Submission Parameters](#submission)
