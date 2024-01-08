@@ -38,7 +38,7 @@ process LIFTOFF {
     """
 
     output:
-    path "$params.final_liftoff_output_dir/*/fasta/*.fasta", emit: fasta
+    // path "$params.final_liftoff_output_dir/*/fasta/*.fasta", emit: fasta
     path "$params.final_liftoff_output_dir/*/liftoff/*.gff", emit: gff
     path "$params.final_liftoff_output_dir/*/errors/*.txt", emit: errors
     path "$params.final_liftoff_output_dir/*/tbl/*.tbl", emit: tbl
