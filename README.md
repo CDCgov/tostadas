@@ -431,7 +431,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --ref_fasta_path           | Reference Sequence file path                            |        Yes (path as string)      |
 | --meta_path                | Meta-data file path for samples                         |        Yes (path as string)      |
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
-| --db_path                  | Path to Bakta reference database                        |        Yes (path as string)      |
+| --bakta_db_path                  | Path to Bakta reference database                        |        Yes (path as string)      |
 | --env_yml                  | Path to environment.yml file                            |        Yes (path as string)      |
 
 ### Run Environment
