@@ -110,7 +110,8 @@ class BAKTAFuncs:
 				tbl.write('\t' + '\t' + '\t' + key1 + '\t' + x[key1] + '\n')
 				if 'gene' in x:
 					tbl.write('\t' + '\t' + '\t' + key3 + '\t' + x[key3] + '\n')
-				tbl.write('\t' + '\t' + '\t' + key2 + '\t' + x[key2] + '\n')
+				if 'product' in x:
+					tbl.write('\t' + '\t' + '\t' + key2 + '\t' + x[key2] + '\n')
 				if 'Dbxref' in x:
 					tbl.write('\t' + '\t' + '\t' + key4 + '\t' + x[key4] + '\n')
 				if 'anti_codon' in x:
