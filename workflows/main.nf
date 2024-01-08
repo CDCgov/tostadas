@@ -16,8 +16,6 @@ include { PRINT_PARAMS_HELP                                 } from "../modules/g
 include { METADATA_VALIDATION                               } from "../modules/metadata_validation/main"
 include { SUBMISSION                                        } from "../modules/submission/main"
 include { UPDATE_SUBMISSION                                 } from "../modules/update_submission/main"
-include { VADR                                              } from "../modules/vadr_annotation/main"
-include { VADR_POST_CLEANUP                                 } from "../modules/post_vadr_annotation/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
 include { BAKTA                                             } from "../modules/bakta/bakta/main"
 
@@ -31,6 +29,7 @@ include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkfl
 
 // get the subworkflows
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
+include { RUN_VADR                                          } from "../subworkflows/entrypoints/vadr_entry"
 include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
 include { BAKTA_SUBMISSION                                  } from "../subworkflows/submission"
@@ -80,15 +79,8 @@ workflow MAIN_WORKFLOW {
 
     // run vadr processes
     if ( params.run_vadr == true ) {
-        VADR (
+        RUN_VADR (
             RUN_UTILITY.out, 
-            params.fasta_path,
-            params.vadr_models_dir
-        )
-        VADR_POST_CLEANUP (
-            VADR.out.vadr_outputs,
-            params.meta_path,
-            params.fasta_path
         )
     }
 
