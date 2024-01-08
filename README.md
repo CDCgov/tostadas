@@ -200,7 +200,7 @@ This is the default directory set in the nextflow.config file to allow for runni
 # for virus reads
 nextflow run main.nf -profile test,conda,virus
 # for bacteria reads
-nextflow run main.nf -profile test,conda,bacteria
+nextflow run main.nf -profile test,conda,bacteria --download_bakta_db true --bakta_db_type light
 ```
 
 The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory (update this in the standard params set for a different output path).
