@@ -263,19 +263,21 @@ This section walks through the available parameters to customize your workflow.
 #### (A) This table lists the required files to run metadata validation and annotation:
 | Input files | File type | Description                                                                               |
 |-------------|-----------|-------------------------------------------------------------------------------------------|
-| fasta       | .fasta    | Single sample fasta files with your input sequences                                         |
+| fasta       | .fasta    | Single sample fasta sequence file(s)                                         |
 | metadata    | .xlsx     | Multi-sample metadata matching metadata spreadsheets provided in input_files              |
 | ref_fasta   | .fasta    | Reference genome to use for the  liftoff_submission branch of the pipeline                |
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
 | db          |  folder   | Bakta reference database used for bakta annotation                                        |
 
-** Please note that the pipeline expects ONLY pre-split FASTA files, where each FASTA file contains only the sequence(s) associated with its corresponding sample. The name of each FASTA file corresponding to a particular sample must be placed within your metadata sheet under **fasta_file_name**. Here is an example of how this would look:
 
+** Please note that the pipeline expects ONLY pre-split FASTA files, where each FASTA file contains only the sequence(s) associated with its corresponding sample. The name of each FASTA file corresponding to a particular sample must be placed within your metadata sheet under **fasta_file_name**. 
+
+[Here](assets/custom_meta_fields/custom_fields_MPXV_metadata_Sample_Run_1.xlsx) is an example of how this would look like. 
 
 #### (B) This table lists the required files to run with submission: 
 | Input files | File type | Description                                                                               |
 |-------------|-----------|-------------------------------------------------------------------------------------------|
-| fasta       | .fasta    | Single sample fasta files with your input sequences                                        |
+| fasta       | .fasta    | Single sample fasta sequence file(s) sequences                                        |
 | metadata    | .xlsx     | Multi-sample metadata matching metadata spreadsheets provided in input_files              |
 | ref_fasta   | .fasta    | Reference genome to use for the  liftoff_submission branch of the pipeline                |
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
@@ -427,7 +429,7 @@ When changing these parameters pay attention to the required inputs and make sur
 
 | Param                      | Description                                             | Input Required   |
 |----------------------------|---------------------------------------------------------|------------------|
-| --fasta_path               | Path to fasta file                                      |        Yes (path as string)      |
+| --fasta_path               | Path to directory containing single sample fasta files                                      |        Yes (path as string)      |
 | --ref_fasta_path           | Reference Sequence file path                            |        Yes (path as string)      |
 | --meta_path                | Meta-data file path for samples                         |        Yes (path as string)      |
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
@@ -535,9 +537,9 @@ When changing these parameters pay attention to the required inputs and make sur
 ### Entrypoint and User Provided Annotation
 | Param                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
-| --final_split_metas_path   | Full path directly to the dirs containing validate metadata files|        Yes (path as string)      |
-| --final_annotated_files_path    | Full path directly to the directory with reformatted GFFs    |        Yes (path as string)      |
-| -- final_split_fastas_path  | Full path directly to the directory with split fastas for each sample|        Yes (path as string)      |
+| --final_split_metas_path   | Full path directly to the directory containing validated metadata file(s) (1 per sample) |        Yes (path as string)      |
+| --final_annotated_files_path    | Full path directly to the directory containing annotation file(s) (1 per sample)    |        Yes (path as string)      |
+| -- final_split_fastas_path  | Full path directly to the directory containing fasta(s) (1 per sample) |        Yes (path as string)      |
 
 ## Helpful Links for Resources and Software Integrated with TOSTADAS:     
    :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/
