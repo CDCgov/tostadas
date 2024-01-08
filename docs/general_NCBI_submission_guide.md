@@ -1,5 +1,20 @@
 # NCBI Databases Overview
 
+## Table of Contents
+- [General](#general)
+    - [What is NCBI](#what-is-ncbi)
+    - [Key Components of NCBI](#key-components-of-ncbi)
+        - [PubMed](#1-pubmed)
+        - [GenBank](#2-genbank)
+        - [BLAST](#3-blast)
+        - [Entrez](#4-entrez)
+        - [SRA](#5-sra)
+        - [BioProject / BioSample](#6-bioproject--biosample)
+        - [ClinVar](#7-clinvar)
+        - [dbSNP](#8-dbsnp)
+- [More Information For Each Database](#more-information-for-each-database)
+
+    
 
 ## General
 
@@ -22,7 +37,7 @@ NCBI continues to evolve, offering a wide range of tools and resources to suppor
    - **URL:** [General GenBank Docs](https://www.ncbi.nlm.nih.gov/genbank/)
    - **URL2:** [Formatting for GenBank](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table)
 
-#### 3. **BLAST (Basic Local Alignment Search Tool):**
+#### 3. **BLAST:**
    - **Description:** BLAST is a powerful tool for comparing biological sequences, allowing researchers to identify similarities between sequences and explore evolutionary relationships.
    - **URL:** [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi)
 
@@ -30,11 +45,11 @@ NCBI continues to evolve, offering a wide range of tools and resources to suppor
    - **Description:** Entrez is an integrated search and retrieval system that provides access to various NCBI databases, including PubMed, GenBank, and others.
    - **URL:** [Entrez](https://www.ncbi.nlm.nih.gov/gquery/)
 
-#### 5. **SRA (Sequence Read Archive):**
+#### 5. **SRA:**
    - **Description:** SRA is a repository that archives and provides access to raw sequence data, including next-generation sequencing data, facilitating the exploration of genomic datasets.
    - **URL:** [SRA](https://www.ncbi.nlm.nih.gov/sra)
 
-#### 6. **BioProject and BioSample:**
+#### 6. **BioProject / BioSample:**
    - **Description:** BioProject and BioSample are databases that organize and store information about biological projects and samples, respectively, providing context for genomic data submissions.
    - **URL:** [BioProject](https://www.ncbi.nlm.nih.gov/bioproject/) / [BioSample](https://www.ncbi.nlm.nih.gov/biosample/)
 
@@ -42,7 +57,7 @@ NCBI continues to evolve, offering a wide range of tools and resources to suppor
    - **Description:** ClinVar is a resource that aggregates information about genomic variations and their clinical significance, aiding in the interpretation of genetic variants in a clinical context.
    - **URL:** [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/)
 
-#### 8. **dbSNP (Single Nucleotide Polymorphism Database):**
+#### 8. **dbSNP:**
    - **Description:** dbSNP is a database that catalogs and classifies variations in the human genome, including single nucleotide polymorphisms (SNPs) and other genomic variations.
    - **URL:** [dbSNP](https://www.ncbi.nlm.nih.gov/snp/)
 
