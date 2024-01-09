@@ -35,7 +35,6 @@ workflow RUN_INITIAL_SUBMISSION {
             PREP_SUBMISSION_ENTRY.out.tsv.sort().flatten(),
             PREP_SUBMISSION_ENTRY.out.fasta.sort().flatten(),
             PREP_SUBMISSION_ENTRY.out.gff.sort().flatten(), 
-            true,
             params.submission_config,
             params.req_col_config,
             ''
