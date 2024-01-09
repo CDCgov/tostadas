@@ -318,7 +318,7 @@ Table of available entrypoints:
 | only_validation      | Runs the metadata validation process only                           |
 | only_liftoff      | Runs the liftoff annotation process only                           |
 | only_repeatmasker_liftoff | Runs repeatmasker for repeats and liftoff for functional regions, then combines the GFF outputs | 
-| only_vadr         | Runs the VADR annotation process only                           |
+| only_vadr         | Runs the VADR annotation subworkflow only                           |
 | only_bakta        | Runs the Bakta annotation process only                          |
 | only_submission      | Runs submission sub-workflow only. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)                           |
 | only_initial_submission | Runs the initial submission process but not follow-up within the submission sub-workflow. Requires specific inputs mentioned here: [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint)               |
