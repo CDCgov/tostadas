@@ -295,7 +295,7 @@ The following command can be used to run the submission sub-workflow:
  ```bash
 nextflow run main.nf -profile test,conda,virus -entry <only_submission/only_initial_submission/only_update_submission> 
  ```
-:exclamation: If you are using the `only_submission` or `only_initial_submission` entrypoint, you must define the paths for the following parameters within the custom config file: `submission_only_meta`, `submission_only_fasta`, and`submission_only_gff`. To find more information on configuring the submission entrypoint, refer to the [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint) section. 
+:exclamation: If you are using the `only_submission` or `only_initial_submission` entrypoint, you must define the paths for the following parameters: `submission_only_meta`, `submission_only_fasta`, and`submission_only_gff`. To find more information on configuring the submission entrypoint, refer to the [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint) section. 
 
 ## Profile Options & Input Files
 
