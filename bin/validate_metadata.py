@@ -98,9 +98,6 @@ class GetParams:
 		os.system(f'mkdir -p -m777 {self.parameters["output_dir"]}/{self.parameters["file_name"]}/errors')
 		os.system(f'mkdir -p -m777 {self.parameters["output_dir"]}/{self.parameters["file_name"]}/tsv_per_sample')
 
-		# create a new directory to store FASTAs 
-		os.system(f'mkdir -p -m777 {self.parameters["output_dir"]}/{self.parameters["file_name"]}/fasta')
-
 	# read in parameters
 	def get_inputs(self):
 		""" Gets the user inputs from the argparse
@@ -116,7 +113,6 @@ class GetParams:
 		# initialize parser
 		parser = argparse.ArgumentParser(description="Parameters for Running Metadata Validation")
 		# required parameters (do not have default)
-		parser.add_argument("--fasta_path", type=str, help="Path to the directory containing the fasta files")
 		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for MetaData")
 		# optional parameters
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
@@ -253,9 +249,6 @@ class ValidateChecks:
 			error_file=self.custom_fields_error_file
 		)
 
-		# instantiate FASTAchecks class 
-		self.fasta_checks = FASTAchecks(self.parameters)
-
 		# get the main utility class 
 		self.main_util = main_util()
 		
@@ -278,19 +271,6 @@ class ValidateChecks:
 		# if there are repeat samples then check them and replace the names
 		if len(self.metadata_df['sample_name']) != len(set(self.metadata_df['sample_name'])):
 			self.check_for_repeats_in_meta()
-
-		# checks whether samples are shared between meta and fasta
-		fasta_column = self.main_util.check_fasta_path (
-			meta_df=self.metadata_df, 
-			fasta_path=self.parameters['fasta_path']
-		)
-		# checks the name of the fasta file is aligned with sample name
-		self.main_util.check_fasta_names (
-			meta_df=self.metadata_df, 
-			input_fasta_path=self.parameters['fasta_path'], 
-			output_fasta_path=f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}/fasta',
-			fasta_column=fasta_column
-		)
 
 		# checks date
 		if self.parameters['date_format_flag'].lower() != 'o':
@@ -616,68 +596,6 @@ class ValidateChecks:
 		if self.meta_case_grade is False:
 			self.sample_error_msg += f'\n\t\tPresent Case Data found in: {", ".join(invalid_case_data)}' + \
 					f"\n\t\tValidation will Fail. Please remove Case Data or add the Keep Data Flag -f to Conserve Case Data"
-
-
-class FASTAchecks:
-	""" Class constructor for doing checks on FASTA related things
-	"""
-	def __init__(self, parameters):
-		self.parameters = parameters
-		self.fasta_path = parameters['fasta_path']
-		self.main_util = main_util()
-		self.meta_df = ""
-		self.fasta_column = ""
-		self.fasta_error = ""  
-
-	def check_if_unzip(self):
-		""" This checks if the fasta_path points to a zipped .tz file containing individual fasta files
-		"""
-		# check if the fasta file needs to be unzipped first
-		if self.fasta_path.split('/')[-1].split('.')[-1] == 'gz':
-			self.fasta_path = self.main_util.unzip_fasta(fasta_path=self.fasta_path)
-		fasta_names = self.main_util.get_fasta_sample_names(fasta_path=self.fasta_path)
-		return fasta_names
-		# TODO: NEED TO CHECK THIS UNZIPPED SITUATION
-
-	def check_fasta_path(self):
-		""" This checks the fasta_path passed in and the fasta paths within the metadata sheet, to make sure they are aligned
-		"""
-		# open up the metadata sheet and get the fasta file associated with each sample 
-		self.meta_df = pd.read_excel(self.parameters['meta_path'], header=[1])
-
-		# try finding a fasta_path field
-		if 'fasta_file' in [x.strip().lower() for x in self.meta_df.columns]:
-			self.fasta_column = 'fasta_file'
-		elif 'fasta_file_name' in [x.strip().lower() for x in self.meta_df.columns]:
-			self.fasta_column = 'fasta_file_name'
-		elif 'fasta_name' in [x.strip().lower() for x in self.meta_df.columns]:
-			self.fasta_column = 'fasta_name'
-		elif 'fasta' in  [x.strip().lower() for x in self.meta_df.columns]:
-			self.fasta_column = 'fasta'
-		else:
-			# try some other variant as last resort 
-			# get all fields with fasta in it
-			fasta_fields = [x for x in self.meta_df.columns if 'fasta' in x.strip().lower()]
-			if fasta_fields:
-				# just use the first field to get values
-				self.fasta_column = fasta_fields[0]
-			else:
-				raise Exception(f"Could not find the column named fasta_file_name within metadata sheet. Please make sure it exists")
-
-		# get these values 
-		fasta_file_names = self.meta_df[self.fasta_column].to_list()
-		
-		# now cycle through these values and make sure they are no repeats for different sample names
-		if len(set(fasta_file_names)) != len(fasta_file_names):
-			raise Exception("Cannot have multiple samples in metadata sheet pointing to same FASTA file")
-		
-		# check all of them are located at fasta_path location
-		list_of_fastas = [file for file in os.listdir(self.parameters['fasta_path']) if file.endswith(".fasta")]
-		for name in fasta_file_names:
-			try:
-				assert name.strip() in list_of_fastas 
-			except:
-				raise AssertionError(f"Missing {name} from the directory named {self.parameters['fasta_path']}. Only files in dir are: {list_of_fastas}")
 
 
 class Check_Illumina_Nanopore_SRA:

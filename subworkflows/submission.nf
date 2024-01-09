@@ -6,10 +6,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { SUBMISSION } from '../modules/submission/main'
-include { UPDATE_SUBMISSION } from '../modules/update_submission/main'
-include { WAIT } from '../modules/general_util/wait/main'
-include { MERGE_UPLOAD_LOG } from "../modules/general_util/merge_upload_log/main"
+include { SUBMISSION                                    } from '../modules/submission/main'
+include { UPDATE_SUBMISSION                             } from '../modules/update_submission/main'
+include { WAIT                                          } from '../modules/general_util/wait/main'
+include { MERGE_UPLOAD_LOG                              } from "../modules/general_util/merge_upload_log/main"
 
 
 workflow LIFTOFF_SUBMISSION {

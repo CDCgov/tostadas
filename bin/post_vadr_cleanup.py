@@ -22,17 +22,11 @@ def vadr_main():
 
     # initialize the directory structure + move the original input files into this location
     shutil.copytree(parameters['vadr_outputs'], f"{parameters['vadr_outdir']}/{meta_filename}/original_outputs")
-    for dir_name in ['', 'fasta', 'gffs', 'tbl', 'errors']:
+    for dir_name in ['', 'gffs', 'tbl', 'errors']:
         os.mkdir(f"{parameters['output_path']}/{dir_name}")
 
     # instantiate the class object 
     main_funcs = MainVADRFuncs(parameters)
-
-    # split the fasta file and save it
-    main_util.split_fasta (
-        fasta_path=parameters['fasta_path'], 
-        fasta_output=f"{parameters['output_path']}/fasta/"
-    )
 
     # split the outputted tables into separate samples
     main_funcs.split_table()
@@ -53,7 +47,6 @@ def get_args():
     parser = argparse.ArgumentParser(description="Parameters for Running VADR Annotation")
     parser.add_argument("--vadr_outdir", type=str, default='vadr_outputs', help="Name of vadr output directory")
     parser.add_argument("--vadr_outputs", type=str, help="Path to the vadr outputs")
-    parser.add_argument("--fasta_path", type=str, help="Path to the input fasta file")
     parser.add_argument("--meta_path", type=str, help="Path to the input metadata file")
     return parser
 

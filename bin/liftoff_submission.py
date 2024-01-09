@@ -112,7 +112,7 @@ class GetParams:
 		"""
 		parser = argparse.ArgumentParser(description="Parameters for Running Liftoff Submission")
 		# Required Arguments
-		parser.add_argument("--fasta_path", type=str, help="Non reference path to input Multi Fasta file \n")
+		parser.add_argument("--fasta_path", type=str, help="Non reference path to directory containing single sample FASTA file \n")
 		parser.add_argument("--ref_fasta_path", type=str, help="Reference path to fasta file \n")
 		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for MetaData \n")
 		parser.add_argument("--ref_gff_path", type=str, help="Path to the input gff file.... expects gff3 format")
@@ -194,18 +194,13 @@ class AnnotationPrep:
 		# load the meta data file
 		self.load_meta()
 
-		# checks whether samples are shared between meta and fasta
-		fasta_column = self.main_util.check_fasta_path (
-			meta_df=self.meta_df, 
-			fasta_path=self.parameters['fasta_path']
-		)
-		# checks the name of the fasta file is aligned with sample name
-		self.main_util.check_fasta_names (
-			meta_df=self.meta_df, 
-			input_fasta_path=self.parameters['fasta_path'], 
-			output_fasta_path=f"{self.parameters['fasta_temp']}",
-			fasta_column=fasta_column
-		)
+		# move the fasta files over to the temp directory 
+		for index, row in self.meta_df.iterrows():
+			# get the sample name 
+			sample_name = row['sample_name']
+			# copy the file over based on the sample name
+			shutil.copy(f"{self.parameters['fasta_path']}/{sample_name}.fasta", f"{self.parameters['fasta_temp']}/{sample_name}.fasta")
+
 		# get the length of sequences for each sample
 		self.get_seq_lens()
 	
