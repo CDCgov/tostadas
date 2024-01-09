@@ -27,11 +27,10 @@ process VADR_POST_CLEANUP {
     
     script:
     """
-    post_vadr_cleanup.py --meta_path $meta_path --fasta_path $fasta_path --vadr_outdir $params.vadr_output_dir --vadr_outputs $vadr_outputs
+    post_vadr_cleanup.py --meta_path $meta_path --vadr_outdir $params.vadr_output_dir --vadr_outputs $vadr_outputs
     """
 
     output:
-    path "$params.vadr_output_dir/*/transformed_outputs/fasta/*.fasta", emit: fasta
     path "$params.vadr_output_dir/*/transformed_outputs/gffs/*.gff", emit: gff
     path "$params.vadr_output_dir/*/transformed_outputs/errors/*.txt", emit: errors
     path "$params.vadr_output_dir/*/transformed_outputs/tbl/*.tbl", emit: tbl
