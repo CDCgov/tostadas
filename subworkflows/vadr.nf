@@ -2,7 +2,7 @@
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                            ONLY VADR ENTRYPOINT
+                            VADR SUBWORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -22,6 +22,7 @@ workflow RUN_VADR {
             fasta_files,
             params.vadr_models_dir
         )
+
         VADR_POST_CLEANUP (
             VADR.out.vadr_outputs,
             params.meta_path,
