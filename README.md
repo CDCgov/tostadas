@@ -201,7 +201,7 @@ nextflow run main.nf -profile test,conda,virus
 # for bacteria reads
 nextflow run main.nf -profile test,conda,bacteria
 ```
-:exclamation: Note: if you would like to run bacterial samples with annotation, refer to the *Running with Bakta* section found under the *How to Run* examples.
+:exclamation: Note: if you would like to run bacterial samples with annotation, refer to the *Running with Bakta* section found under the [How to Run](#how-to-run) examples.
 
 The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory (update this in the standard params set for a different output path).
 
@@ -218,6 +218,7 @@ More information on the ```submission_wait_time``` parameter can be found under 
 ### How to Run:
 
 **Running with a Custom Config File**
+
 The typical command to run the pipeline based on your custom parameters defined/saved in the standard_params.config (more information about profiles and parameter sets below) and created conda environment is as follows:
 
 ```bash
@@ -229,6 +230,7 @@ OR with the parameters specified in the .json/.yaml files with the following com
 nextflow run main.nf -profile standard,conda --<param name> <param value>
 ```
 **Running with Docker or Singularity**
+
 Other options for the run environment include ```docker``` and ```singularity```. These options can be used simply by replacing the second profile option: 
 ```bash
 nextflow run main.nf -profile standard,<docker/singularity>
@@ -263,6 +265,7 @@ nextflow run main.nf -profile <test/standard>,<conda/docker/singularity>,<virus/
 Outputs will be generated in the nf_test_results folder (if running the test parameter set) unless otherwise specified in your standard_params.config file as output_dir param. Or you can specify `--output_dir` on the command line.
 
 **Running Bakta for Annotation**
+
 If you would like to run bakta for annotation, you must specify the following additional parameters: 
 | Param                      | Description                                             | Input Required   |
 |----------------------------|---------------------------------------------------------|------------------|
@@ -275,6 +278,7 @@ If you would like to run bakta for annotation, you must specify the following ad
 nextflow run main.nf -profile <test/standard>,<conda/docker/singularity>,bacteria --run_bakta true --bakta_db_path <path to bakta db>, --bakta_db_type <full/light>, --download_bakta_db <true/false> 
  ```
 **Running with a Custom Entrypoint**
+
 Various entrypoint configurations can be provided to run particular sections the the workflow.
 
 The following command can be used to run the validate params process within the utility sub-workflow:
@@ -285,6 +289,12 @@ The following command can be used to specify a which annotation process to run:
  ```bash
 nextflow run main.nf -profile test,conda,virus -entry <only_liftoff/only_repeatmasker_liftoff/only_vadr/only_bakta> 
  ```
+The following command can be used to run the submission sub-workflow: 
+
+ ```bash
+nextflow run main.nf -profile test,conda,virus -entry <only_submission/only_initial_submission/only_update_submission> 
+ ```
+:exclamation: If you are using the `only_submission` or `only_initial_submission` entrypoint, you must define the paths for the following parameters within the custom config file: `submission_only_meta`, `submission_only_fasta`, and`submission_only_gff`. To find more information on configuring the submission entrypoint, refer to the [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint) section. 
 
 ## Profile Options & Input Files
 
