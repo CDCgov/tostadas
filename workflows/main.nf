@@ -45,6 +45,9 @@ include { RUN_UTILITY                                       } from "../subworkfl
 
 workflow MAIN_WORKFLOW {
 
+    fastaCh = Channel.fromPath("$params.fasta_path/*.fasta") .view()
+
+
     // check if help parameter is set
     if ( params.help == true ) {
         PRINT_PARAMS_HELP()
@@ -69,7 +72,8 @@ workflow MAIN_WORKFLOW {
     if ( params.run_liftoff == true ) {
         LIFTOFF (
             params.meta_path, 
-            INITIALIZE_FILES.out.fasta_dir, 
+            //INITIALIZE_FILES.out.fasta_dir, 
+            INITIALIZE_FILES.out.fasta_files,
             params.ref_fasta_path, 
             params.ref_gff_path 
         )
