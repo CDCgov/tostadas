@@ -338,7 +338,7 @@ This section walks through the available parameters to customize your workflow.
 The standard_params.config file found within the `conf/` directory is where parameters can be adjusted based on preference for running the pipeline. First you will want to ensure the file paths are correctly set for the params listed above depending on your preference for submitting your results. 
  * Adjust your file inputs within standard_params.config ensuring accurate file paths for the inputs listed above.
  * The params can be changed within the standard_params.config or you can change the standard.yml/standard.json file inside the params directory and pass it in with: ```-params-file <standard_params.yml or standard_params.json>```
- * :exclamation: DO NOT EDIT the main.nf file or other paths in the nextflow.config unless familiar with editing nextflow workflows
+ :exclamation: DO NOT EDIT the main.nf file or other paths in the nextflow.config unless familiar with editing nextflow workflows
 
 ### Understanding Profiles and Environments:
 Within the nextflow pipeline the ```-profile``` option is required as an input. The profile options with the pipeline include test and standard. These two options can be seen listed in the nextflow.config file. The test params should remain the same for testing purposes, but the standard profile can be changed to fit user preferences. Also within the nextflow pipeline there is the use of varying run environments as the second profile input. Nextflow expects at least one option for both of these configurations to be passed in: ```-profile <test/standard>,<conda/docker/singularity>```
@@ -587,7 +587,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --req_col_config | Path to the required_columns.yaml file | Yes (path as string)           |
 | --processed_samples | Path to the directory containing processed samples for update only submission entrypoint (containing <batch_name>.<sample_name> dirs) | Yes (path as string)           |
 
-*Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'*
+:exclamation: Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'*
 
 ### Entrypoint and User Provided Annotation
 | Param                    | Description                                             | Input Required   |
