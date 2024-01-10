@@ -21,6 +21,7 @@ include { LIFTOFF                                           } from "../modules/l
 
 // get BAKTA related processes
 include { RUN_BAKTA                                         } from "$projectDir/subworkflows/entrypoints/bakta_entry"
+include { BAKTADBDOWNLOAD                                   } from "../modules/bakta/baktadbdownload/main"
 include { BAKTA                                             } from "../modules/bakta/bakta/main"
 include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
 
@@ -119,7 +120,7 @@ workflow MAIN_WORKFLOW {
     if ( params.run_bakta == true ) {
         
         if ( params.download_bakta_db ) {
-            BAKTADBDOWNLOAD ()
+            BAKTADBDOWNLOAD ( RUN_UTILITY.out )
             BAKTA (
                 RUN_UTILITY.out,
                 BAKTADBDOWNLOAD.out.db,
