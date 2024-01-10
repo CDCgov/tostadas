@@ -24,7 +24,6 @@ process CONCAT_GFFS {
                }
 
 	input:
-	val signal
 	path ref_gff_path
 	path repeatmasker_gff
     path liftoff_gff
