@@ -102,8 +102,9 @@ workflow only_liftoff {
 
 workflow only_repeatmasker_liftoff {
     main: 
+        fastaCh = Channel.fromPath("$params.fasta_path/*.fasta")
         // run subworkflow for repeatmasker liftoff entrypoint
-        RUN_REPEATMASKER_LIFTOFF ( 'dummy utility signal' )
+        RUN_REPEATMASKER_LIFTOFF ( 'dummy utility signal', fastaCh )
 }
 
 workflow only_vadr {
