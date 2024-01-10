@@ -47,7 +47,7 @@ include { RUN_UTILITY                                       } from "../subworkfl
 
 workflow MAIN_WORKFLOW {
 
-    fastaCh = Channel.fromPath("$params.fasta_path/*.fasta") .view()
+    fastaCh = Channel.fromPath("$params.fasta_path/*.fasta")
 
 
     // check if help parameter is set
