@@ -35,7 +35,6 @@ workflow RUN_REPEATMASKER_LIFTOFF {
         )
         // concat gffs
         CONCAT_GFFS (
-           utility_signal ,
            params.ref_gff_path,
            REPEATMASKER.out.gff,
            LIFTOFF_CLI.out.gff
