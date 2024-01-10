@@ -18,10 +18,11 @@ include { METADATA_VALIDATION                               } from "../modules/m
 include { SUBMISSION                                        } from "../modules/submission/main"
 include { UPDATE_SUBMISSION                                 } from "../modules/update_submission/main"
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
-include { BAKTA                                             } from "../modules/bakta/bakta/main"
 
 // get BAKTA related processes
 include { RUN_BAKTA                                         } from "$projectDir/subworkflows/entrypoints/bakta_entry"
+include { BAKTA                                             } from "../modules/bakta/bakta/main"
+include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
 
 // get repeat masker / variola related subworkflow / processes
 include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
@@ -122,7 +123,7 @@ workflow MAIN_WORKFLOW {
             BAKTA (
                 RUN_UTILITY.out,
                 BAKTADBDOWNLOAD.out.db,
-                INITIALIZE_FILES.out.fasta_files.sort().flatten()
+                fastaCh
             )
 
         } else {
@@ -130,14 +131,14 @@ workflow MAIN_WORKFLOW {
             BAKTA (
                 RUN_UTILITY.out,
                 params.bakta_db_path,
-                INITIALIZE_FILES.out.fasta_files.sort().flatten()
+                fastaCh
             )
         }
     
         BAKTA_POST_CLEANUP (
             BAKTA.out.bakta_results,
             params.meta_path,
-            INITIALIZE_FILES.out.fasta_files.sort().flatten()
+            fastaCh
         )   
     }
   
