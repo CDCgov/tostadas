@@ -32,4 +32,4 @@ dependencies:
   - xz=5.2.5=h516909a_1
   - yaml=0.2.5=h7f98852_2
   - openpyxl=3.0.10
-  - repeatmasker
+  - bioconda::repeatmasker=4.1.5
