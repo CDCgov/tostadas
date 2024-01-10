@@ -201,8 +201,6 @@ workflow MAIN_WORKFLOW {
                 )
             }  
 
-/*
-
         } else {
 
             // all annotations are false, therefore first check if user annotations are provided
@@ -224,7 +222,6 @@ workflow MAIN_WORKFLOW {
 
 
             }
-        */
         }
     }
 }
