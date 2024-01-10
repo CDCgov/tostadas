@@ -252,8 +252,7 @@ executor >  local (7)
 [13/85f6f3] process > with_submission:RUN_SUBMISSION:WAIT (1)          [  0%] 0 of 1
 [-        ] process > with_submission:RUN_SUBMISSION:UPDATE_SUBMISSION -
 USING CONDA
-
-````
+```
 
 **Modifying the default wait time**
 
