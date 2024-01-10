@@ -62,6 +62,7 @@ include { RUN_VADR } from "$projectDir/subworkflows/vadr"
 include { RUN_SUBMISSION } from "$projectDir/subworkflows/entrypoints/submission_entry"
 include { RUN_INITIAL_SUBMISSION } from "$projectDir/subworkflows/entrypoints/initial_submission_entry"
 include { RUN_UPDATE_SUBMISSION } from "$projectDir/subworkflows/entrypoints/update_submission_entry"
+include { RUN_BAKTA } from "$projectDir/subworkflows/entrypoints/bakta_entry.nf"
 
 workflow only_validate_params {
     main:
@@ -104,7 +105,10 @@ workflow only_repeatmasker_liftoff {
     main: 
         fastaCh = Channel.fromPath("$params.fasta_path/*.fasta")
         // run subworkflow for repeatmasker liftoff entrypoint
-        RUN_REPEATMASKER_LIFTOFF ( 'dummy utility signal', fastaCh )
+        RUN_REPEATMASKER_LIFTOFF (
+            'dummy utility signal', 
+            fastaCh 
+        )
 }
 
 workflow only_vadr {
@@ -116,6 +120,15 @@ workflow only_vadr {
         RUN_VADR (
             'dummy utility signal',
             INITIALIZE_FILES.out.fasta_files.sort().flatten()
+        )
+}
+
+workflow only_bakta {
+    main:
+        fastaCh = Channel.fromPath("$params.fasta_path/*.fasta")
+        RUN_BAKTA (
+            'dummy utility signal',
+            fastaCh
         )
 }
 
