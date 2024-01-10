@@ -62,7 +62,7 @@ Recently, we have added the ability to pass in the names of custom metadata fiel
 * Replacement for empty values
 * New name for field 
 
-** A comprehensive guide for custom metadata fields can be found here: [Custom Metadata Guide](./docs/custom_metadata_guide.md)
+A comprehensive guide for custom metadata fields can be found here: [Custom Metadata Guide](./docs/custom_metadata_guide.md)
 
 ### Gene Annotation
 
@@ -72,7 +72,7 @@ Currently, consists of three annotation options:
 * (2) VADR
     * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your single-sample fasta files, metadata in .xlsx format, and reference information for the pathogen genome which is included within [this repository](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models). Find out more at the [VADR GitHub Repo](https://github.com/ncbi/vadr).
 * (3) Bakta
-    * The Bakta workflow annotates input fasta-formatted bacterial genomes & plasmids and generates gff / tbl files. The inputs into this workflow are single-sample fasta files, metadata in .xlsx format, and a reference database used for annotation (found [here](https://zenodo.org/records/7669534)). Bakta is an existing bacterial annotation tool that was integrated into the pipeline. You can find more information about this tool at the following link: [Bakta Git Repo](https://github.com/CDCgov/tostadas/tree/master#gene-annotation).
+    * The Bakta workflow annotates input fasta-formatted bacterial genomes & plasmids and generates gff / tbl files. The inputs into this workflow are single-sample fasta files, metadata in .xlsx format, and a reference database used for annotation (found [here](https://zenodo.org/records/7669534)). Bakta is an existing bacterial annotation tool that was integrated into the pipeline. You can find more information about this tool at the following link: [Bakta Git Repo](https://github.com/oschwengers/bakta).
 
 ### Submission 
 Submission workflow generates the necessary files for Genbank submission, generates a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
@@ -82,7 +82,7 @@ Submission workflow generates the necessary files for Genbank submission, genera
 ### Repository Setup
 
 Before cloning, check if the following applies to you:
-* CDC user with access to the Monkeypox group on Gitlab
+* CDC user with access to the MPOX group on Gitlab
 * Require access to available submission config files
 
 Then, follow the cloning instructions outlined here: [cdc_configs_access](docs/cdc_configs_access.md)
@@ -147,7 +147,7 @@ The following steps are for running the pipeline on Scicomp at the CDC.
 
 If you want to create the full-conda environment needed to run the pipeline outside of Nextflow (enables you to run individual python scripts), then proceed with the steps listed below [here](#1-activate-the-miniconda-module). 
 
-If you simply want to run the pipeline using Nextflow only (this will be most users), then you would simply initialize the nextflow module (skip all steps below):
+If you simply want to run the pipeline using Nextflow only (this will be most users), then you would simply initialize the nextflow module (skip **steps 1-4** below):
 ```bash
 ml nextflow
 ```
@@ -180,7 +180,7 @@ mamba install -c bioconda nextflow
 
 The configs are set-up to run the default params with the test option
 
-#### (1) Ensure nextflow was installed successfully by running ```Nextflow -v```
+#### (1) Ensure nextflow was installed successfully by running ```nextflow -v```
 
 Expected Output:
 ```
@@ -190,22 +190,26 @@ nextflow version 22.10.0.5826
 #### (2) Check that you are in the project directory (Tostadas).
 This is the default directory set in the nextflow.config file to allow for running the nextflow pipeline with the provided test input files.
 
-#### (3) Change the ```submission_config``` parameter within ```{taxon}_test_params.config``` to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.
+#### (3) Optional: Change the ```submission_config``` parameter within ```{taxon}_test_params.config``` to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.
 
 :exclamation: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: [More Information on Submission](#more-information-on-submission)
 
-#### (4) Run the following nextflow command to execute the scripts with default parameters and with local run environment: 
+#### (4) Run one of the following nextflow command to execute the scripts with default parameters and with local run environment: 
 
 ```bash
-nextflow run main.nf -profile test,conda
+# for virus reads
+nextflow run main.nf -profile test,conda,virus
+# for bacteria reads
+nextflow run main.nf -profile test,conda,bacteria --download_bakta_db true --bakta_db_type light
 ```
+:exclamation: Note: if you would like to run bacterial samples with annotation, refer to the *Running with Bakta* section found under the [How to Run](#how-to-run) examples.
 
 The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory (update this in the standard params set for a different output path).
 
 :exclamation: Running the pipeline with default parameters (test) will trigger a wait time equal to # of samples * 180 seconds. This default parameter can be overridden by running the following command instead:
 
 ```bash
-nextflow run main.nf -profile test,conda --submission_wait_time <place integer value here in seconds>
+nextflow run main.nf -profile test,conda,virus --submission_wait_time <place integer value here in seconds>
 ```
 
 More information on the ```submission_wait_time``` parameter can be found under [Submission Parameters](#submission)
@@ -213,6 +217,9 @@ More information on the ```submission_wait_time``` parameter can be found under 
 ## Running the Pipeline
 
 ### How to Run:
+
+**Running with a Custom Config File**
+
 The typical command to run the pipeline based on your custom parameters defined/saved in the standard_params.config (more information about profiles and parameter sets below) and created conda environment is as follows:
 
 ```bash
@@ -223,10 +230,11 @@ OR with the parameters specified in the .json/.yaml files with the following com
 ```bash
 nextflow run main.nf -profile standard,conda --<param name> <param value>
 ```
+**Running with Docker or Singularity**
 
 Other options for the run environment include ```docker``` and ```singularity```. These options can be used simply by replacing the second profile option: 
 ```bash
-nextflow run main.nf -profile standard,<docker or singularity>
+nextflow run main.nf -profile standard,<docker/singularity>
 ```
 
 Either one of the above commands will launch the nextflow pipeline and show the progress of the subworkflow:process and checks looking similar to below depending on the entrypoint specified. 
@@ -244,15 +252,58 @@ executor >  local (7)
 [13/85f6f3] process > with_submission:RUN_SUBMISSION:WAIT (1)          [  0%] 0 of 1
 [-        ] process > with_submission:RUN_SUBMISSION:UPDATE_SUBMISSION -
 USING CONDA
+```
 
-````
+**Modifying the default wait time**
+
 :exclamation: The default wait time between initial submission and updating the submitted samples is three minutes or 180 seconds per sample. To override this default calculation, you can modify the submission_wait_time parameter within your config or through the command line (in terms of seconds):
  
  ```bash
-nextflow run main.nf -profile <param set>,<env> --submission_wait_time 360
+nextflow run main.nf -profile <test/standard>,<conda/docker/singularity>,<virus/bacteria> --submission_wait_time 360
  ```
  
 Outputs will be generated in the nf_test_results folder (if running the test parameter set) unless otherwise specified in your standard_params.config file as output_dir param. Or you can specify `--output_dir` on the command line.
+
+**Running Bakta for Annotation**
+
+If you would like to run bakta for annotation, you must specify the following additional parameters: 
+| Param                      | Description                                             | Input Required   |
+|----------------------------|---------------------------------------------------------|------------------|
+| --bakta_db_path            | Path to Bakta reference database                                   |        Yes (path as string)      |
+| --bakta_db_type               | Type of database to use for annotation                                        |        Yes (full/light as bool)     |
+| --download_bakta_db               | Toggle to download Bakta database                                    |        Yes (true/false as bool)      |
+|--run_bakta           | Toggle for running Bakta annotation                            | Yes (true/false as bool)
+
+```bash
+nextflow run main.nf -profile <test/standard>,<conda/docker/singularity>,bacteria --run_bakta true --bakta_db_path <path to bakta db>, --bakta_db_type <full/light>, --download_bakta_db <true/false> 
+ ```
+**Running with a Custom Entrypoint**
+
+Various entrypoint configurations can be provided to run particular sections the the workflow.
+
+The following command can be used to run the validate params process within the utility sub-workflow:
+```bash
+nextflow run main.nf -profile test,conda,virus -entry only_validate_params 
+ ```
+The following command can be used to specify a which annotation process to run: 
+ ```bash
+nextflow run main.nf -profile test,conda,virus -entry <only_liftoff/only_repeatmasker_liftoff/only_vadr/only_bakta> 
+ ```
+The following command can be used to run the submission sub-workflow: 
+
+ ```bash
+nextflow run main.nf -profile test,conda,virus -entry <only_submission/only_initial_submission/only_update_submission> 
+ ```
+:exclamation: If you are using the `only_submission` or `only_initial_submission` entrypoint, you must define the paths for the following parameters: `submission_only_meta`, `submission_only_fasta`, and`submission_only_gff`. To find more information on configuring the submission entrypoint, refer to the [Required Files for Submission Entrypoint](#required-files-for-submission-entrypoint) section. 
+
+`**Running with the Variola Dataset**
+ 
+The current implementation of the pipeline runs with MPOX virus sequences. The following command can be used to change this to Variola sequences:
+ 
+```bash
+nextflow run main.nf -profile test,docker,virus --variola true --submisstion_wait_time 30 --resume
+```
+
 
 ## Profile Options & Input Files
 
@@ -287,7 +338,7 @@ This section walks through the available parameters to customize your workflow.
 The standard_params.config file found within the `conf/` directory is where parameters can be adjusted based on preference for running the pipeline. First you will want to ensure the file paths are correctly set for the params listed above depending on your preference for submitting your results. 
  * Adjust your file inputs within standard_params.config ensuring accurate file paths for the inputs listed above.
  * The params can be changed within the standard_params.config or you can change the standard.yml/standard.json file inside the params directory and pass it in with: ```-params-file <standard_params.yml or standard_params.json>```
- * :exclamation: DO NOT EDIT the main.nf file or other paths in the nextflow.config unless familiar with editing nextflow workflows
+ :exclamation: DO NOT EDIT the main.nf file or other paths in the nextflow.config unless familiar with editing nextflow workflows
 
 ### Understanding Profiles and Environments:
 Within the nextflow pipeline the ```-profile``` option is required as an input. The profile options with the pipeline include test and standard. These two options can be seen listed in the nextflow.config file. The test params should remain the same for testing purposes, but the standard profile can be changed to fit user preferences. Also within the nextflow pipeline there is the use of varying run environments as the second profile input. Nextflow expects at least one option for both of these configurations to be passed in: ```-profile <test/standard>,<conda/docker/singularity>```
@@ -433,7 +484,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --ref_fasta_path           | Reference Sequence file path                            |        Yes (path as string)      |
 | --meta_path                | Meta-data file path for samples                         |        Yes (path as string)      |
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
-| --db_path                  | Path to Bakta reference database                        |        Yes (path as string)      |
+| --bakta_db_path                  | Path to Bakta reference database                        |        Yes (path as string)      |
 | --env_yml                  | Path to environment.yml file                            |        Yes (path as string)      |
 
 ### Run Environment
@@ -519,6 +570,10 @@ When changing these parameters pay attention to the required inputs and make sur
 | --bakta_locus      | Locus prefix                                             |     Yes (contig or name as string)      |
 | --bakta_locus_tag  | Locus tag prefix                                         |     Yes (autogenerated or name as string)     |
 | --bakta_translation_table  | Translation table                                |     Yes (integer)     |
+| --bakta_db_path            | Path to Bakta reference database                                   |        Yes (path as string)      |
+| --bakta_db_type               | Type of database to use for annotation                                        |        Yes (full/light as bool)     |
+| --download_bakta_db               | Toggle to download Bakta database                                    |        Yes (true/false as bool)      |
+|--run_bakta           | Toggle for running Bakta annotation                            | Yes (true/false as bool) |
 
 ### Sample Submission
 | Param                    | Description                                             | Input Required   |
@@ -532,7 +587,7 @@ When changing these parameters pay attention to the required inputs and make sur
 | --req_col_config | Path to the required_columns.yaml file | Yes (path as string)           |
 | --processed_samples | Path to the directory containing processed samples for update only submission entrypoint (containing <batch_name>.<sample_name> dirs) | Yes (path as string)           |
 
-*Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'*
+:exclamation: Important note about ```send_submission_email```: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'*
 
 ### Entrypoint and User Provided Annotation
 | Param                    | Description                                             | Input Required   |
