@@ -82,7 +82,10 @@ class GeneralUtil():
             raise Exception("Cannot have multiple samples in metadata sheet pointing to same FASTA file")
         
         # check all of them are located at fasta_path location
-        list_of_fastas = [file for file in os.listdir(fasta_path) if file.endswith(".fasta")]
+        try:
+            list_of_fastas = [file for file in os.listdir(fasta_path) if file.endswith((".fasta", ".fastq"))]
+        except:
+            list_of_fastas = [fasta_path.split('/')[-1]]
         for name in fasta_file_names:
             try:
                 assert name.strip() in list_of_fastas 
@@ -99,6 +102,11 @@ class GeneralUtil():
         """
         # create the output directory
         os.system(f'mkdir -p -m777 {output_fasta_path}')
+
+        # first check to make sure whether the input fasta path is a dir or to a single fasta / fastq
+        if input_fasta_path.split('/')[-1].endswith((".fasta", ".fastq")):
+            # it is a single file, need to change input_fasta_path accordingly 
+            input_fasta_path = '/'.join(input_fasta_path.split('/')[:-1])
 
         for index, row in meta_df.iterrows():
             # get the sample name 
