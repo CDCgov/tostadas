@@ -21,7 +21,6 @@ process LIFTOFF {
     publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:
-    val signal
     path meta_path
     path fasta_path
     path ref_fasta_path 
@@ -38,7 +37,6 @@ process LIFTOFF {
     """
 
     output:
-    path "$params.final_liftoff_output_dir/*/fasta/*.fasta", emit: fasta
     path "$params.final_liftoff_output_dir/*/liftoff/*.gff", emit: gff
     path "$params.final_liftoff_output_dir/*/errors/*.txt", emit: errors
     path "$params.final_liftoff_output_dir/*/tbl/*.tbl", emit: tbl

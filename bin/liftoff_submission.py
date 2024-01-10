@@ -112,7 +112,7 @@ class GetParams:
 		"""
 		parser = argparse.ArgumentParser(description="Parameters for Running Liftoff Submission")
 		# Required Arguments
-		parser.add_argument("--fasta_path", type=str, help="Non reference path to input Multi Fasta file \n")
+		parser.add_argument("--fasta_path", type=str, help="Non reference path to directory containing single sample FASTA file \n")
 		parser.add_argument("--ref_fasta_path", type=str, help="Reference path to fasta file \n")
 		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for MetaData \n")
 		parser.add_argument("--ref_gff_path", type=str, help="Path to the input gff file.... expects gff3 format")
@@ -183,19 +183,24 @@ class AnnotationPrep:
 		self.sample_seq_lengths = {}
 		self.sample_list = []
 		self.main_util = main_util()
+		self.meta_df = ""
 
 	def prep_main(self):
-		""" Main prep function for calling split_fasta, split gff for itr mapping, and load_meta
+		""" Main prep function for split gff for itr mapping + load_meta
 		"""
-		# split the fasta file
-		self.main_util.split_fasta (
-			fasta_path=f"{self.parameters['fasta_path']}",
-			fasta_output=f"{self.parameters['fasta_temp']}"
-		)
 		# split the ref gff file
 		self.split_gff()
+
 		# load the meta data file
 		self.load_meta()
+
+		# move the fasta files over to the temp directory 
+		for index, row in self.meta_df.iterrows():
+			# get the sample name 
+			sample_name = row['sample_name']
+			# copy the file over based on the sample name
+			shutil.copy(f"{self.parameters['fasta_path']}/{sample_name}.fasta", f"{self.parameters['fasta_temp']}/{sample_name}.fasta")
+
 		# get the length of sequences for each sample
 		self.get_seq_lens()
 	
@@ -224,8 +229,8 @@ class AnnotationPrep:
 	def load_meta(self):
 		""" Imports the Excel file and puts it into a dataframe
 		"""
-		idf = pd.read_excel(self.parameters['meta_path'], header=[1], sheet_name=0)
-		df = idf.set_index("sample_name", drop=False)
+		self.meta_df = pd.read_excel(self.parameters['meta_path'], header=[1], sheet_name=0)
+		df = self.meta_df.set_index("sample_name", drop=False)
 		self.sample_list = df.loc[:, "sample_name"]
 
 	def get_seq_lens(self):

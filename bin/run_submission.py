@@ -11,8 +11,8 @@ def get_args():
     """ 
     parser = argparse.ArgumentParser()
     parser.add_argument("--validated_meta_path", type=str, help='Path to the metadata directory containing validated meta files ending with .tsv')
-    parser.add_argument("--lifted_fasta_path", type=str, help='Path to the fasta directory containing split fasta files ending with .fasta')
-    parser.add_argument("--lifted_gff_path", type=str, help='Path to the gff directory containing reformatted gff files ending with .gff')
+    parser.add_argument("--fasta_path", type=str, help='Path to the fasta directory containing split fasta files ending with .fasta')
+    parser.add_argument("--gff_path", type=str, help='Path to the gff directory containing reformatted gff files ending with .gff')
     parser.add_argument("--config", type=str, help='Name of the config file')
     parser.add_argument("--unique_name", type=str, help='Name of batch')
     parser.add_argument("--prod_or_test", type=str, help='Whether it is a production or test submission')
@@ -48,8 +48,8 @@ class SubmitToDatabase:
         os.makedirs(f"{unique_dir_name}/initial_submit_info")
  
         # get the command that will be used 
-        command = f"submission.py --command {self.parameters['submission_database']} --unique_name {self.parameters['unique_name']} --fasta {self.parameters['lifted_fasta_path']} \
-                  --metadata {self.parameters['validated_meta_path']} --gff {self.parameters['lifted_gff_path']} --config {self.parameters['config']} --test_or_prod {self.parameters['prod_or_test']} \
+        command = f"submission.py --command {self.parameters['submission_database']} --unique_name {self.parameters['unique_name']} --fasta {self.parameters['fasta_path']} \
+                  --metadata {self.parameters['validated_meta_path']} --gff {self.parameters['gff_path']} --config {self.parameters['config']} --test_or_prod {self.parameters['prod_or_test']} \
                   --req_col_config {self.parameters['req_col_config']} --send_email {self.parameters['send_submission_email']}"
 
         # open a txt file and write the command 

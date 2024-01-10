@@ -8,6 +8,8 @@
 - [How To Run](#how-to-run)
 - [Outputs](#outputs)
 - [Capabilities / Limitations](#capabilities--limitations)
+- [Data Type Casting Assumptions](#data-type-casting-assumptions)
+- [When Do Checks/Changes Not Proceed](#when-do-checkschanges-not-proceed)
 
 ## Introduction:
 
@@ -92,10 +94,10 @@ Once the JSON file for custom fields is set up, and the parameters above have be
 
 ## Outputs:
 
-After running metadata validation, with the appropriate Nextflow parameters and your JSON file, there is a .txt log file that is generated as an output named ___custom_fields_error.txt__.
+After running metadata validation, with the appropriate Nextflow parameters and your JSON file, there is a .txt log file that is generated as an output named __custom_fields_error.txt__.
 
 This .txt log file contains information about two aspects generally: 
-* (1) The actual contents within the provided JSON file
+* (1) The actual contents within the provided JSON file:
     * It will provide information for each custom metadata field in the JSON
     * The following is an example log output for this: 
     ```
@@ -109,7 +111,7 @@ This .txt log file contains information about two aspects generally:
     After preliminary checks, valid information for custom field names have been passed in. Will now check these accordingly
     ```
 
-* (2) For each sample, the outcome of performing a custom field check on it (if mentioned in any under "samples")
+* (2) For each sample, the outcome of performing a custom field check on it (if mentioned in any under "samples"):
     * The following is an example of how this information appears and its content:
     ```
     FL0004:
@@ -141,4 +143,49 @@ The custom_fields_error.txt file will be outputted under the __errors__ director
 
 - If the "type" key is empty for a custom metadata field, then it will only check if the field is empty or not.
 
-** NOTE: The only time custom checks do not proceed is when (1) custom field name is empty OR (2) all string names for samples are not in metadata sheet.
+## Data Type Casting Assumptions 
+
+When handling the casting between data types (float, string, integer, and boolean), all assumptions inherent to Python are being utilized (there are no custom deviations from this).
+
+Here is a quick overview of how Python will handle the casting between certain data types and corresponding values:
+
+* Integer --> Boolean:
+    * Non-zero integer = True 
+    * Integer equal to 0 = False
+
+* Float --> Boolean
+    * Non-zero float = True 
+    * Float equal to 0.0 = False 
+
+* Boolean --> Integer:
+    * Boolean equal to True = 1
+    * Boolean equal to False = 0
+
+* Boolean --> Float:
+    * Boolean equal to True = 1.0
+    * Boolean equal to False = 0.0
+
+* Float --> Integer:
+    * Removes the decimal portion of the float (i.e. 4.2 to 4)
+    * The number is not rounded, therefore even 4.8 will be converted to 4 (same as 4.2 above)
+
+* Boolean / Integer / Float --> String:
+    * For all casts to string, the literal value will be used as the final string. Here are a few examples:
+        * True to "True"
+        * 0 to "0"
+        * 0.0 to "0.0"
+
+* String --> Float / Integer:
+    * Casts the literal representation of the value to a float number 
+    * If the string is a whole number, but converting it to a float (string --> float), then it will automatically append the value with ".0" (i.e. "8" to 8.0)
+    
+    ** NOTE: if you are doing string --> integer and provide a float literal ("8.0"), then Python will NOT be able to convert it to 8
+
+## When Do Checks/Changes Not Proceed
+
+The only time custom checks do not proceed is when any one of the following statements are true:
+* (1) Custom field name is empty
+
+* (2) There is at least one valid sample name provided (non-empty string) AND none of the sample(s) listed are in the metadata sheet
+    
+    ** NOTE: It is assumed that the sample(s) provided were intentional and not a consistent data type error or else, therefore for the latter case, all samples will be checked as a fail safe

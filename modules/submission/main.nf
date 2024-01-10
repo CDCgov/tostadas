@@ -22,17 +22,16 @@ process SUBMISSION {
 
     input:
     path validated_meta_path
-    path lifted_fasta_path
-    path lifted_gff_path
-    val entry_flag
+    path fasta_path
+    path annotations_path
     path submission_config
     path req_col_config
     val annotation_name
 
     script:
     """
-    run_submission.py --submission_database $params.submission_database --unique_name $params.batch_name --lifted_fasta_path $lifted_fasta_path \
-    --validated_meta_path $validated_meta_path --lifted_gff_path $lifted_gff_path --config $submission_config --prod_or_test $params.submission_prod_or_test \
+    run_submission.py --submission_database $params.submission_database --unique_name $params.batch_name --fasta_path $fasta_path \
+    --validated_meta_path $validated_meta_path --gff_path $annotations_path --config $submission_config --prod_or_test $params.submission_prod_or_test \
     --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email --sample_name ${validated_meta_path.getSimpleName()}
     """
 

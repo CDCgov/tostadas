@@ -27,7 +27,9 @@ process VALIDATE_PARAMS {
         if ( params.run_bakta == true ) {
             assert params.fasta_path
             assert params.meta_path
-            //assert params.bakta_db_path
+            if ( params.download_bakta_db == false ) {
+                assert params.bakta_db_path
+            }
         }
         
         // check script params

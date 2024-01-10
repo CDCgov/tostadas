@@ -5,6 +5,8 @@
 */
 process MERGE_UPLOAD_LOG {
 
+    label 'main'
+
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
 
     input:

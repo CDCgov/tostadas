@@ -23,11 +23,10 @@ process METADATA_VALIDATION {
     input:
     val signal
     path meta_path
-    path fasta_path
 
     script:
     """
-    validate_metadata.py --meta_path $meta_path --fasta_path $fasta_path --output_dir $params.val_output_dir \
+    validate_metadata.py --meta_path $meta_path --output_dir $params.val_output_dir \
     --custom_fields_file $params.custom_fields_file --validate_custom_fields $params.validate_custom_fields
     """
 
