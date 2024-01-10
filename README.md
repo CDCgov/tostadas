@@ -62,7 +62,7 @@ Recently, we have added the ability to pass in the names of custom metadata fiel
 * Replacement for empty values
 * New name for field 
 
-** A comprehensive guide for custom metadata fields can be found here: [Custom Metadata Guide](./docs/custom_metadata_guide.md)
+A comprehensive guide for custom metadata fields can be found here: [Custom Metadata Guide](./docs/custom_metadata_guide.md)
 
 ### Gene Annotation
 
