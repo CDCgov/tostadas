@@ -111,7 +111,10 @@ class RepeatMasker_Annotations:
                     samp_info=line.split(' ')
             self.samp_name=samp_info[1]
             #self.samp_start=int(samp_info[2])
-            self.samp_end=int(samp_info[3].strip())
+            try:
+                self.samp_end=int(samp_info[3].strip())
+            except:
+                raise Exception(f"A fourth element is not present in: {samp_info}")
         return self.samp_name, self.samp_end
         
     def cleanup_repeat_masker_gff(self):
