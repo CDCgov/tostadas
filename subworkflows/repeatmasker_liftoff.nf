@@ -17,31 +17,31 @@ include { CONCAT_GFFS                                       } from "../modules/c
 workflow RUN_REPEATMASKER_LIFTOFF {
 
     take:
-        utility_signal 
+        utility_signal
+        fasta
 
     main:
         // run repeatmasker annotation on files
         REPEATMASKER (
-           utility_signal ,
-           params.fasta_path,
+           utility_signal,
+           fasta,
            params.repeat_lib
         )
         // run liftoff annotation on files
         LIFTOFF_CLI ( 
-            utility_signal ,
-            params.fasta_path,
+            utility_signal,
+            fasta,
             params.ref_fasta_path, 
             params.ref_gff_path 
         )
         // concat gffs
         CONCAT_GFFS (
-           utility_signal ,
            params.ref_gff_path,
            REPEATMASKER.out.gff,
            LIFTOFF_CLI.out.gff
         )
 
     emit:
-        LIFTOFF_CLI.out.fasta.sort().flatten()
-        CONCAT_GFFS.out.gff.sort().flatten()
+        fasta = LIFTOFF_CLI.out.fasta
+        gff = CONCAT_GFFS.out.gff
 }
