@@ -13,10 +13,9 @@ include { BAKTA_POST_CLEANUP                                } from "../../module
 workflow RUN_BAKTA {
     take: 
     run_utility
+    fasta
 
     main:
-    // run bakta annotation on single fasta files
-    // run bakta annotation process
     if ( params.download_bakta_db ) {
         BAKTADBDOWNLOAD (
             run_utility
@@ -25,7 +24,7 @@ workflow RUN_BAKTA {
         BAKTA (
             run_utility,
             BAKTADBDOWNLOAD.out.db,
-            params.fasta_path
+            fasta
         )
             }
 
@@ -33,14 +32,14 @@ workflow RUN_BAKTA {
             BAKTA (
                 run_utility,
                 params.bakta_db_path,
-                params.fasta_path
+                fasta
             )
         }
         
 	    BAKTA_POST_CLEANUP (
 		    BAKTA.out.bakta_results,
 		    params.meta_path,
-		    params.fasta_path
+		    fasta
 	    )   
         
         emit:
