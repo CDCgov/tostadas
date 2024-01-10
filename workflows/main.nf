@@ -21,9 +21,7 @@ include { LIFTOFF                                           } from "../modules/l
 include { BAKTA                                             } from "../modules/bakta/bakta/main"
 
 // get BAKTA related processes
-include { BAKTADBDOWNLOAD                                   } from "../modules/bakta/baktadbdownload/main"
-include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
-include { CONCAT_GFFS                                       } from "../modules/concat_gffs/main"
+include { RUN_BAKTA                                         } from "$projectDir/subworkflows/entrypoints/bakta_entry"
 
 // get repeat masker / variola related subworkflow / processes
 include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
@@ -31,6 +29,7 @@ include { REPEATMASKER                                      } from "../modules/r
 include { LIFTOFF_CLI                                       } from "../modules/liftoff_cli_annotation/main"
 
 // get the subworkflows
+
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { RUN_VADR                                          } from "../subworkflows/vadr"
 include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"

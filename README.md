@@ -72,7 +72,7 @@ Currently, consists of three annotation options:
 * (2) VADR
     * The VADR workflow annotates input fasta-formatted genomes and generates gff / tbl files. The inputs into this workflow are your single-sample fasta files, metadata in .xlsx format, and reference information for the pathogen genome which is included within [this repository](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models). Find out more at the [VADR GitHub Repo](https://github.com/ncbi/vadr).
 * (3) Bakta
-    * The Bakta workflow annotates input fasta-formatted bacterial genomes & plasmids and generates gff / tbl files. The inputs into this workflow are single-sample fasta files, metadata in .xlsx format, and a reference database used for annotation (found [here](https://zenodo.org/records/7669534)). Bakta is an existing bacterial annotation tool that was integrated into the pipeline. You can find more information about this tool at the following link: [Bakta Git Repo](https://github.com/CDCgov/tostadas/tree/master#gene-annotation).
+    * The Bakta workflow annotates input fasta-formatted bacterial genomes & plasmids and generates gff / tbl files. The inputs into this workflow are single-sample fasta files, metadata in .xlsx format, and optionally a reference database used for annotation (found [here](https://zenodo.org/records/7669534)). Bakta is an existing bacterial annotation tool that was integrated into the pipeline. You can find more information about this tool at the following link: [Bakta Git Repo](https://github.com/CDCgov/tostadas/tree/master#gene-annotation).
 
 ### Submission 
 Submission workflow generates the necessary files for Genbank submission, generates a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
@@ -267,7 +267,6 @@ This section walks through the available parameters to customize your workflow.
 | metadata    | .xlsx     | Multi-sample metadata matching metadata spreadsheets provided in input_files              |
 | ref_fasta   | .fasta    | Reference genome to use for the  liftoff_submission branch of the pipeline                |
 | ref_gff     | .gff      | Reference GFF3 file to use for the  liftoff_submission branch of  the pipeline            | 
-| db          |  folder   | Bakta reference database used for bakta annotation                                        |
 
 
 ** Please note that the pipeline expects ONLY pre-split FASTA files, where each FASTA file contains only the sequence(s) associated with its corresponding sample. The name of each FASTA file corresponding to a particular sample must be placed within your metadata sheet under **fasta_file_name**. 
@@ -433,7 +432,6 @@ When changing these parameters pay attention to the required inputs and make sur
 | --ref_fasta_path           | Reference Sequence file path                            |        Yes (path as string)      |
 | --meta_path                | Meta-data file path for samples                         |        Yes (path as string)      |
 | --ref_gff_path             | Reference gff file path for annotation                  |        Yes (path as string)      |
-| --db_path                  | Path to Bakta reference database                        |        Yes (path as string)      |
 | --env_yml                  | Path to environment.yml file                            |        Yes (path as string)      |
 
 ### Run Environment
@@ -509,6 +507,9 @@ When changing these parameters pay attention to the required inputs and make sur
 ### Bakta
 | Param                       | Description                                             | Input Required   |
 |-----------------------------|---------------------------------------------------------|------------------|
+| --bakta_db_path  | Path to Bakta database if user is supplying database    |        No (path to database)      |
+| --download_bakta_db  | Option to download Bakta database    |        Yes (true/false)      |
+| --bakta_db_type  | Bakta database type (light or full)     |        Yes (string)      |
 | --bakta_output_dir  | File path to bakta specific sub-workflow outputs     |        Yes (folder name as string)      |
 | --bakta_min_contig_length  | Minimum contig size                           |        Yes (integer)      |
 | --bakta_threads    | Number of threads to use while running annotation        |     Yes (integer)     |
