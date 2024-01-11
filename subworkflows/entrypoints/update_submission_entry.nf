@@ -30,7 +30,8 @@ workflow RUN_UPDATE_SUBMISSION {
         UPDATE_SUBMISSION (
             'dummy wait signal',
             params.submission_config,
-            PREP_UPDATE_SUBMISSION_ENTRY.out.samples.flatten(),
-            ''
+            PREP_UPDATE_SUBMISSION_ENTRY.out.samples.sort().flatten(),
+            '',
+            PREP_UPDATE_SUBMISSION_ENTRY.out.sample_name
         )
 }

@@ -29,7 +29,7 @@ workflow LIFTOFF_SUBMISSION {
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
         // process for updating the submitted samples
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'liftoff' )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'liftoff', SUBMISSION.out.sample_name )
 
         // combine the different upload_log csv files together 
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'liftoff' )
@@ -52,7 +52,7 @@ workflow VADR_SUBMISSION {
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
         // process for updating the submitted samples
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'vadr' )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'vadr', SUBMISSION.out.sample_name )
 
         // combine the different upload_log csv files together 
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'vadr' )
@@ -75,7 +75,7 @@ workflow BAKTA_SUBMISSION {
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
         // process for updating the submitted samples
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'bakta' )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'bakta', SUBMISSION.out.sample_name )
 
         // combine the different upload_log csv files together
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'bakta' )
@@ -98,7 +98,7 @@ workflow REPEAT_MASKER_LIFTOFF_SUBMISSION {
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
         // process for updating the submitted samples
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'repeatmasker_liftoff' )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, 'repeatmasker_liftoff', SUBMISSION.out.sample_name )
 
         // combine the different upload_log csv files together 
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), 'repeatmasker_liftoff' )
@@ -121,7 +121,7 @@ workflow GENERAL_SUBMISSION {
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
         // process for updating the submitted samples
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, '' )
+        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, '', SUBMISSION.out.sample_name )
 
         // combine the different upload_log csv files together 
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
