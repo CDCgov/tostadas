@@ -21,6 +21,7 @@ def get_args():
     parser.add_argument("--repeatm_gff", type=str, help="GFF file from Repeat Masker \n", required=True)
     parser.add_argument("--liftoff_gff", type=str, help="GFF file from Liftoff \n", required=True)
     parser.add_argument("--refgff", type=str, help="Reference GFF to gather the ITR attributes and sample ID \n", required=True)
+    parser.add_argument("--fasta", type=str, help="FASTA file for sample \n", required=True)
     parser.add_argument("--outdir", type=str, default=".", help="Output directory, defualt is current directory")
         
     args = parser.parse_args()
@@ -58,7 +59,8 @@ def annotation_main():
     #####RUN MAIN PROCESS#####
 
     repMannotation_prep = RepeatMasker_Annotations(args.repeatm_gff, headerList, first_ITR_refattr, last_ITR_refattr, args.outdir)
-    samp_name=repMannotation_prep.sample_info()[0]
+    samp_name = '.'.join(args.fasta.split('.')[:-1])
+    #samp_name=repMannotation_prep.sample_info()[0]
     #repMannotation_prep.repM_prep_main()
     
     LOannotation_prep=Liftoff_Annotations(args.liftoff_gff, headerList, samp_name, args.outdir)
