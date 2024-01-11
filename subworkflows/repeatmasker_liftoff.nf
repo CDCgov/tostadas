@@ -38,7 +38,8 @@ workflow RUN_REPEATMASKER_LIFTOFF {
         CONCAT_GFFS (
            params.ref_gff_path,
            REPEATMASKER.out.gff,
-           LIFTOFF_CLI.out.gff
+           LIFTOFF_CLI.out.gff,
+           fasta
         )
 
     emit:
