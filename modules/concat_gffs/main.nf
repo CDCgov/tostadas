@@ -15,7 +15,7 @@ process CONCAT_GFFS {
         'https://depot.galaxyproject.org/singularity/pandas:1.1.5' :
         'quay.io/biocontainers/pandas:1.5.2' }"
    
-    publishDir "$params.output_dir/final_annotation_outputs", mode: "copy", overwrite: params.overwrite_output,
+    publishDir "$params.output_dir/repeatmasker_liftoff_outputs", mode: "copy", overwrite: params.overwrite_output,
         saveAs: { filename ->
                       filename.indexOf('.gff') > 0 ? "gff/${filename}":
                       filename.indexOf('.txt') > 0 ? "errors/${filename}":
@@ -27,10 +27,11 @@ process CONCAT_GFFS {
 	path ref_gff_path
 	path repeatmasker_gff
     path liftoff_gff
+    path fasta_path
 
 	script:
 	"""
-	repeatmasker_liftoff.py --repeatm_gff $repeatmasker_gff --liftoff_gff $liftoff_gff --refgff $ref_gff_path    
+	repeatmasker_liftoff.py --repeatm_gff $repeatmasker_gff --liftoff_gff $liftoff_gff --refgff $ref_gff_path --fasta $fasta_path   
 	"""
 
 	output:
