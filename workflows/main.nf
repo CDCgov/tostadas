@@ -6,12 +6,10 @@ nextflow.enable.dsl=2
                          GET NECESSARY MODULES OR SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-// get the utility processes
-include { VALIDATE_PARAMS                                   } from "../modules/general_util/validate_params/main"
-include { CLEANUP_FILES                                     } from "../modules/general_util/cleanup_files/main"
-include { GET_WAIT_TIME                                     } from "../modules/general_util/get_wait_time/main"
-include { PRINT_PARAMS_HELP                                 } from "../modules/general_util/params_help/main"
+// get the utility processes / subworkflows
 include { INITIALIZE_FILES                                  } from "../modules/general_util/initialize_files/main"
+include { RUN_UTILITY                                       } from "../subworkflows/utility"
+include { GET_WAIT_TIME                                     } from "../modules/general_util/get_wait_time/main"
 
 // get the main processes
 include { METADATA_VALIDATION                               } from "../modules/metadata_validation/main"
@@ -20,25 +18,22 @@ include { UPDATE_SUBMISSION                                 } from "../modules/u
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
 
 // get BAKTA related processes
-include { RUN_BAKTA                                         } from "$projectDir/subworkflows/entrypoints/bakta_entry"
 include { BAKTADBDOWNLOAD                                   } from "../modules/bakta/baktadbdownload/main"
 include { BAKTA                                             } from "../modules/bakta/bakta/main"
 include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
 
-// get repeat masker / variola related subworkflow / processes
+// get repeat masker related subworkflow
 include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
-include { REPEATMASKER                                      } from "../modules/repeatmasker_annotation/main"
-include { LIFTOFF_CLI                                       } from "../modules/liftoff_cli_annotation/main"
 
-// get the subworkflows
-
-include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
+// get vadr related subworkflow
 include { RUN_VADR                                          } from "../subworkflows/vadr"
+
+// get the subworkflows for submission
+include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
 include { BAKTA_SUBMISSION                                  } from "../subworkflows/submission"
 include { GENERAL_SUBMISSION                                } from "../subworkflows/submission"
-include { RUN_UTILITY                                       } from "../subworkflows/utility"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,7 +43,11 @@ include { RUN_UTILITY                                       } from "../subworkfl
 
 workflow MAIN_WORKFLOW {
 
-    fastaCh = Channel.fromPath("$params.fasta_path/*.fasta")
+    // initialize channels
+    fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta, fastq}")
+    if (!params.final_annotated_files_path.isEmpty()) {
+        annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
+    }
 
 
     // check if help parameter is set
@@ -76,7 +75,6 @@ workflow MAIN_WORKFLOW {
         LIFTOFF (
             params.meta_path, 
             INITIALIZE_FILES.out.fasta_dir, 
-            //INITIALIZE_FILES.out.fasta_files,
             params.ref_fasta_path, 
             params.ref_gff_path 
         )
@@ -86,25 +84,9 @@ workflow MAIN_WORKFLOW {
     if ( params.run_repeatmasker_liftoff == true ) {
 
         // run repeatmasker annotation on files
-        REPEATMASKER (
-           RUN_UTILITY.out,
-           INITIALIZE_FILES.out.fasta_files.sort().flatten(),
-           params.repeat_lib
-        )
-
-        // run liftoff annotation on files
-        LIFTOFF_CLI ( 
-            RUN_UTILITY.out,
-            INITIALIZE_FILES.out.fasta_files.sort().flatten(),
-            params.ref_fasta_path, 
-            params.ref_gff_path 
-        )
-
-        // concat gffs
-        CONCAT_GFFS (
-           params.ref_gff_path,
-           REPEATMASKER.out.gff,
-           LIFTOFF_CLI.out.gff
+        RUN_REPEATMASKER_LIFTOFF (
+            RUN_UTILITY.out, 
+            fastaCh
         )
     }
 
@@ -195,7 +177,7 @@ workflow MAIN_WORKFLOW {
                 REPEAT_MASKER_LIFTOFF_SUBMISSION (
                     METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
                     INITIALIZE_FILES.out.fasta_files.sort().flatten(),
-                    LIFTOFF_CLI.out.gff,
+                    RUN_REPEATMASKER_LIFTOFF.out[1],
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out   
@@ -211,7 +193,7 @@ workflow MAIN_WORKFLOW {
                 GENERAL_SUBMISSION (
                     METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
                     INITIALIZE_FILES.out.fasta_files.sort().flatten(),
-                    params.final_annotated_files_path,
+                    annotationCh,
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out 
