@@ -52,15 +52,17 @@ workflow MAIN {
 // include necessary processes 
 include { VALIDATE_PARAMS } from "$projectDir/modules/general_util/validate_params/main"
 include { CLEANUP_FILES } from "$projectDir/modules/general_util/cleanup_files/main"
+include { INITIALIZE_FILES } from "$projectDir/modules/general_util/initialize_files/main"
+include { LIFTOFF } from "$projectDir/modules/liftoff_annotation/main"
+include { METADATA_VALIDATION } from "$projectDir/modules/metadata_validation/main"
 
 // include necessary subworkflows
-include { RUN_VALIDATION } from "$projectDir/subworkflows/entrypoints/validation_entry"
-include { RUN_LIFTOFF } from "$projectDir/subworkflows/entrypoints/liftoff_entry"
 include { RUN_REPEATMASKER_LIFTOFF } from "$projectDir/subworkflows/repeatmasker_liftoff"
 include { RUN_VADR } from "$projectDir/subworkflows/vadr"
 include { RUN_SUBMISSION } from "$projectDir/subworkflows/entrypoints/submission_entry"
 include { RUN_INITIAL_SUBMISSION } from "$projectDir/subworkflows/entrypoints/initial_submission_entry"
 include { RUN_UPDATE_SUBMISSION } from "$projectDir/subworkflows/entrypoints/update_submission_entry"
+include { RUN_BAKTA } from "$projectDir/subworkflows/entrypoints/bakta_entry.nf"
 
 workflow only_validate_params {
     main:
@@ -79,25 +81,55 @@ workflow only_cleanup_files {
 workflow only_validation {
     main: 
         // run subworkflow for validation entrypoint
-        RUN_VALIDATION ()
+        METADATA_VALIDATION (
+            'dummy utility signal',
+            params.meta_path
+        )
 }
 
 workflow only_liftoff {
     main: 
-        // run subworkflow for liftoff entrypoint
-        RUN_LIFTOFF ()
+        // initialize the fasta files first 
+        INITIALIZE_FILES ( 'dummy utility signal' )
+
+        // run process for liftoff
+        LIFTOFF (
+            params.meta_path, 
+            INITIALIZE_FILES.out.fasta_dir, 
+            params.ref_fasta_path, 
+            params.ref_gff_path 
+        )
 }
 
 workflow only_repeatmasker_liftoff {
     main: 
+        fastaCh = Channel.fromPath("$params.fasta_path/*.fasta")
         // run subworkflow for repeatmasker liftoff entrypoint
-        RUN_REPEATMASKER_LIFTOFF ('dummy utility signal')
+        RUN_REPEATMASKER_LIFTOFF (
+            'dummy utility signal', 
+            fastaCh 
+        )
 }
 
 workflow only_vadr {
     main: 
-        // run subworkflow for vadr entrypoint
-        RUN_VADR ()
+        // initialize the fasta files first 
+        INITIALIZE_FILES ( 'dummy utility signal' )
+        
+        // run subworkflow for vadr 
+        RUN_VADR (
+            'dummy utility signal',
+            INITIALIZE_FILES.out.fasta_files.sort().flatten()
+        )
+}
+
+workflow only_bakta {
+    main:
+        fastaCh = Channel.fromPath("$params.fasta_path/*.fasta")
+        RUN_BAKTA (
+            'dummy utility signal',
+            fastaCh
+        )
 }
 
 workflow only_submission {

@@ -9,6 +9,7 @@ process REPEATMASKER {
 	
 	errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
 	maxRetries 2
+    
 	if ( params.run_conda == true ) {
         try {
             conda params.env_yml
@@ -20,8 +21,6 @@ process REPEATMASKER {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/repeatmasker:4.1.5--pl5321hdfd78af_1' :
         'quay.io/biocontainers/repeatmasker:4.1.5--pl5321hdfd78af_0'}"
-
-// publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
 	input:
 	val signal
