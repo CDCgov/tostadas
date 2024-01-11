@@ -9,7 +9,7 @@ process BAKTADBDOWNLOAD {
     val signal
 
     output:
-    path "bakta*"           , emit: db
+    path "bakta_db/*"           , emit: db
 
     // when:
     // task.ext.when == null || task.ext.when
