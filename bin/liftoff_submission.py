@@ -56,9 +56,9 @@ class GetParams:
 	def __init__(self):
 		self.required_parameters = ['meta_path', 'ref_fasta_path', 'fasta_path', 'ref_gff_path']
 		# specify the names of temporary directories + create the temporary directories
-		self.temp_dirs = ["", "fastaFiles", "liftoff", "tbl", 'errors']
+		self.temp_dirs = ["", "fastaFiles", "gff", "tbl", 'errors']
 		self.temp_dirs_purposes = ['root_temp', 'fasta_temp', 'liftoff_temp', 'tbl_temp', 'errors_temp']
-		self.final_dirs = ['fasta', 'liftoff', 'tbl', 'errors']
+		self.final_dirs = ['fasta', 'gff', 'tbl', 'errors']
 		self.final_dirs_purposes = ['fasta_final', 'liftoff_final', 'tbl_final', 'errors_final']
 		self.parameters = None
 
