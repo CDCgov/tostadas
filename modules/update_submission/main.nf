@@ -25,12 +25,13 @@ process UPDATE_SUBMISSION {
     path submission_config
     path submission_output
     val annotation_name
+    val sample_name
         
     script:
     """
-    run_submission.py --config $submission_config --update true --unique_name $params.batch_name --sample_name ${submission_output.getExtension()}
+    run_submission.py --config $submission_config --update true --unique_name $params.batch_name --sample_name $sample_name
     """
 
     output:
-    path "$params.batch_name.${submission_output.getExtension()}", emit: submission_files
+    path "$params.batch_name.${sample_name}", emit: submission_files
 } 
