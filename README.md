@@ -9,7 +9,7 @@
 The Pathogen Annotation and Submission pipeline facilitates the running of several Python scripts, which validate metadata (QC), annotate assembled genomes, and submit to NCBI. Current implementation has been tested with Pox virus sequences as well as some bacteria. Ongoing development aims to make the pipeline pathogen agnostic.
 
 ## Documentation 
-For in-depth documentation on the features of Tostadas, check out our Wiki page: [Tostadas Wiki]([https://github.com/CDCgov/tostadas/wiki])! 
+For in-depth documentation on the features of Tostadas, check out our Wiki page: [Tostadas Wiki](https://github.com/CDCgov/tostadas/wiki)! 
 
 ## Pipeline Summary
 
