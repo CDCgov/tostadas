@@ -63,6 +63,7 @@ include { RUN_SUBMISSION } from "$projectDir/subworkflows/entrypoints/submission
 include { RUN_INITIAL_SUBMISSION } from "$projectDir/subworkflows/entrypoints/initial_submission_entry"
 include { RUN_UPDATE_SUBMISSION } from "$projectDir/subworkflows/entrypoints/update_submission_entry"
 include { RUN_BAKTA } from "$projectDir/subworkflows/entrypoints/bakta_entry.nf"
+include { RUN_VALIDATION_AND_SUBMISSION } from "$projectDir/subworkflows/entrypoints/no_annotation"
 
 workflow only_validate_params {
     main:
@@ -148,4 +149,22 @@ workflow only_update_submission {
     main:
         // run subworkflow for update submission entrypoint
         RUN_UPDATE_SUBMISSION ()
+}
+
+workflow only_validation_and_submission {
+    main:
+        // calls subworkflow to run only validation and submission
+        RUN_VALIDATION_AND_SUBMISSION (
+            'dummy utility signal',
+            false
+        )
+}
+
+workflow only_validation_and_initial_submission {
+    main:
+        // calls subworkflow to run only validation and submission
+        RUN_VALIDATION_AND_SUBMISSION (
+            'dummy utility signal',
+            true
+        )
 }
