@@ -35,6 +35,7 @@ include { VADR_SUBMISSION                                   } from "../subworkfl
 include { BAKTA_SUBMISSION                                  } from "../subworkflows/submission"
 include { GENERAL_SUBMISSION                                } from "../subworkflows/submission"
 
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                     MAIN WORKFLOW
@@ -70,59 +71,63 @@ workflow MAIN_WORKFLOW {
         params.meta_path
     )
 
-    // run liftoff annotation process 
-    if ( params.run_liftoff == true ) {
-        LIFTOFF (
-            params.meta_path, 
-            INITIALIZE_FILES.out.fasta_dir, 
-            params.ref_fasta_path, 
-            params.ref_gff_path 
-        )
-    }
+    // check if the user wants to skip annotation or not
+    if ( params.run_annotation == true ) {
 
-    // run liftoff annotation process + repeatmasker 
-    if ( params.run_repeatmasker_liftoff == true ) {
-
-        // run repeatmasker annotation on files
-        RUN_REPEATMASKER_LIFTOFF (
-            RUN_UTILITY.out, 
-            fastaCh
-        )
-    }
-
-    // run vadr processes
-    if ( params.run_vadr == true ) {
-        RUN_VADR (
-            RUN_UTILITY.out, 
-            INITIALIZE_FILES.out.fasta_files.sort().flatten()
-        )
-    }
-
-    // run bakta annotation process
-    if ( params.run_bakta == true ) {
-        
-        if ( params.download_bakta_db ) {
-            BAKTADBDOWNLOAD ( RUN_UTILITY.out )
-            BAKTA (
-                RUN_UTILITY.out,
-                BAKTADBDOWNLOAD.out.db,
-                fastaCh
+        // run liftoff annotation process 
+        if ( params.run_liftoff == true ) {
+            LIFTOFF (
+                params.meta_path, 
+                INITIALIZE_FILES.out.fasta_dir, 
+                params.ref_fasta_path, 
+                params.ref_gff_path 
             )
+        }
 
-        } else {
+        // run liftoff annotation process + repeatmasker 
+        if ( params.run_repeatmasker_liftoff == true ) {
 
-            BAKTA (
-                RUN_UTILITY.out,
-                params.bakta_db_path,
+            // run repeatmasker annotation on files
+            RUN_REPEATMASKER_LIFTOFF (
+                RUN_UTILITY.out, 
                 fastaCh
             )
         }
-    
-        BAKTA_POST_CLEANUP (
-            BAKTA.out.bakta_results,
-            params.meta_path,
-            fastaCh
-        )   
+
+        // run vadr processes
+        if ( params.run_vadr == true ) {
+            RUN_VADR (
+                RUN_UTILITY.out, 
+                INITIALIZE_FILES.out.fasta_files.sort().flatten()
+            )
+        }
+
+        // run bakta annotation process
+        if ( params.run_bakta == true ) {
+            
+            if ( params.download_bakta_db ) {
+                BAKTADBDOWNLOAD ( RUN_UTILITY.out )
+                BAKTA (
+                    RUN_UTILITY.out,
+                    BAKTADBDOWNLOAD.out.db,
+                    fastaCh
+                )
+
+            } else {
+
+                BAKTA (
+                    RUN_UTILITY.out,
+                    params.bakta_db_path,
+                    fastaCh
+                )
+            }
+        
+            BAKTA_POST_CLEANUP (
+                BAKTA.out.bakta_results,
+                params.meta_path,
+                fastaCh
+            )   
+        }
     }
   
     // run submission for the annotated samples 
@@ -133,8 +138,8 @@ workflow MAIN_WORKFLOW {
             METADATA_VALIDATION.out.tsv_Files.collect() 
         )
 
-         // check if all annotations are set to false 
-        if ([params.run_bakta, params.run_liftoff, params.run_vadr, params.run_repeatmasker_liftoff].any { it }) {
+        // check if all annotations are set to false 
+        if ( params.run_annotation == true ) {
 
             // call the submission workflow for liftoff 
             if ( params.run_liftoff == true ) {
@@ -183,7 +188,7 @@ workflow MAIN_WORKFLOW {
                     GET_WAIT_TIME.out   
                 )
             }  
-
+ 
         } else {
 
             // all annotations are false, therefore first check if user annotations are provided
