@@ -173,23 +173,6 @@ The outputs of the pipeline will appear in the "nf_test_results" folder within t
 nextflow run main.nf -profile test,conda,virus --submission_wait_time <place integer value here in seconds>
 ```
 
-## Helpful Links for Resources and Software Integrated with TOSTADAS:     
-   :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/
-   
-   :link: Nextflow Documentation: https://www.nextflow.io/docs/latest/getstarted.html
-   
-   :link:  SeqSender Documentation: https://github.com/CDCgov/seqsender
-   
-   :link: Liftoff Documentation: https://github.com/agshumate/Liftoff
-   
-   :link: VADR Documentation:  https://github.com/ncbi/vadr.git
-
-   :link: Bakta Documentation:  https://github.com/oschwengers/bakta
-   
-   :link: table2asn Documentation: https://github.com/svn2github/NCBI_toolkit/blob/master/src/app/table2asn/table2asn.cpp
-
-   :link: RepeatMasker Documentation: https://www.repeatmasker.org/
-
   ## Get in Touch
 
   If you have any ideas for ways to improve our existing codebase, feel free to open an Issue Request (found here: [Open New Issue](https://github.com/CDCgov/tostadas/issues/new/choose))
