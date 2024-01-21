@@ -198,8 +198,11 @@ nextflow run main.nf -profile test,conda,virus --submission_wait_time <place int
   And we will get back to you as soon as possible.  
    
   ## Acknowledgements
+  ### Contributors
   Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison\
   Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Ankush Gupta\
   Kyle O'Connell | Yesh Kulasekarapandian |  Cole Tindall | Lynsey Kovar | Hunter Seabolt\
   Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Swarnali Louha\
   Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
+  ### Tools
+  The submission portion of this pipeline was adapted from SeqSender. To find more information on this workflow, please refer to their GitHub page: [SeqSender](https://github.com/CDCgov/seqsender). 
