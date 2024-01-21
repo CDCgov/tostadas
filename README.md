@@ -205,4 +205,4 @@ nextflow run main.nf -profile test,conda,virus --submission_wait_time <place int
   Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Swarnali Louha\
   Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
   ### Tools
-  The submission portion of this pipeline was adapted from SeqSender. To find more information on this workflow, please refer to their GitHub page: [SeqSender](https://github.com/CDCgov/seqsender). 
+  The submission portion of this pipeline was adapted from SeqSender. To find more information on this tool, please refer to their GitHub page: [SeqSender](https://github.com/CDCgov/seqsender). 
