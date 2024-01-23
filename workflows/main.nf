@@ -191,6 +191,9 @@ workflow MAIN_WORKFLOW {
  
         } else {
 
+            // call submission utility to check / create dummy files 
+            
+
             // all annotations are false, therefore first check if user annotations are provided
             if (!params.final_annotated_files_path.isEmpty()) {
 
@@ -207,7 +210,8 @@ workflow MAIN_WORKFLOW {
             } else {
 
                 // final annotations path not provided, need to create dummy GFF files to pass
-
+                // it might be easier to just pass in dummy files vs creating separate subworkflows 
+                // call same submission prep part (creates dummy gffs and fastas if not present for all + stops if metdata not present)
 
             }
         }
