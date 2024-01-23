@@ -134,7 +134,7 @@ class Utility():
             # cycle through the databases to check if only 'sra' was selected
             create_dummy_files = True
             for field in ['submit_Genbank', 'submit_GISAID', 'submit_BioSample', 'joint_SRA_BioSample_submission']:
-                if config_dict['general'][field] == True:
+                if config_dict['general'][field].strip().lower() == 'true':
                     create_dummy_files = False
                     break
 
