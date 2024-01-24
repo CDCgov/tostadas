@@ -11,24 +11,22 @@ include { INITIALIZE_FILES                                  } from "../modules/g
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
 include { GET_WAIT_TIME                                     } from "../modules/general_util/get_wait_time/main"
 
-// get the main processes
+// get metadata validation processes
 include { METADATA_VALIDATION                               } from "../modules/metadata_validation/main"
-include { SUBMISSION                                        } from "../modules/submission/main"
-include { UPDATE_SUBMISSION                                 } from "../modules/update_submission/main"
+
+// get viral annotation process/subworkflows
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
+include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
+include { RUN_VADR                                          } from "../subworkflows/vadr"
 
 // get BAKTA related processes
 include { BAKTADBDOWNLOAD                                   } from "../modules/bakta/baktadbdownload/main"
 include { BAKTA                                             } from "../modules/bakta/bakta/main"
 include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
 
-// get repeat masker related subworkflow
-include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
-
-// get vadr related subworkflow
-include { RUN_VADR                                          } from "../subworkflows/vadr"
-
-// get the subworkflows for submission
+// get submission related process/subworkflows
+include { SUBMISSION                                        } from "../modules/submission/main"
+include { UPDATE_SUBMISSION                                 } from "../modules/update_submission/main"
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
@@ -49,7 +47,6 @@ workflow MAIN_WORKFLOW {
     if (!params.final_annotated_files_path.isEmpty()) {
         annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
     }
-
 
     // check if help parameter is set
     if ( params.help == true ) {
@@ -74,23 +71,22 @@ workflow MAIN_WORKFLOW {
     // check if the user wants to skip annotation or not
     if ( params.run_annotation == true ) {
 
-        // run liftoff annotation process 
+        // run liftoff annotation process + repeatmasker (preferred method)
+        if ( params.run_repeatmasker_liftoff == true ) {
+            // run repeatmasker annotation on files
+            RUN_REPEATMASKER_LIFTOFF (
+                RUN_UTILITY.out, 
+                fastaCh
+            )
+        }
+        
+        // run liftoff annotation process (depracated)
         if ( params.run_liftoff == true ) {
             LIFTOFF (
                 params.meta_path, 
                 INITIALIZE_FILES.out.fasta_dir, 
                 params.ref_fasta_path, 
                 params.ref_gff_path 
-            )
-        }
-
-        // run liftoff annotation process + repeatmasker 
-        if ( params.run_repeatmasker_liftoff == true ) {
-
-            // run repeatmasker annotation on files
-            RUN_REPEATMASKER_LIFTOFF (
-                RUN_UTILITY.out, 
-                fastaCh
             )
         }
 
@@ -132,6 +128,8 @@ workflow MAIN_WORKFLOW {
   
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
+        // empty submission input ch
+        // ch_submission_files = Channel.empty()
 
         // pre submission process + get wait time (parallel)
         GET_WAIT_TIME (
@@ -140,6 +138,20 @@ workflow MAIN_WORKFLOW {
 
         // check if all annotations are set to false 
         if ( params.run_annotation == true ) {
+
+            // call the submission workflow process for liftoff + repeatmasker 
+            // ch_submission_files = METADATA_VALIDATION.out.tsv_Files.join(RUN_REPEATMASKER_LIFTOFF.out.fasta, RUN_REPEATMASKER_LIFTOFF.out.gff) { metadata, fasta, gff -> [metadata, fasta, gff] }
+
+            if ( params.run_repeatmasker_liftoff == true ) {
+                REPEAT_MASKER_LIFTOFF_SUBMISSION (
+                    METADATA_VALIDATION.out.tsv_Files,
+                    RUN_REPEATMASKER_LIFTOFF.out.fasta,
+                    RUN_REPEATMASKER_LIFTOFF.out.gff,
+                    params.submission_config, 
+                    params.req_col_config, 
+                    GET_WAIT_TIME.out   
+                )
+            }  
 
             // call the submission workflow for liftoff 
             if ( params.run_liftoff == true ) {
@@ -177,17 +189,6 @@ workflow MAIN_WORKFLOW {
                 )
             }
 
-            // call the submission workflow process for liftoff + repeatmasker 
-            if ( params.run_repeatmasker_liftoff == true ) {
-                REPEAT_MASKER_LIFTOFF_SUBMISSION (
-                    METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                    INITIALIZE_FILES.out.fasta_files.sort().flatten(),
-                    RUN_REPEATMASKER_LIFTOFF.out[1],
-                    params.submission_config, 
-                    params.req_col_config, 
-                    GET_WAIT_TIME.out   
-                )
-            }  
  
         } else {
 
