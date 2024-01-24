@@ -86,11 +86,10 @@ def main():
     
     if parameters['prep_submission_entry'].lower().strip() == 'true' and parameters['update_entry'].lower().strip() == 'false':
         
-        # check the database being submitted to and adjust file check/copy accordingly 
-        if len(glob.glob(f"{parameters['gff_path']}/*.gff")) == 0:
-            parameters = util.check_database (
-                parameters=parameters
-            )
+        # check the database being submitted to and if required files are present 
+        parameters = util.check_database_files (
+            parameters=parameters
+        )
 
         # cycle through the different input files for submission and copy into work directory
         for file_type, key in zip(['tsv', 'fasta', 'gff'], ['meta_path', 'fasta_path', 'gff_path']):
@@ -115,15 +114,25 @@ def main():
 
 class Utility():
     def __init__(self):
-        """
-        """
+        self.assertchecks = AssertChecks()
     
     @staticmethod 
     def actually_wait(time_2_wait):
         time.sleep(time_2_wait)
 
-    @staticmethod 
-    def check_database(parameters):
+    def check_database_files(self, parameters):
+
+        # flag to track if proper files are present + dictionary for storing databases to check
+        are_needed_files_present = False
+        databases2check = {
+            "sra": False, 
+            "biosample": False, 
+            "joint_sra_biosample": False, 
+            "genbank": False, 
+            "GISAID": False
+        }
+
+        # clean the name for the database 
         cleaned_name = parameters['database'].lower().strip()
 
         # read the submission config file in if submit was used for database
@@ -131,10 +140,19 @@ class Utility():
             with open(parameters['config'], "r") as f:
                 config_dict = yaml.safe_load(f)
             f.close()
-            # cycle through the databases to check if only 'sra' was selected
-            create_dummy_files = True
-            for field in ['submit_Genbank', 'submit_GISAID', 'submit_BioSample', 'joint_SRA_BioSample_submission']:
+
+            # update the databases to check 
+            
+
+            # check if SRA or joint are set to true
+            if config_dict['general']['submit_SRA'].strip().lower() == 'true' or config_dict['general']['joint_SRA_BioSample_submission'].strip().lower() == 'true':
+                # then perform check for metadata and sample reads (need to be present)
+                self.assertchecks.check_sra_and_joint(parameters)
+
+            # cycle through the databases to check required files for selected databases 
+            for field in ['submit_Genbank', 'submit_GISAID', 'submit_BioSample', 'joint_SRA_BioSample_submission', 'submit_SRA']:
                 if config_dict['general'][field].strip().lower() == 'true':
+                    # check if SRA or joint are set to true 
                     create_dummy_files = False
                     break
 
@@ -157,6 +175,31 @@ class AssertChecks():
     def __init__(self):
         """
         """
+
+    @staticmethod
+    def check_metadata(parameters):
+        """ Checks metadata file if it exists or not 
+        """
+        # check the meta path first 
+        assert os.isfile(parameters['meta_path'])
+
+    @staticmethod 
+    def check_fasta_fastq(parameters):
+        """ Checks whether fasta or fastq files are present
+        """
+        # get the fasta and fastq files 
+        fasta_files = glob.glob(os.path.join(parameters['fasta_path'], '*.fasta'))
+        fastq_files = glob.glob(os.path.join(parameters['fasta_path'], '*.fastq'))
+        assert len(fasta_files + fastq_files) != 0
+
+    @staticmethod 
+    def check_annotation_files(parameters):
+        """ Checks whether or not annotation files are present
+        """
+        # get the annotation files 
+        gff_annotation_files = glob.glob(os.path.join(parameters['gff_path'], '*.gff'))
+        tbl_annotation_files = glob.glob(os.path.join(parameters['gff_path'], '*.tbl'))
+        assert len(gff_annotation_files + tbl_annotation_files) != 0
     
     def check_upload_log(self, log_data, expected_cols):
         try:
