@@ -48,9 +48,8 @@ The Nextflow parameter that controls toggling this functionality on/off is: __se
 
 As for specifying the recipients of these emails, this can be done within your submission configuration file under the __notif_email_recipient__ field. If you would like to specify multiple recipients for these emails, then you can append the field name. Here is an example in practice: 
 ```
-notif_email_recipient: 'randomemail@random.com'
+notif_email_recipient1: 'randomemail@random.com'
 notif_email_recipient2: 'randomemail2@random.com'
-notif_email_recipient3: 'randomemail3@random.com'
 ```
 
 ## Information For Each Field
