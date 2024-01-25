@@ -4,7 +4,6 @@
 - [Introduction](#introduction)
 - [General Format & Content](#general-format--content)
     - [Specifying NCBI Databases](#specifying-ncbi-databases)
-    - [Email Notifcation For Genbank/Table2asn](#email-notifcation-for-genbanktable2asn)
 - [Information For Each Field](#information-for-each-field)
     - [Personal Fields](#personal-fields)
     - [General Fields](#general-fields)
@@ -39,18 +38,6 @@ submit_BioSample: True
 joint_SRA_BioSample_submission: True
 ```
 TOSTADAS will submit to each database that is set to __True__ and ignore all others.
-
-### Email Notifcation For Genbank/Table2asn
-
-There is built-in functionality to toggle email notifications on/off, specifically during Genbank/Table2asn submission, as well as the recipients of these emails. 
-
-The Nextflow parameter that controls toggling this functionality on/off is: __send_submission_email__. Set to __True__ if you would like to send out an email to recipients during this submission configuration, otherwise __False__ if you would like it disabled. 
-
-As for specifying the recipients of these emails, this can be done within your submission configuration file under the __notif_email_recipient__ field. If you would like to specify multiple recipients for these emails, then you can append the field name. Here is an example in practice: 
-```
-notif_email_recipient1: 'randomemail@random.com'
-notif_email_recipient2: 'randomemail2@random.com'
-```
 
 ## Information For Each Field
 
