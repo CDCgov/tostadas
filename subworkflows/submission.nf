@@ -20,6 +20,7 @@ workflow LIFTOFF_SUBMISSION {
         submission_config
         req_col_config
         wait_time
+        //
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
