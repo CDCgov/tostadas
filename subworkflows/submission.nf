@@ -81,16 +81,14 @@ workflow VADR_SUBMISSION {
 
 workflow BAKTA_SUBMISSION {
     take:
-         meta_files
-         bakta_fasta_files
-         bakta_gff_files
+         ch_submission_files
          submission_config
          req_col_config
          wait_time
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
-        SUBMISSION ( meta_files, bakta_fasta_files, bakta_gff_files, submission_config, req_col_config, 'bakta' )
+        SUBMISSION ( ch_submission_files, submission_config, req_col_config, 'bakta' )
 
         // actual process to initiate wait
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )

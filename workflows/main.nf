@@ -86,21 +86,21 @@ workflow MAIN_WORKFLOW {
                 RUN_UTILITY.out, 
                 fastaCh
             )
-        }
-        // apply meta.id to fasta output
-        repeatmasker_fasta_ch = RUN_REPEATMASKER_LIFTOFF.out.fasta
-        .map{ def meta = [:] 
-        meta['id'] = it.getSimpleName()
-        [ meta, it ] }
-        //repeatmasker_fasta_ch.view()
+            // apply meta.id to fasta output
+            repeatmasker_fasta_ch = RUN_REPEATMASKER_LIFTOFF.out.fasta
+            .map { def meta = [:] 
+            meta['id'] = it.getSimpleName()
+            [ meta, it ] }
+            //repeatmasker_fasta_ch.view()
 
-        // apply meta.id to gff output
-        // added collect + flatten because this channel was not emiting all samples as in fasta above
-        repeatmasker_gff_ch = RUN_REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
-        .map{ def meta = [:] 
-        meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-        [ meta, it ] }
-        // repeatmasker_gff_ch.view()
+            // apply meta.id to gff output
+            // added collect + flatten because this channel was not emiting all samples as in fasta above
+            repeatmasker_gff_ch = RUN_REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
+            .map{ def meta = [:] 
+            meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+            [ meta, it ] }
+            // repeatmasker_gff_ch.view()
+        }
 
         // run liftoff annotation process (deprecated)
         if ( params.run_liftoff == true ) {
@@ -144,7 +144,21 @@ workflow MAIN_WORKFLOW {
                 BAKTA.out.bakta_results,
                 params.meta_path,
                 fastaCh
-            )   
+            )
+            // apply meta.id to fasta output
+            bakta_fasta_ch = BAKTA_POST_CLEANUP.out.fasta
+            .map { def meta = [:] 
+            meta['id'] = it.getSimpleName()
+            [ meta, it ] }
+            //bakta_fasta_ch.view()
+
+            // apply meta.id to gff output
+            // added collect + flatten because this channel was not emiting all samples as in fasta above
+            bakta_gff_ch = BAKTA_POST_CLEANUP.out.gff.collect().flatten()
+            .map{ def meta = [:] 
+            meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+            [ meta, it ] }
+            // bakta_gff_ch.view()
         }
     }
 
@@ -159,12 +173,11 @@ workflow MAIN_WORKFLOW {
         // check if all annotations are set to false 
         if ( params.run_annotation == true ) {
 
-            // call the submission workflow process for liftoff + repeatmasker 
-            repeatmasker_submission_ch = metadata_ch.join(repeatmasker_fasta_ch)
-            repeatmasker_submission_ch = repeatmasker_submission_ch.join(repeatmasker_gff_ch)
-            //repeatmasker_submission_ch.view()
-
             if ( params.run_repeatmasker_liftoff == true ) {
+                // call the submission workflow process for liftoff + repeatmasker 
+                repeatmasker_submission_ch = metadata_ch.join(repeatmasker_fasta_ch)
+                repeatmasker_submission_ch = repeatmasker_submission_ch.join(repeatmasker_gff_ch)
+                //repeatmasker_submission_ch.view()
                 REPEAT_MASKER_LIFTOFF_SUBMISSION (
                     repeatmasker_submission_ch,
                     params.submission_config, 
@@ -199,10 +212,11 @@ workflow MAIN_WORKFLOW {
 
             // call the submission workflow for bakta
             if ( params.run_bakta  == true ) {
+                bakta_submission_ch = metadata_ch.join(bakta_fasta_ch)
+                bakta_submission_ch = bakta_submission_ch.join(bakta_gff_ch)
+                bakta_submission_ch.view()
                 BAKTA_SUBMISSION (
-                    METADATA_VALIDATION.out.tsv_Files,
-                    INITIALIZE_FILES.out.fasta_files.sort().flatten(),
-                    BAKTA_POST_CLEANUP.out.gff,
+                    bakta_submission_ch,
                     params.submission_config,
                     params.req_col_config,
                     GET_WAIT_TIME.out
