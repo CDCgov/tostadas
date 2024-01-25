@@ -64,10 +64,10 @@ notif_email_recipient2: 'randomemail2@random.com'
 | NCBI / username |  Your personal username credential for NCBI   |    Yes (string)      |
 | NCBI / password |  Your personal password credential for NCBI   |    Yes (string)      |
 | organization_name |  Name of the organization or company you are affiliated with   |    Yes (string)      |
-| citation_address |  Contains subfields for information about the location for sample generation, for citation purposes   |    Yes (string)      |
-| publication_title |  Name of the publication or project   |    Yes (string)      |
-| BioProject |  Collection of biological data related to a single initiative, originating from a single organization or from a consortium   |    Yes (string)      |
-| Center_title |  Name of your affiliated center / group   |    Yes (string)      |
+| ncbi / citation_address |  Contains subfields for information about the location for sample generation, for citation purposes   |    Yes (string)      |
+| ncbi / publication_title |  Name of the publication or project   |    Yes (string)      |
+| ncbi / BioProject |  Collection of biological data related to a single initiative, originating from a single organization or from a consortium   |    Yes (string)      |
+| ncbi / Center_title |  Name of your affiliated center / group   |    Yes (string)      |
 | gisaid / username |  Your personal username credential for GISAID   |    Yes (string)      |
 | gisaid / password |  Your personal password credential for GISAID   |    Yes (string)      |
 
@@ -94,8 +94,8 @@ notif_email_recipient2: 'randomemail2@random.com'
 | Field Name                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
 | ncbi_org_id              | Organization ID for NCBI             |        Yes (string)      |
-| hostname              | The FTP host name for NCBI            |        Yes (string)      |
-| api_url              | URL for the NCBI API            |        Yes (string)      |
+| ncbi / hostname              | The FTP host name for NCBI            |        Yes (string)      |
+| ncbi / api_url              | URL for the NCBI API            |        Yes (string)      |
 | ncbi_ftp_path_to_submission_folders              | Path to the submission folders at endpoint            |        Yes (string)      |
 
 
@@ -103,12 +103,12 @@ notif_email_recipient2: 'randomemail2@random.com'
 
 | Field Name                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|
-| SRA_file_location               | Location of SRA file              |        Yes (string)      |
-| SRA_file_column(1-3)              | Name of column containing SRA file information              |        Yes (string)      |
-| Genbank_organization_type               | Type of organization for Genbank              |        Yes (string)      |
-| Genbank_organization_role               | Role for Genbank              |        Yes (string)      |
-| Genbank_spuid_namespace               | The namespace for Genbank              |        Yes (string)      |
-| Genbank_auto_remove_sequences_that_fail_qc               | Whether or not to remove sequences that fail QC for Genbank              |        Yes (bool)      |
+| ncbi / SRA_file_location               | Location of SRA file              |        Yes (string)      |
+| ncbi / SRA_file_column(1-3)              | Name of column containing SRA file information              |        Yes (string)      |
+| ncbi / Genbank_organization_type               | Type of organization for Genbank              |        Yes (string)      |
+| ncbi / Genbank_organization_role               | Role for Genbank              |        Yes (string)      |
+| ncbi / Genbank_spuid_namespace               | The namespace for Genbank              |        Yes (string)      |
+| ncbi / Genbank_auto_remove_sequences_that_fail_qc               | Whether or not to remove sequences that fail QC for Genbank              |        Yes (bool)      |
 
 ### NCBI Databases Fields (Specific)
 
