@@ -13,17 +13,14 @@ include { MERGE_UPLOAD_LOG                              } from "../modules/gener
 
 workflow REPEAT_MASKER_LIFTOFF_SUBMISSION {
     take:
-        // tuple val(meta_files), path(fasta), path(gff)
-        meta_files
-        fasta
-        gff
+        ch_submission_files
         submission_config
         req_col_config
         wait_time
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
-        SUBMISSION ( meta_files, fasta, gff, submission_config, req_col_config, 'liftoff' )
+        SUBMISSION ( ch_submission_files, submission_config, req_col_config, 'liftoff' )
 
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )

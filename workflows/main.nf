@@ -67,7 +67,15 @@ workflow MAIN_WORKFLOW {
         RUN_UTILITY.out,
         params.meta_path
     )
-
+    metadata_ch = METADATA_VALIDATION.out.tsv_Files.flatten()
+    //metadata_ch.view()
+    
+        .map{ 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName()
+            [ meta, it ] 
+            }
+    // metadata_ch.view() 
     // check if the user wants to skip annotation or not
     if ( params.run_annotation == true ) {
 
@@ -79,8 +87,22 @@ workflow MAIN_WORKFLOW {
                 fastaCh
             )
         }
-        
-        // run liftoff annotation process (depracated)
+        // apply meta.id to fasta output
+        repeatmasker_fasta_ch = RUN_REPEATMASKER_LIFTOFF.out.fasta
+        .map{ def meta = [:] 
+        meta['id'] = it.getSimpleName()
+        [ meta, it ] }
+        //repeatmasker_fasta_ch.view()
+
+        // apply meta.id to gff output
+        // added collect + flatten because this channel was not emiting all samples as in fasta above
+        repeatmasker_gff_ch = RUN_REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
+        .map{ def meta = [:] 
+        meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+        [ meta, it ] }
+        // repeatmasker_gff_ch.view()
+
+        // run liftoff annotation process (deprecated)
         if ( params.run_liftoff == true ) {
             LIFTOFF (
                 params.meta_path, 
@@ -125,11 +147,9 @@ workflow MAIN_WORKFLOW {
             )   
         }
     }
-  
+
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
-        // empty submission input ch
-        // ch_submission_files = Channel.empty()
 
         // pre submission process + get wait time (parallel)
         GET_WAIT_TIME (
@@ -140,13 +160,13 @@ workflow MAIN_WORKFLOW {
         if ( params.run_annotation == true ) {
 
             // call the submission workflow process for liftoff + repeatmasker 
-            // ch_submission_files = METADATA_VALIDATION.out.tsv_Files.join(RUN_REPEATMASKER_LIFTOFF.out.fasta, RUN_REPEATMASKER_LIFTOFF.out.gff) { metadata, fasta, gff -> [metadata, fasta, gff] }
+            repeatmasker_submission_ch = metadata_ch.join(repeatmasker_fasta_ch)
+            repeatmasker_submission_ch = repeatmasker_submission_ch.join(repeatmasker_gff_ch)
+            //repeatmasker_submission_ch.view()
 
             if ( params.run_repeatmasker_liftoff == true ) {
                 REPEAT_MASKER_LIFTOFF_SUBMISSION (
-                    METADATA_VALIDATION.out.tsv_Files,
-                    RUN_REPEATMASKER_LIFTOFF.out.fasta,
-                    RUN_REPEATMASKER_LIFTOFF.out.gff,
+                    repeatmasker_submission_ch,
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out   
