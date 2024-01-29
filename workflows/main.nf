@@ -7,7 +7,8 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // get the utility processes / subworkflows
-include { INITIALIZE_FILES                                  } from "../modules/general_util/initialize_files/main"
+include { CHECK_FILES                                       } from "../modules/general_util/check_files/main"
+// include { INITIALIZE_SUBMISSION_FILES                       } from "../modules/general_util/initialize_submission_files/main"
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
 include { GET_WAIT_TIME                                     } from "../modules/general_util/get_wait_time/main"
 
@@ -61,8 +62,10 @@ workflow MAIN_WORKFLOW {
     RUN_UTILITY()
 
     // initialize files (stage and change names for files)
-    INITIALIZE_FILES (
-        RUN_UTILITY.out
+    CHECK_FILES (
+        RUN_UTILITY.out,
+        false,
+        params.run_submission
     )
 
     // run metadata validation process
@@ -77,8 +80,9 @@ workflow MAIN_WORKFLOW {
         // run liftoff annotation process 
         if ( params.run_liftoff == true ) {
             LIFTOFF (
+                RUN_UTILITY.out,
                 params.meta_path, 
-                INITIALIZE_FILES.out.fasta_dir, 
+                CHECK_FILES.out.fasta_dir, 
                 params.ref_fasta_path, 
                 params.ref_gff_path 
             )
@@ -90,7 +94,7 @@ workflow MAIN_WORKFLOW {
             // run repeatmasker annotation on files
             RUN_REPEATMASKER_LIFTOFF (
                 RUN_UTILITY.out, 
-                fastaCh
+                CHECK_FILES.out.fasta_files.sort().flatten()
             )
         }
 
@@ -98,7 +102,7 @@ workflow MAIN_WORKFLOW {
         if ( params.run_vadr == true ) {
             RUN_VADR (
                 RUN_UTILITY.out, 
-                INITIALIZE_FILES.out.fasta_files.sort().flatten()
+                CHECK_FILES.out.fasta_files.sort().flatten()
             )
         }
 
@@ -106,11 +110,15 @@ workflow MAIN_WORKFLOW {
         if ( params.run_bakta == true ) {
             
             if ( params.download_bakta_db ) {
-                BAKTADBDOWNLOAD ( RUN_UTILITY.out )
+
+                BAKTADBDOWNLOAD (
+                    RUN_UTILITY.out 
+                )
+
                 BAKTA (
                     RUN_UTILITY.out,
                     BAKTADBDOWNLOAD.out.db,
-                    fastaCh
+                    CHECK_FILES.out.fasta_files.sort().flatten()
                 )
 
             } else {
@@ -118,15 +126,17 @@ workflow MAIN_WORKFLOW {
                 BAKTA (
                     RUN_UTILITY.out,
                     params.bakta_db_path,
-                    fastaCh
+                    CHECK_FILES.out.fasta_files.sort().flatten()
                 )
+
             }
         
             BAKTA_POST_CLEANUP (
                 BAKTA.out.bakta_results,
                 params.meta_path,
-                fastaCh
+                CHECK_FILES.out.fasta_files.sort().flatten()
             )   
+
         }
     }
   
@@ -145,7 +155,7 @@ workflow MAIN_WORKFLOW {
             if ( params.run_liftoff == true ) {
                 LIFTOFF_SUBMISSION (
                     METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
-                    INITIALIZE_FILES.out.fasta_files.sort().flatten(), 
+                    CHECK_FILES.out.fasta_files.sort().flatten(), 
                     LIFTOFF.out.gff.sort().flatten(),
                     params.submission_config, 
                     params.req_col_config, 
@@ -157,7 +167,7 @@ workflow MAIN_WORKFLOW {
             if ( params.run_vadr  == true ) {
                 VADR_SUBMISSION (
                     METADATA_VALIDATION.out.tsv_Files.sort().flatten(), 
-                    INITIALIZE_FILES.out.fasta_files.sort().flatten(), 
+                    CHECK_FILES.out.fasta_files.sort().flatten(), 
                     RUN_VADR.out,
                     params.submission_config, 
                     params.req_col_config, 
@@ -168,8 +178,8 @@ workflow MAIN_WORKFLOW {
             // call the submission workflow for bakta
             if ( params.run_bakta  == true ) {
                 BAKTA_SUBMISSION (
-                    METADATA_VALIDATION.out.tsv_Files,
-                    INITIALIZE_FILES.out.fasta_files.sort().flatten(),
+                    METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
+                    CHECK_FILES.out.out.fasta_files.sort().flatten(),
                     BAKTA_POST_CLEANUP.out.gff,
                     params.submission_config,
                     params.req_col_config,
@@ -181,7 +191,7 @@ workflow MAIN_WORKFLOW {
             if ( params.run_repeatmasker_liftoff == true ) {
                 REPEAT_MASKER_LIFTOFF_SUBMISSION (
                     METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                    INITIALIZE_FILES.out.fasta_files.sort().flatten(),
+                    CHECK_FILES.out.fasta_files.sort().flatten(),
                     RUN_REPEATMASKER_LIFTOFF.out[1],
                     params.submission_config, 
                     params.req_col_config, 
@@ -191,29 +201,16 @@ workflow MAIN_WORKFLOW {
  
         } else {
 
-            // call submission utility to check / create dummy files 
-            
+            // call the general submission workflow 
+            GENERAL_SUBMISSION (
+                METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
+                CHECK_FILES.out.fasta_files.sort().flatten(),
+                CHECK_FILES.out.gff.sort().flatten(),
+                params.submission_config, 
+                params.req_col_config, 
+                GET_WAIT_TIME.out 
+            )
 
-            // all annotations are false, therefore first check if user annotations are provided
-            if (!params.final_annotated_files_path.isEmpty()) {
-
-                // call the general submission workflow 
-                GENERAL_SUBMISSION (
-                    METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                    INITIALIZE_FILES.out.fasta_files.sort().flatten(),
-                    annotationCh,
-                    params.submission_config, 
-                    params.req_col_config, 
-                    GET_WAIT_TIME.out 
-                )
-
-            } else {
-
-                // final annotations path not provided, need to create dummy GFF files to pass
-                // it might be easier to just pass in dummy files vs creating separate subworkflows 
-                // call same submission prep part (creates dummy gffs and fastas if not present for all + stops if metdata not present)
-
-            }
-        }
+        } 
     }
 }

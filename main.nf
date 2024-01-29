@@ -52,7 +52,7 @@ workflow MAIN {
 // include necessary processes 
 include { VALIDATE_PARAMS } from "$projectDir/modules/general_util/validate_params/main"
 include { CLEANUP_FILES } from "$projectDir/modules/general_util/cleanup_files/main"
-include { INITIALIZE_FILES } from "$projectDir/modules/general_util/initialize_files/main"
+include { CHECK_FILES   } from "$projectDir/modules/general_util/check_files/main"
 include { LIFTOFF } from "$projectDir/modules/liftoff_annotation/main"
 include { METADATA_VALIDATION } from "$projectDir/modules/metadata_validation/main"
 
@@ -88,15 +88,15 @@ workflow only_validation {
         )
 }
 
+// TODO: need to create separate process for FASTA related /  entry annotation (figure this out)
+        
 workflow only_liftoff {
     main: 
-        // initialize the fasta files first 
-        INITIALIZE_FILES ( 'dummy utility signal' )
-
         // run process for liftoff
         LIFTOFF (
+            'dummy utility signal',
             params.meta_path, 
-            INITIALIZE_FILES.out.fasta_dir, 
+            params.fasta_path, 
             params.ref_fasta_path, 
             params.ref_gff_path 
         )
@@ -104,7 +104,7 @@ workflow only_liftoff {
 
 workflow only_repeatmasker_liftoff {
     main: 
-        fastaCh = Channel.fromPath("$params.fasta_path/*.fasta")
+        fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta, fastq}")
         // run subworkflow for repeatmasker liftoff entrypoint
         RUN_REPEATMASKER_LIFTOFF (
             'dummy utility signal', 
@@ -114,13 +114,11 @@ workflow only_repeatmasker_liftoff {
 
 workflow only_vadr {
     main: 
-        // initialize the fasta files first 
-        INITIALIZE_FILES ( 'dummy utility signal' )
-        
+        fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta, fastq}")
         // run subworkflow for vadr 
         RUN_VADR (
             'dummy utility signal',
-            INITIALIZE_FILES.out.fasta_files.sort().flatten()
+            fastaCh
         )
 }
 
