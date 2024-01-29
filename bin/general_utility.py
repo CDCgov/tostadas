@@ -14,14 +14,15 @@ from annotation_utility import MainUtility as main_util
 def get_args():
     parser = argparse.ArgumentParser(description="Parameters for General Utility Functions")
     # different files to check
-    parser.add_argument("--meta_path", type=str, help="Path to the input metadata file")
+    parser.add_argument("--meta_path", type=str, help="Path to the input metadata file(s)")
     parser.add_argument("--fasta_path", type=str, help="Path to the fasta file(s)")
     parser.add_argument("--gff_path", type=str, help="Path to the gff file(s)")
     parser.add_argument("--ref_gff_path", type=str, help="Path to the ref gff file")
     parser.add_argument("--ref_fasta_path", type=str, help="Path to the ref fasta file")
     parser.add_argument("--submission_config", type=str, help="Path to the submission config")
     # different flags to orient checks 
-    parser.add_argument("--annotation_entry", type=bool, help="Is it the entrypoint or not")
+    # parser.add_argument("--individual_meta_files_flag", type=str, help="Is it individual files or no")
+    parser.add_argument("--annotation_entry", type=str, help="Is it the entrypoint or not")
     parser.add_argument("--run_submission", type=str, help="Whether to run submission or not")
     parser.add_argument("--run_annotation", type=str, help="Whether to run annotation or not")
     parser.add_argument("--run_liftoff", type=str, help="Whether to run liftoff or not")
@@ -50,12 +51,20 @@ def main():
     # create the dictionary for tracking which files exist 
     files_exist_dict = {
         'fasta_path': [False, ['.fasta', '.fastq'], True],
-        'meta_path': [False, ['.xlsx', '.tsv', '.csv'], False],
+        'meta_path': [False, ['.tsv', '.csv'], True],
         'ref_fasta_path': [False, ['.fasta'], False],
         'ref_gff_path': [False, ['.gff'], False], 
         'gff_path': [False, ['.gff'], True],
         'submission_config': [False, ['.yaml', '.yml'], False]
     }
+
+    """
+    # check if the individual meta files flag is true or false + change accordingly 
+    if parameters['individual_meta_files_flag'].lower().strip() == 'true':
+        files_exist_dict['meta_path'] = [False, ['.tsv', '.csv'], True]
+    else:
+        files_exist_dict['meta_path'] = [False, ['.xlsx', ], False]
+    """
 
     # go through each list file and check if it exists + update it 
     for key in files_exist_dict.keys():
@@ -79,7 +88,7 @@ def main():
 
 
     # check annotation, there must be ref fasta/gff, fasta, and meta (liftoff) + just fasta and meta (vadr and bakta)
-    if parameters['run_annotation'].lower().strip() == 'true' and parameters['annotation_entry'] is False:
+    if parameters['run_annotation'].lower().strip() == 'true' and parameters['annotation_entry'].lower().strip() == 'false':
 
         # do general checks 
         if any([parameters['run_liftoff'].lower().strip(), parameters['run_repeatmasker_liftoff'].lower().strip(),  
@@ -104,7 +113,7 @@ def main():
                                              f"Program was terminated.\n")
 
     # check if submission is being ran 
-    if parameters['run_submission'].lower().strip() == 'true' and parameters['annotation_entry'] is False:
+    if parameters['run_submission'].lower().strip() == 'true' and parameters['annotation_entry'].lower().strip() == 'false':
 
         # check that a valid submission config is passed in 
         try:
@@ -150,31 +159,25 @@ class GeneralUtil():
         dict_for_iter = {
             'fasta_path': '.fasta', 
             'gff_path': '.gff', 
-            'meta_path': '.xlsx'
+            'meta_path': '.tsv'
         }
 
-        # check if metadata file exists, if so, then read it in and get list of samples 
+        # check if metadata files exists, if so, then read it in and get list of samples 
         if files_exist_dict['meta_path'][0]:
-            # read the metadata file in 
-            meta_df = pd.read_excel(parameters['meta_path'], header=[1])
-            # get the sample name column 
-            names_of_new_files = [x for x in meta_df['sample_name'].tolist()]
-            # if there are more than one occurrences of same name, rename it 
-            repeated_samples = list(set([x for x in names_of_new_files if names_of_new_files.count(x) > 1]))
-            if repeated_samples:
-                # append them with numbers 
-                for sample in repeated_samples:
-                    for count in range(len(int(names_of_new_files.count(sample)))):
-                        # assign each one a new name
-                        names_of_new_files[names_of_new_files.index(sample)] = f"{sample}_Copy_Sample_Num_{count}"
+            # get the metadata files (.csv and .tsv)
+            csv_meta_paths = glob.glob(os.path.join(parameters['meta_path'], '*.tsv'))
+            tsv_meta_paths = glob.glob(os.path.join(parameters['meta_path'], '*.csv'))
+            list_of_paths = csv_meta_paths + tsv_meta_paths
 
         # otherwise, need to use fasta/fastq files, get names of them and append
         else:
             # get the list of .fasta and .fastq file paths
             fasta_files = glob.glob(os.path.join(parameters['fasta_path'], '*.fasta'))
             fastq_files = glob.glob(os.path.join(parameters['fasta_path'], '*.fastq'))
-            list_of_fasta_paths = fasta_files + fastq_files
-            names_of_new_files = [x.split('/')[-1].split('.')[0] for x in list_of_fasta_paths]
+            list_of_paths = fasta_files + fastq_files
+        
+        # use the names of new files to get the sample 
+        names_of_new_files = [x.split('/')[-1].split('.')[0] for x in list_of_paths]
 
         # loop through the parameter names and create files accordingly 
         for file_name, ext in dict_for_iter.items():
@@ -216,7 +219,6 @@ class GeneralUtil():
             if database_dict[key][0] is True:
                 files2check.extend(database_dict[key][1])
         files2check = list(set(files2check))
-        print(files2check)
 
         # now make sure that these files are present 
         for file_name in files2check:
@@ -229,8 +231,7 @@ class GeneralUtil():
         create_dummies_for = [key for key in ['fasta_path', 'gff_path', 'meta_path'] if files_exist_dict[key][0] is False]
 
         # call create dummy files method 
-        if len(create_dummies_for) != 0:
-            self.create_dummy_files(create_dummies_for, files_exist_dict, parameters)
+        self.create_dummy_files(create_dummies_for, files_exist_dict, parameters)
 
     @staticmethod
     def check_files_exist(path2check, is_dir, extensions=[]):
