@@ -37,5 +37,4 @@ process SUBMISSION {
 
     output:
     path "$params.batch_name.${validated_meta_path.getBaseName()}", emit: submission_files 
-    val "${validated_meta_path.getBaseName()}", emit: sample_name
 }
