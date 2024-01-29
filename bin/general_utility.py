@@ -7,6 +7,7 @@ import shutil
 import glob
 from pathlib import Path
 import sys
+import yaml
 
 from annotation_utility import MainUtility as main_util
 
@@ -20,9 +21,12 @@ def get_args():
     parser.add_argument("--ref_gff_path", type=str, help="Path to the ref gff file")
     parser.add_argument("--ref_fasta_path", type=str, help="Path to the ref fasta file")
     parser.add_argument("--submission_config", type=str, help="Path to the submission config")
+    parser.add_argument("--processed_samples", type=str, help="Path to the processed_samples")
     # different flags to orient checks 
     # parser.add_argument("--individual_meta_files_flag", type=str, help="Is it individual files or no")
-    parser.add_argument("--annotation_entry", type=str, help="Is it the entrypoint or not")
+    parser.add_argument("--annotation_entry", type=str, help="Is it the entrypoint for annotation or not")
+    parser.add_argument("--submission_entry", type=str, help="Is it the submission entrypoint for submission or not")
+    parser.add_argument("--update_submission_entry", type=str, help="Is it the update entrypoint for submission or not")
     parser.add_argument("--run_submission", type=str, help="Whether to run submission or not")
     parser.add_argument("--run_annotation", type=str, help="Whether to run annotation or not")
     parser.add_argument("--run_liftoff", type=str, help="Whether to run liftoff or not")
@@ -53,8 +57,8 @@ def main():
         'fasta_path': [False, ['.fasta', '.fastq'], True],
         'meta_path': [False, ['.tsv', '.csv'], True],
         'ref_fasta_path': [False, ['.fasta'], False],
-        'ref_gff_path': [False, ['.gff'], False], 
-        'gff_path': [False, ['.gff'], True],
+        'ref_gff_path': [False, ['.gff', '.gff3'], False], 
+        'gff_path': [False, ['.gff', 'gff3'], True],
         'submission_config': [False, ['.yaml', '.yml'], False]
     }
 
@@ -80,15 +84,17 @@ def main():
 
     # check if annotation entry is being called, if so, then only need to check fasta files
     # TODO: need to add checks for the fasta to this part, where names are checked / renamed, etc.
-    if parameters['annotation_entry'].lower().strip() == 'false':
+    if parameters['annotation_entry'].lower().strip() == 'true':
         try:
             assert files_exist_dict['fasta_path'][0] is True
         except:
             raise AssertionError(f"\nValid FASTA files were not found at {parameters[fasta_path]} with either .fastq or .fasta ext... needed for annotation\n")
-
+    elif parameters['update_submission_entry'].lower().strip() == 'true':
+        # need to move over the files within processed_samples
+        general_util.move_update_submission_entry_files(parameters)
 
     # check annotation, there must be ref fasta/gff, fasta, and meta (liftoff) + just fasta and meta (vadr and bakta)
-    if parameters['run_annotation'].lower().strip() == 'true' and parameters['annotation_entry'].lower().strip() == 'false':
+    if [parameters['run_annotation'].lower().strip(),  parameters['annotation_entry'].lower().strip(), parameters['submission_entry'].lower().strip()] == ['true', 'false', 'false']:
 
         # do general checks 
         if any([parameters['run_liftoff'].lower().strip(), parameters['run_repeatmasker_liftoff'].lower().strip(),  
@@ -113,7 +119,13 @@ def main():
                                              f"Program was terminated.\n")
 
     # check if submission is being ran 
-    if parameters['run_submission'].lower().strip() == 'true' and parameters['annotation_entry'].lower().strip() == 'false':
+    to_check = [
+        parameters['annotation_entry'].lower().strip(),
+        parameters['update_submission_entry'].lower().strip(),
+        parameters['submission_entry'].lower().strip(),
+        parameters['run_submission'].lower().strip()
+    ]
+    if parameters['submission_entry'].lower().strip() == 'true' or to_check == ['false', 'false', 'false', 'true']:
 
         # check that a valid submission config is passed in 
         try:
@@ -151,8 +163,7 @@ class GeneralUtil():
     def __init__(self):
         self.main_util = main_util()
 
-    @staticmethod
-    def create_dummy_files(databases4dummy, files_exist_dict, parameters):
+    def create_dummy_files(self, databases4dummy, files_exist_dict, parameters):
         """ Goes through the list containing which dummy files to create and makes 
         """
         # create dictionary for iteration 
@@ -182,9 +193,10 @@ class GeneralUtil():
         # loop through the parameter names and create files accordingly 
         for file_name, ext in dict_for_iter.items():
 
-            # create the new folder to copy over 
+            # get the folder name / path to use for files
             folder_name = f"new_{file_name.split('_')[0]}"
-            os.mkdir(f"{folder_name}", mode=0o777)
+            # make the directories 
+            os.makedirs(folder_name, mode=0o777)
 
             # check if file name is in the create dummy list 
             if file_name in databases4dummy:
@@ -194,25 +206,44 @@ class GeneralUtil():
                         pass
                     f.close()
             else:
-                # initialize list that you will be using to copy files over
-                list_of_files = []
-                if os.path.isdir(parameters[file_name]):
-                    # get a list of these files
-                    for extension in files_exist_dict[file_name][1]:
-                        list_of_files.extend(glob.glob(os.path.join(parameters[file_name], f"*{extension}")))
-                elif os.path.isfile(parameters[file_name]):
-                    # place the file into a list 
-                    list_of_files.append(parameters[file_name])
-                # copy over each of the files
-                for file2move in list_of_files:
-                    final_file_name = file2move.split('/')[-1]
-                    shutil.copyfile(file2move, f"{folder_name}/{final_file_name}")
-
-
+                # call the function for copying files over
+                self.copy_files_over (
+                    files_path=parameters[file_name], 
+                    file_extensions=ext, 
+                    isdir=True, 
+                    final_output_path=folder_name
+                )
 
     def check_files_for_submission(self, database_dict, files_exist_dict, parameters):
         """ Goes through the selected databases in the dictionary + checks that appropriate files exist + creates dummy ones
         """
+        # if either submission entry is true OR main workflow is called without annotation (false for entry flags and false for annotations)
+        # check if gff files need to be checked or not 
+        annotation_flags = [
+            parameters['run_liftoff'].lower().strip(),
+            parameters['run_repeatmasker_liftoff'].lower().strip(),
+            parameters['run_bakta'].lower().strip(),
+            parameters['run_vadr'].lower().strip()
+        ]
+        # to check 
+        to_check = [
+            # if the submission entry is true, then gff files MUST be checked
+            parameters['submission_entry'].lower().strip() == 'true',
+            # if run annotation is false, then gff files MUST be checked
+            parameters['run_annotation'].lower().strip() == 'false',
+            # if run annotation is true, but all annotators are false, and submission entry is false, then it must be checked
+            all([
+                parameters['run_annotation'].lower().strip() == 'true', 
+                all([x == 'false' for x in annotation_flags]),
+                parameters['submission_entry'].lower().strip() == 'false'
+            ])
+        ]
+        # if all are false then you need to check gff files
+        if any(to_check):
+            check_gff_files = True
+        else:
+            check_gff_files = False
+
         # figure out which files need to be checked based on database submissions (database dict)
         files2check = []
         for key in database_dict.keys():
@@ -222,13 +253,21 @@ class GeneralUtil():
 
         # now make sure that these files are present 
         for file_name in files2check:
-            try:
-                assert files_exist_dict[file_name][0] is True 
-            except:
-                raise AssertionError(f"\nMissing files that end with {' or '.join(files_exist_dict[file_name][1])} extensions at {parameters[file_name]} needed for submission")
+            # skip if gff files should not be checked
+            if check_gff_files is False and file_name == 'gff_path':
+                pass
+            else:
+                try:
+                    assert files_exist_dict[file_name][0] is True 
+                except:
+                    raise AssertionError(f"\nMissing files that end with {' or '.join(files_exist_dict[file_name][1])} extensions at {parameters[file_name]} needed for submission")
 
         # go through the updated files exist dict and for fasta, gff, or meta create dummy files if they do not exist 
-        create_dummies_for = [key for key in ['fasta_path', 'gff_path', 'meta_path'] if files_exist_dict[key][0] is False]
+        # figure out which final list to use cross-check files against existing
+        if check_gff_files:
+            create_dummies_for = [key for key in ['fasta_path', 'gff_path', 'meta_path'] if files_exist_dict[key][0] is False]
+        else:
+            create_dummies_for = [key for key in ['fasta_path', 'meta_path'] if files_exist_dict[key][0] is False]
 
         # call create dummy files method 
         self.create_dummy_files(create_dummies_for, files_exist_dict, parameters)
@@ -262,6 +301,25 @@ class GeneralUtil():
         return True
 
     @staticmethod 
+    def copy_files_over(files_path, file_extensions, isdir, final_output_path):
+        """ General function for copying files over
+        """
+        # initialize the list 
+        list_of_files = []
+        if isdir:
+            # get a list of these files
+            for extension in file_extensions:
+                list_of_files.extend(glob.glob(os.path.join(files_path, f"*{extension}")))
+        else:
+            # place the file into a list 
+            list_of_files.append(files_path)
+
+        # copy over each of the files
+        for file2move in list_of_files:
+            final_file_name = file2move.split('/')[-1]
+            shutil.copyfile(file2move, f"{final_output_path}/{final_file_name}")
+
+    @staticmethod 
     def get_database_dict(parameters):
         """ Updates the dictionary containing which databases the user wants to submit to for checks 
         """
@@ -278,7 +336,7 @@ class GeneralUtil():
         if parameters['submission_database'].lower().strip() == 'submit':
 
             # read in the config 
-            with open(parameters['config'], "r") as f:
+            with open(parameters['submission_config'], "r") as f:
                 config_dict = yaml.safe_load(f)
             f.close()
 
@@ -286,7 +344,7 @@ class GeneralUtil():
             for field in ['submit_Genbank', 'submit_GISAID', 'submit_BioSample', 'joint_SRA_BioSample_submission', 'submit_SRA']:
                 
                 # if it is true then update the dictionary accordingly
-                if config_dict['general'][field].strip().lower() == 'true':
+                if str(config_dict['general'][field]).strip().lower() == 'true':
                     if field == 'submit_Genbank':
                         databases2check['genbank'][0] = True 
                     elif field == 'submit_GISAID':
@@ -308,6 +366,21 @@ class GeneralUtil():
                     databases2check[database][0] = True
 
         return databases2check
+
+    def move_update_submission_entry_files(self, parameters):
+        """ Handles moving over the processed sample files to proper directory 
+        """
+        # make the new directory to copy over the files to
+        os.mkdir(f"update_entry", mode=0o777)
+
+
+        # copy over the processed files
+        for folder in glob.glob(f"{parameters['processed_samples']}/*"):
+            # get the dir name 
+            dir_name = folder.split('/')[-1]
+            # copy over the files 
+            if dir_name != 'upload_log.csv':
+                shutil.copytree(folder, f"update_entry/{dir_name}")
 
     """
     @staticmethod
