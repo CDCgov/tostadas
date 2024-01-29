@@ -80,7 +80,7 @@ def main():
 
     # check if annotation entry is being called, if so, then only need to check fasta files
     # TODO: need to add checks for the fasta to this part, where names are checked / renamed, etc.
-    if parameters['annotation_entry'] is True:
+    if parameters['annotation_entry'].lower().strip() == 'false':
         try:
             assert files_exist_dict['fasta_path'][0] is True
         except:
