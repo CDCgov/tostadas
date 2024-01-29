@@ -23,10 +23,12 @@ workflow RUN_SUBMISSION {
         */
 
         // check files and initialize 
+        // TODO: this currently assumes that the metadata files MUST be passed in... I dont think Genbank needs metadata, but could be wrong
         CHECK_FILES (
-            'dummy utility signal'
+            'dummy utility signal',
             false,
-            true
+            true,
+            params.final_split_metas_path
         )
 
         // get the wait time
@@ -34,14 +36,14 @@ workflow RUN_SUBMISSION {
         // adapt the general script where if meta is missing then has to be entrypoint 
         // if entrypoint + missing then creates dummy metadata files, else ensures that multiple .tsv are present
         GET_WAIT_TIME (
-            CHECK_FILES.out.meta.collect() 
+            CHECK_FILES.out.meta_files.collect() 
         )
         
         // call the submission workflow
         GENERAL_SUBMISSION (
-            CHECK_FILES.out.meta.sort().flatten(),
+            CHECK_FILES.out.meta_files.sort().flatten(),
             CHECK_FILES.out.fasta_files.sort().flatten(),
-            CHECK_FILES.out.gff.sort().flatten(), 
+            CHECK_FILES.out.gff_files.sort().flatten(), 
             params.submission_config,
             params.req_col_config,
             GET_WAIT_TIME.out

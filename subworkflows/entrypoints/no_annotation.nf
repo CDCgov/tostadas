@@ -6,7 +6,6 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { INITIALIZE_FASTA_FILES                            } from "../../modules/general_util/initialize_fasta_files/main"
 include { GET_WAIT_TIME                                     } from "../../modules/general_util/get_wait_time/main"
 include { METADATA_VALIDATION                               } from "../../modules/metadata_validation/main"
 include { SUBMISSION                                        } from "../../modules/submission/main"
@@ -27,9 +26,11 @@ workflow RUN_VALIDATION_AND_SUBMISSION {
     main:
 
         // initialize files (stage and change names for files)
+        /*
         INITIALIZE_FASTA_FILES (
             utility_signal
         )
+        */
 
         // run metadata validation process
         METADATA_VALIDATION ( 
