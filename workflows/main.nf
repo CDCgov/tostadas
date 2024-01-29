@@ -61,17 +61,18 @@ workflow MAIN_WORKFLOW {
     // run utility subworkflow
     RUN_UTILITY()
 
-    // initialize files (stage and change names for files)
-    CHECK_FILES (
-        RUN_UTILITY.out,
-        false,
-        params.run_submission
-    )
-
     // run metadata validation process
     METADATA_VALIDATION ( 
         RUN_UTILITY.out,
         params.meta_path
+    )
+
+    // initialize files (stage and change names for files)
+    CHECK_FILES (
+        RUN_UTILITY.out,
+        false,
+        params.run_submission,
+        METADATA_VALIDATION.out.tsv_dir
     )
 
     // check if the user wants to skip annotation or not
@@ -205,7 +206,7 @@ workflow MAIN_WORKFLOW {
             GENERAL_SUBMISSION (
                 METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
                 CHECK_FILES.out.fasta_files.sort().flatten(),
-                CHECK_FILES.out.gff.sort().flatten(),
+                CHECK_FILES.out.gff_files.sort().flatten(),
                 params.submission_config, 
                 params.req_col_config, 
                 GET_WAIT_TIME.out 
