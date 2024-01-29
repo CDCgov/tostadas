@@ -71,7 +71,8 @@ workflow MAIN_WORKFLOW {
     CHECK_FILES (
         RUN_UTILITY.out,
         false,
-        params.run_submission,
+        false,
+        false,
         METADATA_VALIDATION.out.tsv_dir
     )
 
