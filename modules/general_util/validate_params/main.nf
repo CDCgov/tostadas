@@ -147,22 +147,6 @@ process VALIDATE_PARAMS {
             }
         }
 
-        // Check input path parameters to see if they exist
-        check_path_params = [
-            "fasta_path": params.fasta_path,
-            "meta_path": params.meta_path,
-            "env_yml": params.env_yml,
-            "vadr_models_dir": params.vadr_models_dir
-        ]
-
-        check_path_params.each { key, value ->
-                try {
-                    file( check_path_params[key], checkIfExists: true )
-                } catch(Exception e) {
-                        throw new Exception("Following path does not exist: $value used for $key parameter")
-                }
-        }
-
     output:
         val true
 }
