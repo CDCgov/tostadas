@@ -28,6 +28,7 @@ workflow RUN_SUBMISSION {
             'dummy utility signal',
             false,
             true,
+            false,
             params.final_split_metas_path
         )
 

@@ -6,8 +6,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+include { CHECK_FILES                                       } from "../../modules/general_util/check_files/main"
 include { CHECKS_4_SUBMISSION_ENTRY                         } from "./submission_entry_check"
-include { PREP_UPDATE_SUBMISSION_ENTRY                      } from "../../modules/submission_entrypoint/prep_update_sub_entry/main"
 include { UPDATE_SUBMISSION                                 } from "../../modules/update_submission/main"
 
 
@@ -30,13 +30,20 @@ workflow RUN_UPDATE_SUBMISSION {
         )
         */
 
+        CHECK_FILES (
+            'dummy utility signal',
+            false,
+            false,
+            true,
+            params.processed_samples
+        )
+
         // TODO: need to have an output for a directory containing all of the outputs 
         // call the update submission portion only
         UPDATE_SUBMISSION (
             'dummy wait signal',
             params.submission_config,
-            PREP_UPDATE_SUBMISSION_ENTRY.out.samples.sort().flatten(),
-            '',
-            PREP_UPDATE_SUBMISSION_ENTRY.out.sample_name
+            CHECK_FILES.out.samples.sort().flatten(),
+            ''
         )
 }
