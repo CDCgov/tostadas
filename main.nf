@@ -124,7 +124,7 @@ workflow only_vadr {
 
 workflow only_bakta {
     main:
-        fastaCh = Channel.fromPath("$params.fasta_path/*.fasta")
+        fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta, fastq")
         RUN_BAKTA (
             'dummy utility signal',
             fastaCh
