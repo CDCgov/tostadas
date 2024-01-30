@@ -182,6 +182,7 @@ def update_log(unique_name):
                 #Check if report.xml exists
                 if "report.xml" in ftp.nlst():
                     print(f"\tReport exists pulling down\n")
+                    print(f"Report file is at: {os.path.join(row['name'], 'biosample_sra', row['name'] + '_biosample_sra_report.xml')}")
                     report_file = open(os.path.join(row["name"], "biosample_sra", row["name"] + "_biosample_sra_report.xml"), 'wb')
                     ftp.retrbinary('RETR report.xml', report_file.write, 262144)
                     report_file.close()
@@ -238,6 +239,7 @@ def update_log(unique_name):
                 ftp.login(user=config_dict["ncbi"]["username"], passwd = config_dict["ncbi"]["password"])
                 if config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"] != "":
                     ftp.cwd(config_dict["ncbi"]["ncbi_ftp_path_to_submission_folders"])
+                # TODO: getting error here where the "test" folder does not exist (check update_submission log)
                 ftp.cwd(row["type"])
                 submission_folder = row['name'] + "_sra"
                 #Check if submission folder already exists
@@ -623,7 +625,14 @@ def main():
         config_dict['general']['submit_BioSample'] = True
 
     if args.command != 'update_submissions':
+        # first capitalize the first letter of test or prod (case sensitive folder) + proper term
+        if args.test_or_prod.lower().strip() == 'prod' or args.test_or_prod.lower().strip() == 'production':
+            args.test_or_prod = 'Production'
+        elif args.test_or_prod.lower().strip() == 'test':
+            args.test_or_prod = 'Test'
+        # now call the preparation for submission 
         submission_preparation.process_submission(args.unique_name, args.fasta, args.metadata, args.gff, args.config, args.req_col_config, config_dict)
+        # now call the actual submission process
         start_submission(args.unique_name, args.config, args.test_or_prod, args.overwrite, args.send_email)
     
     elif args.command == 'update_submissions':

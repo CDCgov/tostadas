@@ -12,24 +12,22 @@ include { CHECK_FILES                                       } from "../modules/g
 include { RUN_UTILITY                                       } from "../subworkflows/utility"
 include { GET_WAIT_TIME                                     } from "../modules/general_util/get_wait_time/main"
 
-// get the main processes
+// get metadata validation processes
 include { METADATA_VALIDATION                               } from "../modules/metadata_validation/main"
-include { SUBMISSION                                        } from "../modules/submission/main"
-include { UPDATE_SUBMISSION                                 } from "../modules/update_submission/main"
+
+// get viral annotation process/subworkflows
 include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
+include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
+include { RUN_VADR                                          } from "../subworkflows/vadr"
 
 // get BAKTA related processes
 include { BAKTADBDOWNLOAD                                   } from "../modules/bakta/baktadbdownload/main"
 include { BAKTA                                             } from "../modules/bakta/bakta/main"
 include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
 
-// get repeat masker related subworkflow
-include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
-
-// get vadr related subworkflow
-include { RUN_VADR                                          } from "../subworkflows/vadr"
-
-// get the subworkflows for submission
+// get submission related process/subworkflows
+include { SUBMISSION                                        } from "../modules/submission/main"
+include { UPDATE_SUBMISSION                                 } from "../modules/update_submission/main"
 include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
 include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"
 include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
@@ -50,7 +48,6 @@ workflow MAIN_WORKFLOW {
     if (!params.final_annotated_files_path.isEmpty()) {
         annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
     }
-
 
     // check if help parameter is set
     if ( params.help == true ) {
@@ -91,7 +88,7 @@ workflow MAIN_WORKFLOW {
     // check if the user wants to skip annotation or not
     if ( params.run_annotation == true ) {
 
-        // run liftoff annotation process 
+        // run liftoff annotation process (deprecated)
         if ( params.run_liftoff == true ) {
             LIFTOFF (
                 RUN_UTILITY.out,
@@ -174,10 +171,9 @@ workflow MAIN_WORKFLOW {
                 meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
                 [ meta, it ] 
             }   
-
         }
     }
-  
+
     // run submission for the annotated samples 
     if ( params.run_submission == true ) {
 
@@ -221,7 +217,7 @@ workflow MAIN_WORKFLOW {
 
             // call the submission workflow for bakta
             if ( params.run_bakta  == true ) {
-
+            
                 // set the proper channels up
                 bakta_submission_ch = metadata_ch.join(fasta_ch)
                 bakta_submission_ch = bakta_submission_ch.join(bakta_gff_ch)
