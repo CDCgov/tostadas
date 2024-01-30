@@ -33,18 +33,35 @@ workflow RUN_SUBMISSION {
         )
 
         // get the wait time
-        // TODO: need to get individual TSV files for metadata somehow
-        // adapt the general script where if meta is missing then has to be entrypoint 
-        // if entrypoint + missing then creates dummy metadata files, else ensures that multiple .tsv are present
         GET_WAIT_TIME (
             CHECK_FILES.out.meta_files.collect() 
         )
+
+        // place files into proper channels 
+        meta_ch = CHECK_FILES.out.meta_files.collect().flatten()
+        .map { 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName()
+            [ meta, it ] 
+        }
+        gff_ch = CHECK_FILES.out.gff_files.collect().flatten()
+        .map { 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+            [ meta, it ] 
+        }
+        fasta_ch = CHECK_FILES.out.fasta_files.collect().flatten()
+        .map { 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName()
+            [ meta, it ] 
+        }
+        entry_submission_ch = meta_ch.join(fasta_ch)
+        entry_submission_ch = entry_submission_ch.join(gff_ch)
         
         // call the submission workflow
         GENERAL_SUBMISSION (
-            CHECK_FILES.out.meta_files.sort().flatten(),
-            CHECK_FILES.out.fasta_files.sort().flatten(),
-            CHECK_FILES.out.gff_files.sort().flatten(), 
+            entry_submission_ch,
             params.submission_config,
             params.req_col_config,
             GET_WAIT_TIME.out

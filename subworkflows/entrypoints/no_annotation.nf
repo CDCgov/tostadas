@@ -49,6 +49,28 @@ workflow RUN_VALIDATION_AND_SUBMISSION {
             METADATA_VALIDATION.out.tsv_dir
         )
 
+        // place files into proper channels 
+        meta_ch = METADATA_VALIDATION.out.tsv_Files.flatten()
+        .map { 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName()
+            [ meta, it ] 
+        }
+        gff_ch = CHECK_FILES.out.gff_files.collect().flatten()
+        .map { 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+            [ meta, it ] 
+        }
+        fasta_ch = CHECK_FILES.out.fasta_files.collect().flatten()
+        .map { 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName()
+            [ meta, it ] 
+        }
+        entry_submission_ch = meta_ch.join(fasta_ch)
+        entry_submission_ch = entry_submission_ch.join(gff_ch)
+
 
         if ( is_it_only_initial == false ) {
 
@@ -59,9 +81,7 @@ workflow RUN_VALIDATION_AND_SUBMISSION {
 
             // call the general submission workflow 
             GENERAL_SUBMISSION (
-                METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                CHECK_FILES.out.fasta_files.sort().flatten(),
-                CHECK_FILES.out.gff_files.sort().flatten(),
+                entry_submission_ch,
                 params.submission_config, 
                 params.req_col_config, 
                 GET_WAIT_TIME.out 
@@ -71,9 +91,7 @@ workflow RUN_VALIDATION_AND_SUBMISSION {
 
             // call submission process directly 
             SUBMISSION (
-                METADATA_VALIDATION.out.tsv_Files.sort().flatten(),
-                CHECK_FILES.out.fasta_files.sort().flatten(),
-                CHECK_FILES.out.gff_files.sort().flatten(), 
+                entry_submission_ch,
                 params.submission_config,
                 params.req_col_config,
                 'entry'

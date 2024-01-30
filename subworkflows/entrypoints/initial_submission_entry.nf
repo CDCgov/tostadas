@@ -42,12 +42,32 @@ workflow RUN_INITIAL_SUBMISSION {
             params.final_split_metas_path
         )
 
+        // place files into proper channels 
+        meta_ch = CHECK_FILES.out.meta_files.collect().flatten()
+        .map { 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName()
+            [ meta, it ] 
+        }
+        gff_ch = CHECK_FILES.out.gff_files.collect().flatten()
+        .map { 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+            [ meta, it ] 
+        }
+        fasta_ch = CHECK_FILES.out.fasta_files.collect().flatten()
+        .map { 
+            def meta = [:] 
+            meta['id'] = it.getSimpleName()
+            [ meta, it ] 
+        }
+        entry_submission_ch = meta_ch.join(fasta_ch)
+        entry_submission_ch = entry_submission_ch.join(gff_ch)
+
 
         // call the initial submission portion only
         SUBMISSION (
-            CHECK_FILES.out.meta_files.sort().flatten(),
-            CHECK_FILES.out.fasta_files.sort().flatten(),
-            CHECK_FILES.out.gff_files.sort().flatten(),  
+            entry_submission_ch, 
             params.submission_config,
             params.req_col_config,
             ''
