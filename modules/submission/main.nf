@@ -7,9 +7,6 @@ process SUBMISSION {
 
     label 'main'
 
-    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    maxRetries 5
-
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
 
     if ( params.run_conda == true ) {
@@ -21,9 +18,7 @@ process SUBMISSION {
     }
 
     input:
-    path validated_meta_path
-    path fasta_path
-    path annotations_path
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
     path submission_config
     path req_col_config
     val annotation_name
