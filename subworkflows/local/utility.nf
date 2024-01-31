@@ -4,8 +4,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { VALIDATE_PARAMS } from '../modules/general_util/validate_params/main'
-include { CLEANUP_FILES } from '../modules/general_util/cleanup_files/main'
+include { VALIDATE_PARAMS } from '../../modules/local/general_util/validate_params/main'
+include { CLEANUP_FILES } from '../../modules/local/general_util/cleanup_files/main'
 
 workflow RUN_UTILITY {
     

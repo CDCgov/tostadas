@@ -7,32 +7,31 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // get the utility processes / subworkflows
-include { CHECK_FILES                                       } from "../modules/general_util/check_files/main"
-// include { INITIALIZE_SUBMISSION_FILES                       } from "../modules/general_util/initialize_submission_files/main"
-include { RUN_UTILITY                                       } from "../subworkflows/utility"
-include { GET_WAIT_TIME                                     } from "../modules/general_util/get_wait_time/main"
+include { CHECK_FILES                                       } from "../modules/local/general_util/check_files/main"
+include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
+include { GET_WAIT_TIME                                     } from "../modules/local/general_util/get_wait_time/main"
 
 // get metadata validation processes
-include { METADATA_VALIDATION                               } from "../modules/metadata_validation/main"
+include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
 
 // get viral annotation process/subworkflows
-include { LIFTOFF                                           } from "../modules/liftoff_annotation/main"
-include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/repeatmasker_liftoff"
-include { RUN_VADR                                          } from "../subworkflows/vadr"
+include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
+include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/local/repeatmasker_liftoff"
+include { RUN_VADR                                          } from "../subworkflows/local/vadr"
 
 // get BAKTA related processes
-include { BAKTADBDOWNLOAD                                   } from "../modules/bakta/baktadbdownload/main"
-include { BAKTA                                             } from "../modules/bakta/bakta/main"
-include { BAKTA_POST_CLEANUP                                } from "../modules/post_bakta_annotation/main"
+include { BAKTADBDOWNLOAD                                   } from "../modules/nf-core/bakta/baktadbdownload/main"
+include { BAKTA                                             } from "../modules/nf-core/bakta/bakta/main"
+include { BAKTA_POST_CLEANUP                                } from "../modules/local/post_bakta_annotation/main"
 
 // get submission related process/subworkflows
-include { SUBMISSION                                        } from "../modules/submission/main"
-include { UPDATE_SUBMISSION                                 } from "../modules/update_submission/main"
-include { LIFTOFF_SUBMISSION                                } from "../subworkflows/submission"
-include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/submission"
-include { VADR_SUBMISSION                                   } from "../subworkflows/submission"
-include { BAKTA_SUBMISSION                                  } from "../subworkflows/submission"
-include { GENERAL_SUBMISSION                                } from "../subworkflows/submission"
+include { SUBMISSION                                        } from "../modules/local/submission/main"
+include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
+include { LIFTOFF_SUBMISSION                                } from "../subworkflows/local/submission"
+include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/local/submission"
+include { VADR_SUBMISSION                                   } from "../subworkflows/local/submission"
+include { BAKTA_SUBMISSION                                  } from "../subworkflows/local/submission"
+include { GENERAL_SUBMISSION                                } from "../subworkflows/local/submission"
 
 
 /*
@@ -41,7 +40,7 @@ include { GENERAL_SUBMISSION                                } from "../subworkfl
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow MAIN_WORKFLOW {
+workflow TOSTADAS {
 
     // initialize channels
     fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta, fastq}")

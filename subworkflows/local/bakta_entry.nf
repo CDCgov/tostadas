@@ -6,9 +6,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { BAKTA                                             } from "../../modules/bakta/bakta/main"
-include { BAKTADBDOWNLOAD                                   } from "../../modules/bakta/baktadbdownload/main"
-include { BAKTA_POST_CLEANUP                                } from "../../modules/post_bakta_annotation/main"
+include { BAKTA                                             } from "../../modules/nf-core/bakta/bakta/main"
+include { BAKTADBDOWNLOAD                                   } from "../../modules/nf-core/bakta/baktadbdownload/main"
+include { BAKTA_POST_CLEANUP                                } from "../../modules/local/post_bakta_annotation/main"
 
 workflow RUN_BAKTA {
     take: 

@@ -10,9 +10,9 @@
 //     .splitFasta( record: [id: true, seqString: true ])
 //     .set { ch_fasta }
 
-include { REPEATMASKER                                      } from "../modules/repeatmasker_annotation/main"
-include { LIFTOFF_CLI                                       } from "../modules/liftoff_cli_annotation/main"
-include { CONCAT_GFFS                                       } from "../modules/concat_gffs/main"
+include { REPEATMASKER                                      } from "../../modules/local/repeatmasker_annotation/main"
+include { LIFTOFF_CLI                                       } from "../../modules/local/liftoff_cli_annotation/main"
+include { CONCAT_GFFS                                       } from "../../modules/local/concat_gffs/main"
 
 workflow RUN_REPEATMASKER_LIFTOFF {
 
