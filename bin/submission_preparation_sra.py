@@ -539,23 +539,25 @@ def write_ncbi_names(unique_name, main_df, config_dict):
     tmp.to_csv(os.path.join(unique_name, "accessions.csv"), header = True, index = False, sep = ",")
 
 def process_submission(unique_name, fasta_file, metadata_file, gff_file, config, req_col_config, config_dict):
-    print("Processing " + unique_name + f"\n")
-    print(config_dict["general"]["submit_Genbank"])
+    print("Processing " + unique_name)
     initialize_required_columns(req_col_config)
-    main_df = merge(fasta_file, metadata_file, config_dict)
+    if config_dict["general"]["submit_Genbank"] == True: 
+        main_df = merge(fasta_file, metadata_file, config_dict)
+    elif config_dict["general"]["submit_Genbank"] == True: 
+        main_df = merge_sra(metadata_file, config_dict)
 
-    if not isinstance(config_dict["general"]["authorset"], list):
-        authorlist = []
-        name_list = main_df[config_dict["general"]["authorset"]].iloc[0].split(";")
-        for name in name_list:
-            name = name.strip()
-            if len(name.split(" ")) == 2:
-                authorlist.append({"first": name.split(" ")[0], "last": name.split(" ")[-1], "middle": "", "initials": name.split(" ")[0][0] + ".", "suffix": "", "title": ""})
-            else:
-                authorlist.append({"first": name.split(" ")[0], "last": name.split(" ")[-1], "middle": name.split(" ")[1], "initials": name.split(" ")[0][0] + "." + name.split(" ")[1][0] + ".", "suffix": "", "title": ""})
-        author_column_update(authorlist, config_dict)
+        if not isinstance(config_dict["general"]["authorset"], list):
+            authorlist = []
+            name_list = main_df[config_dict["general"]["authorset"]].iloc[0].split(";")
+            for name in name_list:
+                name = name.strip()
+                if len(name.split(" ")) == 2:
+                    authorlist.append({"first": name.split(" ")[0], "last": name.split(" ")[-1], "middle": "", "initials": name.split(" ")[0][0] + ".", "suffix": "", "title": ""})
+                else:
+                    authorlist.append({"first": name.split(" ")[0], "last": name.split(" ")[-1], "middle": name.split(" ")[1], "initials": name.split(" ")[0][0] + "." + name.split(" ")[1][0] + ".", "suffix": "", "title": ""})
+            author_column_update(authorlist, config_dict)
 
-    os.makedirs(os.path.join(unique_name), exist_ok = True)
+        os.makedirs(os.path.join(unique_name), exist_ok = True)
 
     if config_dict["general"]["submit_GISAID"] == True:
         os.makedirs(os.path.join(unique_name, "gisaid"), exist_ok = True)
