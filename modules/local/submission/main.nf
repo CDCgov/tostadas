@@ -36,6 +36,7 @@ process SUBMISSION {
     --gff $annotations_path \
     --config $submission_config \
     --req_col_config $req_col_config \
+    --send_email $params.send_submission_email \
     --test_or_prod $params.submission_prod_or_test       
     """
 }
