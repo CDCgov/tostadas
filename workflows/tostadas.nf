@@ -16,7 +16,7 @@ include { METADATA_VALIDATION                               } from "../modules/l
 
 // get viral annotation process/subworkflows
 include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
-include { RUN_REPEATMASKER_LIFTOFF                          } from "../subworkflows/local/repeatmasker_liftoff"
+include { REPEATMASKER_LIFTOFF                          } from "../subworkflows/local/repeatmasker_liftoff"
 include { RUN_VADR                                          } from "../subworkflows/local/vadr"
 
 // get BAKTA related processes
@@ -36,7 +36,9 @@ include { UPDATE_SUBMISSION                                 } from "../modules/l
 */
 // To Do, create logic to run workflows for virus vs. bacteria
 workflow TOSTADAS {
-    // To Do, create samplesheet input to initiate this channel instead
+    
+    // To Do, maybe? create samplesheet input to initiate this channel instead
+
     // initialize channels
     // fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta}")
     // if (!params.final_annotated_files_path.isEmpty()) {
@@ -81,7 +83,7 @@ workflow TOSTADAS {
 
     // check if the user wants to skip annotation or not
     if ( params.annotation == true ) {
-
+        // To Do remove liftoff only annotation from pipeline
         // run liftoff annotation process (deprecated)
         if ( params.liftoff == true ) {
             LIFTOFF (
@@ -101,13 +103,12 @@ workflow TOSTADAS {
 
         // run liftoff annotation process + repeatmasker 
         if ( params.repeatmasker_liftoff == true ) {
-
             // run repeatmasker annotation on files
-            RUN_REPEATMASKER_LIFTOFF (
+            REPEATMASKER_LIFTOFF (
                 RUN_UTILITY.out, 
-                CHECK_FILES.out.fasta_files.sort().flatten()
+                fasta_ch
             )
-            repeatmasker_gff_ch = RUN_REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
+            repeatmasker_gff_ch = REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
             .map { 
                 def meta = [:] 
                 meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
@@ -195,7 +196,7 @@ workflow TOSTADAS {
         if ( params.annotation == false ) {
             if ( params.sra ) {
                 SRA_SUBMISSION (
-                    submission_ch,
+                    metadata_ch,
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out
