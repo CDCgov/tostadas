@@ -23,13 +23,18 @@ process SUBMISSION {
     path req_col_config
     val annotation_name
 
-    script:
-    """
-    run_submission.py --submission_database $params.submission_database --unique_name $params.batch_name --fasta_path $fasta_path \
-    --validated_meta_path $validated_meta_path --gff_path $annotations_path --config $submission_config --prod_or_test $params.submission_prod_or_test \
-    --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email --sample_name ${validated_meta_path.getBaseName()}
-    """
-
     output:
     path "$params.batch_name.${validated_meta_path.getBaseName()}", emit: submission_files 
+
+    script:
+    """
+    submission.py \
+    --command submit \
+    --unique_name params.batch_name \
+    --fasta $fasta_path \
+    --metadata $validated_meta_path \
+    --gff $annotations_path \
+    --config $submission_config \
+    --test_or_prod $params.submission_prod_or_test       
+    """
 }
