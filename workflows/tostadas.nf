@@ -82,93 +82,93 @@ workflow TOSTADAS {
     }
 
     // check if the user wants to skip annotation or not
-    if ( params.annotation == true ) {
+    if ( params.annotation ) {
+        if ( params.virus && !params.bacteria ) {
         // To Do remove liftoff only annotation from pipeline
         // run liftoff annotation process (deprecated)
-        if ( params.liftoff == true ) {
-            LIFTOFF (
-                RUN_UTILITY.out,
-                params.meta_path, 
-                params.fasta_path, 
-                params.ref_fasta_path, 
-                params.ref_gff_path 
-            )
-            liftoff_gff_ch = LIFTOFF.out.gff.collect().flatten()
-            .map { 
-                def meta = [:] 
-                meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                [ meta, it ] 
-            }
-        }
-
-        // run liftoff annotation process + repeatmasker 
-        if ( params.repeatmasker_liftoff == true ) {
-            // run repeatmasker annotation on files
-            REPEATMASKER_LIFTOFF (
-                RUN_UTILITY.out, 
-                fasta_ch
-            )
-            repeatmasker_gff_ch = REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
-            .map { 
-                def meta = [:] 
-                meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                [ meta, it ] 
+            if ( params.liftoff ) {
+                LIFTOFF (
+                    RUN_UTILITY.out,
+                    params.meta_path, 
+                    params.fasta_path, 
+                    params.ref_fasta_path, 
+                    arams.ref_gff_path 
+                )
+                liftoff_gff_ch = LIFTOFF.out.gff.collect().flatten()
+                .map { 
+                    def meta = [:] 
+                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+                    [ meta, it ] 
+                }
             }
 
-        // set up submission channels
-        submission_ch = metadata_ch.join(fasta_ch)
-        submission_ch = submission_ch.join(repeatmasker_gff_ch)
-        }
+            // run liftoff annotation process + repeatmasker 
+            if ( params.repeatmasker_liftoff ) {
+             // run repeatmasker annotation on files
+                REPEATMASKER_LIFTOFF (
+                    RUN_UTILITY.out, 
+                    fasta_ch
+                )
+                repeatmasker_gff_ch = REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
+                .map { 
+                    def meta = [:] 
+                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+                    [ meta, it ] 
+                }
+
+            // set up submission channels
+            submission_ch = metadata_ch.join(fasta_ch)
+            submission_ch = submission_ch.join(repeatmasker_gff_ch)
+            }
     
-        // run vadr processes
-        if ( params.vadr == true ) {
-            RUN_VADR (
-                RUN_UTILITY.out, 
-                CHECK_FILES.out.fasta_files.sort().flatten()
-            )
-            vadr_gff_ch = RUN_VADR.out.collect().flatten()
-            .map { 
-                def meta = [:] 
-                meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                [ meta, it ] 
+            // run vadr processes
+            if ( params.vadr ) {
+                RUN_VADR (
+                    RUN_UTILITY.out, 
+                    CHECK_FILES.out.fasta_files.sort().flatten()
+                )
+                vadr_gff_ch = RUN_VADR.out.collect().flatten()
+                .map { 
+                    def meta = [:] 
+                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+                    [ meta, it ] 
+                }
             }
         }
-
+        if ( params.bacteria ) {
         // run bakta annotation process
-        if ( params.bakta == true ) {
-            
-            if ( params.download_bakta_db ) {
-
-                BAKTADBDOWNLOAD (
+            if ( params.bakta == true ) {
+                if ( params.download_bakta_db ) {
+                    BAKTADBDOWNLOAD (
                     RUN_UTILITY.out 
                 )
-
-                BAKTA (
-                    RUN_UTILITY.out,
-                    BAKTADBDOWNLOAD.out.db,
+                    BAKTA (
+                        RUN_UTILITY.out,
+                        BAKTADBDOWNLOAD.out.db,
+                        CHECK_FILES.out.fasta_files.sort().flatten()
+                    )
+                }
+                else {
+                    BAKTA (
+                        RUN_UTILITY.out,
+                        params.bakta_db_path,
+                        CHECK_FILES.out.fasta_files.sort().flatten()
+                    )
+                }
+                BAKTA_POST_CLEANUP (
+                    BAKTA.out.bakta_results,
+                    params.meta_path,
                     CHECK_FILES.out.fasta_files.sort().flatten()
                 )
-
-            } else {
-
-                BAKTA (
-                    RUN_UTILITY.out,
-                    params.bakta_db_path,
-                    CHECK_FILES.out.fasta_files.sort().flatten()
-                )
-
-            }
-        
-            BAKTA_POST_CLEANUP (
-                BAKTA.out.bakta_results,
-                params.meta_path,
-                CHECK_FILES.out.fasta_files.sort().flatten()
-            )
-            bakta_gff_ch = BAKTA_POST_CLEANUP.out.gff.collect().flatten()
-            .map { 
-                def meta = [:] 
-                meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                [ meta, it ] 
+                bakta_gff_ch = BAKTA_POST_CLEANUP.out.gff.collect().flatten()
+                .map { 
+                    def meta = [:] 
+                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+                    [ meta, it ]
+                }
+                // set up submission channels
+                submission_ch = metadata_ch.join(fasta_ch)
+                submission_ch = submission_ch.join(bakta_gff_ch)
             }   
         }
     }
