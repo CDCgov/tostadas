@@ -25,14 +25,9 @@ include { BAKTA                                             } from "../modules/n
 include { BAKTA_POST_CLEANUP                                } from "../modules/local/post_bakta_annotation/main"
 
 // get submission related process/subworkflows
-include { SUBMISSION                                        } from "../modules/local/submission/main"
+include { FULL_SUBMISSION                                   } from "../subworkflows/local/full_submission"
+include { SRA_SUBMISSION                                    } from "../subworkflows/local/sra_submission"
 include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
-include { LIFTOFF_SUBMISSION                                } from "../subworkflows/local/submission"
-include { REPEAT_MASKER_LIFTOFF_SUBMISSION                  } from "../subworkflows/local/submission"
-include { VADR_SUBMISSION                                   } from "../subworkflows/local/submission"
-include { BAKTA_SUBMISSION                                  } from "../subworkflows/local/submission"
-include { GENERAL_SUBMISSION                                } from "../subworkflows/local/submission"
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,10 +38,10 @@ include { GENERAL_SUBMISSION                                } from "../subworkfl
 workflow TOSTADAS {
     // To Do, create samplesheet input to initiate this channel instead
     // initialize channels
-    fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta}")
-    if (!params.final_annotated_files_path.isEmpty()) {
-        annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
-    }
+    // fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta}")
+    // if (!params.final_annotated_files_path.isEmpty()) {
+    //     annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
+    // }
 
     // check if help parameter is set
     if ( params.help == true ) {
@@ -85,10 +80,10 @@ workflow TOSTADAS {
     }
 
     // check if the user wants to skip annotation or not
-    if ( params.run_annotation == true ) {
+    if ( params.annotation == true ) {
 
         // run liftoff annotation process (deprecated)
-        if ( params.run_liftoff == true ) {
+        if ( params.liftoff == true ) {
             LIFTOFF (
                 RUN_UTILITY.out,
                 params.meta_path, 
@@ -105,7 +100,7 @@ workflow TOSTADAS {
         }
 
         // run liftoff annotation process + repeatmasker 
-        if ( params.run_repeatmasker_liftoff == true ) {
+        if ( params.repeatmasker_liftoff == true ) {
 
             // run repeatmasker annotation on files
             RUN_REPEATMASKER_LIFTOFF (
@@ -118,10 +113,14 @@ workflow TOSTADAS {
                 meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
                 [ meta, it ] 
             }
-        }
 
+        // set up submission channels
+        submission_ch = metadata_ch.join(fasta_ch)
+        submission_ch = submission_ch.join(repeatmasker_gff_ch)
+        }
+    
         // run vadr processes
-        if ( params.run_vadr == true ) {
+        if ( params.vadr == true ) {
             RUN_VADR (
                 RUN_UTILITY.out, 
                 CHECK_FILES.out.fasta_files.sort().flatten()
@@ -135,7 +134,7 @@ workflow TOSTADAS {
         }
 
         // run bakta annotation process
-        if ( params.run_bakta == true ) {
+        if ( params.bakta == true ) {
             
             if ( params.download_bakta_db ) {
 
@@ -174,98 +173,40 @@ workflow TOSTADAS {
     }
 
     // run submission for the annotated samples 
-    if ( params.run_submission == true ) {
+    if ( params.submission ) {
 
         // pre submission process + get wait time (parallel)
         GET_WAIT_TIME (
             METADATA_VALIDATION.out.tsv_Files.collect() 
         )
 
-        // check if all annotations are set to false 
-        if ( params.run_annotation == true ) {
-
-            // call the submission workflow for liftoff 
-            if ( params.run_liftoff == true ) {
-
-                // set the proper channels up
-                liftoff_submission_ch = metadata_ch.join(fasta_ch)
-                liftoff_submission_ch = liftoff_submission_ch.join(liftoff_gff_ch)
-
-                LIFTOFF_SUBMISSION (
-                    liftoff_submission_ch,
-                    params.submission_config, 
-                    params.req_col_config, 
-                    GET_WAIT_TIME.out
-                )
-            }
-
-            // call the submission workflow for vadr 
-            if ( params.run_vadr  == true ) {
-
-                // set the proper channels up
-                vadr_submission_ch = metadata_ch.join(fasta_ch)
-                vadr_submission_ch = vadr_submission_ch.join(vadr_gff_ch)
-
-                VADR_SUBMISSION (
-                    vadr_submission_ch,
-                    params.submission_config, 
-                    params.req_col_config, 
-                    GET_WAIT_TIME.out 
-                )
-            }
-
-            // call the submission workflow for bakta
-            if ( params.run_bakta  == true ) {
+        // check if annotation is set to true 
+        if ( params.annotation ) {
+            if ( params.genbank && params.sra ) {
             
-                // set the proper channels up
-                bakta_submission_ch = metadata_ch.join(fasta_ch)
-                bakta_submission_ch = bakta_submission_ch.join(bakta_gff_ch)
-
-                BAKTA_SUBMISSION (
-                    bakta_submission_ch,
-                    params.submission_config,
-                    params.req_col_config,
-                    GET_WAIT_TIME.out
-                )
-            }
-
-            // call the submission workflow process for liftoff + repeatmasker 
-            if ( params.run_repeatmasker_liftoff == true ) {
-
-                // set the proper channels up
-                repeatmasker_submission_ch = metadata_ch.join(fasta_ch)
-                repeatmasker_submission_ch = repeatmasker_submission_ch.join(repeatmasker_gff_ch)
-
-                REPEAT_MASKER_LIFTOFF_SUBMISSION (
-                    repeatmasker_submission_ch,
+                FULL_SUBMISSION (
+                    submission_ch,
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out   
                 )
-            }  
- 
-        } else {
-
-            // place the gffs into proper channel
-            general_gff_ch = CHECK_FILES.out.gff_files.collect().flatten()
-            .map { 
-                def meta = [:] 
-                meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                [ meta, it ] 
-            }
-
-            // set the proper channels up
-            general_submission_ch = metadata_ch.join(fasta_ch)
-            general_submission_ch = general_submission_ch.join(general_gff_ch)
-
-            // call the general submission workflow 
-            GENERAL_SUBMISSION (
-                general_submission_ch,
-                params.submission_config, 
-                params.req_col_config, 
-                GET_WAIT_TIME.out 
-            )
-
+            } 
         } 
+        if ( params.annotation == false ) {
+            if ( params.sra ) {
+                SRA_SUBMISSION (
+                    submission_ch,
+                    params.submission_config, 
+                    params.req_col_config, 
+                    GET_WAIT_TIME.out
+                )
+            } 
+        }
+        // To Do test update submission
+        if ( params.update_submission ) {
+            UPDATE_SUBMISSION ()
+        }
     }
 }
+        // To Do add Genbank / GISAID only submission
+
