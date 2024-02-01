@@ -30,7 +30,7 @@ process SUBMISSION {
     """
     submission.py \
     --command submit \
-    --unique_name params.batch_name \
+    --unique_name $params.batch_name \
     --fasta $fasta_path \
     --metadata $validated_meta_path \
     --gff $annotations_path \
