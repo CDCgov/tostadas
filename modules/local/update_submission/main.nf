@@ -22,6 +22,7 @@ process UPDATE_SUBMISSION {
 
     input:
     val wait_signal
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
     path submission_config
     path submission_output
     val annotation_name
@@ -30,9 +31,8 @@ process UPDATE_SUBMISSION {
     path "$params.batch_name.${submission_output.getExtension()}", emit: submission_files
 
     script:
-    def sample = task.ext.prefix ?: "${meta.id}"
-    def unique_name = '$params.batch_name.$sample'
-    
+    def unique_name = '$params.batch_name.$meta'
+
     """
     submission.py --command update_submissions --config $submission_config --unique_name params.unique_name
     """

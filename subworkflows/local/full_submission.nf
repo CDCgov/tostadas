@@ -26,7 +26,7 @@ workflow FULL_SUBMISSION {
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
         // process for updating the submitted samples
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, '' )
+        UPDATE_SUBMISSION ( WAIT.out, submission_ch, submission_config, SUBMISSION.out.submission_files, '' )
 
         // combine the different upload_log csv files together 
         MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
