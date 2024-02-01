@@ -595,11 +595,11 @@ def main():
     # get the sample name to append the unique name 
     if args.command != 'update_submissions':
         args.unique_name = args.unique_name + '.' + str(args.metadata.split('/')[-1].split('.')[0])
-        try:
-            assert all([args.unique_name, args.config, args.req_col_config, args.test_or_prod, args.metadata, args.gff, args.fasta, args.command, args.send_email])
-        except AssertionError:
-            raise AssertionError(f"Missing one of the following required arguments:  \
-                                [unique_Name, config, req_col_config, test_or_prod, metadata, gff, fasta, command]")
+        # try:
+        #     assert all([args.unique_name, args.config, args.req_col_config, args.test_or_prod, args.metadata, args.gff, args.fasta, args.command, args.send_email])
+        # except AssertionError:
+        #     raise AssertionError(f"Missing one of the following required arguments:  \
+        #                         [unique_Name, config, req_col_config, test_or_prod, metadata, gff, fasta, command]")
 
     # initialize the global variables from the config (gets the config dict)
     initialize_global_variables(args.config)
