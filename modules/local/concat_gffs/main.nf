@@ -6,10 +6,6 @@
 
 process CONCAT_GFFS {
 
-	
-	errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-	maxRetries 2
-
     conda (params.enable_conda ? "conda-forge::python=3.8.3 conda-forge::pandas" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pandas:1.1.5' :
@@ -27,7 +23,7 @@ process CONCAT_GFFS {
 	path ref_gff_path
 	path repeatmasker_gff
     path liftoff_gff
-    path fasta_path
+	tuple val(meta), path(fasta_path)
 
 	script:
 	"""

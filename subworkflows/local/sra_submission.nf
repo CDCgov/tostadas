@@ -6,12 +6,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { SUBMISSION                                    } from '../../modules/local/submission/main'
+include { SUBMISSION                                    } from '../../modules/local/submission/main_sra'
 include { UPDATE_SUBMISSION                             } from '../../modules/local/update_submission/main'
 include { WAIT                                          } from '../../modules/local/general_util/wait/main'
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
 
-workflow GENERAL_SUBMISSION {
+workflow SRA_SUBMISSION {
     take:
         submission_ch
         submission_config

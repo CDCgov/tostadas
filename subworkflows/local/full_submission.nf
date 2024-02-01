@@ -11,7 +11,7 @@ include { UPDATE_SUBMISSION                             } from '../../modules/lo
 include { WAIT                                          } from '../../modules/local/general_util/wait/main'
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
 
-workflow GENERAL_SUBMISSION {
+workflow FULL_SUBMISSION {
     take:
         submission_ch
         submission_config
