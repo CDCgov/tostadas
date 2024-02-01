@@ -39,11 +39,11 @@ include { GENERAL_SUBMISSION                                } from "../subworkfl
                                     MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
+// To Do, create logic to run workflows for virus vs. bacteria
 workflow TOSTADAS {
-
+    // To Do, create samplesheet input to initiate this channel instead
     // initialize channels
-    fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta, fastq}")
+    fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta}")
     if (!params.final_annotated_files_path.isEmpty()) {
         annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
     }
