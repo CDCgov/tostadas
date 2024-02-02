@@ -17,8 +17,8 @@ process CHECK_FILES {
     script:
         """
         general_utility.py --fasta_path $params.fasta_path --meta_path $metadata_files --gff_path $params.final_annotated_files_path --ref_gff_path $params.ref_gff_path \
-        --ref_fasta_path $params.ref_fasta_path --submission_config $params.submission_config --annotation_entry $annotation_entry --run_submission $params.run_submission --run_annotation $params.run_annotation \
-        --run_liftoff $params.run_liftoff --run_repeatmasker_liftoff $params.run_repeatmasker_liftoff --run_vadr $params.run_vadr --run_bakta $params.run_bakta \
+        --ref_fasta_path $params.ref_fasta_path --submission_config $params.submission_config --annotation_entry $annotation_entry --run_submission $params.submission --run_annotation $params.annotation \
+        --run_liftoff $params.liftoff --run_repeatmasker_liftoff $params.repeatmasker_liftoff --run_vadr $params.vadr --run_bakta $params.bakta \
         --submission_database $params.submission_database --submission_entry $submission_entry --update_submission_entry $update_submission_entry --processed_samples $params.processed_samples
         """
 
