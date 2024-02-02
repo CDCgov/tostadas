@@ -13,7 +13,7 @@ process SAMPLESHEET_CHECK {
     path '*.csv'       , emit: csv
     path "versions.yml", emit: versions
 
-    script: // This script is bundled with the pipeline, in polkapox/bin/
+    script: 
     """
     check_samplesheet.py \\
         $samplesheet \\
