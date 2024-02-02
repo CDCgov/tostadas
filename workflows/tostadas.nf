@@ -92,7 +92,7 @@ workflow TOSTADAS {
                     params.meta_path, 
                     params.fasta_path, 
                     params.ref_fasta_path, 
-                    arams.ref_gff_path 
+                    params.ref_gff_path 
                 )
                 liftoff_gff_ch = LIFTOFF.out.gff.collect().flatten()
                 .map { 
