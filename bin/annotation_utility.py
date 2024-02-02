@@ -12,7 +12,7 @@ class MainUtility:
     def __init__(self):
         """
         """
-    
+        
     def split_fasta(self, fasta_path, fasta_output):
         """
         Parses fasta file and writes it

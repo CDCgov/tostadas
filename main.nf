@@ -19,7 +19,7 @@ params.projectDir = './'
                                IMPORT NECESSARY WORKFLOWS 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { MPXV_MAIN } from "$projectDir/workflows/mpxv.nf"
+include { MAIN_WORKFLOW } from "$projectDir/workflows/main.nf"
 
 
 /*
@@ -28,8 +28,8 @@ include { MPXV_MAIN } from "$projectDir/workflows/mpxv.nf"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 workflow {
-    // main workflow for mpxv pipeline
-    MPXV_MAIN ()
+    // main workflow for the pipeline
+    MAIN_WORKFLOW()
 }
 
 
@@ -39,8 +39,8 @@ workflow {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow MPXV {
-    MPXV_MAIN ()
+workflow MAIN {
+    MAIN_WORKFLOW()
 }
 
 
@@ -52,14 +52,18 @@ workflow MPXV {
 // include necessary processes 
 include { VALIDATE_PARAMS } from "$projectDir/modules/general_util/validate_params/main"
 include { CLEANUP_FILES } from "$projectDir/modules/general_util/cleanup_files/main"
+include { CHECK_FILES   } from "$projectDir/modules/general_util/check_files/main"
+include { LIFTOFF } from "$projectDir/modules/liftoff_annotation/main"
+include { METADATA_VALIDATION } from "$projectDir/modules/metadata_validation/main"
+
 // include necessary subworkflows
-include { RUN_VALIDATION } from "$projectDir/subworkflows/entrypoints/validation_entry"
-include { RUN_LIFTOFF } from "$projectDir/subworkflows/entrypoints/liftoff_entry"
-include { RUN_VADR } from "$projectDir/subworkflows/entrypoints/vadr_entry"
+include { RUN_REPEATMASKER_LIFTOFF } from "$projectDir/subworkflows/repeatmasker_liftoff"
+include { RUN_VADR } from "$projectDir/subworkflows/vadr"
 include { RUN_SUBMISSION } from "$projectDir/subworkflows/entrypoints/submission_entry"
 include { RUN_INITIAL_SUBMISSION } from "$projectDir/subworkflows/entrypoints/initial_submission_entry"
 include { RUN_UPDATE_SUBMISSION } from "$projectDir/subworkflows/entrypoints/update_submission_entry"
-
+include { RUN_BAKTA } from "$projectDir/subworkflows/entrypoints/bakta_entry.nf"
+include { RUN_VALIDATION_AND_SUBMISSION } from "$projectDir/subworkflows/entrypoints/no_annotation"
 
 workflow only_validate_params {
     main:
@@ -78,19 +82,53 @@ workflow only_cleanup_files {
 workflow only_validation {
     main: 
         // run subworkflow for validation entrypoint
-        RUN_VALIDATION ()
+        METADATA_VALIDATION (
+            'dummy utility signal',
+            params.meta_path
+        )
 }
 
+// TODO: need to create separate process for FASTA related /  entry annotation (figure this out)
+        
 workflow only_liftoff {
     main: 
-        // run subworkflow for liftoff entrypoint
-        RUN_LIFTOFF ()
+        // run process for liftoff
+        LIFTOFF (
+            'dummy utility signal',
+            params.meta_path, 
+            params.fasta_path, 
+            params.ref_fasta_path, 
+            params.ref_gff_path 
+        )
+}
+
+workflow only_repeatmasker_liftoff {
+    main: 
+        fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta, fastq}")
+        // run subworkflow for repeatmasker liftoff entrypoint
+        RUN_REPEATMASKER_LIFTOFF (
+            'dummy utility signal', 
+            fastaCh 
+        )
 }
 
 workflow only_vadr {
     main: 
-        // run subworkflow for vadr entrypoint
-        RUN_VADR ()
+        fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta, fastq}")
+        // run subworkflow for vadr 
+        RUN_VADR (
+            'dummy utility signal',
+            fastaCh
+        )
+}
+
+workflow only_bakta {
+    main:
+        fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta, fastq")
+        RUN_BAKTA (
+            'dummy utility signal',
+            fastaCh
+        )
 }
 
 workflow only_submission {
@@ -109,4 +147,22 @@ workflow only_update_submission {
     main:
         // run subworkflow for update submission entrypoint
         RUN_UPDATE_SUBMISSION ()
+}
+
+workflow only_validation_and_submission {
+    main:
+        // calls subworkflow to run only validation and submission
+        RUN_VALIDATION_AND_SUBMISSION (
+            'dummy utility signal',
+            false
+        )
+}
+
+workflow only_validation_and_initial_submission {
+    main:
+        // calls subworkflow to run only validation and submission
+        RUN_VALIDATION_AND_SUBMISSION (
+            'dummy utility signal',
+            true
+        )
 }
