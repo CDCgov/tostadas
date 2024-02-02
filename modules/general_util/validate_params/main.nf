@@ -14,7 +14,7 @@ process VALIDATE_PARAMS {
              throw new Exception("Either docker, conda, or singularity must be selected as profile [docker, conda, singularity]. None passed in.")
         }
 
-        // check that at least one annotator is selected 
+        // check that at least one of <bacteria,virus> is selected 
         assert params.bacteria == true || params.virus == true
   
         // check paths
