@@ -6,12 +6,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CHECK_FILES                                       } from "../../modules/general_util/check_files/main"
-include { GET_WAIT_TIME                                     } from "../../modules/general_util/get_wait_time/main"
-include { METADATA_VALIDATION                               } from "../../modules/metadata_validation/main"
-include { SUBMISSION                                        } from "../../modules/submission/main"
+include { CHECK_FILES                                       } from "../../modules/local/general_util/check_files/main"
+include { GET_WAIT_TIME                                     } from "../../modules/local/general_util/get_wait_time/main"
+include { METADATA_VALIDATION                               } from "../../modules/local/metadata_validation/main"
+include { SUBMISSION                                        } from "../../modules/local/submission/main"
 include { GENERAL_SUBMISSION                                } from "../submission"
-include { MERGE_UPLOAD_LOG                                  } from "../../modules/general_util/merge_upload_log/main"
+include { MERGE_UPLOAD_LOG                                  } from "../../modules/local/general_util/merge_upload_log/main"
 
 
 workflow RUN_VALIDATION_AND_SUBMISSION {

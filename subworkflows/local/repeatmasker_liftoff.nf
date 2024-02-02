@@ -5,16 +5,12 @@
                             REPEAT MASKER & LIFTOFF ENTRYPOINT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-// Channel
-//     .fromPath(params.fasta_path)
-//     .splitFasta( record: [id: true, seqString: true ])
-//     .set { ch_fasta }
 
-include { REPEATMASKER                                      } from "../modules/repeatmasker_annotation/main"
-include { LIFTOFF_CLI                                       } from "../modules/liftoff_cli_annotation/main"
-include { CONCAT_GFFS                                       } from "../modules/concat_gffs/main"
+include { REPEATMASKER                                      } from "../../modules/local/repeatmasker_annotation/main"
+include { LIFTOFF_CLI                                       } from "../../modules/local/liftoff_cli_annotation/main"
+include { CONCAT_GFFS                                       } from "../../modules/local/concat_gffs/main"
 
-workflow RUN_REPEATMASKER_LIFTOFF {
+workflow REPEATMASKER_LIFTOFF {
 
     take:
         utility_signal
@@ -25,7 +21,7 @@ workflow RUN_REPEATMASKER_LIFTOFF {
         REPEATMASKER (
            utility_signal,
            fasta,
-           params.repeat_lib
+           params.repeat_library
         )
         // run liftoff annotation on files
         LIFTOFF_CLI ( 

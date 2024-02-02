@@ -11,8 +11,8 @@ def get_args():
     """ 
     parser = argparse.ArgumentParser()
     parser.add_argument("--validated_meta_path", type=str, help='Path to the metadata directory containing validated meta files ending with .tsv')
-    parser.add_argument("--fasta_path", type=str, help='Path to the fasta directory containing split fasta files ending with .fasta')
-    parser.add_argument("--gff_path", type=str, help='Path to the gff directory containing reformatted gff files ending with .gff')
+    parser.add_argument("--fasta_path", required=False, type=str, help='Path to the fasta directory containing split fasta files ending with .fasta')
+    parser.add_argument("--gff_path", required=False, type=str, help='Path to the gff directory containing reformatted gff files ending with .gff')
     parser.add_argument("--config", type=str, help='Name of the config file')
     parser.add_argument("--unique_name", type=str, help='Name of batch')
     parser.add_argument("--prod_or_test", type=str, help='Whether it is a production or test submission')

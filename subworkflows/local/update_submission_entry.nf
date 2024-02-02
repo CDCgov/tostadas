@@ -6,9 +6,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CHECK_FILES                                       } from "../../modules/general_util/check_files/main"
+include { CHECK_FILES                                       } from "../../modules/local/general_util/check_files/main"
 include { CHECKS_4_SUBMISSION_ENTRY                         } from "./submission_entry_check"
-include { UPDATE_SUBMISSION                                 } from "../../modules/update_submission/main"
+include { UPDATE_SUBMISSION                                 } from "../../modules/local/update_submission/main"
 
 
 workflow RUN_UPDATE_SUBMISSION {

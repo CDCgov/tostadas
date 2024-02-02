@@ -18,13 +18,13 @@ process VALIDATE_PARAMS {
         assert params.bacteria == true || params.virus == true
   
         // check paths
-        if ( params.run_liftoff == true ) {
+        if ( params.liftoff == true ) {
             assert params.fasta_path
             assert params.ref_fasta_path
             assert params.ref_gff_path
             assert params.meta_path
         } 
-        if ( params.run_bakta == true ) {
+        if ( params.bakta == true ) {
             assert params.fasta_path
             assert params.meta_path
             if ( params.download_bakta_db == false ) {
@@ -43,18 +43,18 @@ process VALIDATE_PARAMS {
         assert params.val_output_dir
         assert params.submission_output_dir
         
-        if ( params.run_liftoff == true ) {
+        if ( params.liftoff == true ) {
             assert params.final_liftoff_output_dir
         }
-        if ( params.run_vadr == true ) {
+        if ( params.vadr == true ) {
             assert params.vadr_output_dir
         }
-        if ( params.run_bakta == true ) {
+        if ( params.bakta == true ) {
             assert params.bakta_output_dir
         }
 
         // check liftoff params with int or float values
-        if ( params.run_liftoff == true ) {
+        if ( params.liftoff == true ) {
             // Check whether populated or not 
             assert params.lift_parallel_processes == 0 || params.lift_parallel_processes
             assert params.lift_mismatch
@@ -107,7 +107,7 @@ process VALIDATE_PARAMS {
         }
 
         // check bakta specific params 
-        if ( params.run_bakta == true ) {
+        if ( params.bakta == true ) {
             assert params.bakta_min_contig_length
             assert params.bakta_translation_table
             assert params.bakta_threads
@@ -126,7 +126,7 @@ process VALIDATE_PARAMS {
         assert params.scicomp == true || params.scicomp == false
         assert params.clear_nextflow_log == true || params.clear_nextflow_log == false
         assert params.clear_work_dir == true || params.clear_work_dir == false
-        assert params.run_submission == true || params.run_submission == false
+        assert params.submission == true || params.submission == false
         assert params.cleanup == true || params.cleanup == false
         assert params.overwrite_output == true || params.overwrite_output == false
         assert params.val_date_format_flag == 's' || params.val_date_format_flag == 'o' || params.val_date_format_flag == 'v'
