@@ -31,9 +31,9 @@ process SUBMISSION {
     submission.py \
     --command submit \
     --unique_name $params.batch_name \
-    --fasta null \
+    --fasta $params.ref_fasta_path \
     --metadata $validated_meta_path \
-    --gff null \
+    --gff ref_gff_path \
     --config $submission_config \
     --req_col_config $req_col_config \
     --send_email $params.send_submission_email \

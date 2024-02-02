@@ -34,6 +34,6 @@ process UPDATE_SUBMISSION {
     def unique_name = '$params.batch_name.$meta'
 
     """
-    submission.py --command update_submissions --config $submission_config --unique_name params.unique_name
+    submission.py --command update_submissions --config $submission_config --unique_name $unique_name
     """
 } 
