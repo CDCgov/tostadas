@@ -145,14 +145,14 @@ workflow TOSTADAS {
                     BAKTA (
                         RUN_UTILITY.out,
                         BAKTADBDOWNLOAD.out.db,
-                        CHECK_FILES.out.fasta_files.sort().flatten()
+                        fasta_ch
                     )
                 }
                 else {
                     BAKTA (
                         RUN_UTILITY.out,
                         params.bakta_db_path,
-                        CHECK_FILES.out.fasta_files.sort().flatten()
+                        fasta_ch
                     )
                 }
                 //BAKTA_POST_CLEANUP (
