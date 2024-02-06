@@ -27,7 +27,7 @@ process BAKTA {
     """
     bakta --db $db_path  --min-contig-length $params.bakta_min_contig_length --prefix ${fasta_path.getSimpleName()} \
     --output ${fasta_path.getSimpleName()} --threads $params.bakta_threads \
-    --genus $params.bakta_genus --species $params.bakta_species --strain $params.bakta_strain \
+    --genus $params.bakta_genus --species $params.bakta_species --strain $params.bakta_strain --compliant \
     --plasmid $params.bakta_plasmid  --locus $params.bakta_locus --locus-tag $params.bakta_locus_tag \
     --translation-table $params.bakta_translation_table \
     $args \
@@ -41,4 +41,11 @@ process BAKTA {
     //path "*.faa",   emit: faa
     //path "*.embl",   emit: embl
     //path "*.ffn",   emit: ffn
+    //path "*.gbff",   emit: gbff
+    //path "*.json",   emit: json
+    //path "*.log",   emit: log
+    //path "*.png",   emit: png
+    //path "*.svg",   emit: svg
+    //path "*.tsv",   emit: tsv
+    //path "*.txt",   emit: txt
 }

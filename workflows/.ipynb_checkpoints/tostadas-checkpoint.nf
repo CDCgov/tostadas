@@ -154,6 +154,7 @@ workflow TOSTADAS {
                         params.bakta_db_path,
                         fasta_ch
                     )
+                    //bakta_gff_ch = BAKTA.out.gff3.collect().flatten()
                 }
                 //BAKTA_POST_CLEANUP (
                 //    BAKTA.out.bakta_results,
