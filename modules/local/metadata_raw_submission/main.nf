@@ -7,9 +7,13 @@ process METADATA_RAW_SUBMISSION {
 
     label 'main'
 
+    //conda (params.enable_conda ? "conda-forge::python=3.8.3" : null)
+    //container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    //    'https://depot.galaxyproject.org/singularity/python:3.8.3' :
+    //    'quay.io/biocontainers/python:3.8.3' }"
     if ( params.run_conda == true ) {
         try {
-            conda params.env_yml
+           conda params.env_yml
         } catch (Exception e) {
             System.err.println("WARNING: Unable to use conda env from $params.env_yml")
         }
@@ -25,6 +29,8 @@ process METADATA_RAW_SUBMISSION {
     // Script section
     script:
     """
+    #!/usr/bin/python
+
     # Very simple py script to extract sample names and corresponding file paths from metadata file
 
     import pandas as pd
