@@ -15,153 +15,93 @@ TOSTADAS is flexible, allowing you to choose which portions of the pipeline to r
 
  The current distribution has been tested with Pox virus sequences as well as some bacteria. Ongoing development aims to make the pipeline pathogen agnostic.
 
-## Pipeline Summary
+## Environment Setup 
 
-### Metadata Validation
-The validation workflow checks that user provided metadata conforms to NCBI standards and matches the input data file(s). To allow for easy multi-sample submission, TOSTADAS can split a multi-sample Excel (.xlsx) file into separate tab delimited files (.tsv) for each individual sample.
+:exclamation: Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](Link)
 
-TOSTADAS can accept custom metadata fields specific to a users' pathogen, sample type, or workflow. Additionally, TOSTADAS offers powerful validation tools for user- created fields, allowing users to specify which samples to apply rules to, replace empty values with user specified replacements, rename existing fields and other operations.
-These features can be enabled with the `validate_custom_fields` parameter. Custom fields can be specified using the `custom_fields_file` parameter.  
+#### (1) Install Nextflow using Use Mamba and the Bioconda Channel:
 
-A full guide to using custom metadata fields can be found here: [Custom Metadata Guide](https://github.com/CDCgov/tostadas/blob/457242fb15973f69cb3578367317a8b5e7c619f7/docs/custom_metadata_guide.md)
+There are several options for install if you don't already have nextflow on your system. 
 
-### Gene Annotation
+```bash
+mamba install -c bioconda nextflow
+```
+:exclamation: Optionally, you may install nextflow without mamba by following the instructions found in the Nextflow Installation Documentation Page: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
-TOSTADAS offers three optional annotation options:
-1. RepeatMasker and Liftoff 
-    * The RepeatMasker and Liftoff workflow annotates fasta-formatted sequences based upon a provided reference and annotation file.  This workflow was optimized for variola genome annotation and may require modification for other pathogens. This workflow runs [RepeatMasker](https://www.repeatmasker.org/) to annotate repeat motifs, followed by [Liftoff](https://github.com/agshumate/Liftoff) to annotate functional regions. These results are combined into a single feature file (.gff3). The Liftoff annotation workflow requires a reference genome (.fasta), reference feature .gff, single sample .fasta files, and metadata in Excel .xlsx format.  Be sure to specify the correct database in the params for this option.
-
-    [RepeatMasker and Liftoff Example] (Link) 
- 
-
-2. VADR
-    * The VADR workflow annotates  fasta-formatted viral genomes using RefSeq annotation from a set of homologous reference models. This workflow requires single sample fasta files, metadata in .xlsx format, and reference information for the pathogen genome. TOSTADAS comes packaged with support for [monkeypox (mpxv) annotation] (https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models). You can find information on other supported pathogens at the [VADR GitHub Repository] (https://github.com/ncbi/vadr).
-
-    [VADR Example] (Link) 
-3. Bakta
-    * The Bakta workflow annotates fasta-formatted bacterial genomes & plasmids using the [Bakta](https://github.com/CDCgov/tostadas/tree/master#gene-annotation) software. This workflow requires single sample .fasta files, metadata in .xlsx format, and optional reference database for annotation (found [here](https://zenodo.org/records/7669534)). 
-
-    [BAKTA Example] (Link) 
-
-All annotation workflows produce a general feature format file (.gff3) and NCBI feature table (tbl)  compatible with NCBI submission requirements.
-
-### Submission 
-The TOSTADAS Submission workflow generates the necessary files for Genbank submission, a BioSample ID, then optionally uploads Fastq files via FTP to SRA. This workflow was adapted from [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
-
-## Installation
-### Repository Setup
-
-:exclamation: Note: If you are a CDC user, please follow the set-up instructions found on Page X - [CDC User Guide](Link)
-
-Clone the repository to your local machine:  
+#### (1) Clone the repository to your local machine:  
 ```bash
 git clone https://github.com/CDCgov/tostadas.git
 ```
+:exclamation: Note: If you have mamba or nextflow installed in your local environment, you may skip steps 2, 3 (mamba installation) and 6 (nextflow installation) accordingly. 
 
-### Environment Setup 
-
-:exclamation: Note: If you have mamba or nextflow installed in your local environment, you may skip steps 1, 2 (mamba installation) and 5 (nextflow installation) accordingly. 
-
-#### (1) Install Mamba:
+#### (2) Install Mamba:
 ```bash
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
 bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
 ```
-
-#### (2) Add mamba to PATH:
+#### (3) Add mamba to PATH:
 ```bash
 export PATH="$HOME/mambaforge/bin:$PATH"
 ```
 
-#### (3) Create the conda environment: 
+#### (4) Create the conda environment: 
 
-If you want to create the full-conda environment needed to run the pipeline outside of Nextflow (this enables you to run individual python scripts), then proceed with step **3a**. 
+If you want to create the full-conda environment needed to run the pipeline outside of Nextflow (this enables you to run individual python scripts), then proceed with step **4a**. 
 
-If you want to run the pipeline using nextflow only (this will be most users), proceed with step 3b. Nextflow will handle environment creation and you would only need to install the nextflow package locally vs the entire environment.
+If you want to run the pipeline using nextflow only (this will be most users), proceed with step 4b. Nextflow will handle environment creation and you would only need to install the nextflow package locally vs the entire environment.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **(3a) Create the conda environment and install the dependencies set in your environment.yml:**   
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **(4a) Create the conda environment and install the dependencies set in your environment.yml:**   
 
 ```bash
+cd tostadas
 mamba env create -n tostadas -f environment.yml   
 ```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **(3b) Create an empty conda environment:**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **(4b) Create an empty conda environment:**
 ```bash
 conda create --name tostadas
 ```
-
-#### (4) Activate the environment. 
+#### (5) Activate the environment. 
 ```bash
 conda activate tostadas
 ```
 Verify which environment is active by running the following conda command: `conda env list`  . The active environment will be denoted with an asterisk `*`
 
-#### (5) Install Nextflow using Use Mamba and the Bioconda Channel:
+#### (6) Install Nextflow using Use Mamba and the Bioconda Channel:
 
 ```bash
 mamba install -c bioconda nextflow
 ```
 :exclamation: Optionally, you may install nextflow without mamba by following the instructions found in the Nextflow Installation Documentaion Page: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
-## Quick Start
-
-#### (1) Ensure Nextflow was installed successfully by running ```nextflow -v```
+#### (7) Ensure Nextflow was installed successfully by running ```nextflow -v```
 
 Expected Output:
 ```
 nextflow version <CURRENT VERSION>
 ```
-The exact version of Nextflow returned will differ from installation to installation.  It is important that the command execute successfully and a version number is returned.
+The exact version of Nextflow returned will differ from installation to installation.  It is important that the command execute successfully, and a version number is returned.
 
-#### (2) Check that you are in the directory where the TOSTADAS repository was installed by running ```pwd```
-Expected Output:
-```
-/path/to/working/directory/tostadas
-```
-This is the default directory set in ``` nextflow.config```  for the provided test input files.
-
-
-#### (3) Run one of the following nextflow commands to execute the scripts with default parameters and the local run environment: 
+#### (8) Test your installation by running one of the following nextflow commands on test data
 
 ```bash
 # for virus reads
-nextflow run main.nf -profile test,conda -virus
+nextflow run main.nf -profile test,<singularity/docker/conda> --virus
 # for bacterial reads
-nextflow run main.nf -profile test,conda -bacteria 
+nextflow run main.nf -profile test,<singularity/docker/conda> --bacteria 
 ```
 
-The outputs of the pipeline will appear in the "nf_test_results" folder within the project directory.  You can update the output path in ```<FILE_NAME>```. 
+The outputs of the pipeline will appear in the ```test_output``` folder within the project directory. You can specify an output directory in the config file or by supplying a path to the ```--output_dir``` flag in your ```nextflow run``` command.
 
-Q. Which file can we update this in? 
-
-#### (4) Change the ```submission_config``` parameter within ```{taxon}_test_params.config``` to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.
-
-:exclamation: You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: [More Information on Submission](https://github.com/CDCgov/tostadas/wiki/4.-Profile-Options-&-Input-Files#45-more-information-on-submission)
-
-#### (5) Pipeline Execution Examples 
-The input parameters can be modified to perform actions such as: 
-- choose which sub-workflows to execute and provide the required input files for each sub-workflow
-- modify the envinroment of the run
-- provide required input files 
-
-To see examples on how to run the pipeline and understand the various use-cases of running the Tostadas pipeline, please refer to the  [How to Run](https://github.com/CDCgov/tostadas/wiki/8.-Running-the-Pipeline#81-how-to-run) page. 
-
-## Helpful Links for Resources and Software Integrated with TOSTADAS:     
-   :link: Anaconda Install: https://docs.anaconda.com/anaconda/install/
-   
-   :link: Nextflow Documentation: https://www.nextflow.io/docs/latest/getstarted.html
-   
-   :link:  SeqSender Documentation: https://github.com/CDCgov/seqsender
-   
-   :link: Liftoff Documentation: https://github.com/agshumate/Liftoff
-   
-   :link: VADR Documentation:  https://github.com/ncbi/vadr.git
-
-   :link: Bakta Documentation:  https://github.com/oschwengers/bakta
-   
-   :link: table2asn Documentation: https://github.com/svn2github/NCBI_toolkit/blob/master/src/app/table2asn/table2asn.cpp
-
-   :link: RepeatMasker Documentation: https://www.repeatmasker.org/
-
+#### (9) Start running your own analysis
+**Annotate and submit viral reads**
+```{bash}
+nextflow run main.nf -profile docker --virus --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
+```
+**Annotate and submit bacterial reads**
+```{bash}
+nextflow run main.nf -profile docker --bacteria --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light/full>
+```
+Refer to the [wiki](https://github.com/CDCgov/tostadas/wiki) for more information on input parameters and use cases 
 ## Get in Touch
 
 If you have any ideas for ways to improve our existing codebase, feel free to open an Issue Request (found here: [Open New Issue](https://github.com/CDCgov/tostadas/issues/new/choose))
