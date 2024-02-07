@@ -13,10 +13,11 @@ include { GET_WAIT_TIME                                     } from "../modules/l
 
 // get metadata validation processes
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
+include { METADATA_RAW_SUBMISSION                           } from "../modules/local/metadata_raw_submission/main"
 
 // get viral annotation process/subworkflows
 include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
-include { REPEATMASKER_LIFTOFF                          } from "../subworkflows/local/repeatmasker_liftoff"
+include { REPEATMASKER_LIFTOFF                              } from "../subworkflows/local/repeatmasker_liftoff"
 include { RUN_VADR                                          } from "../subworkflows/local/vadr"
 
 // get BAKTA related processes
@@ -58,7 +59,8 @@ workflow TOSTADAS {
     METADATA_VALIDATION ( 
         RUN_UTILITY.out,
         params.meta_path
-    ) 
+    )
+    // todo: the names of these tsv_Files need to be from sample name not fasta file name 
     metadata_ch = METADATA_VALIDATION.out.tsv_Files.flatten()
     .map { 
         def meta = [:] 
@@ -74,6 +76,7 @@ workflow TOSTADAS {
         false,
         METADATA_VALIDATION.out.tsv_dir
     )
+    // todo: check fasta_ch ids against metadata sample name, don't require fasta file name in metadata
     fasta_ch = CHECK_FILES.out.fasta_files.flatten()
     .map { 
         def meta = [:] 
@@ -195,8 +198,38 @@ workflow TOSTADAS {
         } 
         if ( params.annotation == false ) {
             if ( params.sra ) {
-                SRA_SUBMISSION (
-                    metadata_ch,
+                // set up submission channels for raw fastqs + metadata (sample_name)
+                METADATA_RAW_SUBMISSION (
+                    RUN_UTILITY.out,
+                    params.meta_path
+                )
+                // Combine sample_names_ch (METADATA_RAW_SUBMISSION.out.sample_names) with sample_file_paths_ch (METADATA_RAW_SUBMISSION.out.sample_file_paths)
+                def combined_ch = METADATA_RAW_SUBMISSION.out.sample_names
+                    .map { sample_name ->
+                        METADATA_RAW_SUBMISSION.out.sample_file_paths
+                            .collect { file_paths ->
+                                [sample_name, file_paths]
+                            }
+                        }.flatten()
+                // Create a new channel that mimics the structure of fasta_ch
+                fastq_ch = combined_ch.map { sample_name, file_paths ->
+                    def meta = [:]
+                    meta['id'] = sample_name
+                    [meta, file_paths]
+                }
+                // Create the gff_placeholder channel (so we can reuse the same submission module)
+                // todo: this part is a bit hacky
+                gff_placeholder = METADATA_RAW_SUBMISSION.out.sample_names
+                    .map { sample_name ->
+                        def meta = [:]
+                        meta['id'] = sample_name
+                        [meta, 'none']
+                    }
+                submission_ch = metadata_ch.join(fastq_ch)
+                submission_ch = submission_ch.join(gff_placeholder)
+                
+                FULL_SUBMISSION (
+                    submission_ch,
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out

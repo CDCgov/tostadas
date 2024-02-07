@@ -16,7 +16,9 @@ def get_args():
     parser.add_argument("--config", type=str, help='Name of the config file')
     parser.add_argument("--unique_name", type=str, help='Name of batch')
     parser.add_argument("--prod_or_test", type=str, help='Whether it is a production or test submission')
-    parser.add_argument("--submission_database", type=str, help='Which database to submit to')
+    # todo: I don't think we need this because they're already choosing the dbs in the config file
+    # todo: Later we should consider adding flages like --sra, --genbank, --gisaid
+    #parser.add_argument("--submission_database", type=str, help='Which database to submit to')
     parser.add_argument("--req_col_config", type=str, help='Path to the required columns yamls')
     parser.add_argument("--update", type=str, help='Whether to update or not')
     parser.add_argument("--send_submission_email", type=str, help='Whether to send genbank/table2asn email or not')
@@ -48,7 +50,7 @@ class SubmitToDatabase:
         os.makedirs(f"{unique_dir_name}/initial_submit_info")
  
         # get the command that will be used 
-        command = f"submission.py --command {self.parameters['submission_database']} --unique_name {self.parameters['unique_name']} --fasta {self.parameters['fasta_path']} \
+        command = f"submission.py --command submit --unique_name {self.parameters['unique_name']} --fasta {self.parameters['fasta_path']} \
                   --metadata {self.parameters['validated_meta_path']} --gff {self.parameters['gff_path']} --config {self.parameters['config']} --test_or_prod {self.parameters['prod_or_test']} \
                   --req_col_config {self.parameters['req_col_config']} --send_email {self.parameters['send_submission_email']}"
 

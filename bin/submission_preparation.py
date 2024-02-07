@@ -1,220 +1,21 @@
 #!/usr/bin/env python3
 
 import pandas as pd
-from datetime import datetime, date
 import xml.etree.ElementTree as ET
 from Bio import SeqIO
-import sys
+import sys 
 import os
 import yaml
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import csv
 from xml.dom import minidom
-import shutil
 
 config_dict = dict()
 required_config = dict()
 pd.set_option("display.max_columns", None)
 pd.set_option("max_colwidth", None)
 pd.set_option("display.max_rows", None)
-
-#Create BioSample/SRA xml
-def generate_XML(unique_name, main_df, generate_biosample, generate_sra, config_dict):
-    day = str(date.today())
-    dt = datetime.strptime(day, "%Y-%m-%d")
-    submission = ET.Element("Submission")
-    description = ET.SubElement(submission, "Description")
-    title = ET.SubElement(description, "Title")
-    if generate_biosample == True and generate_sra == True:
-        title.text = unique_name + "_Biosample_SRA"
-        comment = ET.SubElement(description, "Comment")
-        comment.text = "BP(1.0)+BS(1.0)+SRA"
-    elif generate_biosample == False and generate_sra == True:
-        title.text = unique_name + "_SRA"
-        comment = ET.SubElement(description, "Comment")
-        comment.text = "SRA"
-    elif generate_biosample == True and generate_sra == False:
-        title.text = unique_name + "_Biosample"
-        comment = ET.SubElement(description, "Comment")
-        comment.text = "BP(1.0)+BS(1.0)"
-    else:
-        print("Error: This should not be reachable.", file=sys.stderr)
-        sys.exit(1)
-    org = ET.SubElement(description, "Organization")
-    org.set("role", "owner")
-    org.set("type","institute")
-    if config_dict["general"]["ncbi_org_id"] != "":
-        org.set("org_id", config_dict["general"]["ncbi_org_id"])
-    name = ET.SubElement(org, "Name")
-    email = ET.SubElement(org, "Contact")
-    email.set("email", config_dict["general"]["contact_email1"])
-    name.text = config_dict["general"]["organization_name"]
-    name = ET.SubElement(email, "Name")
-    first = ET.SubElement(name, "First")
-    last = ET.SubElement(name, "Last")
-    first.text = config_dict["general"]["submitter_info"]["first"]
-    last.text = config_dict["general"]["submitter_info"]["last"]
-    if generate_biosample == True:
-        required = set(required_config["BioSample"])
-        if required.issubset(config_dict["BioSample_attributes"]["column_names"].values()) == False:
-            print("Error: Metadata file is missing required columns for BioSample file. Required columns in config are: " + str(required_config["BioSample"]), file=sys.stderr)
-            sys.exit(1)
-        for index, row in main_df.iterrows():
-            action2 = ET.SubElement(submission, "Action")
-            addData = ET.SubElement(action2, "AddData")
-            addData.set("target_db","BioSample")
-            data_tag = ET.SubElement(addData, "Data")
-            data_tag.set("content_type","xml")
-            xmlC = ET.SubElement(data_tag, "XmlContent")
-            bioS = ET.SubElement(xmlC, "BioSample")
-            bioS.set("schema_version","2.0")
-            samID = ET.SubElement(bioS, "SampleId")
-            spuid = ET.SubElement(samID, "SPUID")
-            spuid.set("spuid_namespace",config_dict["ncbi"]["Center_title"])
-            spuid.text = row[config_dict["ncbi"]["BioSample_sample_name_col"]]
-            des = ET.SubElement(bioS, "Descriptor")
-            title = ET.SubElement(des, "Title")
-            title.text = config_dict["ncbi"]["publication_title"]
-            org = ET.SubElement(bioS, "Organism")
-            orgName = ET.SubElement(org, "OrganismName")
-            orgName.text = config_dict["general"]["organism_name"]
-            if config_dict["ncbi"]["BioProject"] != "":
-                biop = ET.SubElement(bioS, "BioProject")
-                primeID = ET.SubElement(biop, "PrimaryId")
-                primeID.set("db","BioProject")
-                primeID.text = config_dict["ncbi"]["BioProject"]
-            pack = ET.SubElement(bioS, "Package")
-            pack.text = config_dict["ncbi"]["BioSample_package"]
-            attr = ET.SubElement(bioS,"Attributes")
-            attr_str = ET.SubElement(attr, "Attribute")
-            attr_str.set("attribute_name", "collection_date")
-            attr_str.text = row[config_dict["general"]["collection_date_col"]]
-            for key, value in config_dict["BioSample_attributes"]["column_names"].items():
-                attr_str = ET.SubElement(attr, "Attribute")
-                attr_str.set("attribute_name", key)
-                attr_str.text = row[value]
-            if config_dict["general"]["baseline_surveillance"] == True:
-                attr_str = ET.SubElement(attr, "Attribute")
-                attr_str.set("attribute_name", "purpose_of_sequencing")
-                attr_str.text = "baseline surveillance (random sampling)"
-            id = ET.SubElement(addData, "Identifier")
-            spuid = ET.SubElement(id, "SPUID")
-            spuid.set("spuid_namespace",config_dict["ncbi"]["Center_title"])
-            spuid.text = row[config_dict["ncbi"]["BioSample_sample_name_col"]]
-    if generate_sra == True:
-        required = set(required_config["SRA"])
-        if required.issubset(config_dict["SRA_attributes"]["column_names"].values()) == False:
-            print("Error: Metadata file is missing required columns for SRA file. Required columns in config are: " + str(required_config["SRA"]), file=sys.stderr)
-            sys.exit(1)
-        for index, row in main_df.iterrows():
-            #Add Illumina data
-            if row[config_dict["ncbi"]["SRA_file_column1"]] != "" and pd.isnull(row[config_dict["ncbi"]["SRA_file_column1"]]) == False:
-                action3 = ET.SubElement(submission, "Action")
-                addfile = ET.SubElement(action3, "AddFiles")
-                addfile.set("target_db","SRA")
-                file = ET.SubElement(addfile, "File")
-                file.set("file_path", os.path.basename(row[config_dict["ncbi"]["SRA_file_column1"]]))
-                datatype=ET.SubElement(file, "DataType")
-                datatype.text = "generic-data"
-                if row[config_dict["ncbi"]["SRA_file_column2"]] != "" and pd.isnull(row[config_dict["ncbi"]["SRA_file_column2"]]) == False:
-                    file = ET.SubElement(addfile, "File")
-                    file.set("file_path", os.path.basename(row[config_dict["ncbi"]["SRA_file_column2"]]))
-                    datatype=ET.SubElement(file, "DataType")
-                    datatype.text = "generic-data"
-                for key, value in config_dict["SRA_attributes"]["column_names"].items():
-                    attr_str = ET.SubElement(addfile, "Attribute")
-                    attr_str.set("name", key)
-                    if key in ["sequencing_instrument", "library_strategy", "library_source", "library_selection", "library_layout", "library_name"]:
-                        attr_str.text = row["illumina_" + value]
-                    else:
-                        attr_str.text = row[value]
-                if any(x.isalpha() for x in config_dict["ncbi"]["SRA_file_loader"]):
-                    attr_str = ET.SubElement(addfile, "Attribute")
-                    attr_str.set("name", "loader")
-                    attr_str.text = config_dict["ncbi"]["SRA_file_loader"]
-                if config_dict["ncbi"]["BioProject"] != "":
-                    Attr_ref = ET.SubElement(addfile, "AttributeRefId")
-                    Attr_ref.set("name","BioProject")
-                    refid = ET.SubElement(Attr_ref, "RefId")
-                    primid = ET.SubElement(refid, "PrimaryId")
-                    primid.text = config_dict["ncbi"]["BioProject"]
-                if generate_biosample == True or config_dict["general"]["submit_BioSample"] == True:
-                    Attr_ref = ET.SubElement(addfile, "AttributeRefId")
-                    Attr_ref.set("name","BioSample")
-                    refid = ET.SubElement(Attr_ref, "RefId")
-                    spuid = ET.SubElement(refid, "SPUID")
-                    spuid.set("spuid_namespace",config_dict["ncbi"]["Center_title"])
-                    spuid.text = row[config_dict["ncbi"]["BioSample_sample_name_col"]]
-                id = ET.SubElement(addfile, "Identifier")
-                spuid = ET.SubElement(id, "SPUID")
-                spuid.set("spuid_namespace",config_dict["ncbi"]["Center_title"])
-                spuid.text = row[config_dict["ncbi"]["SRA_sample_name_col"]] + "_illumina"
-            #Add Nanopore data
-            if row[config_dict["ncbi"]["SRA_file_column3"]] != "" and pd.isnull(row[config_dict["ncbi"]["SRA_file_column3"]]) == False:
-                action3 = ET.SubElement(submission, "Action")
-                addfile = ET.SubElement(action3, "AddFiles")
-                addfile.set("target_db","SRA")
-                file = ET.SubElement(addfile, "File")
-                file.set("file_path", os.path.basename(row[config_dict["ncbi"]["SRA_file_column3"]]))
-                datatype=ET.SubElement(file, "DataType")
-                datatype.text = "generic-data"
-                for key, value in config_dict["SRA_attributes"]["column_names"].items():
-                    attr_str = ET.SubElement(addfile, "Attribute")
-                    attr_str.set("name", key)
-                    if key in ["sequencing_instrument", "library_strategy", "library_source", "library_selection", "library_layout", "library_name"]:
-                        attr_str.text = row["nanopore_" + value]
-                    else:
-                        attr_str.text = row[value]
-                if any(x.isalpha() for x in config_dict["ncbi"]["SRA_file_loader"]):
-                    attr_str = ET.SubElement(addfile, "Attribute")
-                    attr_str.set("name", "loader")
-                    attr_str.text = config_dict["ncbi"]["SRA_file_loader"]
-                if config_dict["ncbi"]["BioProject"] != "":
-                    Attr_ref = ET.SubElement(addfile, "AttributeRefId")
-                    Attr_ref.set("name","BioProject")
-                    refid = ET.SubElement(Attr_ref, "RefId")
-                    primid = ET.SubElement(refid, "PrimaryId")
-                    primid.text = config_dict["ncbi"]["BioProject"]
-                if generate_biosample == True or config_dict["general"]["submit_BioSample"] == True:
-                    Attr_ref = ET.SubElement(addfile, "AttributeRefId")
-                    Attr_ref.set("name","BioSample")
-                    refid = ET.SubElement(Attr_ref, "RefId")
-                    spuid = ET.SubElement(refid, "SPUID")
-                    spuid.set("spuid_namespace",config_dict["ncbi"]["Center_title"])
-                    spuid.text = row[config_dict["ncbi"]["BioSample_sample_name_col"]]
-                id = ET.SubElement(addfile, "Identifier")
-                spuid = ET.SubElement(id, "SPUID")
-                spuid.set("spuid_namespace",config_dict["ncbi"]["Center_title"])
-                spuid.text = row[config_dict["ncbi"]["SRA_sample_name_col"]] + "_nanopore"
-    xml_file = minidom.parseString(ET.tostring(submission, encoding="unicode", method="xml")).toprettyxml(indent = "   ")
-    if generate_sra == True:
-        main_df.to_csv(os.path.join(unique_name, "biosample_sra", unique_name + "_sra_path.csv"), header = True, index = 0, columns = [config_dict["ncbi"]["SRA_file_column1"], config_dict["ncbi"]["SRA_file_column2"], config_dict["ncbi"]["SRA_file_column3"]])
-    if generate_sra == True and generate_biosample == True:
-        with open(os.path.join(unique_name, "biosample_sra", unique_name + "_biosample_sra_submission.xml"),"w+") as f:
-            f.write(xml_file)
-    elif generate_sra == False and generate_biosample == True:
-        with open(os.path.join(unique_name, "biosample_sra", unique_name + "_biosample_submission.xml"),"w+") as f:
-            f.write(xml_file)
-    elif generate_sra == True and generate_biosample == False:
-        with open(os.path.join(unique_name, "biosample_sra", unique_name + "_sra_submission.xml"),"w+") as f:
-            f.write(xml_file)
-    else:
-        print("Error: This should not be reachable.", file=sys.stderr)
-        sys.exit(1)
-
-#Initialize config file
-def initialize_global_variables(config):
-    if os.path.isfile(config) == False:
-        print("Error: Cannot find submission config at: " + config, file=sys.stderr)
-        sys.exit(1)
-    else:
-        with open(config, "r") as f:
-            global config_dict
-            config_dict = yaml.safe_load(f)
-        if isinstance(config_dict, dict) == False:
-            print("Config Error: Config file structure is incorrect.", file=sys.stderr)
-            sys.exit(1)
 
 #Initialize required columns config file
 def initialize_required_columns(config):
@@ -250,8 +51,7 @@ def metadata_processing(metadata_file, config_dict):
     metadata = metadata.fillna("")
     return metadata
 
-#Merge files and checks
-def merge(fasta_file, metadata_file, config_dict):
+def merge(fasta_file, metadata_file, config_dict, submit_raw = False):
     fasta = fasta_processing(fasta_file)
     metadata = metadata_processing(metadata_file, config_dict)
     main_df = fasta.merge(metadata, left_on = "fasta_name_orig",  right_on = config_dict["general"]["fasta_sample_name_col"], how = "left")
@@ -525,25 +325,14 @@ def write_sra_file_path(unique_name, main_df, config_dict):
 def author_column_update(authorlist, config_dict):
     config_dict["general"]["authorset"] = authorlist
 
-#For updating sequences based on auto-remove
-def write_ncbi_names(unique_name, main_df, config_dict):
-    tmp = pd.DataFrame()
-    if config_dict["general"]["submit_SRA"] == True:
-        tmp["SRA_sequence"] = main_df[config_dict["ncbi"]["SRA_sample_name_col"]]
-    if config_dict["general"]["submit_BioSample"] == True:
-        tmp["BioSample_sequence"] = main_df[config_dict["ncbi"]["BioSample_sample_name_col"]]
-    if config_dict["general"]["submit_Genbank"] == True:
-        tmp["Genbank_sequence"] = main_df[config_dict["ncbi"]["Genbank_sample_name_col"]]
-    if config_dict["general"]["submit_GISAID"] == True:
-        tmp["GISAID_sequence"] = main_df[config_dict["gisaid"]["gisaid_sample_name_col"]]
-    tmp.to_csv(os.path.join(unique_name, "accessions.csv"), header = True, index = False, sep = ",")
-
-def process_submission(unique_name, fasta_file, metadata_file, gff_file, config, req_col_config, config_dict):
+def process_submission(unique_name, fasta_file, metadata_file, gff_file, req_col_config, config_dict, submit_raw = False):
     print("Processing " + unique_name + f"\n")
-
     initialize_required_columns(req_col_config)
 
-    main_df = merge(fasta_file, metadata_file, config_dict)
+    if submit_raw = True:
+        main_df = metadata_processing(metadata_file, config_dict)
+    else:
+        main_df = merge(fasta_file, metadata_file, config_dict)
 
     if not isinstance(config_dict["general"]["authorset"], list):
         authorlist = []
@@ -591,3 +380,6 @@ def process_submission(unique_name, fasta_file, metadata_file, gff_file, config,
         write_ncbi_names(unique_name, main_df, config_dict)
 
     print(f"\t{unique_name} Finished Processing\n")
+
+if __name__ == "__main__":
+    main()
