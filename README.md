@@ -28,60 +28,20 @@ mamba install -c bioconda nextflow
 ```
 :exclamation: Optionally, you may install nextflow without mamba by following the instructions found in the Nextflow Installation Documentation Page: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
-#### (1) Clone the repository to your local machine:  
+#### (2) Clone the repository to your local machine:  
 ```bash
 git clone https://github.com/CDCgov/tostadas.git
+cd tostadas
 ```
 :exclamation: Note: If you have mamba or nextflow installed in your local environment, you may skip steps 2, 3 (mamba installation) and 6 (nextflow installation) accordingly. 
 
-#### (2) Install Mamba:
-```bash
-curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
-bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
-```
-#### (3) Add mamba to PATH:
-```bash
-export PATH="$HOME/mambaforge/bin:$PATH"
-```
-
-#### (4) Create the conda environment: 
-
-If you want to create the full-conda environment needed to run the pipeline outside of Nextflow (this enables you to run individual python scripts), then proceed with step **4a**. 
-
-If you want to run the pipeline using nextflow only (this will be most users), proceed with step 4b. Nextflow will handle environment creation and you would only need to install the nextflow package locally vs the entire environment.
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **(4a) Create the conda environment and install the dependencies set in your environment.yml:**   
+#### (3) Create and activate the conda environment: 
 
 ```bash
-cd tostadas
-mamba env create -n tostadas -f environment.yml   
-```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **(4b) Create an empty conda environment:**
-```bash
-conda create --name tostadas
-```
-#### (5) Activate the environment. 
-```bash
+mamba env create -n tostadas -f environment.yml
 conda activate tostadas
 ```
-Verify which environment is active by running the following conda command: `conda env list`  . The active environment will be denoted with an asterisk `*`
-
-#### (6) Install Nextflow using Use Mamba and the Bioconda Channel:
-
-```bash
-mamba install -c bioconda nextflow
-```
-:exclamation: Optionally, you may install nextflow without mamba by following the instructions found in the Nextflow Installation Documentaion Page: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
-
-#### (7) Ensure Nextflow was installed successfully by running ```nextflow -v```
-
-Expected Output:
-```
-nextflow version <CURRENT VERSION>
-```
-The exact version of Nextflow returned will differ from installation to installation.  It is important that the command execute successfully, and a version number is returned.
-
-#### (8) Test your installation by running one of the following nextflow commands on test data
+#### (4) Test your installation by running one of the following nextflow commands on test data
 
 ```bash
 # for virus reads
@@ -89,19 +49,19 @@ nextflow run main.nf -profile test,<singularity/docker/conda> --virus
 # for bacterial reads
 nextflow run main.nf -profile test,<singularity/docker/conda> --bacteria 
 ```
+The pipeline outputs appear in the ```test_output``` folder within the tostadas directory. 
 
-The outputs of the pipeline will appear in the ```test_output``` folder within the project directory. You can specify an output directory in the config file or by supplying a path to the ```--output_dir``` flag in your ```nextflow run``` command.
-
-#### (9) Start running your own analysis
+#### (5) Start running your own analysis
 **Annotate and submit viral reads**
 ```{bash}
-nextflow run main.nf -profile docker --virus --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
+nextflow run main.nf -profile docker --virus --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --output_dir <path/to/output/dir/>
 ```
 **Annotate and submit bacterial reads**
 ```{bash}
-nextflow run main.nf -profile docker --bacteria --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light/full>
+nextflow run main.nf -profile docker --bacteria --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light/full>--output_dir <path/to/output/dir/>
 ```
 Refer to the [wiki](https://github.com/CDCgov/tostadas/wiki) for more information on input parameters and use cases 
+
 ## Get in Touch
 
 If you have any ideas for ways to improve our existing codebase, feel free to open an Issue Request (found here: [Open New Issue](https://github.com/CDCgov/tostadas/issues/new/choose))
@@ -125,3 +85,13 @@ Please allow for some turnaround time for us to review the issue and potentially
   * Reason for Urgency
 
   And we will get back to you as soon as possible. 
+
+## Acknowledgements
+  ### Contributors
+  Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison\
+  Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Ankush Gupta\
+  Kyle O'Connell | Yesh Kulasekarapandian |  Cole Tindall | Lynsey Kovar | Hunter Seabolt\
+  Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Swarnali Louha\
+  Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
+  ### Tools
+  The submission portion of this pipeline was adapted from SeqSender. To find more information on this tool, please refer to their GitHub page: [SeqSender](https://github.com/CDCgov/seqsender). 
