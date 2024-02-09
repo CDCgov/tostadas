@@ -1,0 +1,22 @@
+
+
+test_field_1:
+	Found value(s) in subfield samples for the custom field named test_field_1 that are not all strings... will remove these
+	No sample names specified were present within metadata file. Skipping this field entirely.	Unable to validate this field name because no samples specified were in the metadata file
+
+test_field_2:
+
+	No sample names specified were present within metadata file. Skipping this field entirely.	Unable to validate this field name because no samples specified were in the metadata file
+
+test_field_3:
+
+	Found 'all' specified within samples list, AND other values as well. Proceeded with checking all samples in this case.
+
+After preliminary checks, valid information for custom field names have been passed in. Will now check these accordingly
+
+
+CP040557.1:
+	All custom field checks passed
+
+CP014051.2:
+	All custom field checks passed

@@ -35,17 +35,16 @@ process BAKTA {
     """
     
     output:
-    path "${fasta_path.getSimpleName()}",   emit: bakta_results
-    //path "*.fna",   emit: fna
-    //path "*.gff3",   emit: gff3
-    //path "*.faa",   emit: faa
-    //path "*.embl",   emit: embl
-    //path "*.ffn",   emit: ffn
-    //path "*.gbff",   emit: gbff
-    //path "*.json",   emit: json
-    //path "*.log",   emit: log
-    //path "*.png",   emit: png
-    //path "*.svg",   emit: svg
-    //path "*.tsv",   emit: tsv
-    //path "*.txt",   emit: txt
+    path "${fasta_path.getSimpleName()}/*.fna",   emit: fna
+    path "${fasta_path.getSimpleName()}/*.gff3",   emit: gff3
+    path "${fasta_path.getSimpleName()}/*.faa",   emit: faa
+    path "${fasta_path.getSimpleName()}/*.embl",   emit: embl
+    path "${fasta_path.getSimpleName()}/*.ffn",   emit: ffn
+    path "${fasta_path.getSimpleName()}/*.gbff",   emit: gbff
+    path "${fasta_path.getSimpleName()}/*.json",   emit: json
+    path "${fasta_path.getSimpleName()}/*.log",   emit: log
+    path "${fasta_path.getSimpleName()}/*.png",   emit: png
+    path "${fasta_path.getSimpleName()}/*.svg",   emit: svg
+    path "${fasta_path.getSimpleName()}/*.tsv",   emit: tsv
+    path "${fasta_path.getSimpleName()}/*.txt",   emit: txt
 }
