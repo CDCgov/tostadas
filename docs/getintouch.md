@@ -14,8 +14,8 @@ Once all information has been provided, you may now submit it!
 
 Please allow for some turnaround time for us to review the issue and potentially start addressing it. If this is an urgent request and have not heard from us nor see any progress being made after quite some time (longer than a week), feel free to start a discussion (found here: Start New Discussion) mentioning the following:
 
-Issue Number
-Date Submitted
-General Background on Bug/Feature
-Reason for Urgency
+* Issue Number
+* Date Submitted
+* General Background on Bug/Feature
+* Reason for Urgency
 And we will get back to you as soon as possible.
