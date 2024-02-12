@@ -5,6 +5,7 @@
 <!-- [![GitHub Downloads](https://img.shields.io/github/downloads/CDCgov/tostadas/total.svg?style=social&logo=github&label=Download)](https://github.com/CDCgov/tostadas/releases) -->
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
+For the full documentation on the TOSTADAS pipeline take a look at our the Wiki Page: [Wiki](https://github.com/CDCgov/tostadas/wiki)
 ## Overview
  TOSTADAS is designed to fulfill common sequence submission use cases. The tool runs three sub-processes: 
 1. Metadata Validation – This workflow checks if metadata conforms to NCBI standards and matches the input .fasta file(s)
@@ -17,7 +18,9 @@ TOSTADAS is flexible, allowing you to choose which portions of the pipeline to r
 
 ## Environment Setup 
 
-:exclamation: Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](Link)
+For in-depth set-up instructions, follow the [Installation Guide](https://github.com/CDCgov/tostadas/wiki/Installation) in our wiki. 
+
+:exclamation: Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide)
 
 #### (1) Install Nextflow using Use Mamba and the Bioconda Channel:
 
