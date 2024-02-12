@@ -1,6 +1,6 @@
 # Get in Touch
 
-If you have any ideas for ways to improve our existing codebase, feel free to open an Issue Request (found here: Open New Issue)
+If you have any ideas for ways to improve our existing codebase, feel free to open an Issue Request (found here: [Open New Issue](https://github.com/CDCgov/tostadas/issues/new/choose))
 
 ## Steps to Open Issue Request:
 ### (1) Select Appropriate Template

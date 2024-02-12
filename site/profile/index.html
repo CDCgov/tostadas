@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../installation/">
+        <link rel="prev" href="../quickstart/">
       
       
-        <link rel="next" href="../profile/">
+        <link rel="next" href="../parameters/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Quick Start - TOSTADAS</title>
+        <title>Profile Options and Input Files - TOSTADAS</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quick-start" class="md-skip">
+        <a href="#profile-options-input-files" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Quick Start
+              Profile Options and Input Files
             
           </span>
         </div>
@@ -252,6 +252,26 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -268,7 +288,7 @@
           
   
   <span class="md-ellipsis">
-    Quick Start
+    Profile Options and Input Files
   </span>
   
 
@@ -279,7 +299,7 @@
         
   
   <span class="md-ellipsis">
-    Quick Start
+    Profile Options and Input Files
   </span>
   
 
@@ -301,48 +321,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#steps" class="md-nav__link">
+  <a href="#input-files-required" class="md-nav__link">
     <span class="md-ellipsis">
-      Steps
+      Input Files Required:
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Input Files Required:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-this-table-lists-the-required-files-to-run-metadata-validation-and-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      (A) This table lists the required files to run metadata validation and annotation:
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#profile-options-and-input-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      Profile Options and Input Files
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Profile Options and Input Files">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
+  <a href="#b-this-table-lists-the-required-files-to-run-with-submission" class="md-nav__link">
     <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Parameters">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#use-case-1-running-annotation-and-submission" class="md-nav__link">
-    <span class="md-ellipsis">
-      Use Case 1: Running Annotation and Submission
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Use Case 1: Running Annotation and Submission">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#breakdown" class="md-nav__link">
-    <span class="md-ellipsis">
-      Breakdown:
+      (B) This table lists the required files to run with submission:
     </span>
   </a>
   
@@ -350,6 +350,95 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customizing-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customizing Parameters:
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Customizing Parameters:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#customizing-the-nextflowconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customizing the nextflow.config
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customizing-parameters-from-the-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customizing Parameters from the Command Line
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#understanding-profiles-and-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Profiles and Environments:
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-with-annotation-and-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running with Annotation and Submission:
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-submission-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running Submission Only:
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running Submission Only:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q-can-we-use-standardyml-standardjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Q. Can we use standard.yml standard.json?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q. Can we use standard.yml standard.json?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-create-appropriate-accounts-as-needed-for-the-seqsender-public-database-submission-pipeline-integrated-into-tostadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      (A) Create Appropriate Accounts as needed for the SeqSender public database submission pipeline integrated into TOSTADAS:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-config-file-set-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      (B) Config File Set-up:
+    </span>
+  </a>
   
 </li>
         
@@ -367,26 +456,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../profile/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Profile Options and Input Files
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -518,48 +587,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#steps" class="md-nav__link">
+  <a href="#input-files-required" class="md-nav__link">
     <span class="md-ellipsis">
-      Steps
+      Input Files Required:
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Input Files Required:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-this-table-lists-the-required-files-to-run-metadata-validation-and-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      (A) This table lists the required files to run metadata validation and annotation:
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#profile-options-and-input-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      Profile Options and Input Files
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Profile Options and Input Files">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
+  <a href="#b-this-table-lists-the-required-files-to-run-with-submission" class="md-nav__link">
     <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Parameters">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#use-case-1-running-annotation-and-submission" class="md-nav__link">
-    <span class="md-ellipsis">
-      Use Case 1: Running Annotation and Submission
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Use Case 1: Running Annotation and Submission">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#breakdown" class="md-nav__link">
-    <span class="md-ellipsis">
-      Breakdown:
+      (B) This table lists the required files to run with submission:
     </span>
   </a>
   
@@ -567,6 +616,95 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customizing-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customizing Parameters:
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Customizing Parameters:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#customizing-the-nextflowconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customizing the nextflow.config
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customizing-parameters-from-the-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customizing Parameters from the Command Line
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#understanding-profiles-and-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Profiles and Environments:
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-with-annotation-and-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running with Annotation and Submission:
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-submission-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running Submission Only:
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running Submission Only:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q-can-we-use-standardyml-standardjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Q. Can we use standard.yml standard.json?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Q. Can we use standard.yml standard.json?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-create-appropriate-accounts-as-needed-for-the-seqsender-public-database-submission-pipeline-integrated-into-tostadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      (A) Create Appropriate Accounts as needed for the SeqSender public database submission pipeline integrated into TOSTADAS:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-config-file-set-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      (B) Config File Set-up:
+    </span>
+  </a>
   
 </li>
         
@@ -598,68 +736,117 @@
   
 
 
-<h1 id="quick-start">Quick Start</h1>
-<h2 id="steps">Steps</h2>
-<p>(1) Check that you are in the directory where the TOSTADAS repository was installed by running <code>pwd</code>
-Expected Output:</p>
+<h1 id="profile-options-input-files">Profile Options &amp; Input Files</h1>
+<p>This section walks through the available parameters to customize your workflow.</p>
+<h2 id="input-files-required">Input Files Required:</h2>
+<h3 id="a-this-table-lists-the-required-files-to-run-metadata-validation-and-annotation">(A) This table lists the required files to run metadata validation and annotation:</h3>
+<table>
+<thead>
+<tr>
+<th>Input files</th>
+<th>File type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Running Annotation and Submission</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>fasta</td>
+<td>.fasta</td>
+<td>Single sample fasta sequence file(s)</td>
+</tr>
+<tr>
+<td>metadata</td>
+<td>.xlsx</td>
+<td>Multi-sample metadata matching metadata spreadsheets provided in input_files</td>
+</tr>
+<tr>
+<td>Running Submission only without Annotation (Raw Files)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>fasta</td>
+<td>.fasta</td>
+<td>Single sample fasta sequence file(s)</td>
+</tr>
+<tr>
+<td>metadata</td>
+<td>.xlsx</td>
+<td>Multi-sample metadata matching metadata spreadsheets provided in input_files</td>
+</tr>
+<tr>
+<td>fasta</td>
+<td>.fasta</td>
+<td>Single sample fasta sequence file(s)</td>
+</tr>
+</tbody>
+</table>
+<p>** Please note that the pipeline expects ONLY pre-split FASTA files, where each FASTA file contains only the sequence(s) associated with its corresponding sample. The name of each FASTA file corresponding to a particular sample must be placed within your metadata sheet under fasta_file_name.</p>
+<p>Here is an example of how this would look like.</p>
+<h3 id="b-this-table-lists-the-required-files-to-run-with-submission">(B) This table lists the required files to run with submission:</h3>
+<p>|Input files    |File type  |Description|
+|fasta  |.fasta |Single sample fasta sequence file(s) sequences|
+|metadata   |.xlsx  |Multi-sample metadata matching metadata spreadsheets provided in input_files|
+|ref_fasta  |.fasta |Reference genome to use for the liftoff_submission branch of the pipeline|
+|ref_gff    |.gff   |Reference GFF3 file to use for the liftoff_submission branch of the pipeline|
+|submission_config  |.yaml  |configuration file for submitting to NCBI, sample versions can be found in repo|</p>
+<h2 id="customizing-parameters">Customizing Parameters:</h2>
+<p>Parameters can be customized from the nextflow.config file or from the command line, through the use of flags.</p>
+<h3 id="customizing-the-nextflowconfig">Customizing the nextflow.config</h3>
+<p>The nextflow.config file is where parameters can be adjusted based on preference for running the pipeline.</p>
+<p>Adjust your file inputs within standard_params.config ensuring accurate file paths for the inputs listed above. The params can be changed within the standard_params.config or you can change the standard.yml/standard.json file inside the params directory and pass it in with: <code>-params-file &lt;standard_params.yml or standard_params.json&gt;</code></p>
+<p>❗ DO NOT EDIT the <code>main.nf</code> file unless familiar with editing nextflow workflows</p>
+<h3 id="customizing-parameters-from-the-command-line">Customizing Parameters from the Command Line</h3>
+<p>Parameters can be overridden during runtime by providing various flags to the nextflow command.</p>
+<p>Example: Modifying the path of the output directory</p>
+<p><code>nextflow run main.nf -profile test,singularity --virus --output_dir /path/to/output/dir</code>
+Certain parameters such as <code>-profile</code> and pathogen type (<code>--virus</code>) are required, while others like <code>--output_dir</code> can be specified optionally. The complete list of parameters and the types of input that they require can be found in the Parameters page.</p>
+<h2 id="understanding-profiles-and-environments">Understanding Profiles and Environments:</h2>
+<p>Within the nextflow pipeline the <code>-profile</code> parameter is required as an input. The profile option can be specified as <code>test</code>. If test is not specified, parameters are read from the <code>nextflow.config</code> file. The test params should remain the same for testing purposes, but the standard profile can be changed to fit user preferences. The run environment is supplied as the second argument to the <code>profile</code> parameter. The options of <code>docker</code>, <code>singularity</code> or <code>conda</code> can passed in. The conda environment is less stable than the docker or singularity. we recommend you choose docker or singularity when running the pipeline.</p>
+<h2 id="running-with-annotation-and-submission">Running with Annotation and Submission:</h2>
+<p>By default, the pipeline will run the annotation and submission and sub-workflows. You may specify which databases to submit to using the database flags <code>--genbank</code> or <code>--sra</code>.</p>
 <ul>
-<li><code>/path/to/working/directory/tostadas</code>
-This is the default directory set in  nextflow.config for the provided test input files.</li>
+<li><code>nextflow run main.nf -profile &lt;singularity/docker/conda&gt; --virus --genbank --sra --submission_wait_time 5</code>
+params listed here: https://github.com/CDCgov/tostadas/blob/dev/nextflow.config</li>
 </ul>
-<p>(2) Change the submission_config parameter within <code>test_params.config</code> or <code>nextflow.config</code> (if running with your own data) to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.
-❗ You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on setting this up can be found here: More Information on Submission</p>
-<p>(3) Pipeline Execution Examples
-We describe a few use-cases of the pipeline below. For more information on input parameters, refer to the documentation found in the following pages:</p>
-<h2 id="profile-options-and-input-files">Profile Options and Input Files</h2>
-<h3 id="parameters">Parameters</h3>
-<p>❗ Note: For all use cases, the paths to the required files should be specified in the nextflow.config file or the params.yaml file.</p>
-<h4 id="use-case-1-running-annotation-and-submission">Use Case 1: Running Annotation and Submission</h4>
-<ol>
-<li>Annotate viral assemblies and submit to GenBank and SRA</li>
-</ol>
-<p>Required files: fasta files, metadata file</p>
+<h2 id="running-submission-only">Running Submission Only:</h2>
+<p>By default, the pipeline will run the annotation and submission and sub-workflows. You may override this but using the <code>--submission</code> and <code>--annotation</code> flags. To run only submission, use the flag <code>--annotation false</code> in your nextflow command.</p>
+<p>❗ Note: you can only submit raw files to SRA, not to Genbank.</p>
 <ul>
-<li><code>nextflow run main.nf -profile &lt;singularity/docker/conda&gt; --virus --genbank --sra --submission_wait_time 5</code></li>
+<li><code>nextflow run main.nf -profile &lt;test,standard&gt;,&lt;singularity,docker&gt; --&lt;virus,bacteria&gt; --annotation false --sra --submission_wait_time 5</code>
+Now that your file paths are set within your standard.yml or standard.json or nextflow.config file, you will want to define whether to run the full pipeline with submission or without submission. This is defined within the standard_params.config file underneath the subworkflow section as submission submission = true/false</li>
 </ul>
-<h5 id="breakdown">Breakdown:</h5>
-<p><code>-profile:</code>
-This parameter is required. Specify the profile and run-time environment (<code>singularity</code>, <code>docker</code> or <code>conda</code>). Conda implementation is less stable, <code>singularity</code> or <code>docker</code> is recommended.
-<code>--virus:</code>
-The pathogen type is specified as <code>virus</code>
-<code>--sra:</code>
-<code>sra</code> is specified as the database to submit to
-<code>--submission_wait_time</code>:
-This parameter is optional. Running the pipeline with default parameters will trigger a wait time equal to # of samples * 180 seconds. This default parameter can be overridden by supplying an integer value to the <code>submission_wait_time</code> parameter.
-<code>--genbank</code>:
-<code>genbank</code> is specified as the database to submit to
-❗ Pre-requisite to submit to GenBank: In order to submit to GenBank, the program table2asn must be executable in your local environment. Copy the program table2asn to you tostadas/bin directory by running the following lines of code:</p>
+<h3 id="q-can-we-use-standardyml-standardjson">Q. Can we use standard.yml standard.json?</h3>
+<p>Submission Pre-requisites:
+The submission component of the pipeline is adapted from SeqSender public database submission pipeline. It has been developed to allow the user to create a config file to select which databases they would like to upload to and allows for any possible metadata fields by using a YAML to pair the database's metadata fields with your personal metadata field columns. The requirements for this portion of the pipeline to run are listed below.</p>
+<h4 id="a-create-appropriate-accounts-as-needed-for-the-seqsender-public-database-submission-pipeline-integrated-into-tostadas">(A) Create Appropriate Accounts as needed for the SeqSender public database submission pipeline integrated into TOSTADAS:</h4>
+<p>NCBI: If uploading to NCBI archives such as BioSample/SRA/Genbank, you must complete the following steps:</p>
+<ul>
+<li>Create a center account: Contact the following e-mail for account creation: sra@ncbi.nlm.nih.gov  and provide the following information:</li>
+<li>Suggested center abbreviation (16 char max)</li>
+<li>Center name (full), center URL &amp; mailing address (including country and postcode)</li>
+<li>Phone number (main phone for center or lab)</li>
+<li>Contact person (someone likely to remain at the location for an extended time)</li>
+<li>Contact email (ideally a service account monitored by several people)</li>
+<li>Whether you intend to submit via FTP or command line Aspera (ascp)</li>
+<li>Gain access to an upload directory: Following center account creation, a test area and a production area will be created. Deposit the XML file and related data files into a directory and follow the instructions SRA provides via email to indicate when files are ready to trigger the pipeline.</li>
+<li>GISAID: A GISAID account is required for submission to GISAID, you can register for an account at (https://www.gisaid.org/). Test submissions are first required before a final submission can be made. When your first test submission is complete contact GISAID at (hcov-19@gisaid.org) to receive a personal CID. GISAID support is not yet implemented but it may be added in the future.</li>
+</ul>
+<h4 id="b-config-file-set-up">(B) Config File Set-up:</h4>
+<p>The template for the submission config file can be found in <code>bin/default_config_files</code> within the repo. This is where you can edit the various parameters you want to include in your submission. Read more at the <a href="https://cdcgov.github.io/seqsender/#id_3-config-file-creation">SeqSender</a> docs.
+You can find more information on how to setup your own submission config and additional information on fields in the following guide: <a href="https://github.com/CDCgov/tostadas/blob/b904111d78262efb82589bdd72b0482f27770f87/docs/submission_config_guide.md">Submission Config Guide</a>.
+❗ Pre-requisite to submit to GenBank: Copy the program <a href="https://www.ncbi.nlm.nih.gov/genbank/table2asn/">table2asn</a> to you tostadas/bin directory by running the following lines of code:</p>
 <ul>
 <li><code>cd ./tostadas/bin/</code></li>
 <li><code>wget https://ftp.ncbi.nlm.nih.gov/asn1-converters/by_program/table2asn/linux64.table2asn.gz</code></li>
 <li><code>gunzip linux64.table2asn.gz</code></li>
-<li>
-<p><code>mv linux64.table2asn table2asn</code></p>
-</li>
-<li>
-<p>Annotate bacterial assemblies and submit to GenBank and SRA **</p>
-</li>
+<li><code>mv linux64.table2asn table2asn</code></li>
 </ul>
-<p>Required files: fasta files, metadata file</p>
-<p>(A) Download BAKTA Database</p>
-<ul>
-<li>
-<p><code>nextflow run main.nf -profile &lt;singularity/docker/conda&gt; --bacteria --genbank --sra --submission_wait_time 5 --download_bakta_db --bakta_db_type &lt;light/full&gt;</code>
-(B) Provide path to existing BAKTA Database</p>
-</li>
-<li>
-<p><code>nextflow run main.nf -profile &lt;singularity/docker/conda&gt; --bacteria --genbank --sra --submission_wait_time 5 --bakta_db_path</code></p>
-</li>
-</ul>
-<p>Breakdown:</p>
-<p><code>--bacteria</code>:
-The pathogen type is specified as <code>bacteria</code>
-<code>--genbank</code>:
-<code>genbank</code> is specified as the database to submit to</p>
 
 
 

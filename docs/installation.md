@@ -1,7 +1,7 @@
 # Installation
 
 ## Environment Setup
-❗ Note: If you are a CDC user, please follow the set-up instructions found on Page X - CDC User Guide
+❗ Note: If you are a CDC user, please follow the set-up instructions found on Page X - [CDC User Guide](https://github.com/CDCgov/tostadas/wiki/)
 
 ### (1) Clone the repository to your local machine:
 * `git clone https://github.com/CDCgov/tostadas.git`
@@ -30,9 +30,7 @@ Verify which environment is active by running the following conda command: * `co
 
 ### (6) Install Nextflow using Use Mamba and the Bioconda Channel:
 * `mamba install -c bioconda nextflow`
-❗ Optionally, you may install nextflow without mamba by following the instructions found in the Nextflow Installation Documentaion Page: 
-
-## Nextflow Install
+❗ Optionally, you may install nextflow without mamba by following the instructions found in the Nextflow Installation Documentation Page: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
 
 ### (7) Ensure Nextflow was installed successfully by running nextflow -v
 Expected Output:
@@ -45,4 +43,4 @@ The exact version of Nextflow returned will differ from installation to installa
 * `nextflow run main.nf -profile test,<singularity/docker/conda> --virus`
 #### For Bacterial Reads
 * `nextflow run main.nf -profile test,<singularity/docker/conda> --bacteria` 
-The outputs of the pipeline will appear in the test_output folder within the project directory. You can specify an output directory in the config file or by supplying a path to the `--output_dir` flag in your nextflow run command.
+The outputs of the pipeline will appear in the test_output folder within the project directory. You can specify an output directory in the config file or by supplying a path to the `--output_dir` flag in your `nextflow run` command.
