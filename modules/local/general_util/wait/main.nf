@@ -9,6 +9,8 @@ process WAIT {
 
     label 'main'
     
+    container 'https://hub.docker.com/r/staphb/tostadas/tags:latest'
+    
     if ( params.run_conda == true ) {
         try {
             conda params.env_yml

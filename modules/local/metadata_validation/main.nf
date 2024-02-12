@@ -6,6 +6,8 @@
 process METADATA_VALIDATION {
 
     label 'main'
+    
+    container 'https://hub.docker.com/r/staphb/tostadas/tags:latest'
 
     //errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     //maxRetries 5

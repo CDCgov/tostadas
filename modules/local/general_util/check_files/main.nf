@@ -6,6 +6,8 @@
 process CHECK_FILES {
 
     label 'main'
+    
+    container 'https://hub.docker.com/r/staphb/tostadas/tags:latest'
 
     input:
         val signal

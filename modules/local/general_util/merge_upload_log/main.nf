@@ -6,6 +6,8 @@
 process MERGE_UPLOAD_LOG {
 
     label 'main'
+    
+    container 'https://hub.docker.com/r/staphb/tostadas/tags:latest'
 
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
 
