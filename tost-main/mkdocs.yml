@@ -1,7 +1,0 @@
-site_name: TOSTADAS
-nav:
-  - Home: index.md
-  - Install: installation.md
-  - Quick Start: quickstart.md
-  - Helpful Links: links.md
-  - Get in Touch: getintouch.md
