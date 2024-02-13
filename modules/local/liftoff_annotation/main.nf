@@ -7,16 +7,11 @@ process LIFTOFF {
 
     label 'main'
     
-    container 'https://hub.docker.com/r/staphb/tostadas/tags:latest'
-    
-    if ( params.run_conda == true ) {
-        try {
-            conda params.env_yml
-        } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
-        }
-    }
-
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/liftoff:1.6.3--pyhdfd78af_0' :
+        'quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_0'}"
+        
     publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:

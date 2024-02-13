@@ -5,10 +5,7 @@
 */
 process BAKTA {
 
-    label 'bakta'
-
-    // errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    maxRetries 5
+    // label 'bakta'
     
     conda (params.enable_conda ? "bioconda::bakta==1.9.1" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

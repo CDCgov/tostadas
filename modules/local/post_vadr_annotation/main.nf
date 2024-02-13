@@ -5,21 +5,13 @@
 */
 process VADR_POST_CLEANUP {
 
-    label 'main'
+    //label 'main'
     
-    container 'https://hub.docker.com/r/staphb/tostadas/tags:latest'
-
-    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    maxRetries 5
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/tostadas:latest' :
+        'staphb/tostadas:latest' }"
     
-    if ( params.run_conda == true ) {
-        try {
-            conda params.env_yml
-        } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
-        }
-    }
-
     publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:
