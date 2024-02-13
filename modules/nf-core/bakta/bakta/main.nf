@@ -22,13 +22,48 @@ process BAKTA {
     script:
     def args = task.ext.args  ?: ''
     """
-    bakta --db $db_path  --min-contig-length $params.bakta_min_contig_length --prefix ${fasta_path.getSimpleName()} \
-    --output ${fasta_path.getSimpleName()} --threads $params.bakta_threads \
-    --genus $params.bakta_genus --species $params.bakta_species --strain $params.bakta_strain --compliant \
-    --plasmid $params.bakta_plasmid  --locus $params.bakta_locus --locus-tag $params.bakta_locus_tag \
-    --translation-table $params.bakta_translation_table \
-    $args \
-    $fasta_path
+    bakta --db $db_path  \
+        --min-contig-length $params.bakta_min_contig_length \
+        --prefix ${fasta_path.getSimpleName()} \
+        --output ${fasta_path.getSimpleName()} \
+        --threads $params.bakta_threads \
+        --genus $params.bakta_genus \
+        --species $params.bakta_species \
+        --strain $params.bakta_strain 
+        --compliant \
+        --plasmid $params.bakta_plasmid  \
+        --locus $params.bakta_locus \
+        --locus-tag $params.bakta_locus_tag \
+        --translation-table $params.bakta_translation_table \
+        --complete $params.complete \
+        --meta $params.meta \
+        --complete $params.complete \
+        --meta $params.meta \
+        --keep_contig_headers $params.keep_contig_headers \
+        --version $params.version \
+        --verbose $params.verbose \
+        --debug $params.debug \
+        --skip_trna $params.skip_trna \
+        --skip_tmrna $params.skip_tmrna \
+        --skip_rrna $params.skip_rrna \
+        --skip_ncrna $params.skip_ncrna \
+        --skip_ncrna_region $params.skip_ncrna_region \
+        --skip_crispr $params.skip_crispr \
+        --skip_cds $params.skip_cds \
+        --skip_pseudo $params.skip_pseudo \
+        --skip_sorf $params.skip_sorf \
+        --skip_gap $params.skip_gap \
+        --skip_ori $params.skip_ori \
+        --skip_plot $params.skip_plot \
+        --bakta_min_contig_length $params.bakta_min_contig_length \
+        --bakta_genus $params.bakta_genus \
+        --bakta_species $params.bakta_species \
+        --bakta_strain $params.bakta_strain \
+        --bakta_plasmid $params.bakta_plasmid \
+        --bakta_locus $params.bakta_locus \
+        --bakta_locus_tag $params.bakta_locus_tag \
+        --bakta_translation_table $params.bakta_translation_table \
+        $fasta_path
     """
     
     output:
