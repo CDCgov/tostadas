@@ -1,0 +1,18 @@
+site_name: TOSTADAS
+repo_url: https://github.com/macoven-del/tost-main
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/git-alt
+  font:
+    text: Roboto
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick Start: quickstart.md
+  - Profile Options and Input Files: profile.md
+  - Parameters: parameters.md
+  - Outputs: outputs.md
+  - Submission Guide: submission.md
+  - Helpful Links: links.md
+  - Get in Touch: getintouch.md
