@@ -28,7 +28,7 @@ process BAKTA {
         --output ${fasta_path.getSimpleName()} \
         --genus $params.bakta_genus \
         --species $params.bakta_species \
-        --strain $params.bakta_strain 
+        --strain $params.bakta_strain \
         --plasmid $params.bakta_plasmid  \
         --complete $params.bakta_complete \
         --prodigal-tf $params.bakta_prodigal_tf \
