@@ -34,9 +34,9 @@ process BAKTA {
         --complete $params.bakta_complete \
         --translation-table $params.bakta_translation_table \
         --gram $params.bakta_gram \ 
-        --compliant $params.bakta_compliant \
+        --compliant 
         --locus $params.bakta_locus \
-        --locus-tag $params.bakta_locus-tag \
+        --locus-tag $params.bakta_locus_tag \
         --keep-contig-headers \
         $fasta_path
     """
