@@ -33,7 +33,7 @@ process BAKTA {
         --plasmid $params.bakta_plasmid  \
         --complete $params.bakta_complete \
         --translation-table $params.bakta_translation_table \
-        --gram $params.bakta_gram \ 
+        --gram $params.bakta_gram \
         --compliant \
         --locus $params.bakta_locus \
         --locus-tag $params.bakta_locus_tag \
