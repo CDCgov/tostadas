@@ -214,10 +214,11 @@ def create_zip_template(organism, database, submission_dir, submission_name):
 def start(command, database, organism, submission_dir, submission_name, config_file, metadata_file, fasta_file=None, table2asn=False, gff_file=None, test=False):
 	# Create the appropriate files
 	submission_dir = os.path.abspath(submission_dir)
-	config_file = os.path.join(submission_dir, submission_name, config_file)
-	metadata_file = os.path.join(submission_dir, submission_name, metadata_file)
-	fasta_file = os.path.join(submission_dir, submission_name, str(fasta_file)) if fasta_file is not None else None
-	gff_file = os.path.join(submission_dir, submission_name, str(gff_file)) if gff_file is not None else None
+	# todo: I think all these paths with be absolute paths when called by nextflow process
+    #config_file = os.path.join(submission_dir, submission_name, config_file)
+	#metadata_file = os.path.join(submission_dir, submission_name, metadata_file)
+	#fasta_file = os.path.join(submission_dir, submission_name, str(fasta_file)) if fasta_file is not None else None
+	#gff_file = os.path.join(submission_dir, submission_name, str(gff_file)) if gff_file is not None else None
 	submission_status_file = os.path.join(submission_dir, submission_name, "submission_report_status.csv")
 	# Check if submission directory exists
 	if os.path.exists(submission_dir) == False:
