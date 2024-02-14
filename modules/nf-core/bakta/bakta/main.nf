@@ -31,7 +31,7 @@ process BAKTA {
         --strain $params.bakta_strain 
         --plasmid $params.bakta_plasmid  \
         --complete $params.bakta_complete \
-        --prodigal-tf $params.bakta_prodigal+df \
+        --prodigal-tf $params.bakta_prodigal_tf \
         --translation-table $params.bakta_translation_table \
         --gram $params.bakta_gram \
         --locus $params.bakta_locus \
