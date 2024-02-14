@@ -23,46 +23,36 @@ process BAKTA {
     def args = task.ext.args  ?: ''
     """
     bakta --db $db_path  \
-        --min-contig-length $params.bakta_min_contig_length \
+        --min-contig-length $params.bakta_min-contig-length \
         --prefix ${fasta_path.getSimpleName()} \
         --output ${fasta_path.getSimpleName()} \
-        --threads $params.bakta_threads \
         --genus $params.bakta_genus \
         --species $params.bakta_species \
         --strain $params.bakta_strain 
-        --compliant \
         --plasmid $params.bakta_plasmid  \
+        --complete $params.bakta_complete \
+        --prodigal-tf $params.bakta_prodigal-df \
+        --translation-table $params.bakta_translation-table \
+        --gram $params.bakta_gram \
         --locus $params.bakta_locus \
-        --locus-tag $params.bakta_locus_tag \
-        --translation-table $params.bakta_translation_table \
-        --complete $params.complete \
-        --meta $params.meta \
-        --complete $params.complete \
-        --meta $params.meta \
-        --keep_contig_headers $params.keep_contig_headers \
-        --version $params.version \
-        --verbose $params.verbose \
-        --debug $params.debug \
-        --skip_trna $params.skip_trna \
-        --skip_tmrna $params.skip_tmrna \
-        --skip_rrna $params.skip_rrna \
-        --skip_ncrna $params.skip_ncrna \
-        --skip_ncrna_region $params.skip_ncrna_region \
-        --skip_crispr $params.skip_crispr \
-        --skip_cds $params.skip_cds \
-        --skip_pseudo $params.skip_pseudo \
-        --skip_sorf $params.skip_sorf \
-        --skip_gap $params.skip_gap \
-        --skip_ori $params.skip_ori \
-        --skip_plot $params.skip_plot \
-        --bakta_min_contig_length $params.bakta_min_contig_length \
-        --bakta_genus $params.bakta_genus \
-        --bakta_species $params.bakta_species \
-        --bakta_strain $params.bakta_strain \
-        --bakta_plasmid $params.bakta_plasmid \
-        --bakta_locus $params.bakta_locus \
-        --bakta_locus_tag $params.bakta_locus_tag \
-        --bakta_translation_table $params.bakta_translation_table \
+        --locus-tag $params.bakta_locus-tag \
+        --keep-contig-headers $params.bakta_keep-contig-headers \
+        --replicons $params.bakta_replicons \
+        --proteins $params.bakta_proteins \
+        --skip-trna $params.bakta_skip-trna \
+        --skip-tmrna $params.bakta_skip-tmrna \
+        --skip-rrna $params.bakta_skip-rrna \
+        --skip-ncrna $params.bakta_skip-ncrna \
+        --skip-ncrna-region $params.bakta_skip-ncrna-region \
+        --skip-crispr $params.bakta_skip-crispr \
+        --skip-cds $params.bakta_skip-cds \
+        --skip-pseudo $params.bakta_skip-pseudo \
+        --skip-sorf $params.bakta_skip-sorf \
+        --skip-gap $params.bakta_skip-gap \
+        --skip-ori $params.bakta_skip-ori \
+        --skip-plot $params.bakta_skip-plot \
+        --help $params.bakta_help \
+        --verbose $params.bakta_verbose
         $fasta_path
     """
     
