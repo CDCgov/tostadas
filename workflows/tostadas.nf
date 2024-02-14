@@ -145,26 +145,21 @@ workflow TOSTADAS {
                     BAKTA (
                         RUN_UTILITY.out,
                         BAKTADBDOWNLOAD.out.db,
-                        CHECK_FILES.out.fasta_files.sort().flatten()
+                        fasta_ch
                     )
                 }
                 else {
                     BAKTA (
                         RUN_UTILITY.out,
                         params.bakta_db_path,
-                        CHECK_FILES.out.fasta_files.sort().flatten()
+                        fasta_ch
                     )
-                }
-                BAKTA_POST_CLEANUP (
-                    BAKTA.out.bakta_results,
-                    params.meta_path,
-                    CHECK_FILES.out.fasta_files.sort().flatten()
-                )
-                bakta_gff_ch = BAKTA_POST_CLEANUP.out.gff.collect().flatten()
-                .map { 
-                    def meta = [:] 
-                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                    [ meta, it ]
+                    bakta_gff_ch = BAKTA.out.gff3.flatten()
+                    .map { 
+                        def meta = [:] 
+                        meta['id'] = it.getSimpleName()
+                        [ meta, it ]
+                        }
                 }
                 // set up submission channels
                 submission_ch = metadata_ch.join(fasta_ch)
