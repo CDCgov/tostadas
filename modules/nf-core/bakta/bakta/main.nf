@@ -18,43 +18,46 @@ process BAKTA {
     val signal
     path db_path
     tuple val(meta), path(fasta_path)
-
+    
     script:
     def args = task.ext.args  ?: ''
+
     """
     bakta --db $db_path  \
         --min-contig-length $params.bakta_min_contig_length \
-        --prefix ${fasta_path.getSimpleName()} \
-        --output ${fasta_path.getSimpleName()} \
+        --prefix $meta.id \
+        --output $meta.id \
         --genus $params.bakta_genus \
         --species $params.bakta_species \
         --strain $params.bakta_strain \
         --plasmid $params.bakta_plasmid  \
         --complete $params.bakta_complete \
-        --prodigal-tf $params.bakta_prodigal_tf \
         --translation-table $params.bakta_translation_table \
-        --gram $params.bakta_gram \
+        --gram $params.bakta_gram \ 
+        --compliant $params.bakta_compliant \
         --locus $params.bakta_locus \
         --locus-tag $params.bakta_locus-tag \
-        --keep-contig-headers $params.bakta_keep_contig_headers \
-        --replicons $params.bakta_replicons \
-        --proteins $params.bakta_proteins \
-        --skip-trna $params.bakta_skip_trna \
-        --skip-tmrna $params.bakta_skip_tmrna \
-        --skip-rrna $params.bakta_skip_rrna \
-        --skip-ncrna $params.bakta_skip_ncrna \
-        --skip-ncrna-region $params.bakta_skip_ncrna_region \
-        --skip-crispr $params.bakta_skip_crispr \
-        --skip-cds $params.bakta_skip_cds \
-        --skip-pseudo $params.bakta_skip_pseudo \
-        --skip-sorf $params.bakta_skip_sorf \
-        --skip-gap $params.bakta_skip_gap \
-        --skip-ori $params.bakta_skip_ori \
-        --skip-plot $params.bakta_skip_plot \
-        --help $params.bakta_help \
-        --verbose $params.bakta_verbose \
+        --keep-contig-headers \
         $fasta_path
     """
+    // optional args
+    // --prodigal-tf $params.bakta_prodigal_tf 
+    // --replicons $params.bakta_replicons 
+    // --proteins $params.bakta_proteins 
+    // --skip-trna  
+    // --skip-tmrna 
+    // --skip-rrna
+    // --skip-ncrna 
+    // --skip-ncrna-region 
+    // --skip-crispr 
+    // --skip-cds 
+    // --skip-pseudo
+    // --skip-sorf
+    // --skip-gap 
+    // --skip-ori 
+    // --skip-plot
+
+
     
     output:
     path "${fasta_path.getSimpleName()}/*.fna",   emit: fna
