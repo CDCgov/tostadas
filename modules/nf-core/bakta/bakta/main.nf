@@ -52,7 +52,7 @@ process BAKTA {
         --skip-ori $params.bakta_skip_ori \
         --skip-plot $params.bakta_skip_plot \
         --help $params.bakta_help \
-        --verbose $params.bakta_verbose
+        --verbose $params.bakta_verbose \
         $fasta_path
     """
     
