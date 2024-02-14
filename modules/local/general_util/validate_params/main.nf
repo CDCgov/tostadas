@@ -108,15 +108,6 @@ process VALIDATE_PARAMS {
 
         // check bakta specific params 
         if ( params.bakta == true ) {
-            assert params.bakta_min_contig_length
-            assert params.bakta_translation_table
-            assert params.bakta_threads
-            assert params.bakta_genus
-            assert params.bakta_species
-            assert params.bakta_strain
-            assert params.bakta_plasmid
-            assert params.bakta_locus
-            assert params.bakta_locus_tag
             if ( params.bakta_db_path instanceof String == false ) {
                 throw new Exception("Value must be of string type: $value used for $key parameter")
             }
