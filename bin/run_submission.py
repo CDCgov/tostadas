@@ -84,9 +84,8 @@ class SubmitToDatabase:
 
         # get the command
         #command = f"submission.py --command update_submissions --config {self.parameters['config']} --unique_name {unique_dir_name}"
-        command = f"submission.py submit --sra {self.parameters['sra']} --genbank {self.parameters['genbank']} --gisaid {self.parameters['gisaid']} --biosample {self.parameters['biosample']} \
-                  --organism {self.parameters['organism']} --submission_dir {self.parameters['submission_dir']}  --submission_name {self.parameters['submission_name']} --config {self.parameters['config']} \
-                  --metadata {self.parameters['validated_meta_path']}  --fasta {self.parameters['fasta_path']} --gff {self.parameters['gff_path']} --table2asn {self.parameters['table2asn']} --test_or_prod {self.parameters['prod_or_test']} \
+        command = f"submission.py check_submission_status --organism {self.parameters['organism']} --submission_dir {self.parameters['submission_dir']}  --submission_name {self.parameters['submission_name']} \
+                  --test_or_prod {self.parameters['prod_or_test']} \
                   --req_col_config {self.parameters['req_col_config']} --send_email {self.parameters['send_submission_email']}"  
 
         # open a txt file and write the command 
