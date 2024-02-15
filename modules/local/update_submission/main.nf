@@ -28,7 +28,7 @@ process UPDATE_SUBMISSION {
         
     script:
     """
-    submission.py check_submission_status --organism $params.organism --submission_dir   --submission_name ${submission_output.getExtension()} --prod_or_test $params.submission_prod_or_test
+    submission.py check_submission_status --organism $params.organism --submission_dir ${task.workDir}  --submission_name ${submission_output.getExtension()} --prod_or_test $params.submission_prod_or_test
     """
 
     output:

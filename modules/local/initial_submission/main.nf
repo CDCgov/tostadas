@@ -26,7 +26,7 @@ process INITAL_SUBMISSION {
     script:
     """     
     submission.py submit --genbank $params.genbank --sra $params.sra --gisaid $params.gisaid --biosample $params.biosample --organism $params.organism \
-                         --submission_dir   --submission_name ${validated_meta_path.getBaseName()} --config $submission_config  \
+                         --submission_dir ${task.workDir}  --submission_name ${validated_meta_path.getBaseName()} --config $submission_config  \
                          --validated_meta_path $validated_meta_path --fasta_path $fasta_path --gff_path $annotations_path --table2asn true \
                          --prod_or_test $params.submission_prod_or_test --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email
     """
