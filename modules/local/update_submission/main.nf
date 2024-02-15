@@ -28,9 +28,9 @@ process UPDATE_SUBMISSION {
         
     script:
     """
-    run_submission.py --config $submission_config --update true --unique_name $params.batch_name --sample_name ${submission_output.getExtension()}
+    submission.py check_submission_status --organism $params.organism --submission_dir   --submission_name ${submission_output.getExtension()} --prod_or_test $params.submission_prod_or_test
     """
 
     output:
-    path "$params.batch_name.${submission_output.getExtension()}", emit: submission_files
+    path "$params.${submission_output.getExtension()}", emit: submission_files
 } 
