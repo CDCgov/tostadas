@@ -1,0 +1,889 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../installation/">
+      
+      
+        <link rel="next" href="../userguide/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.7">
+    
+    
+      
+        <title>Quick Start - TOSTADAS</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.f2e4d321.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#quick-start" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="TOSTADAS" class="md-header__button md-logo" aria-label="TOSTADAS" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            TOSTADAS
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Quick Start
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CDCgov/tostadas/tree/github-pages" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="TOSTADAS" class="md-nav__button md-logo" aria-label="TOSTADAS" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    TOSTADAS
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CDCgov/tostadas/tree/github-pages" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#validate-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Validate Environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Validate Environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-check-that-you-are-in-the-directory-where-the-tostadas-repository-was-installed-by-running-pwd" class="md-nav__link">
+    <span class="md-ellipsis">
+      (1) Check that you are in the directory where the TOSTADAS repository was installed by running pwd
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-change-the-submission_config-parameter-within-nextflowconfig-if-running-with-your-own-data-to-the-location-of-your-personal-submission-config-file-note-that-we-provide-a-virus-and-bacterial-test-config-depending-on-the-use-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      (2) Change the submission_config parameter within nextflow.config (if running with your own data) to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-execution-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pipeline Execution Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Execution Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Usage:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#providing-additional-parameters-through-the-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      Providing additional parameters through the command line:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-modifying-the-submission-wait-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example: Modifying the submission wait time
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-case-1-running-annotation-and-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Case 1: Running Annotation and Submission
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-annotate-viral-assemblies-and-submit-to-genbank-and-sra" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Annotate viral assemblies and submit to GenBank and SRA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-annotate-bacterial-assemblies-and-submit-to-genbank-and-sra" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Annotate bacterial assemblies and submit to GenBank and SRA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-case-2-running-submission-only-without-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Case 2: Running Submission only without Annotation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../userguide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CDC User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profile/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Profile Options and Input Files
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../parameters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Parameters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../outputs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Outputs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../run/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Running the Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../submission/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Submission Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../links/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Helpful Links
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getintouch/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get in Touch
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#validate-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Validate Environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Validate Environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-check-that-you-are-in-the-directory-where-the-tostadas-repository-was-installed-by-running-pwd" class="md-nav__link">
+    <span class="md-ellipsis">
+      (1) Check that you are in the directory where the TOSTADAS repository was installed by running pwd
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-change-the-submission_config-parameter-within-nextflowconfig-if-running-with-your-own-data-to-the-location-of-your-personal-submission-config-file-note-that-we-provide-a-virus-and-bacterial-test-config-depending-on-the-use-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      (2) Change the submission_config parameter within nextflow.config (if running with your own data) to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-execution-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pipeline Execution Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Execution Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Usage:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#providing-additional-parameters-through-the-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      Providing additional parameters through the command line:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-modifying-the-submission-wait-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example: Modifying the submission wait time
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-case-1-running-annotation-and-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Case 1: Running Annotation and Submission
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-annotate-viral-assemblies-and-submit-to-genbank-and-sra" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Annotate viral assemblies and submit to GenBank and SRA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-annotate-bacterial-assemblies-and-submit-to-genbank-and-sra" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Annotate bacterial assemblies and submit to GenBank and SRA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-case-2-running-submission-only-without-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Case 2: Running Submission only without Annotation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="quick-start">Quick Start</h1>
+<h2 id="validate-environment">Validate Environment</h2>
+<h3 id="1-check-that-you-are-in-the-directory-where-the-tostadas-repository-was-installed-by-running-pwd">(1) Check that you are in the directory where the TOSTADAS repository was installed by running <code>pwd</code></h3>
+<p>Expected Output:
+* <code>/path/to/working/directory/tostadas</code>
+This is the default directory set in <code>nextflow.config</code> for the provided test input files.</p>
+<h3 id="2-change-the-submission_config-parameter-within-nextflowconfig-if-running-with-your-own-data-to-the-location-of-your-personal-submission-config-file-note-that-we-provide-a-virus-and-bacterial-test-config-depending-on-the-use-case">(2) Change the <code>submission_config</code> parameter within <code>nextflow.config</code> (if running with your own data) to the location of your personal submission config file. Note that we provide a virus and bacterial test config depending on the use case.</h3>
+<p>❗ You must have your personal submission configuration file set up before running the default parameters for the pipeline and/or if you plan on using sample submission at all. More information on running the submission sub-workflow can be found here: <a href="">More Information on Submission</a></p>
+<h2 id="pipeline-execution-examples">Pipeline Execution Examples</h2>
+<p>We describe a few use-cases of the pipeline below. For more information on input parameters, refer to the documentation found in the following pages:</p>
+<ul>
+<li><a href="">Profile Options and Input Files</a></li>
+<li><a href="">Parameters</a>
+❗ Note: For all use cases, the paths to the <em>required files</em> should be specified in the <code>nextflow.config</code> file or the <code>params.yaml</code> file.</li>
+</ul>
+<h3 id="basic-usage">Basic Usage:</h3>
+<p>Before we dive into the more complex use cases of the pipeline, let's look at the most basic way the pipeline can be run:</p>
+<ul>
+<li><code>nextflow run main.nf -profile &lt;singularity/docker/conda&gt; --virus</code></li>
+<li><code>-profile</code>:</li>
+<li>This parameter is required to specify the run-time environment (singularity, docker or conda). Conda implementation is less stable, singularity or docker is recommended.</li>
+<li>
+<p>Optionally, you may specify test as an additional argument to this parameter. If test is not provided as an option, the pipeline will run using the configurations found in the nextflow.config file.
+Example:</p>
+</li>
+<li>
+<p><code>nextflow run main.nf -profile singularity,test --virus</code></p>
+</li>
+<li>--virus:</li>
+<li>The pathogen type must be specified in order for the pipeline to run. Here virus is specified.</li>
+</ul>
+<h3 id="providing-additional-parameters-through-the-command-line">Providing additional parameters through the command line:</h3>
+<p>Parameters can be overridden during runtime by providing various flags to the nextflow command.</p>
+<h3 id="example-modifying-the-submission-wait-time">Example: Modifying the submission wait time</h3>
+<p>By default, the default parameters will trigger a wait time equal to number of samples, times 180 seconds. This default can be overridden by running the following command instead:</p>
+<ul>
+<li><code>nextflow run main.nf -profile &lt;singularity/docker/conda&gt; --virus --submission_wait_time &lt;integer value&gt;</code> </li>
+</ul>
+<h3 id="use-case-1-running-annotation-and-submission">Use Case 1: Running Annotation and Submission</h3>
+<h3 id="1-annotate-viral-assemblies-and-submit-to-genbank-and-sra">1. Annotate viral assemblies and submit to GenBank and SRA</h3>
+<p>Required files: fasta files, metadata file</p>
+<ul>
+<li>
+<p><code>nextflow run main.nf -profile &lt;singularity/docker/conda&gt; --virus --genbank --sra --submission_wait_time 5</code>
+Breakdown:</p>
+</li>
+<li>
+<p><code>-profile</code>:</p>
+</li>
+<li>Compute environment is specified</li>
+<li><code>--virus</code>:</li>
+<li>Pathogen type is specified as <code>virus</code>
+<code>--sra</code>:</li>
+<li><code>sra</code> is specified as the database for submission</li>
+<li><code>--genbank</code>:</li>
+<li><code>genbank</code> is specified as the database for submission</li>
+<li><code>--submission_wait_time</code>:</li>
+<li>
+<p>The <code>submission_wait_time</code> parameter is modified
+❗ <strong>Pre-requisite to submit to GenBank</strong>: In order to submit to GenBank, the program <code>table2asn</code> must be executable in your local environment. Copy <a href="https://www.ncbi.nlm.nih.gov/genbank/table2asn/">table2asn</a> to your <code>tostadas/bin</code> directory by running the following lines of code:</p>
+</li>
+<li>
+<p><code>cd ./tostadas/bin/</code></p>
+</li>
+<li><code>wget https://ftp.ncbi.nlm.nih.gov/asn1-converters/by_program/table2asn/linux64.table2asn.gz</code></li>
+<li><code>gunzip linux64.table2asn.gz</code></li>
+<li><code>mv linux64.table2asn table2asn</code></li>
+</ul>
+<h3 id="2-annotate-bacterial-assemblies-and-submit-to-genbank-and-sra">2. Annotate bacterial assemblies and submit to GenBank and SRA</h3>
+<p>Required files: fasta files, metadata file, a reference database</p>
+<p>(A) Download BAKTA database</p>
+<ul>
+<li>
+<p><code>nextflow run main.nf -profile &lt;singularity/docker/conda&gt; --bacteria --genbank --sra --submission_wait_time 5 --download_bakta_db true --bakta_db_type &lt;light/full&gt;</code>
+(B) Provide path to existing BAKTA database</p>
+</li>
+<li>
+<p><code>nextflow run main.nf -profile &lt;singularity/docker/conda&gt; --bacteria --genbank --sra --submission_wait_time 5 --bakta_db_path &lt;path/to/bakta/db&gt;</code>
+Breakdown:</p>
+</li>
+<li>
+<p><code>--bacteria</code>:</p>
+</li>
+<li>The pathogen type is specified as <code>bacteria</code></li>
+<li><code>--download_bakta_db &lt;true/false&gt;</code>:</li>
+<li>This parameter must be specified as <code>true</code> or <code>false</code></li>
+<li><code>--bakta_db_type &lt;light/full&gt;</code>:</li>
+<li>The BAKTA database type is defined in this parameter. <code>light</code> or <code>full</code> can be supplied as options for this parameter</li>
+<li><code>--bakta_db_path /path/to/bakta/db</code>:</li>
+<li>The path to the BAKTA database is defined</li>
+</ul>
+<h3 id="use-case-2-running-submission-only-without-annotation">Use Case 2: Running Submission only without Annotation</h3>
+<p>Notes: you can only submit raw files to SRA, not to Genbank.</p>
+<p><strong>1. Submit fastqs to SRA</strong> Required files: fastq files, metadata file</p>
+<ul>
+<li><code>nextflow run main.nf -profile &lt;test,standard&gt;,&lt;singularity,docker&gt; --&lt;virus,bacteria&gt; --annotation false --sra --submission_wait_time 5</code></li>
+<li><code>--annotation</code>:</li>
+<li>The boolean option <code>false</code> is specified for the annotation parameter</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.caa56a14.min.js"></script>
+      
+    
+  </body>
+</html>
