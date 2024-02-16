@@ -52,9 +52,9 @@ process BAKTA {
         --locus $params.bakta_locus \
         --locus-tag $params.bakta_locus_tag \
         --$compliant \
-        --$keep-contig-headers \
+        --$keep_contig_headers \
         --$proteins \
-        --$prodigal-tf \
+        --$prodigal_tf \
         --$skip_trna \
         --$skip_rrna \
         --$skip_ncrna \
