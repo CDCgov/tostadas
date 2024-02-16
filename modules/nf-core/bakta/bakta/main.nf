@@ -21,6 +21,21 @@ process BAKTA {
     
     script:
     def args = task.ext.args  ?: ''
+    def prefix   = task.ext.prefix ?: "${meta.id}"
+    def proteins_opt = params.bakta_proteins ? "--proteins ${proteins[0]}" : ""
+    def prodigal_tf = params.bakta_prodigal_tf ? "--prodigal-tf ${prodigal_tf[0]}" : ""
+    def skip_trna = params.skip_trna ? "--skip_trna" : ""
+    def skip_tmrna = params.skip_tmrna ? "--skip_tmrna" : ""
+    def skip_rrna = params.skip_rrna ? "--skip_rrna" : ""
+    def skip_ncrna = params.skip_ncrna ? "--skip_ncrna" : ""
+    def skip_ncrna_region = params.skip_ncrna_region ? "--skip_ncrna_region" : ""
+    def skip_crispr = params.skip_crispr ? "--skip_crispr" : ""
+    def skip_cds = params.skip_cds ? "--skip_cds" : ""
+    def skip_sorf = params.skip_sorf ? "--skip_sorf" : ""
+    def skip_gap = params.skip_gap ? "--skip_gap" : ""
+    def skip_ori = params.skip_ori ? "--skip_ori" : ""
+    def compliant = params.compliant ? "--compliant" : ""
+    def keep_contig_headers = params.keep_contig_headers ? "--keep_contig_headers" : ""
 
     """
     bakta --db $db_path  \
@@ -34,10 +49,21 @@ process BAKTA {
         --complete $params.bakta_complete \
         --translation-table $params.bakta_translation_table \
         --gram $params.bakta_gram \
-        --compliant \
         --locus $params.bakta_locus \
         --locus-tag $params.bakta_locus_tag \
-        --keep-contig-headers \
+        --$compliant \
+        --$keep-contig-headers \
+        --$proteins \
+        --$prodigal-tf \
+        --$skip_trna \
+        --$skip_rrna \
+        --$skip_ncrna \
+        --$skip_ncrna_region \
+        --$skip_crispr \
+        --$skip_cds \
+        --$skip_sorf \
+        --$skip_gap \
+        --$skip_ori \
         $fasta_path
     """
     
