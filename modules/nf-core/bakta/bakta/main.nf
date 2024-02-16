@@ -40,24 +40,6 @@ process BAKTA {
         --keep-contig-headers \
         $fasta_path
     """
-    // optional args
-    // --prodigal-tf $params.bakta_prodigal_tf 
-    // --replicons $params.bakta_replicons 
-    // --proteins $params.bakta_proteins 
-    // --skip-trna  
-    // --skip-tmrna 
-    // --skip-rrna
-    // --skip-ncrna 
-    // --skip-ncrna-region 
-    // --skip-crispr 
-    // --skip-cds 
-    // --skip-pseudo
-    // --skip-sorf
-    // --skip-gap 
-    // --skip-ori 
-    // --skip-plot
-
-
     
     output:
     path "${fasta_path.getSimpleName()}/*.fna",   emit: fna
