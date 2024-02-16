@@ -35,6 +35,7 @@ process BAKTA {
     def skip_gap = params.bakta_skip_gap ? "--skip_gap" : ""
     def skip_ori = params.bakta_skip_ori ? "--skip_ori" : ""
     def compliant = params.bakta_compliant ? "--compliant" : ""
+    def complete = params.bakta_complete ? "--complete" : ""
     def keep_contig_headers = params.bakta_keep_contig_headers ? "--keep_contig_headers" : ""
 
     """
@@ -51,19 +52,19 @@ process BAKTA {
         --gram $params.bakta_gram \
         --locus $params.bakta_locus \
         --locus-tag $params.bakta_locus_tag \
-        --$compliant \
-        --$keep_contig_headers \
-        --$proteins \
-        --$prodigal_tf \
-        --$skip_trna \
-        --$skip_rrna \
-        --$skip_ncrna \
-        --$skip_ncrna_region \
-        --$skip_crispr \
-        --$skip_cds \
-        --$skip_sorf \
-        --$skip_gap \
-        --$skip_ori \
+        $compliant \
+        $keep_contig_headers \
+        $proteins \
+        $prodigal_tf \
+        $skip_trna \
+        $skip_rrna \
+        $skip_ncrna \
+        $skip_ncrna_region \
+        $skip_crispr \
+        $skip_cds \
+        $skip_sorf \
+        $skip_gap \
+        $skip_ori \
         $fasta_path
     """
     
