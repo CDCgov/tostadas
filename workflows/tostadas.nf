@@ -25,7 +25,7 @@ include { BAKTA                                             } from "../modules/n
 include { BAKTA_POST_CLEANUP                                } from "../modules/local/post_bakta_annotation/main"
 
 // get submission related process/subworkflows
-include { INITIAL_SUBMISSION                                } from "../subworkflows/local/initial_submission"
+include { INITIAL_SUBMISSION                                } from "../subworkflows/local/submission"
 include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
 
 /*
