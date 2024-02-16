@@ -22,7 +22,7 @@ process BAKTA {
     script:
     def args = task.ext.args  ?: ''
     def prefix   = task.ext.prefix ?: "${meta.id}"
-    def proteins_opt = params.bakta_proteins ? "--proteins ${proteins[0]}" : ""
+    def proteins = params.bakta_proteins ? "--proteins ${proteins[0]}" : ""
     def prodigal_tf = params.bakta_prodigal_tf ? "--prodigal-tf ${prodigal_tf[0]}" : ""
     def skip_trna = params.bakta_skip_trna ? "--skip_trna" : ""
     def skip_tmrna = params.bakta_skip_tmrna ? "--skip_tmrna" : ""
