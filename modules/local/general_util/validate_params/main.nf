@@ -108,6 +108,8 @@ process VALIDATE_PARAMS {
 
         // check bakta specific params 
         if ( params.bakta == true ) {
+            assert params.fasta_path
+            assert params.meta_path
             if ( params.bakta_db_path instanceof String == false ) {
                 throw new Exception("Value must be of string type: $value used for $key parameter")
             }
