@@ -8,6 +8,7 @@ import shutil
 from datetime import datetime
 import argparse
 from distutils.util import strtobool
+import pandas as pd
 
 # Local imports
 sys.path.insert(0, str(pathlib.Path(__file__).parent))

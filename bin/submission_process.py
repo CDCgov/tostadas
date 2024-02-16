@@ -18,14 +18,14 @@ PROG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Get main config file
 def get_main_config():
-	main_config_path = os.path.join(PROG_DIR, "config", "main_config.yaml")
+	main_config_path = os.path.join(PROG_DIR, "config_files", "seqsender_main_config.yaml")
 	if os.path.isfile(main_config_path) == True:
 		with open(main_config_path, "r") as f:
 			main_config = yaml.load(f, Loader=yaml.BaseLoader) # Load yaml as str only
 		if type(main_config) is dict:
 			try:
 				main_config = main_config["SUBMISSION_PORTAL"]
-				return main_config
+				return main_config 
 			except:
 				print("Error: there is no SUBMISSION_PORTAL information in config file.", file=sys.stderr)
 				sys.exit(1)
@@ -90,7 +90,7 @@ def get_config(config_file, database):
 # Read in metadata file
 def get_metadata(database, organism, metadata_file):
 	# Read in metadata file
-	metadata = pd.read_csv(metadata_file, header = 0, dtype = str, engine = "python", encoding="utf-8", index_col=False, na_filter=False)
+	metadata = pd.read_excel(metadata_file, header=[1], dtype = str, engine = "openpyxl", ndex_col=None, na_filter=False)
 	# Remove rows if entirely empty
 	metadata = metadata.dropna(how="all")
 	# Remove extra spaces from column names
@@ -260,7 +260,7 @@ def process_fasta_samples(metadata, fasta_file):
 	# Check duplicates in fasta_df
 	duplicated_df = fasta_df[fasta_df.duplicated(subset = ["fasta_name_orig"], keep = False)]
 	if not duplicated_df.empty:
-		print("Error: Sequences in fasta file must be unique at: " + fasta_file + "\nDuplicate Sequences\n" + df["fasta_sequence_orig"].to_string(index=False), file=sys.stderr)
+		print("Error: Sequences in fasta file must be unique at: " + fasta_file + "\nDuplicate Sequences\n" + fasta_df["fasta_sequence_orig"].to_string(index=False), file=sys.stderr)
 		sys.exit(1)
 	# Validate duplicates don't appear on merge
 	try:
@@ -383,7 +383,7 @@ def update_submission_status(submission_dir, submission_name, organism, test):
 										gff_file = None
 									submission_id, submission_status = submission_create.create_genbank_table2asn(submission_name=submission_name, submission_files_dir=submission_files_dir, gff_file=gff_file)
 									if submission_status == "processed-ok":
-										submission_status = submit.sendmail(database=database_name, submission_name=submission_name, submission_dir=submission_dir, config_dict=config_dict['NCBI'], test=test)
+										submission_status = submission_submit.sendmail(database=database_name, submission_name=submission_name, submission_dir=submission_dir, config_dict=config_dict['NCBI'], test=test)
 								else:
 									# Submit via FTP
 									submission_create.create_genbank_zip(submission_name=submission_name, submission_files_dir=submission_files_dir)
