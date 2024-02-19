@@ -9,43 +9,34 @@
 include { BAKTA                                             } from "../../modules/nf-core/bakta/bakta/main"
 include { BAKTADBDOWNLOAD                                   } from "../../modules/nf-core/bakta/baktadbdownload/main"
 include { BAKTA_POST_CLEANUP                                } from "../../modules/local/post_bakta_annotation/main"
+// get BAKTA related processes
 
 workflow RUN_BAKTA {
     take: 
-    run_utility
-    fasta
+    utility_signal
+    fasta_ch
 
     main:
-    if ( params.download_bakta_db ) {
-        BAKTADBDOWNLOAD (
-            run_utility
-        )
-    
-        BAKTA (
-            run_utility,
-            BAKTADBDOWNLOAD.out.db,
-            fasta
-        )
+        if ( params.download_bakta_db ) {
+            BAKTADBDOWNLOAD (
+                utility_signal 
+                )
+            BAKTA (
+                utility_signal,
+                BAKTADBDOWNLOAD.out.db,
+                fasta_ch
+                )
             }
-
         else {
             BAKTA (
-                run_utility,
-                params.bakta_db_path,
-                fasta
+            utility_signal,
+            params.bakta_db_path,
+            fasta_ch
             )
         }
         
-	    BAKTA_POST_CLEANUP (
-		    BAKTA.out.bakta_results,
-		    params.meta_path,
-		    fasta
-	    )   
-        
         emit:
-        cleaned_fasta = BAKTA_POST_CLEANUP.out.fasta
-        cleaned_gff = BAKTA_POST_CLEANUP.out.gff
-
+        gff3 = BAKTA.out.gff3
     }
 
 
