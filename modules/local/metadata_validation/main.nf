@@ -12,7 +12,7 @@ process METADATA_VALIDATION {
         'staphb/tostadas:latest' :
         'staphb/tostadas:latest' }"
 
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+    // publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:
     val signal
