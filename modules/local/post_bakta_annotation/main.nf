@@ -18,7 +18,7 @@ process BAKTA_POST_CLEANUP {
         }
     }
 
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+    // publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:
     path bakta_results
