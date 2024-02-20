@@ -901,26 +901,17 @@ class HandleDfInserts:
 	def handle_df_changes(self):
 		""" Main function to call sub-insert routines and return the final metadata dataframe
 		"""
-		# adds the Geolocation field
 		self.change_col_names()
-		# adds any additional columns (seqsender required cols that are not in our metadata file)
-		self.insert_additional_columns()
-		
+
 		# list of column names to check
 		columns_to_check = ['authors', 'bs-collected_by', 'src-country', 'bs-isolate', 'bs-host', 'bs-host_disease',
-					  		'bs-lat_lon', 'bs-sex', 'bs-age', 'cmt-Assembly-Method', 'cmt-Coverage', 
+					  		'bs-lat_lon', 'bs-host_sex', 'bs-host_age', 'cmt-Assembly-Method', 'cmt-Coverage', 
 							'src-isolate', 'src-host', 'cmt-HOST_AGE', 'cmt-HOST_GENDER']
 		for column_name in columns_to_check:
 			try:
 				self.check_nan_for_column(self.filled_df, column_name)
 			except AssertionError:
 				raise AssertionError(f'Columns in dataframe were not properly changed for input to seqsender')
-
-	# todo: apply this function to Ankush's insert checks as well
-	def check_nan_for_column(self, column_name):
-		""" Check for NaN values (if not a string) in a column of the dataframe """
-		assert column_name in self.filled_df.columns.values
-		assert True not in [math.isnan(x) for x in self.filled_df[column_name].tolist() if isinstance(x, str) is False]
 
 	def change_col_names(self):
 		""" Change identical column names to match the name seqsender expects
@@ -935,8 +926,8 @@ class HandleDfInserts:
 									   'host': 'bs-host',
 									   'host_disease': 'bs-host_disease',
 									   'lat_lon': 'bs-lat_lon',
-									   'sex': 'bs-sex',
-									   'age': 'bs-age',
+									   'sex': 'bs-host_sex',
+									   'age': 'bs-host_age',
 									   'assembly_method': 'cmt-Assembly-Method',
 									   'mean_coverage': 'cmt-Coverage',
 									   'illumina_sequencing_instrument': 'sra-instrument_model',
@@ -950,7 +941,12 @@ class HandleDfInserts:
 		self.filled_df['src-host'] = self.filled_df['bs-host']
 		self.filled_df['cmt-HOST_AGE'] = self.filled_df['bs-host_age']
 		self.filled_df['cmt-HOST_GENDER'] = self.filled_df['bs-host_sex']
-
+	
+	# todo: apply this function to Ankush's insert checks as well
+	def check_nan_for_column(self, column_name):
+		""" Check for NaN values (if not a string) in a column of the dataframe """
+		assert column_name in self.columns.values
+		assert True not in [math.isnan(x) for x in self[column_name].tolist() if isinstance(x, str) is False]
 
 # todo: handle multiple tsvs for illumina vs. nanopore - another class?
 
