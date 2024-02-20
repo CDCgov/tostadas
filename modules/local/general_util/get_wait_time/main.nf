@@ -1,4 +1,9 @@
 process GET_WAIT_TIME {
+
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+
     input:
         val validated_meta_path
     exec:
