@@ -5,7 +5,7 @@
 */
 process METADATA_VALIDATION {
 
-    label 'main'
+    //label 'main'
 
     //errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     //maxRetries 5
