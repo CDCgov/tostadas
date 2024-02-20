@@ -67,11 +67,11 @@ def metadata_validation_main():
 		# now split the modified and checked dataframe into individual samples
 		sample_dfs = {}
 		final_df = insert.filled_df
+		# todo: this rename is temporary - will be added in the class/fx to handle multiple tsvs (see lines 76 & 955)
+		final_df = final_df.rename(columns={'sample_name': 'sequence_name'}) # seqsender expects sequence_name
 		for row in range(len(final_df)):
 			sample_df = final_df.iloc[row].to_frame().transpose()
-			sample_df = sample_df.set_index('sample_name')
-			# todo: this rename is temporary - will be added in the class/fx to handle multiple tsvs (see lines 76 & 955)
-			sample_df.rename(columns={'sample_name':'sequence_name'}) # seqsender expects sequence_name
+			sample_df = sample_df.set_index('sequence_name')
 			sample_dfs[final_df.iloc[row]['sequence_name']] = sample_df
 		# now export the .xlsx file as a .tsv
 		for sample in sample_dfs.keys():
@@ -909,7 +909,7 @@ class HandleDfInserts:
 							'src-isolate', 'src-host', 'cmt-HOST_AGE', 'cmt-HOST_GENDER']
 		for column_name in columns_to_check:
 			try:
-				self.check_nan_for_column(self.filled_df, column_name)
+				self.check_nan_for_column(column_name)
 			except AssertionError:
 				raise AssertionError(f'Columns in dataframe were not properly changed for input to seqsender')
 
@@ -945,8 +945,8 @@ class HandleDfInserts:
 	# todo: apply this function to Ankush's insert checks as well
 	def check_nan_for_column(self, column_name):
 		""" Check for NaN values (if not a string) in a column of the dataframe """
-		assert column_name in self.columns.values
-		assert True not in [math.isnan(x) for x in self[column_name].tolist() if isinstance(x, str) is False]
+		assert column_name in self.filled_df.columns.values
+		assert True not in [math.isnan(x) for x in self.filled_df[column_name].tolist() if isinstance(x, str) is False]
 
 # todo: handle multiple tsvs for illumina vs. nanopore - another class?
 
