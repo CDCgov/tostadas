@@ -63,18 +63,17 @@ def metadata_validation_main():
 	# change necessary columns to match what seqsender expects
 	insert.handle_df_changes()
 
-	# now split the modified and checked dataframe into individual samples
-	sample_dfs = {}
-	final_df = insert.filled_df
-	for row in range(len(final_df)):
-		sample_df = final_df.iloc[row].to_frame().transpose()
-		sample_df = sample_df.set_index('sample_name')
-		sample_dfs[final_df.iloc[row]['sample_name']] = sample_df
-
-	# todo: handle multiple tsvs for illumina vs. nanopore
-		
-	# now export the .xlsx file as a .tsv
 	if validate_checks.did_validation_work:
+		# now split the modified and checked dataframe into individual samples
+		sample_dfs = {}
+		final_df = insert.filled_df
+		for row in range(len(final_df)):
+			sample_df = final_df.iloc[row].to_frame().transpose()
+			sample_df = sample_df.set_index('sample_name')
+			# todo: this rename is temporary - will be added in the class/fx to handle multiple tsvs (see lines 76 & 955)
+			sample_df.rename(columns={'sample_name':'sequence_name'}) # seqsender expects sequence_name
+			sample_dfs[final_df.iloc[row]['sequence_name']] = sample_df
+		# now export the .xlsx file as a .tsv
 		for sample in sample_dfs.keys():
 			tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
 			sample_dfs[sample].to_csv(tsv_file, sep="\t")
@@ -82,6 +81,8 @@ def metadata_validation_main():
 	else:
 		print(f'\nMetadata Validation Failed Please Consult : {parameters["output_dir"]}/{parameters["file_name"]}/errors/full_error.txt for a Detailed List\n')
 		sys.exit(1)
+
+	# todo: handle multiple tsvs for illumina vs. nanopore
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
@@ -866,8 +867,8 @@ class HandleDfInserts:
 		# adds any additional columns (seqsender required cols that are not in our metadata file)
 		self.insert_additional_columns()
 		try:
-			assert 'geo_location' in self.filled_df.columns.values
-			assert True not in [math.isnan(x) for x in self.filled_df['geo_location'].tolist() if isinstance(x, str) is False]
+			assert 'bs-geo_location' in self.filled_df.columns.values
+			assert True not in [math.isnan(x) for x in self.filled_df['bs-geo_location'].tolist() if isinstance(x, str) is False]
 			assert 'structuredcomment' in self.filled_df.columns.values
 			assert True not in [math.isnan(x) for x in self.filled_df['structuredcomment'].tolist() if
 								isinstance(x, str) is False]
@@ -926,23 +927,24 @@ class HandleDfInserts:
 			Copy duplicate columns as seqsender expects
 		"""
 		# todo: only illumina is supported now (by changing colnames) - need to change illumina_ fields to properly support both nanopore and illumina
-		self.filled_df.rename(columns={'author': 'authors',
-								 	   'collected_by': 'bs-collected_by',
-								 	   'country': 'src-country',
+		self.filled_df.rename(columns={
+									   'author': 'authors',
+									   'collected_by': 'bs-collected_by',
+									   'country': 'src-country',
 									   'isolate': 'bs-isolate',
 									   'host': 'bs-host',
 									   'host_disease': 'bs-host_disease',
 									   'lat_lon': 'bs-lat_lon',
 									   'sex': 'bs-sex',
 									   'age': 'bs-age',
-									   'assembly_method':'cmt-Assembly-Method',
-									   'mean_coverage':'cmt-Coverage',
-									   'illumina_sequencing_instrument':'',
-									   'illumina_library_strategy':'sra-instrument_model',
-									   'illumina_library_source':'sra-library_source',
-									   'illumina_library_selection':'sra-library_selection',
-									   'illumina_library_layout':'sra-library_layout',
-									   'illumina_library_protocol':'sra-library_construction_protocol'
+									   'assembly_method': 'cmt-Assembly-Method',
+									   'mean_coverage': 'cmt-Coverage',
+									   'illumina_sequencing_instrument': 'sra-instrument_model',
+									   'illumina_library_strategy': 'sra-instrument_model',
+									   'illumina_library_source': 'sra-library_source',
+									   'illumina_library_selection': 'sra-library_selection',
+									   'illumina_library_layout': 'sra-library_layout',
+									   'illumina_library_protocol': 'sra-library_construction_protocol'								
 									   }, inplace = True)
 		self.filled_df['src-isolate'] = self.filled_df['bs-isolate']
 		self.filled_df['src-host'] = self.filled_df['bs-host']
