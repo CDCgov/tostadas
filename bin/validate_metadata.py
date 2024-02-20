@@ -890,12 +890,12 @@ class HandleDfInserts:
 		"""
 		# todo: this fx does not include req'd cols for GISAID (see seqsender main config and submission_process.py script)
 		self.filled_df.insert(self.filled_df.shape[1], "structuredcomment", ["Assembly-Data"] * len(self.filled_df.index))
-		self.filled_df.insert(self.filled_df.shape[1], "Not Provided", ["bs-isolation_source"] * len(self.filled_df.index))
-		self.filled_df.insert(self.filled_df.shape[1], "Not Provided", ["src-isolation_source"] * len(self.filled_df.index))
-		self.filled_df.insert(self.filled_df.shape[1], "Not Provided", ["src-serotype"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "bs-isolation_source", ["Not Provided"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "src-isolation_source", ["Not Provided"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "src-serotype", ["Not Provided"] * len(self.filled_df.index))
 		# todo: these two cmt- fields have different values if organism== flu or cov
-		self.filled_df.insert(self.filled_df.shape[1], "Assembly-Data", ["cmt-StructuredCommentPrefix"] * len(self.filled_df.index))
-		self.filled_df.insert(self.filled_df.shape[1], "Assembly-Data", ["cmt-StructuredCommentSuffix"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentPrefix", ["Assembly-Data"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentSuffix", ["Assembly-Data"] * len(self.filled_df.index))
 
 	def handle_df_changes(self):
 		""" Main function to call sub-insert routines and return the final metadata dataframe
@@ -925,6 +925,7 @@ class HandleDfInserts:
 		""" Change identical column names to match the name seqsender expects
 			Copy duplicate columns as seqsender expects
 		"""
+		# todo: only illumina is supported now (by changing colnames) - need to change illumina_ fields to properly support both nanopore and illumina
 		self.filled_df.rename(columns={'author': 'authors',
 								 	   'collected_by': 'bs-collected_by',
 								 	   'country': 'src-country',
@@ -935,7 +936,14 @@ class HandleDfInserts:
 									   'sex': 'bs-sex',
 									   'age': 'bs-age',
 									   'assembly_method':'cmt-Assembly-Method',
-									   'mean_coverage':'cmt-Coverage'}, inplace = True)
+									   'mean_coverage':'cmt-Coverage',
+									   'illumina_sequencing_instrument':'',
+									   'illumina_library_strategy':'sra-instrument_model',
+									   'illumina_library_source':'sra-library_source',
+									   'illumina_library_selection':'sra-library_selection',
+									   'illumina_library_layout':'sra-library_layout',
+									   'illumina_library_protocol':'sra-library_construction_protocol'
+									   }, inplace = True)
 		self.filled_df['src-isolate'] = self.filled_df['bs-isolate']
 		self.filled_df['src-host'] = self.filled_df['bs-host']
 		self.filled_df['cmt-HOST_AGE'] = self.filled_df['bs-host_age']
