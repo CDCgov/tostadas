@@ -5,6 +5,10 @@
 */
 process ONLY_UPDATE_SUBMISSION_ENTRY_CHECK {
 
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5
 
