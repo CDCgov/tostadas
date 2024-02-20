@@ -5,6 +5,11 @@
 */
 
 process VALIDATE_PARAMS {
+
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+
     exec:
         // check the different ways to run params
         def check = [params.run_docker, params.run_conda, params.run_singularity].count(true)
