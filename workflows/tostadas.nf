@@ -25,7 +25,7 @@ include { BAKTA                                             } from "../modules/n
 include { BAKTA_POST_CLEANUP                                } from "../modules/local/post_bakta_annotation/main"
 
 // get submission related process/subworkflows
-include { SUBMISSION                                        } from "../subworkflows/local/submission"
+include { INITIAL_SUBMISSION                                } from "../subworkflows/local/submission"
 include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
 
 /*
@@ -199,7 +199,11 @@ workflow TOSTADAS {
 
         // To Do test update submission
         if ( params.update_submission ) {
-            UPDATE_SUBMISSION ()
+                UPDATE_SUBMISSION (
+                RUN_UTILITY.out,
+                params.submission_config, 
+                params.submission_output
+            )
         }
     }
 }

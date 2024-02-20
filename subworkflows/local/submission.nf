@@ -6,7 +6,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { SUBMISSION                                    } from '../../modules/local/submission/main'
+include { SUBMISSION_FULL                               } from '../../modules/local/initial_submission/main_full'
+include { SUBMISSION_SRA                                } from '../../modules/local/initial_submission/main_sra'
+include { SUBMISSION_GENBANK                            } from '../../modules/local/initial_submission/main_genbank'
 include { UPDATE_SUBMISSION                             } from '../../modules/local/update_submission/main'
 include { WAIT                                          } from '../../modules/local/general_util/wait/main'
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
@@ -20,8 +22,20 @@ workflow FULL_SUBMISSION {
 
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
-        SUBMISSION ( submission_ch, submission_config, req_col_config, '' )
+        if ( params.genbank && params.sra ){
+            // submit the files to database of choice (after fixing config and getting wait time)
+            SUBMISSION_FULL ( submission_ch, submission_config, req_col_config, '' )
+        }
+        elif ( !params.genbank && params.sra ){
+            SUBMISSION_SRA ( submission_ch, params.fastq_path, submission_config, req_col_config, '' )
+        }
+        elif ( params.genbank && !params.sra ){
+        // submit the files to database of choice (after fixing config and getting wait time)
+            SUBMISSION_GENBANK ( submission_ch, params.fasta_path, submission_config, req_col_config, '' )
+        }
 
+        //ToDo add GISAID module
+        
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
