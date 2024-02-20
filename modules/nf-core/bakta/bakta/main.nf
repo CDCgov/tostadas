@@ -18,18 +18,46 @@ process BAKTA {
     val signal
     path db_path
     tuple val(meta), path(fasta_path)
-
+    
     script:
     def args = task.ext.args  ?: ''
+
     """
-    bakta --db $db_path  --min-contig-length $params.bakta_min_contig_length --prefix ${fasta_path.getSimpleName()} \
-    --output ${fasta_path.getSimpleName()} --threads $params.bakta_threads \
-    --genus $params.bakta_genus --species $params.bakta_species --strain $params.bakta_strain --compliant \
-    --plasmid $params.bakta_plasmid  --locus $params.bakta_locus --locus-tag $params.bakta_locus_tag \
-    --translation-table $params.bakta_translation_table \
-    $args \
-    $fasta_path
+    bakta --db $db_path  \
+        --min-contig-length $params.bakta_min_contig_length \
+        --prefix $meta.id \
+        --output $meta.id \
+        --genus $params.bakta_genus \
+        --species $params.bakta_species \
+        --strain $params.bakta_strain \
+        --plasmid $params.bakta_plasmid  \
+        --complete $params.bakta_complete \
+        --translation-table $params.bakta_translation_table \
+        --gram $params.bakta_gram \
+        --compliant \
+        --locus $params.bakta_locus \
+        --locus-tag $params.bakta_locus_tag \
+        --keep-contig-headers \
+        $fasta_path
     """
+    // optional args
+    // --prodigal-tf $params.bakta_prodigal_tf 
+    // --replicons $params.bakta_replicons 
+    // --proteins $params.bakta_proteins 
+    // --skip-trna  
+    // --skip-tmrna 
+    // --skip-rrna
+    // --skip-ncrna 
+    // --skip-ncrna-region 
+    // --skip-crispr 
+    // --skip-cds 
+    // --skip-pseudo
+    // --skip-sorf
+    // --skip-gap 
+    // --skip-ori 
+    // --skip-plot
+
+
     
     output:
     path "${fasta_path.getSimpleName()}/*.fna",   emit: fna
