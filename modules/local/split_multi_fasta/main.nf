@@ -11,7 +11,7 @@ process SPLIT_FASTA {
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 3
     
-    publishDir "$params.output_dir/$params.split_output_dir", mode: 'copy', overwrite: params.overwrite_output
+   // publishDir "$params.output_dir/$params.split_output_dir", mode: 'copy', overwrite: params.overwrite_output
     
     
    input:
