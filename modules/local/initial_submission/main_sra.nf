@@ -14,7 +14,8 @@ process SUBMISSION_SRA {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
-    tuple path(validated_meta_path), path(fastq_path)
+    tuple path(validated_meta_path)
+    path(fastq_dir)
     path submission_config
     path req_col_config
     val annotation_name

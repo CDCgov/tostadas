@@ -15,6 +15,7 @@ process SUBMISSION_GENBANK {
 
     input:
     tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
+    path(fastq_dir)
     path submission_config
     path req_col_config
     val annotation_name
