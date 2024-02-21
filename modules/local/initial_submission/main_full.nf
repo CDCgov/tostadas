@@ -22,7 +22,7 @@ process SUBMISSION_FULL {
 
     script:
     """     
-    ln -s raw_reads $fastq_dir
+    ln -s $fastq_dir raw_reads
 
     submission.py submit --genbank $params.genbank --sra $params.sra --biosample $params.biosample --organism $params.organism \
                          --submission_dir ${task.workDir}  --submission_name ${validated_meta_path.getBaseName()} --config $submission_config  \
