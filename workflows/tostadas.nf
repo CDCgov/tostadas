@@ -205,8 +205,7 @@ workflow TOSTADAS {
                         )
                     }
                 }
-        
-            }
+        }
         }
         else {
             if ( params.sra ) {        // no annotation only fastq submission
@@ -233,7 +232,6 @@ workflow TOSTADAS {
                 params.submission_output
             )
         }
-    }
 }
         // To Do add Genbank / GISAID only submission
 
