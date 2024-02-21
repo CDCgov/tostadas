@@ -187,7 +187,6 @@ workflow TOSTADAS {
         // check if annotation is set to true 
         if ( params.annotation ) {   
             if (params.sra && params.genbank ) {                     // sra and genbank
-                submission_ch = submission_ch.join(fastq_ch) 
                 INITIAL_SUBMISSION (
                     submission_ch,  // meta.id, metadata_path, fasta, gff
                     fastq_ch,
