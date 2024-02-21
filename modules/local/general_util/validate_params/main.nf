@@ -4,7 +4,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+include { validateParameters } from 'plugin/nf-validation'
+
 process VALIDATE_PARAMS {
+
+
+
     exec:
         // check the different ways to run params
         def check = [params.run_docker, params.run_conda, params.run_singularity].count(true)
@@ -42,6 +47,10 @@ process VALIDATE_PARAMS {
         assert params.output_dir
         assert params.val_output_dir
         assert params.submission_output_dir
+
+        if (params.validate_params) {
+            validateParameters()
+        }
         
         if ( params.liftoff == true ) {
             assert params.final_liftoff_output_dir
