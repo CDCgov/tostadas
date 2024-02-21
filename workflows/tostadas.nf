@@ -44,6 +44,8 @@ workflow TOSTADAS {
     //     annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
     // }
 
+    fastq_ch = Channel.fromPath("$params.fastq_path")
+
     // check if help parameter is set
     if ( params.help == true ) {
         PRINT_PARAMS_HELP()
@@ -76,13 +78,6 @@ workflow TOSTADAS {
     )
     // todo: check fasta_ch ids against metadata sample name, don't require fasta file name in metadata
     fasta_ch = CHECK_FILES.out.fasta_files.flatten()
-    .map { 
-        def meta = [:] 
-        meta['id'] = it.getSimpleName()
-        [ meta, it ] 
-    }
-
-    fastq_ch = CHECK_FILES.out.fasta_files.flatten()
     .map { 
         def meta = [:] 
         meta['id'] = it.getSimpleName()
@@ -190,28 +185,34 @@ workflow TOSTADAS {
         )
 
         // check if annotation is set to true 
-        if ( params.annotation ) {
-            if ( params.genbank && params.sra ) {
+        if ( params.annotation ) {   
+            if (params.sra && params.genbank ) {                     // sra and genbank
+                submission_ch = submission_ch.join(fastq_ch) 
                 INITIAL_SUBMISSION (
-                    submission_ch, // meta.id, fasta, gff, fastqs
+                    submission_ch,  // meta.id, metadata_path, fasta, gff, fastqs
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out
-                )
-            } 
-            if ( params.genbank && !params.sra ) {
-                INITIAL_SUBMISSION (
-                    submission_ch, // meta.id, fasta, gff
-                    params.submission_config, 
-                    params.req_col_config, 
-                    GET_WAIT_TIME.out
-                )
+                    )
+                } 
+            else {      
+                if (! params.sra && params.genbank ) {               // only genebankk
+                    INITIAL_SUBMISSION ( 
+                        submission_ch,     // meta.id, metadata_path, fasta, gff
+                        params.submission_config, 
+                        params.req_col_config, 
+                        GET_WAIT_TIME.out
+                        )
+                    }
+                }
+        
             }
         }
         else {
-            if ( params.sra ) {
+            if ( params.sra ) {        // no annotation only fastq submission
+                submission_ch = metadata_ch.join(fastq_ch).view()
                 INITIAL_SUBMISSION (
-                    submission_ch, // meta.id, fastqs
+                    submission_ch,       // metadata_path, fastqs
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out
@@ -223,7 +224,6 @@ workflow TOSTADAS {
             }
 
         }
-
 
         // To Do test update submission
         if ( params.update_submission ) {

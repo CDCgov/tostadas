@@ -14,15 +14,14 @@ process SUBMISSION_FULL {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
-    fastq_path
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path), path(fastq_dir)
     path submission_config
     path req_col_config
     val annotation_name
 
     script:
     """     
-    ln -s raw_reads $fasta_path
+    ln -s raw_reads $fastq_dir
 
     submission.py submit --genbank $params.genbank --sra $params.sra --biosample $params.biosample --organism $params.organism \
                          --submission_dir ${task.workDir}  --submission_name ${validated_meta_path.getBaseName()} --config $submission_config  \
