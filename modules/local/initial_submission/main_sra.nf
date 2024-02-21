@@ -25,6 +25,8 @@ process SUBMISSION_SRA {
 
     script:
     """
+    mv ${params.fastq_path} raw_reads/
+
     submission.py submit --sra $params.sra --biosample $params.biosample --organism $params.organism \
                          --submission_dir ${task.workDir}  --submission_name ${validated_meta_path.getBaseName()} --config $submission_config  \
                          --validated_meta_path $validated_meta_path --fasta_path $fasta_path --gff_path $annotations_path --table2asn true \
