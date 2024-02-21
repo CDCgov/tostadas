@@ -936,7 +936,15 @@ class HandleDfInserts:
 									   'illumina_library_source': 'sra-library_source',
 									   'illumina_library_selection': 'sra-library_selection',
 									   'illumina_library_layout': 'sra-library_layout',
-									   'illumina_library_protocol': 'sra-library_construction_protocol'								
+									   'illumina_library_protocol': 'sra-library_construction_protocol',
+									   'description':'bs-description',
+									   'file_location':'sra-file_location',
+									   'submitting_lab':'gs-subm_lab',
+									   'submitting_lab_division':'gs-subm_lab_division',
+									   'submitting_lab_address':'gb-subm_lab_addr',
+									   'submitting_publication_status':'gb-publication_status',
+									   'submitting_publication_title':'gb-publication_title',
+									   'isolation_source':'src-isolation_source',
 									   }, inplace = True)
 		self.filled_df['src-isolate'] = self.filled_df['bs-isolate']
 		self.filled_df['src-host'] = self.filled_df['bs-host']
