@@ -240,7 +240,7 @@ class ValidateChecks:
 		self.final_cols = []
 
 		# field requirements
-		self.required_core = ["sample_name", "ncbi_sequence_name_biosample_genbank", "author", "isolate", "organism",
+		self.required_core = ["sample_name", "ncbi-spuid", "author", "isolate", "organism",
 							  "collection_date", "country"]
 		self.optional_core = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
 		self.case_fields = ["sex", "age", "race", "ethnicity"]
