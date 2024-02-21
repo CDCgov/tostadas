@@ -899,9 +899,10 @@ class HandleDfInserts:
 		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentSuffix", ["Assembly-Data"] * len(self.filled_df.index))
 
 	def handle_df_changes(self):
-		""" Main function to call sub-insert routines and return the final metadata dataframe
+		""" Main function to call change routines and return the final metadata dataframe
 		"""
 		self.change_col_names()
+		self.change_illumina_paths()
 
 		# list of column names to check
 		columns_to_check = ['authors', 'bs-collected_by', 'src-country', 'bs-isolate', 'bs-host', 'bs-host_disease',
@@ -941,7 +942,26 @@ class HandleDfInserts:
 		self.filled_df['src-host'] = self.filled_df['bs-host']
 		self.filled_df['cmt-HOST_AGE'] = self.filled_df['bs-host_age']
 		self.filled_df['cmt-HOST_GENDER'] = self.filled_df['bs-host_sex']
-	
+
+	# todo: this is a temporary fx to convert the illumina paths as input to seqsender
+	def change_illumina_paths(self):
+		""" Change illumina_sra_file_path_1 & illumina_sra_file_path_2 to sra-file_name
+		"""
+
+		# function to extract file name from path
+		def extract_filename(path):
+			if '/' in path:
+				return path.split('/')[-1] # todo: assume Unix paths ok?
+			else:
+				return path
+
+		# create new column 'sra-file_name'
+		self.filled_df['sra-file_name'] = self.filled_df.apply(lambda row: extract_filename(row['illumina_sra_file_path_1']) + ',' + extract_filename(row['illumina_sra_file_path_2']), axis=1)
+
+		# drop original columns
+		self.filled_df = self.filled_df.drop(['illumina_sra_file_path_1', 'illumina_sra_file_path_2'], axis=1)
+		
+
 	# todo: apply this function to Ankush's insert checks as well
 	def check_nan_for_column(self, column_name):
 		""" Check for NaN values (if not a string) in a column of the dataframe """
