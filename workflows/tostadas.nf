@@ -205,8 +205,7 @@ workflow TOSTADAS {
                         )
                     }
                 }
-        
-            }
+        }
         }
         else {
             if ( params.sra ) {        // no annotation only fastq submission
