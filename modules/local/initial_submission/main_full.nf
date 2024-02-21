@@ -3,7 +3,7 @@
                                     RUNNING SUBMISSION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process INITAL_SUBMISSION {
+process SUBMISSION_FULL {
 
     label 'main'
 

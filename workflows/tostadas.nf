@@ -193,20 +193,25 @@ workflow TOSTADAS {
         if ( params.annotation ) {
             if ( params.genbank && params.sra ) {
                 INITIAL_SUBMISSION (
-                    submission_ch,
+                    submission_ch, // meta.id, fasta, gff, fastqs
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out
                 )
             } 
             if ( params.genbank && !params.sra ) {
-
+                INITIAL_SUBMISSION (
+                    submission_ch, // meta.id, fasta, gff
+                    params.submission_config, 
+                    params.req_col_config, 
+                    GET_WAIT_TIME.out
+                )
             }
         }
         else {
             if ( params.sra ) {
                 INITIAL_SUBMISSION (
-                    submission_ch,
+                    submission_ch, // meta.id, fastqs
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out

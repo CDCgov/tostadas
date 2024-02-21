@@ -13,7 +13,7 @@ include { UPDATE_SUBMISSION                             } from '../../modules/lo
 include { WAIT                                          } from '../../modules/local/general_util/wait/main'
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
 
-workflow FULL_SUBMISSION {
+workflow INITIAL_SUBMISSION {
     take:
         submission_ch
         submission_config
@@ -25,23 +25,43 @@ workflow FULL_SUBMISSION {
         if ( params.genbank && params.sra ){
             // submit the files to database of choice (after fixing config and getting wait time)
             SUBMISSION_FULL ( submission_ch, submission_config, req_col_config, '' )
+            
+            // actual process to initiate wait 
+            WAIT ( SUBMISSION_FULL.out.submission_files.collect(), wait_time )
+
+            // process for updating the submitted samples
+            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_FULL.out.submission_files, '' )
+
+            // combine the different upload_log csv files together 
+            MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
         }
-        elif ( !params.genbank && params.sra ){
+
+        if ( !params.genbank && params.sra ){
             SUBMISSION_SRA ( submission_ch, params.fastq_path, submission_config, req_col_config, '' )
+            // actual process to initiate wait 
+            WAIT ( SUBMISSION_SRA.out.submission_files.collect(), wait_time )
+
+            // process for updating the submitted samples
+            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_SRA.out.submission_files, '' )
+
+            // combine the different upload_log csv files together 
+            MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
         }
-        elif ( params.genbank && !params.sra ){
+
+        if ( params.genbank && !params.sra ){
         // submit the files to database of choice (after fixing config and getting wait time)
             SUBMISSION_GENBANK ( submission_ch, params.fasta_path, submission_config, req_col_config, '' )
+            
+            // actual process to initiate wait 
+            WAIT ( SUBMISSION_GENBANK.out.submission_files.collect(), wait_time )
+
+            // process for updating the submitted samples
+            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_GENBANK.out.submission_files, '' )
+
+            // combine the different upload_log csv files together 
+            MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
         }
 
         //ToDo add GISAID module
         
-        // actual process to initiate wait 
-        WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
-
-        // process for updating the submitted samples
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, '' )
-
-        // combine the different upload_log csv files together 
-        MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
 }

@@ -3,7 +3,7 @@
                                     RUNNING SUBMISSION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process SUBMISSION {
+process SUBMISSION_SRA {
 
     label 'main'
 
