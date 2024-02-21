@@ -27,6 +27,7 @@ include { TOSTADAS } from './workflows/tostadas'
 //
 workflow TOSTADAS_WORKFLOW {
     TOSTADAS ()
+    
 }
 
 /*
@@ -41,6 +42,7 @@ workflow TOSTADAS_WORKFLOW {
 //
 workflow {
     TOSTADAS_WORKFLOW ()
+
 }
 
 

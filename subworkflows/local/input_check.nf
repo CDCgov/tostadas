@@ -5,6 +5,9 @@
 include { SAMPLESHEET_CHECK } from '../../modules/nf-core/samplesheet_check'
 
 workflow INPUT_CHECK {
+    // Create a new channel of metadata from a sample sheet
+    // NB: `input` corresponds to `params.input` and associated sample sheet schema
+    
     take:
     samplesheet // file: /path/to/samplesheet.csv
 

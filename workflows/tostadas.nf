@@ -6,6 +6,9 @@ nextflow.enable.dsl=2
                          GET NECESSARY MODULES OR SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+//get plugins
+include { validateParameters; paramsHelp; paramsSummaryLog; fromSamplesheet } from 'plugin/nf-validation'
+
 // get the utility processes / subworkflows
 include { CHECK_FILES                                       } from "../modules/local/general_util/check_files/main"
 include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
@@ -35,6 +38,8 @@ include { UPDATE_SUBMISSION                                 } from "../modules/l
 // To Do, create logic to run workflows for virus vs. bacteria
 workflow TOSTADAS {
     
+
+    
     // To Do, maybe? create samplesheet input to initiate this channel instead
 
     // initialize channels
@@ -43,11 +48,25 @@ workflow TOSTADAS {
     //     annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
     // }
 
+    // Print help message, supply typical command line usage for the pipeline
+   // if (params.help) {
+        
+    //    exit 0
+    //}
+
     // check if help parameter is set
     if ( params.help == true ) {
         PRINT_PARAMS_HELP()
+        log.info paramsHelp("nextflow run my_pipeline --input input_file.csv")
         exit 0
     }
+
+    //execute validation for params
+    if (params.validate_params) {
+        validateParameters()
+    }
+
+
 
     // run utility subworkflow
     RUN_UTILITY()
@@ -78,6 +97,12 @@ workflow TOSTADAS {
         meta['id'] = it.getSimpleName()
         [ meta, it ] 
     }
+
+    // Validate input parameters
+    //validateParameters()
+
+    // Print summary of supplied parameters
+    log.info paramsSummaryLog(workflow)
 
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
@@ -189,5 +214,6 @@ workflow TOSTADAS {
         }
     }
 }
+
         // To Do add Genbank / GISAID only submission
 
