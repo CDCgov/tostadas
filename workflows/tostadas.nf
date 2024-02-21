@@ -186,7 +186,7 @@ workflow TOSTADAS {
 
         // check if annotation is set to true 
         if ( params.annotation ) {
-            if (params.sra ) {
+            if (params.sra && params.genbank ) {
                 submission_ch = submission_ch.join(fastq_ch)
                 if ( params.genbank ) { // genbank and sra
                     INITIAL_SUBMISSION (
@@ -196,15 +196,17 @@ workflow TOSTADAS {
                         GET_WAIT_TIME.out
                         )
                     } 
-            else {                     // only genebankk
-                INITIAL_SUBMISSION ( 
-                    submission_ch,     // meta.id, metadata_path, fasta, gff
-                    params.submission_config, 
-                    params.req_col_config, 
-                    GET_WAIT_TIME.out
-                    )
+            else {      
+                if (! params.sra && params.genbank ) {               // only genebankk
+                    INITIAL_SUBMISSION ( 
+                        submission_ch,     // meta.id, metadata_path, fasta, gff
+                        params.submission_config, 
+                        params.req_col_config, 
+                        GET_WAIT_TIME.out
+                        )
+                    }
                 }
-            
+        
             }
         }
         else {
