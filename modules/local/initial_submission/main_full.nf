@@ -26,7 +26,7 @@ process SUBMISSION_FULL {
 
     submission.py submit --genbank $params.genbank --sra $params.sra --biosample $params.biosample --organism $params.organism \
                          --submission_dir ${task.workDir}  --submission_name ${validated_meta_path.getBaseName()} --config $submission_config  \
-                         --validated_meta_path $validated_meta_path --fasta_path $fasta_path --gff_path $annotations_path --table2asn true \
+                         --metadata_file $validated_meta_path --fasta_file $fasta_path --gff_path $annotations_path --table2asn true \
                          --prod_or_test $params.submission_prod_or_test --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email
     """
 
