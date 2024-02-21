@@ -24,7 +24,7 @@ workflow INITIAL_SUBMISSION {
         // submit the files to database of choice (after fixing config and getting wait time)
         if ( params.genbank && params.sra ){
             // submit the files to database of choice (after fixing config and getting wait time)
-            SUBMISSION_FULL ( submission_ch, submission_config, req_col_config, '' )
+            SUBMISSION_FULL ( submission_ch, params.fastq_path, submission_config, req_col_config, '' )
             
             // actual process to initiate wait 
             WAIT ( SUBMISSION_FULL.out.submission_files.collect(), wait_time )

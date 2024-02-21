@@ -5,27 +5,24 @@
 */
 process SUBMISSION_FULL {
 
-    label 'main'
-
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
 
-    if ( params.run_conda == true ) {
-        try {
-            conda params.env_yml
-        } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
-        }
-    }
+    //label'main'
+
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
     tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
+    fastq_path
     path submission_config
     path req_col_config
     val annotation_name
 
     script:
     """     
-    mv ${params.fastq_path} raw_reads/
+    ln -s raw_reads $fasta_path
 
     submission.py submit --genbank $params.genbank --sra $params.sra --biosample $params.biosample --organism $params.organism \
                          --submission_dir ${task.workDir}  --submission_name ${validated_meta_path.getBaseName()} --config $submission_config  \
