@@ -82,6 +82,13 @@ workflow TOSTADAS {
         [ meta, it ] 
     }
 
+    fastq_ch = CHECK_FILES.out.fasta_files.flatten()
+    .map { 
+        def meta = [:] 
+        meta['id'] = it.getSimpleName()
+        [ meta, it ] 
+    }
+
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         if ( params.virus && !params.bacteria ) {
@@ -185,16 +192,32 @@ workflow TOSTADAS {
         // check if annotation is set to true 
         if ( params.annotation ) {
             if ( params.genbank && params.sra ) {
-            
-                FULL_SUBMISSION (
+                INITIAL_SUBMISSION (
                     submission_ch,
                     params.submission_config, 
                     params.req_col_config, 
                     GET_WAIT_TIME.out
                 )
             } 
-        } 
+            if ( params.genbank && !params.sra ) {
 
+            }
+        }
+        else {
+            if ( params.sra ) {
+                INITIAL_SUBMISSION (
+                    submission_ch,
+                    params.submission_config, 
+                    params.req_col_config, 
+                    GET_WAIT_TIME.out
+                )
+            } 
+            if ( params.genbank ) {
+                // todo: make an error msg that follows the rest of the code protocol
+                fail("Cannot submit to GenBank without assembly and annotation files")
+            }
+
+        }
 
 
         // To Do test update submission
