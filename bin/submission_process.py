@@ -86,6 +86,7 @@ def get_config(config_file, database):
 	else:	
 		print("Error: Config file is incorrect. File must has a valid yaml format.", file=sys.stderr)
 		sys.exit(1)
+	return config_dict
 
 # Read in metadata file
 def get_metadata(database, organism, metadata_file):
