@@ -90,7 +90,7 @@ def get_config(config_file, database):
 # Read in metadata file
 def get_metadata(database, organism, metadata_file):
 	# Read in metadata file
-	metadata = pd.read_excel(metadata_file, header=[1], dtype = str, engine = "openpyxl", ndex_col=None, na_filter=False)
+	metadata = pd.read_excel(metadata_file, header=[1], dtype = str, engine = "openpyxl", index_col=None, na_filter=False)
 	# Remove rows if entirely empty
 	metadata = metadata.dropna(how="all")
 	# Remove extra spaces from column names
