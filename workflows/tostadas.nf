@@ -199,6 +199,7 @@ workflow TOSTADAS {
                 if (! params.sra && params.genbank ) {               // only genebankk
                     INITIAL_SUBMISSION ( 
                         submission_ch,     // meta.id, metadata_path, fasta, gff
+                        fastq_ch,
                         params.submission_config, 
                         params.req_col_config, 
                         GET_WAIT_TIME.out
