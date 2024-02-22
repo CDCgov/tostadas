@@ -894,6 +894,8 @@ class HandleDfInserts:
 		self.filled_df.insert(self.filled_df.shape[1], "bs-isolation_source", ["Not Provided"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "src-isolation_source", ["Not Provided"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "src-serotype", ["Not Provided"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "sra-library_name", ["Not Provided"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "bs-geo_loc_name", ["Not Provided"] * len(self.filled_df.index))
 		# todo: these two cmt- fields have different values if organism== flu or cov
 		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentPrefix", ["Assembly-Data"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentSuffix", ["Assembly-Data"] * len(self.filled_df.index))
@@ -932,18 +934,19 @@ class HandleDfInserts:
 									   'assembly_method': 'cmt-Assembly-Method',
 									   'mean_coverage': 'cmt-Coverage',
 									   'illumina_sequencing_instrument': 'sra-instrument_model',
-									   'illumina_library_strategy': 'sra-instrument_model',
+									   'illumina_library_strategy': 'sra-library_strategy',
 									   'illumina_library_source': 'sra-library_source',
 									   'illumina_library_selection': 'sra-library_selection',
 									   'illumina_library_layout': 'sra-library_layout',
 									   'illumina_library_protocol': 'sra-library_construction_protocol',
+									   'ncbi_sequence_name_sra':'gb-seq_id',
 									   'description':'bs-description',
 									   'file_location':'sra-file_location',
-									   'submitting_lab':'gs-subm_lab',
-									   'submitting_lab_division':'gs-subm_lab_division',
+									   'submitting_lab':'gb-subm_lab',
+									   'submitting_lab_division':'gb-subm_lab_division',
 									   'submitting_lab_address':'gb-subm_lab_addr',
-									   'submitting_publication_status':'gb-publication_status',
-									   'submitting_publication_title':'gb-publication_title',
+									   'publication_status':'gb-publication_status',
+									   'publication_title':'gb-publication_title',
 									   'isolation_source':'src-isolation_source',
 									   }, inplace = True)
 		self.filled_df['src-isolate'] = self.filled_df['bs-isolate']
