@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Submission>
+  <Description>
+    <Title>batch1.TX0001</Title>
+    <Comment>FTP submission</Comment>
+    <Organization type="center" role="owner">
+      <Name></Name>
+    </Organization>
+  </Description>
+  <Action>
+    <AddFiles target_db="GenBank">
+      <File file_path="batch1.TX0001.zip">
+        <DataType>genbank-submission-package</DataType>
+      </File>
+      <Attribute name="wizard">None</Attribute>
+      <Attribute name="auto_remove_failed_seqs">no</Attribute>
+      <Identifier>

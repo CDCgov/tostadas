@@ -1,0 +1,38 @@
+   SW   perc perc perc  query     position in query        matching     repeat           position in repeat
+score   div. del. ins.  sequence  begin  end      (left)   repeat       class/family   begin  end    (left)  ID
+
+57685    0.1  0.1  0.2  NY0007         1   6418 (190745) C MPOX_ITR1    UNKOWN           (17)   6405      1   1  
+   14   27.6  2.5  5.1  NY0007      6428   6436 (190727) + (TCATTA)n    Simple_repeat       1     13   (66)   2  
+   13   14.4  3.0  3.0  NY0007      6437   6469 (190694) + (TTA)n       Simple_repeat       1     33    (0)   3  
+   14   27.6  2.5  5.1  NY0007      6470   6508 (190655) + (TCATTA)n    Simple_repeat      14     79    (0)   2  
+   11   17.9  8.1  4.7  NY0007      7480   7541 (189622) + (TAATAAT)n   Simple_repeat       1     64    (0)   4  
+   18    6.8  3.2  0.0  NY0007     10419  10449 (186714) + (ATTAG)n     Simple_repeat       1     32    (0)   5  
+   12   16.0  0.0  3.5  NY0007     11341  11370 (185793) + (TCAA)n      Simple_repeat       1     29    (0)   6  
+   11   16.9  2.9  2.9  NY0007     12031  12065 (185098) + A-rich       Low_complexity      1     35    (0)   7  
+  244   35.7  5.4  0.0  NY0007     13925  14092 (183071) C MPOX_ITR1    UNKOWN         (5381)   1041    865   8  
+   13   11.7  3.6  0.0  NY0007     29745  29772 (167391) + (CCATT)n     Simple_repeat       1     29    (0)   9  
+   11   18.6  0.0  7.7  NY0007     33677  33718 (163445) + (AATTAT)n    Simple_repeat       1     39    (0)  10  
+   11   19.8  0.0  9.1  NY0007     41107  41154 (156009) + (TTTCAAT)n   Simple_repeat       1     44    (0)  11  
+   14   18.4  4.8  6.5  NY0007     48109  48171 (148992) + (ATAGT)n     Simple_repeat       1     62    (0)  12  
+   13   24.2  1.9  3.9  NY0007     58603  58654 (138509) + (AAT)n       Simple_repeat       1     51    (0)  13  
+   16   23.0  0.0  0.0  NY0007    116648 116688  (80475) + (TTATTA)n    Simple_repeat       1     41    (0)  14  
+   15   20.4  4.4  0.0  NY0007    125931 125975  (71188) + A-rich       Low_complexity      1     47    (0)  15  
+   28    0.0  0.0  0.0  NY0007    133074 133100  (64063) + (T)n         Simple_repeat       1     27    (0)  16  
+   49    1.8  1.8  1.8  NY0007    136502 136558  (60605) + (ATC)n       Simple_repeat       1     57    (0)  17  
+   13   10.5  6.5  0.0  NY0007    139614 139644  (57519) + (TATTTG)n    Simple_repeat       1     33    (0)  18  
+   43    0.0  0.0  0.0  NY0007    140094 140133  (57030) + (ATAACAATT)n Simple_repeat       1     40    (0)  19  
+   13   21.7  0.0  2.6  NY0007    140137 140175  (56988) + (TTATAA)n    Simple_repeat       1     38    (0)  20  
+   14   19.3  2.3  2.3  NY0007    141965 142007  (55156) + (AATGAT)n    Simple_repeat       1     43    (0)  21  
+   44    2.8  8.3  0.0  NY0007    146833 146904  (50259) + (ATTTTAT)n   Simple_repeat       1     78    (0)  22  
+   67    1.5  1.5  0.0  NY0007    150533 150600  (46563) + (TATGATGGA)n Simple_repeat       1     69    (0)  23  
+   20   16.4  0.0  0.0  NY0007    160526 160566  (36597) + A-rich       Low_complexity      1     41    (0)  24  
+   26    0.0  0.0  0.0  NY0007    163162 163186  (33977) + (TAAC)n      Simple_repeat       1     25    (0)  25  
+   13    4.1  8.0  0.0  NY0007    166062 166086  (31077) + (AATT)n      Simple_repeat       1     27    (0)  26  
+   12   26.2  3.6  1.8  NY0007    166087 166117  (31046) + A-rich       Low_complexity      1     57    (0)  27  
+   59    0.0  0.0  0.0  NY0007    169694 169746  (27417) + (CAGATA)n    Simple_repeat       1     53    (0)  28  
+   54    0.0  0.0  0.0  NY0007    173248 173293  (23870) + (AT)n        Simple_repeat       1     46    (0)  29  
+   31    0.0  0.0  0.0  NY0007    174495 174523  (22640) + (GATGAA)n    Simple_repeat       1     29    (0)  30  
+  161    0.0  0.0  0.0  NY0007    179062 179201  (17962) + (ATATACATT)n Simple_repeat       1    140    (0)  31  
+   20   16.7  1.7  5.3  NY0007    186843 186901  (10262) + A-rich       Low_complexity      1     57    (0)  32  
+  729   31.2  3.0  1.3  NY0007    187311 187683   (9480) + MPOX_ITR1    UNKOWN           4285   4663 (1759)  33  
+57685    0.1  0.1  0.2  NY0007    190746 197163      (0) + MPOX_ITR1    UNKOWN              1   6405   (17)  34  

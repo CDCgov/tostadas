@@ -1,0 +1,38 @@
+   SW   perc perc perc  query     position in query        matching     repeat           position in repeat
+score   div. del. ins.  sequence  begin  end      (left)   repeat       class/family   begin  end    (left)  ID
+
+57770    0.1  0.1  0.0  FL0015        12   6430 (190742) C MPOX_ITR1    UNKOWN            (0)   6422      1   1  
+   14   27.6  2.5  5.1  FL0015      6440   6448 (190724) + (TCATTA)n    Simple_repeat       1     13   (66)   2  
+   13   14.4  3.0  3.0  FL0015      6449   6481 (190691) + (TTA)n       Simple_repeat       1     33    (0)   3  
+   14   27.6  2.5  5.1  FL0015      6482   6520 (190652) + (TCATTA)n    Simple_repeat      14     79    (0)   2  
+   11   17.9  8.1  4.7  FL0015      7492   7553 (189619) + (TAATAAT)n   Simple_repeat       1     64    (0)   4  
+   18    6.8  3.2  0.0  FL0015     10431  10461 (186711) + (ATTAG)n     Simple_repeat       1     32    (0)   5  
+   12   16.0  0.0  3.5  FL0015     11353  11382 (185790) + (TCAA)n      Simple_repeat       1     29    (0)   6  
+   11   16.9  2.9  2.9  FL0015     12043  12077 (185095) + A-rich       Low_complexity      1     35    (0)   7  
+  244   35.7  5.4  0.0  FL0015     13937  14104 (183068) C MPOX_ITR1    UNKOWN         (5381)   1041    865   8  
+   13   11.7  3.6  0.0  FL0015     29757  29784 (167388) + (CCATT)n     Simple_repeat       1     29    (0)   9  
+   11   18.6  0.0  7.7  FL0015     33689  33730 (163442) + (AATTAT)n    Simple_repeat       1     39    (0)  10  
+   11   19.8  0.0  9.1  FL0015     41119  41166 (156006) + (TTTCAAT)n   Simple_repeat       1     44    (0)  11  
+   14   18.4  4.8  6.5  FL0015     48121  48183 (148989) + (ATAGT)n     Simple_repeat       1     62    (0)  12  
+   13   24.2  1.9  3.9  FL0015     58615  58666 (138506) + (AAT)n       Simple_repeat       1     51    (0)  13  
+   16   23.0  0.0  0.0  FL0015    116660 116700  (80472) + (TTATTA)n    Simple_repeat       1     41    (0)  14  
+   15   20.4  4.4  0.0  FL0015    125943 125987  (71185) + A-rich       Low_complexity      1     47    (0)  15  
+   27    0.0  0.0  0.0  FL0015    133086 133111  (64061) + (T)n         Simple_repeat       1     26    (0)  16  
+   49    1.8  1.8  1.8  FL0015    136512 136568  (60604) + (ATC)n       Simple_repeat       1     57    (0)  17  
+   13   10.5  6.5  0.0  FL0015    139624 139654  (57518) + (TATTTG)n    Simple_repeat       1     33    (0)  18  
+   43    0.0  0.0  0.0  FL0015    140104 140143  (57029) + (ATAACAATT)n Simple_repeat       1     40    (0)  19  
+   13   21.7  0.0  2.6  FL0015    140147 140185  (56987) + (TTATAA)n    Simple_repeat       1     38    (0)  20  
+   14   19.3  2.3  2.3  FL0015    141975 142017  (55155) + (AATGAT)n    Simple_repeat       1     43    (0)  21  
+   44    2.8  8.3  0.0  FL0015    146843 146914  (50258) + (ATTTTAT)n   Simple_repeat       1     78    (0)  22  
+   67    1.5  1.5  0.0  FL0015    150543 150610  (46562) + (TATGATGGA)n Simple_repeat       1     69    (0)  23  
+   20   16.4  0.0  0.0  FL0015    160536 160576  (36596) + A-rich       Low_complexity      1     41    (0)  24  
+   26    0.0  0.0  0.0  FL0015    163172 163196  (33976) + (TAAC)n      Simple_repeat       1     25    (0)  25  
+   13    4.1  8.0  0.0  FL0015    166072 166096  (31076) + (AATT)n      Simple_repeat       1     27    (0)  26  
+   12   26.2  3.6  1.8  FL0015    166097 166127  (31045) + A-rich       Low_complexity      1     57    (0)  27  
+   59    0.0  0.0  0.0  FL0015    169704 169756  (27416) + (CAGATA)n    Simple_repeat       1     53    (0)  28  
+   54    0.0  0.0  0.0  FL0015    173256 173301  (23871) + (AT)n        Simple_repeat       1     46    (0)  29  
+   31    0.0  0.0  0.0  FL0015    174503 174531  (22641) + (GATGAA)n    Simple_repeat       1     29    (0)  30  
+  129    0.0  0.0  0.0  FL0015    179070 179182  (17990) + (ATATACATT)n Simple_repeat       1    113    (0)  31  
+   20   16.7  1.7  5.3  FL0015    186824 186882  (10290) + A-rich       Low_complexity      1     57    (0)  32  
+  729   31.2  3.0  1.3  FL0015    187292 187664   (9508) + MPOX_ITR1    UNKOWN           4285   4663 (1759)  33  
+57807    0.1  0.1  0.2  FL0015    190727 197161     (11) + MPOX_ITR1    UNKOWN              1   6422    (0)  34  

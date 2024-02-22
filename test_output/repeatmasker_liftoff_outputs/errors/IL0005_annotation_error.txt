@@ -1,0 +1,4 @@
+IL0005:
+
+	ITR CHECK:
+	First repeat region length of 6418 at (1, 6419) does not equal second repeat region length of 6434 at (190701, 197135) in IL0005.repeatmasker-orig.out.gff file

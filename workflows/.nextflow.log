@@ -1,0 +1,14 @@
+Feb-22 16:45:08.141 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf -profile test,docker --virus --output_dir test_output --submission_wait_time 1
+Feb-22 16:45:08.236 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 23.10.1
+Feb-22 16:45:08.261 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/jupyter/.nextflow/plugins; core-plugins: nf-amazon@2.1.4,nf-azure@1.3.3,nf-cloudcache@0.3.0,nf-codecommit@0.1.5,nf-console@1.0.6,nf-ga4gh@1.1.0,nf-google@1.8.3,nf-tower@1.6.3,nf-wave@1.0.1
+Feb-22 16:45:08.271 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Feb-22 16:45:08.272 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Feb-22 16:45:08.275 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+Feb-22 16:45:08.285 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Feb-22 16:45:08.301 [main] DEBUG nextflow.scm.ProviderConfig - Using SCM config path: /home/jupyter/.nextflow/scm
+Feb-22 16:45:08.314 [main] DEBUG nextflow.cli.Launcher - Operation aborted
+nextflow.exception.AbortOperationException: Cannot find script file: main.nf
+	at nextflow.cli.CmdRun.getScriptFile(CmdRun.groovy:466)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:317)
+	at nextflow.cli.Launcher.run(Launcher.groovy:500)
+	at nextflow.cli.Launcher.main(Launcher.groovy:672)

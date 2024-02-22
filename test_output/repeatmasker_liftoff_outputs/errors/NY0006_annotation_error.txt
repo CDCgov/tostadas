@@ -1,0 +1,3 @@
+
+	STOP CODON CHECK:
+	No codon errors
