@@ -8,7 +8,7 @@ dependencies:
   - libgcc-ng=12.1.0=h8d9b700_16
   - libstdcxx-ng=12.1.0=ha89aaad_16
   - liftoff=1.6.3=pyhdfd78af_0
-  - lxml=4.9.1=py38h1edc446_0
+  - lxml=4.9.1=py39hb9d737c_0
   - nameparser=1.0.5=py_0
   - numpy=1.22.4=py39hc58783e_0
   - packaging=21.3=pyhd3eb1b0_0
