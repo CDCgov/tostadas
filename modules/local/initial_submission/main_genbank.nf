@@ -22,6 +22,7 @@ process SUBMISSION_GENBANK {
 
     // define the command line arguments based on the value of params.submission_test_or_prod
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+
     script:
     """
     submission.py submit \
@@ -39,4 +40,5 @@ process SUBMISSION_GENBANK {
     output:
     path "${validated_meta_path.getBaseName()}", emit: submission_files 
     path "submission_log.csv", emit: submission_log
+    path "${validated_meta_path.getBaseName()}.split('\\.')[0]", emit: sample_name
 }

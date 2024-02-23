@@ -18,7 +18,7 @@ process UPDATE_SUBMISSION {
     }
 
     input:
-    tuple val(meta), path(validated_meta_path)    
+    val sample_name    
     val wait_signal
     path submission_config
     path submission_output
@@ -31,7 +31,7 @@ process UPDATE_SUBMISSION {
     submission.py check_submission_status \
         --organism $params.organism \
         --submission_dir .  \
-        --submission_name ${validated_meta_path.getBaseName()} $test_flag
+        --submission_name $sample_name $test_flag
     """
 
     output:
