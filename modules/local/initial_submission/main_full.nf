@@ -40,5 +40,5 @@ process SUBMISSION_FULL {
     """
 
     output:
-    path "$params.batch_name.${validated_meta_path.getBaseName()}", emit: submission_files 
+    path "${validated_meta_path.getBaseName()}", emit: submission_files 
 }
