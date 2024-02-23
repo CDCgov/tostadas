@@ -13,6 +13,7 @@ import time
 import platform
 from urllib.request import urlopen
 from zipfile import ZipFile
+import gzip
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from nameparser import HumanName
