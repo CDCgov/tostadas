@@ -46,6 +46,7 @@ def submit_ncbi(database, submission_name, submission_dir, config_dict, submissi
 		if ncbi_submission_name not in ftp.nlst():
 			ftp.mkd(ncbi_submission_name)
 		# CD to submission folder
+		ftp.cwd('submit')
 		ftp.cwd(ncbi_submission_name)
 		print("Submitting '" + submission_name + "'", file=sys.stdout)
 		# Upload submission xml
