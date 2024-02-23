@@ -86,7 +86,6 @@ def submit_ncbi(database, submission_name, submission_dir, config_dict, submissi
 						else:
 							print("Error: Uploading files to SRA database failed. Possibly files have been moved or this is not a valid file: " + line, file=sys.stderr)
 							sys.exit(1)
-						ftp.close()
 		elif "GENBANK" in database:
 			res = ftp.storbinary("STOR " + submission_name + ".zip", open(os.path.join(submission_files_dir, submission_name + ".zip"), 'rb'))
 			if not res.startswith('226 Transfer complete'):
