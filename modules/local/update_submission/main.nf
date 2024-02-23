@@ -30,7 +30,7 @@ process UPDATE_SUBMISSION {
     submission.py check_submission_status \
         --organism $params.organism \
         --submission_dir .  \
-        --submission_name $meta.id $test_flag
+        --submission_name $meta $test_flag
     """
 
     output:
