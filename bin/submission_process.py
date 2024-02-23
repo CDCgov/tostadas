@@ -280,7 +280,7 @@ def process_fasta_samples(metadata, fasta_file):
 	return merged_df
 
 # Update submission log
-def update_submission_status(submission_dir, submission_name, organism, test):
+def update_submission_status(submission_dir, submission_name, organism, test, send_email=False):
 	# Check if submission log exists
 	submission_dir = os.path.abspath(submission_dir)
 	submission_log_file = os.path.join(submission_dir, "submission_log.csv")
@@ -384,7 +384,10 @@ def update_submission_status(submission_dir, submission_name, organism, test):
 										gff_file = None
 									submission_id, submission_status = submission_create.create_genbank_table2asn(submission_name=submission_name, submission_files_dir=submission_files_dir, gff_file=gff_file)
 									if submission_status == "processed-ok":
-										submission_status = submission_submit.sendmail(database=database_name, submission_name=submission_name, submission_dir=submission_dir, config_dict=config_dict['NCBI'], test=test)
+										if send_email == True:
+											submission_status = submission_submit.sendmail(database=database_name, submission_name=submission_name, submission_dir=submission_dir, config_dict=config_dict['NCBI'], test=test)
+										else:
+											submission_status = "email not sent"
 								else:
 									# Submit via FTP
 									submission_create.create_genbank_zip(submission_name=submission_name, submission_files_dir=submission_files_dir)

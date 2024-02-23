@@ -47,6 +47,7 @@ def args_parser():
 	table2asn_parser = argparse.ArgumentParser(add_help=False)
 	gff_parser = argparse.ArgumentParser(add_help=False)
 	test_parser = argparse.ArgumentParser(add_help=False)
+	send_email_parser = argparse.ArgumentParser(add_help=False) 
 
 	database_parser.add_argument("--biosample", "-b",
 		action="store_const",
@@ -89,6 +90,12 @@ def args_parser():
 		required=True)
 	test_parser.add_argument("--test",
 		help="Whether to perform a test submission.",
+		required=False,
+		action="store_const",
+		default=False,
+		const=True)
+	send_email_parser.add_argument("--send_submission_email", 
+		help="Whether to send genbank/table2asn email or not",
 		required=False,
 		action="store_const",
 		default=False,
@@ -212,7 +219,7 @@ def create_zip_template(organism, database, submission_dir, submission_name):
 	print("Files are stored at: "+os.path.join(out_dir), file=sys.stdout)
 
 # Setup needed requirements for running
-def start(command, database, organism, submission_dir, submission_name, config_file, metadata_file, fasta_file=None, table2asn=False, gff_file=None, test=False):
+def start(command, database, organism, submission_dir, submission_name, config_file, metadata_file, send_email=False, fasta_file=None, table2asn=False, gff_file=None, test=False):
 	# Create the appropriate files
 	submission_dir = os.path.abspath(submission_dir)
 	# todo: I think all these paths with be absolute paths when called by nextflow process
@@ -304,8 +311,11 @@ def start(command, database, organism, submission_dir, submission_name, config_f
 					submission_id = "---"
 				elif table2asn == True:
 					# GenBank Table2asn submission
-					submission_submit.sendmail(database=database_name, submission_name=submission_name, submission_dir=submission_dir, config_dict=config_dict["NCBI"], test=test)
-					submission_status = "processed-ok"
+					if send_email == True:
+						submission_submit.sendmail(database=database_name, submission_name=submission_name, submission_dir=submission_dir, config_dict=config_dict["NCBI"], test=test)
+						submission_status = "processed-ok"
+					else:
+						submission_status = "email not sent"
 					submission_id = "Table2asn"
 				else:
 					# GenBank FTP submission
@@ -374,7 +384,11 @@ def main():
 		test = args.test
 	else:
 		test = False
-
+	# send email 
+	if "send_submission_email" in args:
+		send_email = args.send_email_parser
+	else:
+		send_email = False
 	# Get database list	
 	database = [x for x in database if x]
 	
@@ -385,9 +399,9 @@ def main():
 			print("\n"+"ERROR: Missing a database selection. See USAGE below."+"\n", file=sys.stdout)
 			submit_prep_subparser.print_help()
 			sys.exit(0)
-		start(command=command, organism=organism, database=database, submission_name=submission_name, submission_dir=submission_dir, config_file=config_file, metadata_file=metadata_file, fasta_file=fasta_file, table2asn=table2asn, gff_file=gff_file, test=test)
+		start(command=command, organism=organism, database=database, submission_name=submission_name, submission_dir=submission_dir, config_file=config_file, metadata_file=metadata_file, fasta_file=fasta_file, table2asn=table2asn, gff_file=gff_file, test=test, send_email=send_email)
 	elif command == "check_submission_status":
-		submission_process.update_submission_status(submission_dir=submission_dir, submission_name=submission_name, organism=organism, test=test)
+		submission_process.update_submission_status(submission_dir=submission_dir, submission_name=submission_name, organism=organism, test=test, send_email=send_email)
 	elif command == "template":
 		# If database is not given, display help
 		if len(database) == 0:

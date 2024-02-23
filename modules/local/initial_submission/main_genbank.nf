@@ -20,8 +20,9 @@ process SUBMISSION_GENBANK {
     path req_col_config
     val annotation_name
 
-    // define the command line arguments based on the value of params.submission_test_or_prod
+    // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+    def send_email_flag = params.send_submission_email == 'true' ? '--send_submission_email' : ''
 
     script:
     """
@@ -34,7 +35,7 @@ process SUBMISSION_GENBANK {
         --metadata_file $validated_meta_path \
         --fasta_file $fasta_path \
         --gff_file $annotations_path \
-        --table2asn $test_flag
+        --table2asn $test_flag $send_email_flag
     """
 
     output:
