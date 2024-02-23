@@ -15,7 +15,6 @@ include { MERGE_UPLOAD_LOG                              } from "../../modules/lo
 
 workflow INITIAL_SUBMISSION {
     take:
-        metadata_ch
         submission_ch
         fastq_ch
         submission_config
@@ -32,7 +31,7 @@ workflow INITIAL_SUBMISSION {
             WAIT ( SUBMISSION_FULL.out.submission_files.collect(), wait_time )
 
             // process for updating the submitted samples
-            UPDATE_SUBMISSION ( SUBMISSION_FULL.out.sample_name, WAIT.out, submission_config, SUBMISSION_FULL.out.submission_files, SUBMISSION_FULL.out.submission_log, '' )
+            UPDATE_SUBMISSION (  WAIT.out, submission_config, SUBMISSION_FULL.out.submission_files, SUBMISSION_FULL.out.submission_log, '' )
 
             // combine the different upload_log csv files together 
             MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
@@ -44,7 +43,7 @@ workflow INITIAL_SUBMISSION {
             WAIT ( SUBMISSION_SRA.out.submission_files.collect(), wait_time )
 
             // process for updating the submitted samples
-            UPDATE_SUBMISSION ( SUBMISSION_SRA.out.sample_name, WAIT.out, submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
+            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
 
             // combine the different upload_log csv files together 
             MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
@@ -58,7 +57,7 @@ workflow INITIAL_SUBMISSION {
             WAIT ( SUBMISSION_GENBANK.out.submission_files.collect(), wait_time )
 
             // process for updating the submitted samples
-            UPDATE_SUBMISSION ( SUBMISSION_GENBANK.out.sample_name, WAIT.out, submission_config, SUBMISSION_GENBANK.out.submission_files, SUBMISSION_GENBANK.out.submission_log, '' )
+            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_GENBANK.out.submission_files, SUBMISSION_GENBANK.out.submission_log, '' )
 
             // combine the different upload_log csv files together 
             MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )

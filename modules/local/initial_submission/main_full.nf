@@ -43,5 +43,4 @@ process SUBMISSION_FULL {
     output:
     path "$params.batch_name.${validated_meta_path.getBaseName()}", emit: submission_files 
     path "submission_log.csv", emit: submission_log
-    path "${validated_meta_path.getBaseName()}.split('\\.')[0]", emit: sample_name
 }

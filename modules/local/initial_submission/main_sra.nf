@@ -14,7 +14,7 @@ process SUBMISSION_SRA {
         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev'  }"
 
     input:
-    tuple val(meta), path(validated_meta_path)    
+    tuple val(meta), path(validated_meta_path) 
     path(fastq_dir)
     path submission_config
     path req_col_config
@@ -41,5 +41,5 @@ process SUBMISSION_SRA {
     output:
     path "${validated_meta_path.getBaseName()}", emit: submission_files
     path "submission_log.csv", emit: submission_log
-    path "${validated_meta_path.getBaseName()}.split('\\.')[0]", emit: sample_name
 }
+
