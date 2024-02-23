@@ -209,19 +209,19 @@ workflow TOSTADAS {
         }
         }
         if ( !params.annotation && params.sra ) {        // no annotation only fastq submission
-                submission_ch = metadata_ch
-                INITIAL_SUBMISSION (
-                    submission_ch,       // metadata_path
-                    fastq_ch,
-                    params.submission_config, 
-                    params.req_col_config, 
-                    GET_WAIT_TIME.out
-                )
-            } 
-            if ( !params.annotation && params.genbank ) {
+            submission_ch = metadata_ch
+            INITIAL_SUBMISSION (
+                submission_ch,       // metadata_path
+                fastq_ch,
+                params.submission_config, 
+                params.req_col_config, 
+                GET_WAIT_TIME.out
+            )
+        } 
+        if ( !params.annotation && params.genbank ) {
                 // todo: make an error msg that follows the rest of the code protocol
                 fail("Cannot submit to GenBank without assembly and annotation files")
-            }
+        }
 
         // To Do test update submission
         if ( params.update_submission ) {
