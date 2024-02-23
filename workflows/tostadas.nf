@@ -211,6 +211,7 @@ workflow TOSTADAS {
         if ( !params.annotation && params.sra ) {        // no annotation only fastq submission
             submission_ch = metadata_ch
             INITIAL_SUBMISSION (
+                metadata_ch,
                 submission_ch,       // metadata_path
                 fastq_ch,
                 params.submission_config, 

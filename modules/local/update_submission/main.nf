@@ -21,6 +21,7 @@ process UPDATE_SUBMISSION {
     }
 
     input:
+    tuple val(meta), path(validated_meta_path)    
     val wait_signal
     path submission_config
     path submission_output
