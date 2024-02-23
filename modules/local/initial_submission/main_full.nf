@@ -36,8 +36,7 @@ process SUBMISSION_FULL {
         --metadata_file $validated_meta_path \
         --fasta_file $fasta_path \
         --gff_file $annotations_path \
-        --table2asn \
-        $test_flag
+        --table2asn $test_flag
     """
 
     output:

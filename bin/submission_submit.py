@@ -192,7 +192,7 @@ def sendmail(database, submission_name, submission_dir, config_dict, test):
 		msg['To'] = ", ".join(to_email)
 		if len(cc_email) != 0:
 			msg['Cc'] = ", ".join(cc_email)
-		with open(os.path.join(submission_dir, submission_name + ".sqn"), 'rb') as file_input:
+		with open(os.path.join(submission_files_dir, submission_name + ".sqn"), 'rb') as file_input:
 			part = MIMEApplication(file_input.read(), Name=submission_name + ".sqn")
 		part['Content-Disposition'] = "attachment; filename=" + submission_name + ".sqn"
 		msg.attach(part)
