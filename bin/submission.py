@@ -96,13 +96,13 @@ def args_parser():
 
 	# Parse the database argument
 	database_args = database_parser.parse_known_args()[0]
-
 	# If genbank and/or gisaid in the database list, must provide fasta file
-	if any(x in database_args for x in ["genbank", "gisaid"]):
+	if any(getattr(database_args, x) for x in ["genbank", "gisaid"]):
 		file_parser.add_argument("--fasta_file",
 			help="Fasta file stored in submission directory",
-			required=False)
+			required=True)
 	else:
+		print(f'fasta not required')
 		file_parser.add_argument("--fasta_file",
 			help="Fasta file stored in submission directory",
 			required=False)	
