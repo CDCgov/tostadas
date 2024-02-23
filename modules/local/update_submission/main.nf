@@ -23,10 +23,14 @@ process UPDATE_SUBMISSION {
     path submission_config
     path submission_output
     val annotation_name
-        
+    
+    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     script:
     """
-    submission.py check_submission_status --organism $params.organism --submission_dir ${task.workDir}  --submission_name ${submission_output.getExtension()} --prod_or_test $params.submission_prod_or_test
+    submission.py check_submission_status \
+        --organism $params.organism \
+        --submission_dir .  \
+        --submission_name $meta.id $test_flag
     """
 
     output:
