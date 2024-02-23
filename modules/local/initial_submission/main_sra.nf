@@ -34,7 +34,7 @@ process SUBMISSION_SRA {
         --submission_dir .  \
         --submission_name ${validated_meta_path.getBaseName()} \
         --config $submission_config  \
-        --metadata_file $validated_meta_path
+        --metadata_file $validated_meta_path \
         $test_flag
     """
 
