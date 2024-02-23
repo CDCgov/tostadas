@@ -296,7 +296,7 @@ def update_submission_status(submission_dir, submission_name, organism, test):
 	else:
 		submission_type = "production"
 	# Check if given organism exist in the log
-	df_partial = df.loc[(df["Organism"] == organism) & (df["Submission_Name"] == submission_name) & (df["Submission_Directory"] == submission_dir) & (df["Submission_Type"] == submission_type)]
+	df_partial = df.loc[(df["Organism"] == organism) & (df["Submission_Name"] == submission_name) & (df["Submission_Type"] == submission_type)]
 	if df_partial.shape[0] == 0:
 		print("Error: Submission name: " + submission_name + " for "+organism+" "+submission_type+"-data is not found in the submission log file.", file=sys.stderr)
 		print("Error: Either a submission has not been made or an entry has been moved.", file=sys.stderr)
@@ -313,7 +313,7 @@ def update_submission_status(submission_dir, submission_name, organism, test):
 	for database_name in database:
 		print("\n" + "Submission database: " + database_name, file=sys.stdout)
 		df = pd.read_csv(submission_log_file, header = 0, dtype = str, engine = "python", encoding="utf-8", index_col=False).sort_values('Submission_Position', ascending=True)
-		df_processing = df[(df["Organism"] == organism) & (df["Database"] == database_name) & (df["Submission_Directory"] == submission_dir) & (df["Submission_Name"] == submission_name) & (df["Submission_Type"] == submission_type)]		
+		df_processing = df[(df["Organism"] == organism) & (df["Database"] == database_name) & (df["Submission_Name"] == submission_name) & (df["Submission_Type"] == submission_type)]		
 		df_processing = df_processing.reset_index(drop=True)
 		submission_dir = df_processing["Submission_Directory"][0]		
 		submission_position = df_processing["Submission_Position"][0]	
