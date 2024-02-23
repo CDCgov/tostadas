@@ -34,5 +34,5 @@ process UPDATE_SUBMISSION {
     """
 
     output:
-    path "$params.${submission_output.getExtension()}", emit: submission_files
+    path "$submission_output", emit: submission_files
 } 
