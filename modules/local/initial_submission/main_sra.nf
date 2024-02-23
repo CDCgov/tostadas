@@ -29,12 +29,12 @@ process SUBMISSION_SRA {
     mv $fastq_dir $meta.id/raw_reads
 
     submission.py submit \
-        -bs \
+        --sra $params.sra \
+        --biosample $params.biosample \
         --organism $params.organism \
         --submission_dir .  \
         --submission_name ${validated_meta_path.getBaseName()} \
         --config $submission_config  \
-        --fasta_file \
         --metadata_file $validated_meta_path
     """
 
