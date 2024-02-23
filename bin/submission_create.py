@@ -74,7 +74,7 @@ def create_ncbi_submission(organism, database, submission_name, submission_dir, 
 		create_genbank_files(organism=organism, submission_name=submission_name, submission_files_dir=submission_files_dir, config_dict=config_dict, metadata=metadata, fasta_file=fasta_file)
 		# If using Table2asn do not generate extra genbank files
 		if table2asn == True:
-			create_genbank_table2asn(submission_name=submission_name, submission_files_dir=submission_files_dir, gff_file=gff_file)
+			create_genbank_table2asn(submission_dir=submission_dir, submission_name=submission_name, submission_files_dir=submission_files_dir, gff_file=gff_file)
 			return			
 		else:
 			# If FTP upload for Genbank, create ZIP file for upload if table2asn is set to False
@@ -457,7 +457,7 @@ def create_genbank_zip(submission_name, submission_files_dir):
 		time.sleep(10)
 
 # Run Table2asn to generate sqn file for submission
-def create_genbank_table2asn(submission_name, submission_files_dir, gff_file=None):
+def create_genbank_table2asn(submission_dir, submission_name, submission_files_dir, gff_file=None):
 	submission_status = "processed-ok"
 	submission_id = "Table2asn"
 	# Create a temp file to store the downloaded table2asn
@@ -472,7 +472,7 @@ def create_genbank_table2asn(submission_name, submission_files_dir, gff_file=Non
 		command.append( os.path.join(submission_files_dir, "comment.cmt"))
 	if gff_file is not None:
 		command.append("-f")
-		command.append(gff_file)
+		command.append(os.path.join(submission_dir, gff_file))
 	print("Running Table2asn.", file=sys.stdout)
 	proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = os.path.join(os.path.dirname(os.path.abspath(__file__))))
 	if proc.returncode != 0:
