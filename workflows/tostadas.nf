@@ -188,6 +188,7 @@ workflow TOSTADAS {
         if ( params.annotation ) {   
             if (params.sra && params.genbank ) {                     // sra and genbank
                 INITIAL_SUBMISSION (
+                    metadata_ch,
                     submission_ch,  // meta.id, metadata_path, fasta, gff
                     fastq_ch,
                     params.submission_config, 
@@ -198,6 +199,7 @@ workflow TOSTADAS {
             else {      
                 if (! params.sra && params.genbank ) {               // only genebankk
                     INITIAL_SUBMISSION ( 
+                        metadata_ch,
                         submission_ch,     // meta.id, metadata_path, fasta, gff
                         fastq_ch,
                         params.submission_config, 
