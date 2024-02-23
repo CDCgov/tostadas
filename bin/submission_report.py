@@ -36,8 +36,6 @@ def get_ncbi_process_report(database, submission_name, submission_files_dir, con
 		# CD to to test/production folder
 		ftp.cwd(submission_type)
 
-		# CD to to test or production folder
-		ftp.cwd(submission_type)
 		# Check if submission name exists
 		if ncbi_submission_name not in ftp.nlst():
 			print("There is no submission with the name of '"+ ncbi_submission_name +"' on NCBI FTP server.", file=sys.stderr)
