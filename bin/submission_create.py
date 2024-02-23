@@ -11,6 +11,7 @@ from datetime import datetime
 import shutil
 import time
 import platform
+from urllib.request import urlopen
 from zipfile import ZipFile
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
