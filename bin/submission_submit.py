@@ -40,20 +40,30 @@ def submit_ncbi(database, submission_name, submission_dir, config_dict, submissi
 		print("If this is not a '" + submission_type + "' submission, interrupts submission immediately.", file=sys.stdout)
 		print("\n"+"Connecting to NCBI FTP Server", file=sys.stdout)
 		print("Submission name: " + submission_name, file=sys.stdout)
+		
+		# CD into submit dir
+		ftp.cwd('submit')
+
 		# CD to to test/production folder
 		ftp.cwd(submission_type)
+
 		# Create submission directory if it does not exist
 		if ncbi_submission_name not in ftp.nlst():
 			ftp.mkd(ncbi_submission_name)
+		
 		# CD to submission folder
-		ftp.cwd('submit')
 		ftp.cwd(ncbi_submission_name)
+
 		print("Submitting '" + submission_name + "'", file=sys.stdout)
+
 		# Upload submission xml
 		res = ftp.storlines("STOR " + "submission.xml", open(os.path.join(submission_files_dir, "submission.xml"), 'rb'))
+		
+		# Provide error statements
 		if not res.startswith('226 Transfer complete'):
 			print('Submission.xml upload failed.', file=sys.stderr)
 			sys.exit(1)
+
 		# Upload raw reads
 		if "SRA" in database:
 			raw_read_location = os.path.join(submission_files_dir, "raw_reads_location.txt")
@@ -68,6 +78,7 @@ def submit_ncbi(database, submission_name, submission_dir, config_dict, submissi
 						if line is None or line == "":
 							continue
 						elif os.path.isfile(line):
+							print('Uploading FASTQs for ', submission_name)
 							res = ftp.storbinary("STOR " + os.path.basename(line), open(line, 'rb'))
 							if not res.startswith('226 Transfer complete'):
 								print('SRA file upload failed. Try again.', file=sys.stderr)
@@ -75,6 +86,7 @@ def submit_ncbi(database, submission_name, submission_dir, config_dict, submissi
 						else:
 							print("Error: Uploading files to SRA database failed. Possibly files have been moved or this is not a valid file: " + line, file=sys.stderr)
 							sys.exit(1)
+						ftp.close()
 		elif "GENBANK" in database:
 			res = ftp.storbinary("STOR " + submission_name + ".zip", open(os.path.join(submission_files_dir, submission_name + ".zip"), 'rb'))
 			if not res.startswith('226 Transfer complete'):
