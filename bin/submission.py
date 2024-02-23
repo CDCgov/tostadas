@@ -101,7 +101,7 @@ def args_parser():
 	if any(x in database_args for x in ["genbank", "gisaid"]):
 		file_parser.add_argument("--fasta_file",
 			help="Fasta file stored in submission directory",
-			required=True)
+			required=False)
 	else:
 		file_parser.add_argument("--fasta_file",
 			help="Fasta file stored in submission directory",
