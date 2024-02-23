@@ -417,8 +417,8 @@ def create_fasta(organism, database, metadata, fasta_file, submission_files_dir)
 def create_genbank_files(organism, config_dict, metadata, fasta_file, submission_name, submission_files_dir):
 	# Create authorset file
 	create_authorset(config_dict=config_dict, metadata=metadata, submission_name=submission_name, submission_files_dir=submission_files_dir)
-	create_fasta(organism=organism, database="GENBANK", metadata=metadata, fasta_file=fasta_file, submission_files_dir=submission_files_dir)
-	# Retrieve the source df"
+	create_fasta(organism=organism, database=["GENBANK"], metadata=metadata, fasta_file=fasta_file, submission_files_dir=submission_files_dir)
+	# Retrieve the source df
 	source_df = metadata.filter(regex="^gb-seq_id$|^src-|^ncbi-spuid$|^ncbi-bioproject$|^organism$|^collection_date$").copy()
 	source_df.columns = source_df.columns.str.replace("src-","").str.strip()
 	source_df = source_df.rename(columns = {"gb-seq_id":"Sequence_ID", "collection_date":"Collection_date", "ncbi-spuid":"strain"})
