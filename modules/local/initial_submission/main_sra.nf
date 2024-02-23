@@ -25,6 +25,7 @@ process SUBMISSION_SRA {
 
     script:
     """
+    mkdir $meta.id
     ln -s $fastq_dir $meta.id/raw_reads
 
     submission.py submit --sra $params.sra --biosample $params.biosample --organism $params.organism \
