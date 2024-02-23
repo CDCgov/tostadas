@@ -17,8 +17,7 @@ process UPDATE_SUBMISSION {
         }
     }
 
-    input:
-    val sample_name    
+    input:   
     val wait_signal
     path submission_config
     path submission_output
@@ -31,7 +30,7 @@ process UPDATE_SUBMISSION {
     submission.py check_submission_status \
         --organism $params.organism \
         --submission_dir .  \
-        --submission_name $ubmission_output $test_flag
+        --submission_name $submission_output $test_flag
     """
 
     output:
