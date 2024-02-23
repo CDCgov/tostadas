@@ -38,5 +38,5 @@ process SUBMISSION_SRA {
     """
 
     output:
-    path "$params.batch_name.${validated_meta_path.getBaseName()}", emit: submission_files 
+    path "${validated_meta_path.getBaseName()}", emit: submission_files 
 }
