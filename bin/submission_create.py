@@ -10,6 +10,7 @@ import datetime
 from datetime import datetime
 import shutil
 import time
+import platform
 from zipfile import ZipFile
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
