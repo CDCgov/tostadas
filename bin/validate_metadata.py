@@ -891,8 +891,6 @@ class HandleDfInserts:
 		"""
 		# todo: this fx does not include req'd cols for GISAID (see seqsender main config and submission_process.py script)
 		self.filled_df.insert(self.filled_df.shape[1], "structuredcomment", ["Assembly-Data"] * len(self.filled_df.index))
-		self.filled_df.insert(self.filled_df.shape[1], "bs-isolation_source", ["Not Provided"] * len(self.filled_df.index))
-		self.filled_df.insert(self.filled_df.shape[1], "src-isolation_source", ["Not Provided"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "src-serotype", ["Not Provided"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "sra-library_name", ["Not Provided"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "bs-geo_loc_name", ["Not Provided"] * len(self.filled_df.index))
@@ -948,12 +946,13 @@ class HandleDfInserts:
 									   'submitting_lab_address':'gb-subm_lab_addr',
 									   'publication_status':'gb-publication_status',
 									   'publication_title':'gb-publication_title',
-									   'isolation_source':'src-isolation_source',
+									   'isolation_source':'bs-isolation_source',
 									   }, inplace = True)
 		self.filled_df['src-isolate'] = self.filled_df['bs-isolate']
 		self.filled_df['src-host'] = self.filled_df['bs-host']
 		self.filled_df['cmt-HOST_AGE'] = self.filled_df['bs-host_age']
 		self.filled_df['cmt-HOST_GENDER'] = self.filled_df['bs-host_sex']
+		self.filled_df['src-isolation_source'] = self.filled_df['bs-isolation_source']
 
 	# todo: this is a temporary fx to convert the illumina paths as input to seqsender
 	def change_illumina_paths(self):
