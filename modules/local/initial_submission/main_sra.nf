@@ -5,9 +5,6 @@
 */
 process SUBMISSION_SRA {
 
-    // define the command line arguments based on the value of params.submission_test_or_prod
-    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
-
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
 
     //label'main'
@@ -23,6 +20,8 @@ process SUBMISSION_SRA {
     path req_col_config
     val annotation_name
 
+    // define the command line arguments based on the value of params.submission_test_or_prod
+    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     script:
     """
     mkdir $meta.id
@@ -36,6 +35,7 @@ process SUBMISSION_SRA {
         --submission_name ${validated_meta_path.getBaseName()} \
         --config $submission_config  \
         --metadata_file $validated_meta_path
+        $test_flag
     """
 
     output:

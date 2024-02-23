@@ -5,9 +5,6 @@
 */
 process SUBMISSION_GENBANK {
 
-    // define the command line arguments based on the value of params.submission_test_or_prod
-    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
-
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
 
     //label'main'
@@ -23,6 +20,8 @@ process SUBMISSION_GENBANK {
     path req_col_config
     val annotation_name
 
+    // define the command line arguments based on the value of params.submission_test_or_prod
+    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     script:
     """
     submission.py submit \
@@ -34,7 +33,8 @@ process SUBMISSION_GENBANK {
         --metadata_file $validated_meta_path \
         --fasta_file $fasta_path \
         --gff_file $annotations_path \
-        --table2asn $test_flag 
+        --table2asn \
+        $test_flag 
     """
 
     output:
