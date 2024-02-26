@@ -5,16 +5,11 @@
 */
 process VADR {
 
-    label 'vadr'
-
-    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    maxRetries 5
+    // label 'vadr'
     
-    try {
-        container "$params.docker_container_vadr"
-    } catch (Exception e) {
-        System.err.println("WARNING: Cannot pull the following docker container: $params.docker_container_vadr to run VADR")
-    }
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/vadr:latest' : 'staphb/vadr:latest' }"
 
     input:
     val signal
