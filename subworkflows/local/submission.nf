@@ -34,7 +34,7 @@ workflow INITIAL_SUBMISSION {
             UPDATE_SUBMISSION (  WAIT.out, submission_config, SUBMISSION_FULL.out.submission_files, SUBMISSION_FULL.out.submission_log, '' )
 
             // combine the different upload_log csv files together 
-            MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
+            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
         }
 
         if ( !params.genbank && params.sra ){ //only sra
@@ -46,7 +46,7 @@ workflow INITIAL_SUBMISSION {
             UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
 
             // combine the different upload_log csv files together 
-            MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
+            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
         }
 
         if ( params.genbank && !params.sra ){ //only genbank, fastq_ch can be empty
@@ -60,7 +60,7 @@ workflow INITIAL_SUBMISSION {
             UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_GENBANK.out.submission_files, SUBMISSION_GENBANK.out.submission_log, '' )
 
             // combine the different upload_log csv files together 
-            MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
+            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
         }
 
         //ToDo add GISAID module
