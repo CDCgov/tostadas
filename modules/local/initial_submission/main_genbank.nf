@@ -17,7 +17,6 @@ process SUBMISSION_GENBANK {
     tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
     path(fastq_dir)
     path submission_config
-    path req_col_config
     val annotation_name
 
     // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email

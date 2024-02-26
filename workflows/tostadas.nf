@@ -197,8 +197,7 @@ workflow TOSTADAS {
                 INITIAL_SUBMISSION (
                     submission_ch,  // meta.id, metadata_path, fasta, gff
                     fastq_ch,
-                    params.submission_config, 
-                    params.req_col_config, 
+                    params.submission_config,  
                     GET_WAIT_TIME.out
                     )
                 } 
@@ -208,7 +207,6 @@ workflow TOSTADAS {
                         submission_ch,     // meta.id, metadata_path, fasta, gff
                         fastq_ch,
                         params.submission_config, 
-                        params.req_col_config, 
                         GET_WAIT_TIME.out
                         )
                     }
@@ -234,7 +232,6 @@ workflow TOSTADAS {
                 metadata_ch,       // metadata_path
                 fastq_ch,
                 params.submission_config, 
-                params.req_col_config, 
                 GET_WAIT_TIME.out
             )
         } 
