@@ -894,7 +894,8 @@ class HandleDfInserts:
 		self.filled_df.insert(self.filled_df.shape[1], "src-serotype", ["Not Provided"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "sra-library_name", ["Not Provided"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "bs-geo_loc_name", ["Not Provided"] * len(self.filled_df.index))
-		self.filled_df.insert(self.filled_df.shape[1], "bs-package", ["Not Provided"] * len(self.filled_df.index))
+		# todo: default to Pathogen.cl.1.0 biosample package, might change this later
+		self.filled_df.insert(self.filled_df.shape[1], "bs-package", ["Pathogen.cl.1.0"] * len(self.filled_df.index))
 		# todo: these two cmt- fields have different values if organism== flu or cov
 		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentPrefix", ["Assembly-Data"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentSuffix", ["Assembly-Data"] * len(self.filled_df.index))
