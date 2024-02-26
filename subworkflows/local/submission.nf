@@ -65,6 +65,7 @@ workflow INITIAL_SUBMISSION {
 
     emit:
         submission_files = UPDATE_SUBMISSION.out.submission_files
+        submission_log = UPDATE_SUBMISSION.out.submission_log
 
         //ToDo add GISAID module
         
