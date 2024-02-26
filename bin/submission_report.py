@@ -25,37 +25,38 @@ def get_ncbi_process_report(database, submission_name, submission_files_dir, con
 	# Create submission name
 	ncbi_submission_name = submission_name + "_" + database
 	# Login into NCBI FTP Server
-	try:
-		FTP_HOST = submission_process.get_main_config()["PORTAL_NAMES"]["NCBI"]["FTP_HOST"]
-		ftp = ftplib.FTP(FTP_HOST)
-		ftp.login(user=config_dict["Username"], passwd=config_dict["Password"])
-		
-		# CD into submit dir
-		ftp.cwd('submit')
+	if database != 'GENBANK':
+		try:
+			FTP_HOST = submission_process.get_main_config()["PORTAL_NAMES"]["NCBI"]["FTP_HOST"]
+			ftp = ftplib.FTP(FTP_HOST)
+			ftp.login(user=config_dict["Username"], passwd=config_dict["Password"])
+			
+			# CD into submit dir
+			ftp.cwd('submit')
 
-		# CD to to test/production folder
-		ftp.cwd(submission_type)
+			# CD to to test/production folder
+			ftp.cwd(submission_type)
 
-		# Check if submission name exists
-		if ncbi_submission_name not in ftp.nlst():
-			print("There is no submission with the name of '"+ ncbi_submission_name +"' on NCBI FTP server.", file=sys.stderr)
-			print("Please try the submission again.", file=sys.stderr)
+			# Check if submission name exists
+			if ncbi_submission_name not in ftp.nlst():
+				print("There is no submission with the name of '"+ ncbi_submission_name +"' on NCBI FTP server.", file=sys.stderr)
+				print("Please try the submission again.", file=sys.stderr)
+				sys.exit(1)
+			# CD to submission folder
+			ftp.cwd(ncbi_submission_name)
+			# Check if report.xml exists
+			if "report.xml" in ftp.nlst():
+				print("Pulling down report.xml", file=sys.stdout)
+				report_file = os.path.join(submission_files_dir, "report.xml")
+				with open(report_file, 'wb') as f:
+					ftp.retrbinary('RETR report.xml', f.write, 262144)
+				return report_file
+			else:
+				print("The report.xml has not yet been generated.", file=sys.stdout)
+				return None
+		except ftplib.all_errors as e:
+			print("\n" + "Error: " + str(e), file=sys.stderr)
 			sys.exit(1)
-		# CD to submission folder
-		ftp.cwd(ncbi_submission_name)
-		# Check if report.xml exists
-		if "report.xml" in ftp.nlst():
-			print("Pulling down report.xml", file=sys.stdout)
-			report_file = os.path.join(submission_files_dir, "report.xml")
-			with open(report_file, 'wb') as f:
-				ftp.retrbinary('RETR report.xml', f.write, 262144)
-			return report_file
-		else:
-			print("The report.xml has not yet been generated.", file=sys.stdout)
-			return None
-	except ftplib.all_errors as e:
-		print("\n" + "Error: " + str(e), file=sys.stderr)
-		sys.exit(1)
 
 # Read xml report and get status of the submission
 def process_biosample_sra_report(database, report_file, submission_status_file):
