@@ -35,4 +35,5 @@ process UPDATE_SUBMISSION {
 
     output:
     path "$submission_output", emit: submission_files
+    path "${submission_output}_submission_log.csv", emit: submission_log
 } 
