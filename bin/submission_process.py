@@ -350,7 +350,7 @@ def update_submission_status(submission_dir, submission_name, organism, test, se
 			print("Submission status: " + submission_status, file=sys.stdout)
 		else:		
 			# Pull download submission report and update its status
-			if database_name in ["BIOSAMPLE", "SRA", "GENBANK"]:
+			if database_name in ["BIOSAMPLE", "SRA", "GENBANK"] and database_name != "GENBANK":
 				# If report exists, processing the report and output status of the submission
 				if database_name in ["BIOSAMPLE", "SRA"]:
 					report_file = submission_report.get_ncbi_process_report(database=database_name, submission_name=submission_name, submission_files_dir=submission_files_dir, config_dict=config_dict['NCBI'], submission_type=submission_type)
