@@ -252,17 +252,17 @@ workflow TOSTADAS {
             )
         }
         // combine the different upload_log csv files together 
-        // if ( ! params.update_submission ) {
-        //     MERGE_UPLOAD_LOG ( 
-        //         INITIAL_SUBMISSION.out.submission_files.collect(), 
-        //         '' )
-        // }
-        // else {
-        //     MERGE_UPLOAD_LOG ( 
-        //         UPDATE_SUBMISSION.out.submission_files.collect(), 
-        //         ''
-        //     )
-        // }
+        if ( ! params.update_submission ) {
+            MERGE_UPLOAD_LOG ( 
+                INITIAL_SUBMISSION.out.submission_files.collect(), 
+                '' )
+        }
+        else {
+            MERGE_UPLOAD_LOG ( 
+                UPDATE_SUBMISSION.out.submission_files.collect(), 
+                ''
+            )
+        }
 
         // To Do add Genbank / GISAID only submission
     }
