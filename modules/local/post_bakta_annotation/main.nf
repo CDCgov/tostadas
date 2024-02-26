@@ -5,6 +5,7 @@
 */
 process BAKTA_POST_CLEANUP {
 
+<<<<<<< HEAD
     //label 'main'
     
     conda (params.enable_conda ? params.env_yml : null)
@@ -13,6 +14,13 @@ process BAKTA_POST_CLEANUP {
         'staphb/tostadas:latest' }"
     
     publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+=======
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+
+    // publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+>>>>>>> 883756c... cleaned up containers and publish dirs
 
     input:
     path bakta_results

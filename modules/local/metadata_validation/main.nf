@@ -5,12 +5,14 @@
 */
 process METADATA_VALIDATION {
 
-    //label 'main'
-    
+    // label 'main'
+
+    //errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    //maxRetries 5
+
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' :
-        'staphb/tostadas:latest' }"
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     // publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
