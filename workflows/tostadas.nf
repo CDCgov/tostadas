@@ -27,6 +27,12 @@ include { BAKTA_POST_CLEANUP                                } from "../modules/l
 // get submission related process/subworkflows
 include { INITIAL_SUBMISSION                                } from "../subworkflows/local/submission"
 include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
+include { MERGE_UPLOAD_LOG                                  } from "../modules/local/general_util/merge_upload_log/main"
+
+include { SUBMISSION_FULL                               } from '../modules/local/initial_submission/main_full'
+include { SUBMISSION_SRA                                } from '../modules/local/initial_submission/main_sra'
+include { SUBMISSION_GENBANK                            } from '../modules/local/initial_submission/main_genbank'
+include { WAIT                                          } from '../modules/local/general_util/wait/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,7 +50,8 @@ workflow TOSTADAS {
     //     annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
     // }
 
-    fastq_ch = Channel.fromPath("$params.fastq_path")
+    fastq_ch = 
+    Channel.fromPath("$params.fastq_path").first()
 
     // check if help parameter is set
     if ( params.help == true ) {
@@ -210,13 +217,26 @@ workflow TOSTADAS {
         }
         if ( !params.annotation && params.sra ) {        // no annotation only fastq submission
             submission_ch = metadata_ch
-            INITIAL_SUBMISSION (
-                submission_ch,       // metadata_path
-                fastq_ch,
-                params.submission_config, 
-                params.req_col_config, 
-                GET_WAIT_TIME.out
-            )
+    
+            SUBMISSION_SRA ( submission_ch, fastq_ch, params.submission_config, params.req_col_config, '' )
+            
+            // actual process to initiate wait 
+            WAIT ( SUBMISSION_SRA.out.submission_files.collect(), GET_WAIT_TIME.out )
+
+            // process for updating the submitted samples
+            UPDATE_SUBMISSION ( WAIT.out, params.submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
+
+            // combine the different upload_log csv files together 
+            MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
+
+
+            // INITIAL_SUBMISSION (
+            //     submission_ch,       // metadata_path
+            //     fastq_ch,
+            //     params.submission_config, 
+            //     params.req_col_config, 
+            //     GET_WAIT_TIME.out
+            // )
         } 
         if ( !params.annotation && params.genbank ) {
                 // todo: make an error msg that follows the rest of the code protocol
@@ -225,12 +245,25 @@ workflow TOSTADAS {
 
         // To Do test update submission
         if ( params.update_submission ) {
-                UPDATE_SUBMISSION (
+            UPDATE_SUBMISSION (
                 RUN_UTILITY.out,
                 params.submission_config, 
                 params.submission_output
             )
         }
+        // combine the different upload_log csv files together 
+        // if ( ! params.update_submission ) {
+        //     MERGE_UPLOAD_LOG ( 
+        //         INITIAL_SUBMISSION.out.submission_files.collect(), 
+        //         '' )
+        // }
+        // else {
+        //     MERGE_UPLOAD_LOG ( 
+        //         UPDATE_SUBMISSION.out.submission_files.collect(), 
+        //         ''
+        //     )
+        // }
+
         // To Do add Genbank / GISAID only submission
     }
 
