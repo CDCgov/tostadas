@@ -20,7 +20,7 @@ workflow INITIAL_SUBMISSION {
         submission_config
         req_col_config
         wait_time
-
+    
     main:
         // submit the files to database of choice (after fixing config and getting wait time)
         if ( params.genbank && params.sra ){ // genbank and sra
@@ -62,6 +62,9 @@ workflow INITIAL_SUBMISSION {
             // combine the different upload_log csv files together 
             // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
         }
+
+    emit:
+        submission_files = UPDATE_SUBMISSION.out.submission_files
 
         //ToDo add GISAID module
         
