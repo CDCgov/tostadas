@@ -60,16 +60,20 @@ def metadata_validation_main():
 	insert = HandleDfInserts(parameters=parameters, filled_df=validate_checks.metadata_df)
 	insert.handle_df_inserts()
 
-	# now split the modified and checked dataframe into individual samples
-	sample_dfs = {}
-	final_df = insert.filled_df
-	for row in range(len(final_df)):
-		sample_df = final_df.iloc[row].to_frame().transpose()
-		sample_df = sample_df.set_index('sample_name')
-		sample_dfs[final_df.iloc[row]['sample_name']] = sample_df
+	# change necessary columns to match what seqsender expects
+	insert.handle_df_changes()
 
-	# now export the .xlsx file as a .tsv
 	if validate_checks.did_validation_work:
+		# now split the modified and checked dataframe into individual samples
+		sample_dfs = {}
+		final_df = insert.filled_df
+		# todo: this rename is temporary - will be added in the class/fx to handle multiple tsvs (see lines 76 & 955)
+		final_df = final_df.rename(columns={'sample_name': 'sequence_name'}) # seqsender expects sequence_name
+		for row in range(len(final_df)):
+			sample_df = final_df.iloc[row].to_frame().transpose()
+			sample_df = sample_df.set_index('sequence_name')
+			sample_dfs[final_df.iloc[row]['sequence_name']] = sample_df
+		# now export the .xlsx file as a .tsv
 		for sample in sample_dfs.keys():
 			tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
 			sample_dfs[sample].to_csv(tsv_file, sep="\t")
@@ -77,6 +81,8 @@ def metadata_validation_main():
 	else:
 		print(f'\nMetadata Validation Failed Please Consult : {parameters["output_dir"]}/{parameters["file_name"]}/errors/full_error.txt for a Detailed List\n')
 		sys.exit(1)
+
+	# todo: handle multiple tsvs for illumina vs. nanopore
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
@@ -177,7 +183,7 @@ class GetMetaAsDf:
 	def load_meta(self):
 		""" Loads the metadata file in as a dataframe from an Excel file (.xlsx)
 		"""
-		df = pd.read_excel(self.parameters['meta_path'], header=[1])
+		df = pd.read_excel(self.parameters['meta_path'], header=[1], dtype = str, engine = "openpyxl", index_col=None, na_filter=False)
 		return df
 
 	def populate_fields(self):
@@ -234,7 +240,7 @@ class ValidateChecks:
 		self.final_cols = []
 
 		# field requirements
-		self.required_core = ["sample_name", "ncbi_sequence_name_biosample_genbank", "author", "isolate", "organism",
+		self.required_core = ["sample_name", "ncbi-spuid", "author", "isolate", "organism",
 							  "collection_date", "country"]
 		self.optional_core = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
 		self.case_fields = ["sex", "age", "race", "ethnicity"]
@@ -303,7 +309,7 @@ class ValidateChecks:
 			# check the meta code for the sample line
 			self.check_meta_core(sample_info)
 
-			# if the author for the sample is not empty then check to make sure if it is properly formatted
+			# if the author for the sample is not empty then check to make sure it is properly formatted
 			try:
 				assert self.author_valid is True
 			except AssertionError:
@@ -556,7 +562,7 @@ class ValidateChecks:
 		try:
 			assert self.meta_core_grade is True
 		except AssertionError:
-			raise AssertionError(f'Meta core grade was not properly reseted to True after sample round')
+			raise AssertionError(f'Meta core grade was not properly reset to True after sample round')
 
 		missing_fields, missing_optionals = [], []
 		# check the required fields
@@ -585,7 +591,7 @@ class ValidateChecks:
 		try:
 			assert self.meta_case_grade is True
 		except AssertionError:
-			raise AssertionError(f'Meta case grade was not properly resetted back to True after sample round')
+			raise AssertionError(f'Meta case grade was not properly reset back to True after sample round')
 
 		invalid_case_data = []
 		for field in self.case_fields:
@@ -596,7 +602,6 @@ class ValidateChecks:
 		if self.meta_case_grade is False:
 			self.sample_error_msg += f'\n\t\tPresent Case Data found in: {", ".join(invalid_case_data)}' + \
 					f"\n\t\tValidation will Fail. Please remove Case Data or add the Keep Data Flag -f to Conserve Case Data"
-
 
 class Check_Illumina_Nanopore_SRA:
 	""" Class constructor for the various checks on instruments
@@ -717,7 +722,6 @@ class Check_Illumina_Nanopore_SRA:
 				self.illumina_error_msg += f'\n\t\tIllumina Missing Data: {", ".join(missing_data)}'
 			if len(invalid_data) != 0:
 				self.illumina_error_msg += f'\n\t\tIllumina Invalid Data: {", ".join(invalid_data)}'
-
 
 class HandleErrors:
 	""" Class constructor for handling errors at the sample and global levels
@@ -845,7 +849,6 @@ class HandleErrors:
 			elif y is False:
 				self.tsv[x] = 'X'
 
-
 class HandleDfInserts:
 	""" Class constructor for handling the insert operations on the metadata df once all the checks are completed
 	"""
@@ -861,11 +864,11 @@ class HandleDfInserts:
 		"""
 		# adds the Geolocation field
 		self.insert_loc_data()
-		# adds any additional columsn, for now just the Assembly-Data column
+		# adds any additional columns (seqsender required cols that are not in our metadata file)
 		self.insert_additional_columns()
 		try:
-			assert 'geo_location' in self.filled_df.columns.values
-			assert True not in [math.isnan(x) for x in self.filled_df['geo_location'].tolist() if isinstance(x, str) is False]
+			assert 'bs-geo_location' in self.filled_df.columns.values
+			assert True not in [math.isnan(x) for x in self.filled_df['bs-geo_location'].tolist() if isinstance(x, str) is False]
 			assert 'structuredcomment' in self.filled_df.columns.values
 			assert True not in [math.isnan(x) for x in self.filled_df['structuredcomment'].tolist() if
 								isinstance(x, str) is False]
@@ -877,17 +880,107 @@ class HandleDfInserts:
 		"""
 		for i in range(len(self.list_of_country)):
 			if self.list_of_state[i] != "" and self.list_of_state[i] != '' and self.list_of_state[i] is not None:
-				self.new_combination_list.append(f'{self.list_of_country[i]}:{self.list_of_state[i]}')
+				self.new_combination_list.append(f'{self.list_of_country[i]}: {self.list_of_state[i]}')
 			else:
 				self.new_combination_list.append(str(self.list_of_country[i]))
 
-		self.filled_df['geo_location'] = self.new_combination_list
+		self.filled_df['bs-geo_location'] = self.new_combination_list
 
 	def insert_additional_columns(self):
 		""" Inserts additional columns into the metadata dataframe
 		"""
+		# todo: this fx does not include req'd cols for GISAID (see seqsender main config and submission_process.py script)
 		self.filled_df.insert(self.filled_df.shape[1], "structuredcomment", ["Assembly-Data"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "src-serotype", ["Not Provided"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "sra-library_name", ["Not Provided"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "bs-geo_loc_name", ["Not Provided"] * len(self.filled_df.index))
+		# todo: default to Pathogen.cl.1.0 biosample package, might change this later
+		self.filled_df.insert(self.filled_df.shape[1], "bs-package", ["Pathogen.cl.1.0"] * len(self.filled_df.index))
+		# todo: these two cmt- fields have different values if organism== flu or cov
+		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentPrefix", ["Assembly-Data"] * len(self.filled_df.index))
+		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentSuffix", ["Assembly-Data"] * len(self.filled_df.index))
 
+	def handle_df_changes(self):
+		""" Main function to call change routines and return the final metadata dataframe
+		"""
+		self.change_col_names()
+		self.change_illumina_paths()
+
+		# list of column names to check
+		columns_to_check = ['authors', 'bs-collected_by', 'src-country', 'bs-isolate', 'bs-host', 'bs-host_disease',
+					  		'bs-lat_lon', 'bs-host_sex', 'bs-host_age', 'cmt-Assembly-Method', 'cmt-Coverage', 
+							'src-isolate', 'src-host', 'cmt-HOST_AGE', 'cmt-HOST_GENDER']
+		for column_name in columns_to_check:
+			try:
+				self.check_nan_for_column(column_name)
+			except AssertionError:
+				raise AssertionError(f'Columns in dataframe were not properly changed for input to seqsender')
+
+	def change_col_names(self):
+		""" Change identical column names to match the name seqsender expects
+			Copy duplicate columns as seqsender expects
+		"""
+		# todo: only illumina is supported now (by changing colnames) - need to change illumina_ fields to properly support both nanopore and illumina
+		self.filled_df.rename(columns={
+									   'author': 'authors',
+									   'collected_by': 'bs-collected_by',
+									   'country': 'src-country',
+									   'isolate': 'bs-isolate',
+									   'host': 'bs-host',
+									   'host_disease': 'bs-host_disease',
+									   'lat_lon': 'bs-lat_lon',
+									   'sex': 'bs-host_sex',
+									   'age': 'bs-host_age',
+									   'assembly_method': 'cmt-Assembly-Method',
+									   'mean_coverage': 'cmt-Coverage',
+									   'illumina_sequencing_instrument': 'sra-instrument_model',
+									   'illumina_library_strategy': 'sra-library_strategy',
+									   'illumina_library_source': 'sra-library_source',
+									   'illumina_library_selection': 'sra-library_selection',
+									   'illumina_library_layout': 'sra-library_layout',
+									   'illumina_library_protocol': 'sra-library_construction_protocol',
+									   'ncbi_sequence_name_sra':'gb-seq_id',
+									   'description':'bs-description',
+									   'file_location':'sra-file_location',
+									   'submitting_lab':'gb-subm_lab',
+									   'submitting_lab_division':'gb-subm_lab_division',
+									   'submitting_lab_address':'gb-subm_lab_addr',
+									   'publication_status':'gb-publication_status',
+									   'publication_title':'gb-publication_title',
+									   'isolation_source':'bs-isolation_source',
+									   }, inplace = True)
+		self.filled_df['src-isolate'] = self.filled_df['bs-isolate']
+		self.filled_df['src-host'] = self.filled_df['bs-host']
+		self.filled_df['cmt-HOST_AGE'] = self.filled_df['bs-host_age']
+		self.filled_df['cmt-HOST_GENDER'] = self.filled_df['bs-host_sex']
+		self.filled_df['src-isolation_source'] = self.filled_df['bs-isolation_source']
+
+	# todo: this is a temporary fx to convert the illumina paths as input to seqsender
+	def change_illumina_paths(self):
+		""" Change illumina_sra_file_path_1 & illumina_sra_file_path_2 to sra-file_name
+		"""
+
+		# function to extract file name from path
+		def extract_filename(path):
+			if '/' in path:
+				return path.split('/')[-1] # todo: assume Unix paths ok?
+			else:
+				return path
+
+		# create new column 'sra-file_name'
+		self.filled_df['sra-file_name'] = self.filled_df.apply(lambda row: extract_filename(row['illumina_sra_file_path_1']) + ',' + extract_filename(row['illumina_sra_file_path_2']), axis=1)
+
+		# drop original columns
+		self.filled_df = self.filled_df.drop(['illumina_sra_file_path_1', 'illumina_sra_file_path_2'], axis=1)
+		
+
+	# todo: apply this function to Ankush's insert checks as well
+	def check_nan_for_column(self, column_name):
+		""" Check for NaN values (if not a string) in a column of the dataframe """
+		assert column_name in self.filled_df.columns.values
+		assert True not in [math.isnan(x) for x in self.filled_df[column_name].tolist() if isinstance(x, str) is False]
+
+# todo: handle multiple tsvs for illumina vs. nanopore - another class?
 
 class CustomFieldsFuncs:
 	""" Class constructor containing attributes/methods for handling custom fields processes

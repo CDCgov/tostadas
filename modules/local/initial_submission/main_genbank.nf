@@ -3,34 +3,41 @@
                                     RUNNING SUBMISSION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process INITAL_SUBMISSION {
+process SUBMISSION_GENBANK {
 
-    label 'main'
+    publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
-    publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
+    //label'main'
 
-    if ( params.run_conda == true ) {
-        try {
-            conda params.env_yml
-        } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
-        }
-    }
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
     input:
     tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
+    path(fastq_dir)
     path submission_config
-    path req_col_config
     val annotation_name
 
+    // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
+    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+    def send_email_flag = params.send_submission_email == 'true' ? '--send_submission_email' : ''
+
     script:
-    """     
-    submission.py submit --genbank $params.genbank --sra $params.sra --gisaid $params.gisaid --biosample $params.biosample --organism $params.organism \
-                         --submission_dir ${task.workDir}  --submission_name ${validated_meta_path.getBaseName()} --config $submission_config  \
-                         --validated_meta_path $validated_meta_path --fasta_path $fasta_path --gff_path $annotations_path --table2asn true \
-                         --prod_or_test $params.submission_prod_or_test --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email
+    """
+    submission.py submit \
+        --genbank \
+        --organism $params.organism \
+        --submission_dir . \
+        --submission_name ${validated_meta_path.getBaseName()} \
+        --config $submission_config  \
+        --metadata_file $validated_meta_path \
+        --fasta_file $fasta_path \
+        --gff_file $annotations_path \
+        --table2asn $test_flag $send_email_flag
     """
 
     output:
-    path "$params.batch_name.${validated_meta_path.getBaseName()}", emit: submission_files 
+    path "${validated_meta_path.getBaseName()}", emit: submission_files 
+    path "*.csv", emit: submission_log
 }
