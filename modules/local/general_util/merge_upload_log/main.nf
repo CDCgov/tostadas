@@ -5,8 +5,7 @@
 */
 process MERGE_UPLOAD_LOG {
 
-    //label 'main'
-    container 'staphb/tostadas:latest'
+    label 'main'
 
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
 
@@ -26,9 +25,8 @@ process MERGE_UPLOAD_LOG {
     script:
     """
     merge_submission_logs.py --submission_dir .
-    #submission_utility.py --merge_upload_log true --batch_name $params.batch_name
     """
 
     output:
-    path "submission_log.csv", emit: submission_log
+    path "combined_submission_log.csv", emit: submission_log
 }

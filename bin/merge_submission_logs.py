@@ -37,7 +37,7 @@ def main():
     print("Individual sample log files merged")
 
     # Write the combined dataframe to the current working directory
-    merged_df.to_csv('submission_log.csv', index=False)
+    merged_df.to_csv('combined_submission_log.csv', index=False)
     print("Final submission log file created successfully!")
 
 if __name__ == "__main__":
