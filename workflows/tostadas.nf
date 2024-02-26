@@ -216,27 +216,27 @@ workflow TOSTADAS {
         }
         }
         if ( !params.annotation && params.sra ) {        // no annotation only fastq submission
-            submission_ch = metadata_ch
+            // submission_ch = metadata_ch
     
-            SUBMISSION_SRA ( submission_ch, fastq_ch, params.submission_config, params.req_col_config, '' )
+            // SUBMISSION_SRA ( submission_ch, fastq_ch, params.submission_config, params.req_col_config, '' )
             
-            // actual process to initiate wait 
-            WAIT ( SUBMISSION_SRA.out.submission_files.collect(), GET_WAIT_TIME.out )
+            // // actual process to initiate wait 
+            // WAIT ( SUBMISSION_SRA.out.submission_files.collect(), GET_WAIT_TIME.out )
 
-            // process for updating the submitted samples
-            UPDATE_SUBMISSION ( WAIT.out, params.submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
+            // // process for updating the submitted samples
+            // UPDATE_SUBMISSION ( WAIT.out, params.submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
 
-            // combine the different upload_log csv files together 
-            MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
+            // // combine the different upload_log csv files together 
+            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
 
 
-            // INITIAL_SUBMISSION (
-            //     submission_ch,       // metadata_path
-            //     fastq_ch,
-            //     params.submission_config, 
-            //     params.req_col_config, 
-            //     GET_WAIT_TIME.out
-            // )
+            INITIAL_SUBMISSION (
+                metadata_ch,       // metadata_path
+                fastq_ch,
+                params.submission_config, 
+                params.req_col_config, 
+                GET_WAIT_TIME.out
+            )
         } 
         if ( !params.annotation && params.genbank ) {
                 // todo: make an error msg that follows the rest of the code protocol
