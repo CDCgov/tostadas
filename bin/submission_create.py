@@ -23,6 +23,9 @@ from nameparser import HumanName
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import submission_process
 
+# Get program directory
+PROG_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def download_table2asn(table2asn_dir):
 	# Determine which platform to download table2asn
 	if platform.system() == "Windows":
@@ -461,7 +464,7 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 	submission_status = "processed-ok"
 	submission_id = "Table2asn"
 	# Create a temp file to store the downloaded table2asn
-	table2asn_dir = submission_dir + "/table2asn"
+	table2asn_dir = PROG_DIR + "/table2asn"
 	# Download the table2asn
 	print("Downloading Table2asn.", file=sys.stdout)
 	download_table2asn(table2asn_dir=table2asn_dir)
