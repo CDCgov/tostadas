@@ -11,6 +11,7 @@ process MERGE_UPLOAD_LOG {
 
     input:
     path submission_files
+    path submission_log
     val annotation_name
 
     script:

@@ -283,7 +283,7 @@ def process_fasta_samples(metadata, fasta_file):
 def update_submission_status(submission_dir, submission_name, organism, test, send_email=False):
 	# Check if submission log exists
 	submission_dir = os.path.abspath(submission_dir)
-	submission_log_file = os.path.join(submission_dir, "submission_log.csv")
+	submission_log_file = os.path.join(submission_dir, f"{submission_name}_submission_log.csv")
 	if os.path.isfile(submission_log_file):
 		df = pd.read_csv(submission_log_file, header = 0, dtype = str, engine = "python", encoding="utf-8", index_col=False)
 	else:

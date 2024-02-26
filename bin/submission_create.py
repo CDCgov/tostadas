@@ -488,8 +488,9 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 # Create submission log csv
 def create_submission_log(database, submission_position, organism, submission_name, submission_dir, config_file, submission_status, submission_id, table2asn, gff_file, submission_type):
 	# If file doesn't exist create it
-	if os.path.isfile(os.path.join(submission_dir, "submission_log.csv")) == True:
-		df = pd.read_csv(os.path.join(submission_dir, "submission_log.csv"), header = 0, dtype = str, engine = "python", encoding="utf-8", index_col=False)
+	submission_log_file = os.path.join(submission_dir, f"{submission_name}_submission_log.csv")
+	if os.path.isfile(submission_log_file) == True:
+		df = pd.read_csv(submission_log_file, header = 0, dtype = str, engine = "python", encoding="utf-8", index_col=False)
 	else:
 		df = pd.DataFrame(columns = ["Submission_Name", "Organism", "Database", "Submission_Position", "Submission_Type", "Submission_Date", "Submission_Status", "Submission_Directory", "Config_File", "Table2asn", "GFF_File", "Update_Date"])
 	# Fill in the log field if it exists, otherwise create new
@@ -518,4 +519,4 @@ def create_submission_log(database, submission_position, organism, submission_na
 					 'Update_Date': datetime.now().strftime("%Y-%m-%d")
 					}
 		df.loc[len(df)] = new_entry
-	df.to_csv(os.path.join(submission_dir, "submission_log.csv"), header = True, index = False)
+	df.to_csv(submission_log_file, header = True, index = False)
