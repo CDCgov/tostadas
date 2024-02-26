@@ -21,7 +21,7 @@ process UPDATE_SUBMISSION {
     val wait_signal
     path submission_config
     path submission_output
-    file submission_log
+    path submission_log
     val annotation_name
     
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
@@ -35,4 +35,6 @@ process UPDATE_SUBMISSION {
 
     output:
     path "$submission_output", emit: submission_files
+    path "*.csv", emit: submission_log
+
 } 

@@ -40,6 +40,6 @@ process SUBMISSION_SRA {
 
     output:
     path "${validated_meta_path.getBaseName()}", emit: submission_files
-    path "submission_log.csv", emit: submission_log
+    path "*.csv", emit: submission_log
 }
 
