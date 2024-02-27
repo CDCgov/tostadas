@@ -9,7 +9,7 @@ process UPDATE_SUBMISSION {
     
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: true
 
