@@ -1,0 +1,43 @@
+---
+Submission:
+  NCBI:
+    Username: username
+    Password: password
+    Table2asn: True
+    Submission_Position: 1
+    Description:
+      Title:  Test
+      Comment: This is a test submission
+      Organization:
+        '@role': owner
+        '@type': institute
+        '@org_id': 30206
+        Name: CDC
+        Address:
+           Affil: CDC
+           Div: DHCPP-PRB
+           Street: 1600 Clifton Rd
+           City: Atlanta
+           Sub: GA
+           Postal_code: 30329
+           Country: USA
+           Email: test@cdc.gov
+           Phone: ""
+        Submitter:
+          '@email': test9@cdc.gov
+          '@alt_email': test@cdc.gov
+          Name:
+            First: John
+            Last: Doe
+  GISAID:
+    Client-Id: TEST-EA76875B00C3
+    Username: username
+    Password: password
+    Submission_Position: 2
+general:
+  submit_Genbank: True
+  submit_GISAID: False
+  submit_SRA: True
+  submit_BioSample: True
+  joint_SRA_BioSample_submission: False
+  tbl2asn_flags: -M n -Z -J -c w

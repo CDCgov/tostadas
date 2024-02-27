@@ -23,9 +23,14 @@ include { RUN_VADR                                          } from "../subworkfl
 include { RUN_BAKTA                                         } from "../subworkflows/local/bakta"
 
 // get submission related process/subworkflows
-include { FULL_SUBMISSION                                   } from "../subworkflows/local/full_submission"
-include { SRA_SUBMISSION                                    } from "../subworkflows/local/sra_submission"
+include { INITIAL_SUBMISSION                                } from "../subworkflows/local/submission"
 include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
+include { MERGE_UPLOAD_LOG                                  } from "../modules/local/general_util/merge_upload_log/main"
+
+include { SUBMISSION_FULL                               } from '../modules/local/initial_submission/main_full'
+include { SUBMISSION_SRA                                } from '../modules/local/initial_submission/main_sra'
+include { SUBMISSION_GENBANK                            } from '../modules/local/initial_submission/main_genbank'
+include { WAIT                                          } from '../modules/local/general_util/wait/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,6 +48,17 @@ workflow TOSTADAS {
     //     annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
     // }
 
+    fastq_ch = 
+    Channel.fromPath("$params.fastq_path").first()
+
+    fasta_ch = 
+    Channel.fromPath("${params.fasta_path}/*.fasta")
+    .map { 
+         def meta = [:] 
+         meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+         [ meta, it ] 
+    }
+
     // check if help parameter is set
     if ( params.help == true ) {
         PRINT_PARAMS_HELP()
@@ -56,7 +72,8 @@ workflow TOSTADAS {
     METADATA_VALIDATION ( 
         RUN_UTILITY.out,
         params.meta_path
-    ) 
+    )
+    // todo: the names of these tsv_Files need to be from sample name not fasta file name 
     metadata_ch = METADATA_VALIDATION.out.tsv_Files.flatten()
     .map { 
         def meta = [:] 
@@ -65,19 +82,20 @@ workflow TOSTADAS {
     }
 
     // initialize files (stage and change names for files)
-    CHECK_FILES (
-        RUN_UTILITY.out,
-        false,
-        false,
-        false,
-        METADATA_VALIDATION.out.tsv_dir
-    )
-    fasta_ch = CHECK_FILES.out.fasta_files.flatten()
-    .map { 
-        def meta = [:] 
-        meta['id'] = it.getSimpleName()
-        [ meta, it ] 
-    }
+    // CHECK_FILES (
+    //     RUN_UTILITY.out,
+    //     false,
+    //     false,
+    //     false,
+    //     METADATA_VALIDATION.out.tsv_dir)
+
+    // todo: check fasta_ch ids against metadata sample name, don't require fasta file name in metadata
+    // fasta_ch = CHECK_FILES.out.fasta_files.flatten()
+    // .map { 
+    //     def meta = [:] 
+    //     meta['id'] = it.getSimpleName()
+    //     [ meta, it ] 
+    // }
 
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
@@ -162,32 +180,75 @@ workflow TOSTADAS {
         )
 
         // check if annotation is set to true 
-        if ( params.annotation ) {
-            if ( params.genbank && params.sra ) {
-            
-                FULL_SUBMISSION (
-                    submission_ch,
-                    params.submission_config, 
-                    params.req_col_config, 
-                    GET_WAIT_TIME.out   
-                )
-            } 
-        } 
-        if ( params.annotation == false ) {
-            if ( params.sra ) {
-                SRA_SUBMISSION (
-                    metadata_ch,
-                    params.submission_config, 
-                    params.req_col_config, 
+        if ( params.annotation ) {   
+            if (params.sra && params.genbank ) {                     // sra and genbank
+                INITIAL_SUBMISSION (
+                    submission_ch,  // meta.id, metadata_path, fasta, gff
+                    fastq_ch,
+                    params.submission_config,  
                     GET_WAIT_TIME.out
-                )
-            } 
+                    )
+                } 
+            else {      
+                if (! params.sra && params.genbank ) {               // only genebankk
+                    INITIAL_SUBMISSION ( 
+                        submission_ch,     // meta.id, metadata_path, fasta, gff
+                        fastq_ch,
+                        params.submission_config, 
+                        GET_WAIT_TIME.out
+                        )
+                    }
+                }
         }
+        }
+        if ( !params.annotation && params.sra ) {        // no annotation only fastq submission
+            // submission_ch = metadata_ch
+    
+            // SUBMISSION_SRA ( submission_ch, fastq_ch, params.submission_config, params.req_col_config, '' )
+            
+            // // actual process to initiate wait 
+            // WAIT ( SUBMISSION_SRA.out.submission_files.collect(), GET_WAIT_TIME.out )
+
+            // // process for updating the submitted samples
+            // UPDATE_SUBMISSION ( WAIT.out, params.submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
+
+            // // combine the different upload_log csv files together 
+            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
+
+
+            INITIAL_SUBMISSION (
+                metadata_ch,       // metadata_path
+                fastq_ch,
+                params.submission_config, 
+                GET_WAIT_TIME.out
+            )
+        } 
+        if ( !params.annotation && params.genbank ) {
+                // todo: make an error msg that follows the rest of the code protocol
+                throw new Exception("Cannot submit to GenBank without assembly and annotation files")
+        }
+
         // To Do test update submission
         if ( params.update_submission ) {
-            UPDATE_SUBMISSION ()
+            UPDATE_SUBMISSION (
+                RUN_UTILITY.out,
+                params.submission_config, 
+                params.submission_output
+            )
         }
-    }
-}
+        // combine the different upload_log csv files together 
+        if ( ! params.update_submission ) {
+            MERGE_UPLOAD_LOG ( 
+                INITIAL_SUBMISSION.out.submission_files.collect(), INITIAL_SUBMISSION.out.submission_log.collect(), 
+                '' )
+        }
+        else {
+            MERGE_UPLOAD_LOG ( 
+                UPDATE_SUBMISSION.out.submission_files.collect(), UPDATE_SUBMISSION.out.submission_log.collect(), 
+                ''
+            )
+        }
+
         // To Do add Genbank / GISAID only submission
+    }
 

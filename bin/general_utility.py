@@ -27,12 +27,12 @@ def get_args():
     parser.add_argument("--annotation_entry", type=str, help="Is it the entrypoint for annotation or not")
     parser.add_argument("--submission_entry", type=str, help="Is it the submission entrypoint for submission or not")
     parser.add_argument("--update_submission_entry", type=str, help="Is it the update entrypoint for submission or not")
-    parser.add_argument("--run_submission", type=str, help="Whether to run submission or not")
-    parser.add_argument("--run_annotation", type=str, help="Whether to run annotation or not")
-    parser.add_argument("--run_liftoff", type=str, help="Whether to run liftoff or not")
-    parser.add_argument("--run_repeatmasker_liftoff", type=str, help="Whether to run repeatmasker liftoff or not")
-    parser.add_argument("--run_vadr", type=str, help="Whether to run vadr or not")
-    parser.add_argument("--run_bakta", type=str, help="Whether to run bakta or not")
+    parser.add_argument("--submission", type=str, help="Whether to run submission or not")
+    parser.add_argument("--annotation", type=str, help="Whether to run annotation or not")
+    parser.add_argument("--liftoff", type=str, help="Whether to run liftoff or not")
+    parser.add_argument("--repeatmasker_liftoff", type=str, help="Whether to run repeatmasker liftoff or not")
+    parser.add_argument("--vadr", type=str, help="Whether to run vadr or not")
+    parser.add_argument("--bakta", type=str, help="Whether to run bakta or not")
     # which datbases are being submitted to 
     parser.add_argument("--submission_database", type=str, help="Which databases are being submitted to")
     """
@@ -94,11 +94,11 @@ def main():
         general_util.move_update_submission_entry_files(parameters)
 
     # check annotation, there must be ref fasta/gff, fasta, and meta (liftoff) + just fasta and meta (vadr and bakta)
-    if [parameters['run_annotation'].lower().strip(),  parameters['annotation_entry'].lower().strip(), parameters['submission_entry'].lower().strip()] == ['true', 'false', 'false']:
+    if [parameters['annotation'].lower().strip(),  parameters['annotation_entry'].lower().strip(), parameters['submission_entry'].lower().strip()] == ['true', 'false', 'false']:
 
         # do general checks 
-        if any([parameters['run_liftoff'].lower().strip(), parameters['run_repeatmasker_liftoff'].lower().strip(),  
-            parameters['run_vadr'].lower().strip(), parameters['run_bakta'].lower().strip()]):
+        if any([parameters['liftoff'].lower().strip(), parameters['repeatmasker_liftoff'].lower().strip(),  
+            parameters['vadr'].lower().strip(), parameters['bakta'].lower().strip()]):
             
             # need to have meta and fasta 
             for file_param in ['fasta_path', 'meta_path']:
@@ -109,7 +109,7 @@ def main():
                                          f"Program was terminated.\n")
                     sys.exit(1)
 
-            if parameters['run_liftoff'].lower().strip() == 'true' or parameters['run_repeatmasker_liftoff'].lower().strip() == 'true':
+            if parameters['liftoff'].lower().strip() == 'true' or parameters['repeatmasker_liftoff'].lower().strip() == 'true':
                 # do specific checks for liftoff + repeatmasker liftoff (ref fasta and ref gff)
                 for file_param in ['ref_fasta_path', 'ref_gff_path']:
                     try:
@@ -123,7 +123,7 @@ def main():
         parameters['annotation_entry'].lower().strip(),
         parameters['update_submission_entry'].lower().strip(),
         parameters['submission_entry'].lower().strip(),
-        parameters['run_submission'].lower().strip()
+        parameters['submission'].lower().strip()
     ]
     if parameters['submission_entry'].lower().strip() == 'true' or to_check == ['false', 'false', 'false', 'true']:
 
@@ -220,20 +220,20 @@ class GeneralUtil():
         # if either submission entry is true OR main workflow is called without annotation (false for entry flags and false for annotations)
         # check if gff files need to be checked or not 
         annotation_flags = [
-            parameters['run_liftoff'].lower().strip(),
-            parameters['run_repeatmasker_liftoff'].lower().strip(),
-            parameters['run_bakta'].lower().strip(),
-            parameters['run_vadr'].lower().strip()
+            parameters['liftoff'].lower().strip(),
+            parameters['repeatmasker_liftoff'].lower().strip(),
+            parameters['bakta'].lower().strip(),
+            parameters['vadr'].lower().strip()
         ]
         # to check 
         to_check = [
             # if the submission entry is true, then gff files MUST be checked
             parameters['submission_entry'].lower().strip() == 'true',
             # if run annotation is false, then gff files MUST be checked
-            parameters['run_annotation'].lower().strip() == 'false',
+            parameters['annotation'].lower().strip() == 'false',
             # if run annotation is true, but all annotators are false, and submission entry is false, then it must be checked
             all([
-                parameters['run_annotation'].lower().strip() == 'true', 
+                parameters['annotation'].lower().strip() == 'true', 
                 all([x == 'false' for x in annotation_flags]),
                 parameters['submission_entry'].lower().strip() == 'false'
             ])

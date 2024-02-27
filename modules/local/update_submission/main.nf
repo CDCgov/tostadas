@@ -9,21 +9,27 @@ process UPDATE_SUBMISSION {
     
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: true
 
-    input:
+    input:   
     val wait_signal
     path submission_config
     path submission_output
+    path submission_log
     val annotation_name
-        
+    
+    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     script:
     """
-    run_submission.py --config $submission_config --update true --unique_name $params.batch_name --sample_name ${submission_output.getExtension()}
+    submission.py check_submission_status \
+        --organism $params.organism \
+        --submission_dir .  \
+        --submission_name $submission_output $test_flag
     """
 
     output:
-    path "$params.batch_name.${submission_output.getExtension()}", emit: submission_files
+    path "$submission_output", emit: submission_files
+    path "${submission_output}_submission_log.csv", emit: submission_log
 } 

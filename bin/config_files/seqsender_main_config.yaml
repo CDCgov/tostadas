@@ -1,0 +1,137 @@
+OVERVIEW:
+  - "All fields listed in the config file are mandatory."
+  - "Fields marked with * contains unique sample identifiers"
+  - "Fields marked with ? are required in full. Missing values can be fill with Unknown"
+  - "Fields marked with # contains unique sample identifiers that must match the header of the respective sequences in the fasta file."
+  - "Fields marked with & contains date information."
+
+SUBMISSION_PORTAL:
+  COMMON_FIELDS:
+    sequence_name*: 
+      - text: 'Sequence identifier used in fasta file. This is used to create the fasta file for Genbank or GISAID.'
+    organism: 
+      - text: 'The most descriptive organism name for the samples. If relevant, you can search the organism name in the <a href="https://www.ncbi.nlm.nih.gov/taxonomy" target="_blank">NCBI Taxonomy database</a>. For FLU, organism must be <b>"Influenza A Virus"</b>. For COV, organism must be <b>"Severe acute respiratory syndrome coronavirus 2"</b>.'
+    collection_date&: 
+      - text: 'The date on which the sample was collected; must be in the ISO format: <b>YYYY-MM-DD</b>.<br>For example: 2020-03-25'
+    authors: 
+      - text: 'Citing authors. List of <b>Last, First Middle, suffix</b> separated by a semicolon ";" E.g.: "Baker, Howard Henry, Jr.; Powell, Earl Alexander, III.;"'
+  PORTAL_NAMES:
+    NCBI: 
+      FTP_HOST: 'ftp-private.ncbi.nlm.nih.gov'
+      API_URL: 'https://submit.ncbi.nlm.nih.gov/api/2.0/files/FILE_ID/?format=attachment'
+      TABLE2ASN_EMAIL: 'gb-admin@ncbi.nlm.nih.gov'
+      COMMON_FIELDS:
+        ncbi-spuid: 
+          - text: 'Submitter Provided Unique Identifiers. This is used to report back assigned accessions as well as for cross-linking objects within submission.'
+        ncbi-spuid_namespace: 
+          - text: 'If SPUID is used, spuid_namespace has to be provided. The values of spuid_namespace are user-specified but have a 100-character limit.'
+        ncbi-bioproject: 
+          - text: 'Associated BioProject accession number. For example: PRJNA217342'
+      DATABASE:   
+        BIOSAMPLE:
+          bs-description: 
+            - text: 'A brief description about the sample, e.g. SARS-CoV-2 Sequencing Baseline Constellation.'
+          bs-collected_by: 
+            - text: 'Name of persons or institute who collected the sample.'
+          bs-geo_loc_name: 
+            - text: 'Geographical origin of the sample; use the appropriate name from <a href="http://www.insdc.org/documents/country-qualifier-vocabulary" target="_blank">this list</a>. Use a colon to separate the country or ocean from more detailed information about the location, eg "Canada: Vancouver" or "Germany: halfway down Zugspitze, Alps". Entering multiple localities in one attribute is not allowed.'
+          bs-host:  
+            - text: 'The natural (as opposed to laboratory) host to the organism from which the sample was obtained. Use the full taxonomic name, eg, Homo sapiens.'
+          bs-host_disease:  
+            - text: 'Name of relevant disease, e.g. Salmonella gastroenteritis. Controlled vocabulary, please see <a href="http://bioportal.bioontology.org/ontologies/1009" target="_blank">Human Disease Ontology</a> or <a href="http://www.ncbi.nlm.nih.gov/mesh" target="_blank">MeSH</a>'
+          bs-isolate:  
+            - text: 'Identification or description of the specific individual from which this sample was obtained.'
+          bs-isolation_source:  
+            - text: 'Describes the physical, environmental and/or local geographical source of the biological sample from which the sample was derived.'
+          bs-lat_lon:  
+            - text: 'The geographical coordinates of the location where the sample was collected. Specify as degrees latitude and longitude in format "d[d.dddd] N|S d[dd.dddd] W|E", eg, 38.98 N 77.11 W'
+          bs-package:
+            - text: 'The NCBI BioSample package name'
+        SRA:
+          sra-file_location:  
+            - text: 'Location of raw reads files. Options: "local" or "cloud"'
+          sra-file_name:  
+            - text: 'Name of the raw read files. All file names must be unique and not contain any sensitive information. Files can be compressed using gzip or bzip2, and may be submitted in a tar archive but archiving and/or compressing your files is not required. Do not use zip! If there are multiple files, concatenate them with a commas (","), e.g. "sample1_R1.fastq.gz, sample1_R2.fastq.gz". Store files in /seqsender/data/raw_reads/ or provide full path to the raw read files.'
+          sra-library_name:  
+            - text: 'Short unique identifier for sequencing library. <b>Each name must be unique!</b>'
+          sra-instrument_model:  
+            - text: 'Type of instrument model used for sequencing. See a list of options <a href="sra_options.html#instrument_model" target="_blank">here</a>.'
+          sra-library_strategy:  
+            - text: 'The sequencing technique intended for the library. See a list of options <a href="sra_options.html#library_strategy" target="_blank">here</a>.'
+          sra-library_source:  
+            - text: 'The type of source material that is being sequenced. See a list of options <a href="sra_options.html#library_source" target="_blank">here</a>.'
+          sra-library_selection:  
+            - text: 'The method used to select and/or enrich the material being sequenced. See a list of options <a href="sra_options.html#library_selection" target="_blank">here</a>.'
+          sra-library_layout:  
+            - text: 'Whether to expect SINGLE or PAIRED end reads. Options: "single" or "paired"'
+        GENBANK:
+          gb-seq_id*#:  
+            - text: 'Identification to be used for the sequence in the FASTA.'
+          gb-subm_lab:  
+            - text: 'Full name of organization, institute, or laboratory, etc., who is submitting this record'
+          gb-subm_lab_division:  
+            - text: 'The division of organization, institute, or laboratory, etc., who is submitting this record'
+          gb-subm_lab_addr:  
+            - text: 'The address of organization, institute, or laboratory, etc., who is submitting this record'
+          gb-publication_title:  
+            - text: 'The title and relevant publication details (volume, issue, etc.) of a paper that discusses the submission. If left empty, the program will used the name of the submission as title.'
+          gb-publication_status:  
+            - text: 'Options: "unpublished" or "in-press" or "published"'
+          src-isolate:  
+            - text: 'Identification or description of the specific individual from which this sample was obtained'
+          src-country:  
+            - text: 'Geographical origin of the sample; use the appropriate name from <a href="http://www.insdc.org/documents/country-qualifier-vocabulary" target="_blank">this list</a>. Use a colon to separate the country or ocean from more detailed information about the location, eg "Canada: Vancouver" or "Germany: halfway down Zugspitze, Alps". Entering multiple localities in one attribute is not allowed.'
+          src-host:  
+            - text: 'The natural (as opposed to laboratory) host to the organism from which the sample was obtained. Use the full taxonomic name, eg, Homo sapiens'
+          src-serotype:  
+            - text: 'For Influenza A only; must be in format HxNx, Hx, Nx or mixed; where x is a numeral'
+          src-isolation_source: 
+            - text: 'Describes the physical, environmental and/or local geographical source of the biological sample from which the sample was derived.'
+          cmt-StructuredCommentPrefix:  
+            - text: 'Structured comment keyword. For FLU use "FluData", HIV use "HIV-DataBaseData", and for COV and other organisms use "Assembly-Data".'
+          cmt-StructuredCommentSuffix:  
+            - text: 'Structured comment keyword. For FLU use "FluData", HIV use "HIV-DataBaseData", and for COV and other organisms use "Assembly-Data".'
+    GISAID:
+      DATABASE:
+        FLU:
+          gs-seq_id*#:  
+            - text: 'Identification to be used for the sequence in the FASTA.'        
+          gs-Isolate_Name:  
+            - text: 'E.g. "A/Brisbane/1444A/2010"'
+          gs-segment:  
+            - text: 'Segment name for GISAID. Options are: "HA", "HE", "MP", "NA", "NP", "NS", "P3", "PA", "PB1", "PB2"'
+          gs-Subtype:  
+            - text: 'E.g. "H5N1"'
+          gs-Location:  
+            - text: 'E.g., "United Kingdom", "Japan", "China", "United States", etc.'
+          gs-Host:  
+            - text: 'Host or source name., E.g. "human", "avian", "chicken", "Anas Acuta", "environment", etc.'
+          gs-Originating_Lab_Id:  
+            - text: 'The numeric ID of the sample"s originating laboratory, e.g. "2698"'
+        COV:
+          gs-virus_name*#:  
+            - text: 'For example: hCoV-19/Country/SampleID/YYYY<br>There are four parts delineated by the forward slash "/" character:<br><ul><li>"hCoV-19": despite common usage of virus synonyms such as SARS-CoV-2 or nCoV-19, this first part must remain "hCoV-19" verbatim (to ensure backwards compatibility with EpiCoV db).</li><li>"Country" is full name of country of sample collection (e.g., Australia), including spaces. For backwards compatibility, the exception being to use "USA" for United States of America.</li><li>"SampleID" is recommended to be of the format, Loc-Lab-Number, where:</li><ul><li>Loc is location abbreviation (use abbreviated state or province for location, such as "VIC" for Victoria, Australia, or "CA" for California, USA)</li><li>Lab is lab name abbreviation (e.g., "CDC" for Centres for Disease Control)</li><li>Number is sample number or lab code (e.g., 02978, or S47y)</li></ul><li>"YYYY" is four digit year of sample collection. Note, this must be the same as the YYYY provided in the collection_date value, else a "date inplausible" error will occur</li></ul>In this example, the virus_name could be:<br><ul><li>hCoV-19/Australia/VIC-CDC-02978/2022, or</li><li>hCoV-19/USA/CA-CDC-S47y/2022, respectively.</li></ul><b>NOTE:</b> virus_name field must match exactly the header of the respective sequence in the fasta file.<br>'
+          gs-type:  
+            - text: 'For hCoV-19, this will always be "betacoronavirus".'
+          gs-passage:  
+            - text: '"Original" if the sample was sequenced directly from swabs, otherwise add the name of the cell line (e.g., "Vero") used to culture the specimen.'
+          gs-location:  
+            - text: 'Format as "Continent / Country / Region / Sub-region"'
+          gs-host:  
+            - text: 'For clinical samples, this is "Human". Otherwise add the species name of the organism from which the sample was originally sourced.'
+          gs-gender:  
+            - text: 'Synonym for "Biological sex". Should be "Female", "Male", or "Other"'
+          gs-patient_age:  
+            - text: 'Age in years of the person from whom the specimen was collected. May take format other than integer years, for example, "0.5" (i.e., 6 months), "5 days", "7 months". If units are not given, they are assumed in years.'
+          gs-patient_status:  
+            - text: 'E.g., "Hospitalized", "Released", "Live", "Deceased"'
+          gs-seq_technology:  
+            - text: 'Add the sequencer brand and model. See a list of options <a href="gisaid_options.html#seq_technology" target="_blank">here</a>.'
+          gs-orig_lab:  
+            - text: 'Full name of laboratory from where sample originated.'
+          gs-orig_lab_addr:  
+            - text: 'Complete building address of laboratory from where sample originated.'
+          gs-subm_lab:  
+            - text: 'Full name of laboratory submitting this record to GISAID. See a list of options <a href="gisaid_options.html#subm_lab" target="_blank">here</a>.'
+          gs-subm_lab_addr:  
+            - text: 'Complete building address of the submitting laboratory.'

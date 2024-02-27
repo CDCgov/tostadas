@@ -36,7 +36,7 @@ process VALIDATE_PARAMS {
         assert params.env_yml
 
         // check batch name 
-        assert params.batch_name 
+        // assert params.batch_name 
 
         // check output directories
         assert params.output_dir
@@ -118,8 +118,10 @@ process VALIDATE_PARAMS {
             assert params.bakta_plasmid
             assert params.bakta_locus
             assert params.bakta_locus_tag
-            if ( params.bakta_db_path instanceof String == false ) {
-                throw new Exception("Value must be of string type: $value used for $key parameter")
+            if ( params.annotation ) {
+                if ( params.bakta_db_path instanceof String == false ) {
+                    throw new Exception("Value must be of string type: $value used for $key parameter")
+                }
             }
         }
 
