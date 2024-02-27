@@ -19,10 +19,8 @@ include { LIFTOFF                                           } from "../modules/l
 include { REPEATMASKER_LIFTOFF                              } from "../subworkflows/local/repeatmasker_liftoff"
 include { RUN_VADR                                          } from "../subworkflows/local/vadr"
 
-// get BAKTA related processes
-include { BAKTADBDOWNLOAD                                   } from "../modules/nf-core/bakta/baktadbdownload/main"
-include { BAKTA                                             } from "../modules/nf-core/bakta/bakta/main"
-include { BAKTA_POST_CLEANUP                                } from "../modules/local/post_bakta_annotation/main"
+// get BAKTA subworkflow
+include { RUN_BAKTA                                         } from "../subworkflows/local/bakta"
 
 // get submission related process/subworkflows
 include { INITIAL_SUBMISSION                                } from "../subworkflows/local/submission"
@@ -143,7 +141,7 @@ workflow TOSTADAS {
             if ( params.vadr ) {
                 RUN_VADR (
                     RUN_UTILITY.out, 
-                    CHECK_FILES.out.fasta_files.sort().flatten()
+                    fasta_ch
                 )
                 vadr_gff_ch = RUN_VADR.out.collect().flatten()
                 .map { 
@@ -156,35 +154,17 @@ workflow TOSTADAS {
         if ( params.bacteria ) {
         // run bakta annotation process
             if ( params.bakta == true ) {
-                if ( params.download_bakta_db ) {
-                    BAKTADBDOWNLOAD (
-                    RUN_UTILITY.out 
+                RUN_BAKTA(
+                    RUN_UTILITY.out, 
+                    fasta_ch
                 )
-                    BAKTA (
-                        RUN_UTILITY.out,
-                        BAKTADBDOWNLOAD.out.db,
-                        CHECK_FILES.out.fasta_files.sort().flatten()
-                    )
-                }
-                else {
-                    BAKTA (
-                        RUN_UTILITY.out,
-                        params.bakta_db_path,
-                        CHECK_FILES.out.fasta_files.sort().flatten()
-                    )
-                }
-                BAKTA_POST_CLEANUP (
-                    BAKTA.out.bakta_results,
-                    params.meta_path,
-                    CHECK_FILES.out.fasta_files.sort().flatten()
-                )
-                bakta_gff_ch = BAKTA_POST_CLEANUP.out.gff.collect().flatten()
-                .map { 
-                    def meta = [:] 
-                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                    [ meta, it ]
-                }
                 // set up submission channels
+                bakta_gff_ch = RUN_BAKTA.out.gff3.flatten()
+                    .map { 
+                        def meta = [:] 
+                        meta['id'] = it.getSimpleName()
+                        [ meta, it ]
+                        }
                 submission_ch = metadata_ch.join(fasta_ch)
                 submission_ch = submission_ch.join(bakta_gff_ch)
             }   

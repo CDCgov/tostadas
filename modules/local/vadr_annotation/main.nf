@@ -6,6 +6,8 @@
 process VADR {
 
     label 'vadr'
+    
+    container 'https://hub.docker.com/r/staphb/vadr/tags:latest'
 
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5

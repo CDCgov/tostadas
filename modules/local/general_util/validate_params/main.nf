@@ -108,9 +108,10 @@ process VALIDATE_PARAMS {
 
         // check bakta specific params 
         if ( params.bakta == true ) {
+            assert params.fasta_path
+            assert params.meta_path
             assert params.bakta_min_contig_length
             assert params.bakta_translation_table
-            assert params.bakta_threads
             assert params.bakta_genus
             assert params.bakta_species
             assert params.bakta_strain
