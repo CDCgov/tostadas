@@ -51,6 +51,14 @@ workflow TOSTADAS {
     fastq_ch = 
     Channel.fromPath("$params.fastq_path").first()
 
+    fasta_ch = 
+    Channel.fromPath("${params.fasta_path}/*.fasta")
+    .map { 
+         def meta = [:] 
+         meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+         [ meta, it ] 
+    }
+
     // check if help parameter is set
     if ( params.help == true ) {
         PRINT_PARAMS_HELP()
@@ -74,20 +82,20 @@ workflow TOSTADAS {
     }
 
     // initialize files (stage and change names for files)
-    CHECK_FILES (
-        RUN_UTILITY.out,
-        false,
-        false,
-        false,
-        METADATA_VALIDATION.out.tsv_dir
-    )
+    // CHECK_FILES (
+    //     RUN_UTILITY.out,
+    //     false,
+    //     false,
+    //     false,
+    //     METADATA_VALIDATION.out.tsv_dir)
+
     // todo: check fasta_ch ids against metadata sample name, don't require fasta file name in metadata
-    fasta_ch = CHECK_FILES.out.fasta_files.flatten()
-    .map { 
-        def meta = [:] 
-        meta['id'] = it.getSimpleName()
-        [ meta, it ] 
-    }
+    // fasta_ch = CHECK_FILES.out.fasta_files.flatten()
+    // .map { 
+    //     def meta = [:] 
+    //     meta['id'] = it.getSimpleName()
+    //     [ meta, it ] 
+    // }
 
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
@@ -217,7 +225,7 @@ workflow TOSTADAS {
         } 
         if ( !params.annotation && params.genbank ) {
                 // todo: make an error msg that follows the rest of the code protocol
-                fail("Cannot submit to GenBank without assembly and annotation files")
+                throw new Exception("Cannot submit to GenBank without assembly and annotation files")
         }
 
         // To Do test update submission
