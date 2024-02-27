@@ -21,6 +21,22 @@ process BAKTA {
     
     script:
     def args = task.ext.args  ?: ''
+    def prefix   = task.ext.prefix ?: "${meta.id}"
+    def proteins = params.bakta_proteins ? "--proteins ${proteins[0]}" : ""
+    def prodigal_tf = params.bakta_prodigal_tf ? "--prodigal-tf ${prodigal_tf[0]}" : ""
+    def skip_trna = params.bakta_skip_trna ? "--skip-trna" : ""
+    def skip_tmrna = params.bakta_skip_tmrna ? "--skip-tmrna" : ""
+    def skip_rrna = params.bakta_skip_rrna ? "--skip-rrna" : ""
+    def skip_ncrna = params.bakta_skip_ncrna ? "--skip-ncrna" : ""
+    def skip_ncrna_region = params.bakta_skip_ncrna_region ? "--skip-ncrna-region" : ""
+    def skip_crispr = params.bakta_skip_crispr ? "--skip-crispr" : ""
+    def skip_cds = params.bakta_skip_cds ? "--skip-cds" : ""
+    def skip_sorf = params.bakta_skip_sorf ? "--skip-sorf" : ""
+    def skip_gap = params.bakta_skip_gap ? "--skip-gap" : ""
+    def skip_ori = params.bakta_skip_ori ? "--skip-ori" : ""
+    def compliant = params.bakta_compliant ? "--compliant" : ""
+    def complete = params.bakta_complete ? "--complete" : ""
+    def keep_contig_headers = params.bakta_keep_contig_headers ? "--keep-contig-headers" : ""
 
     """
     bakta --db $db_path  \
@@ -34,30 +50,23 @@ process BAKTA {
         --complete $params.bakta_complete \
         --translation-table $params.bakta_translation_table \
         --gram $params.bakta_gram \
-        --compliant \
         --locus $params.bakta_locus \
         --locus-tag $params.bakta_locus_tag \
-        --keep-contig-headers \
+        $compliant \
+        $keep_contig_headers \
+        $proteins \
+        $prodigal_tf \
+        $skip_trna \
+        $skip_rrna \
+        $skip_ncrna \
+        $skip_ncrna_region \
+        $skip_crispr \
+        $skip_cds \
+        $skip_sorf \
+        $skip_gap \
+        $skip_ori \
         $fasta_path
     """
-    // optional args
-    // --prodigal-tf $params.bakta_prodigal_tf 
-    // --replicons $params.bakta_replicons 
-    // --proteins $params.bakta_proteins 
-    // --skip-trna  
-    // --skip-tmrna 
-    // --skip-rrna
-    // --skip-ncrna 
-    // --skip-ncrna-region 
-    // --skip-crispr 
-    // --skip-cds 
-    // --skip-pseudo
-    // --skip-sorf
-    // --skip-gap 
-    // --skip-ori 
-    // --skip-plot
-
-
     
     output:
     path "${fasta_path.getSimpleName()}/*.fna",   emit: fna
