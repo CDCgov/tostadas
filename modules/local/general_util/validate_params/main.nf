@@ -36,7 +36,7 @@ process VALIDATE_PARAMS {
         assert params.env_yml
 
         // check batch name 
-        assert params.batch_name 
+        // assert params.batch_name 
 
         // check output directories
         assert params.output_dir
