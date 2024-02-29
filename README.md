@@ -5,96 +5,93 @@
 <!-- [![GitHub Downloads](https://img.shields.io/github/downloads/CDCgov/tostadas/total.svg?style=social&logo=github&label=Download)](https://github.com/CDCgov/tostadas/releases) -->
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
-For the full documentation on the TOSTADAS pipeline take a look at our the Wiki Page: [Wiki](https://github.com/CDCgov/tostadas/wiki)
+For the complete TOSTADAS documentation, please see the [Wiki](https://github.com/CDCgov/tostadas/wiki)
+
 ## Overview
- TOSTADAS is designed to fulfill common sequence submission use cases. The tool runs three sub-processes: 
-1. Metadata Validation – This workflow checks if metadata conforms to NCBI standards and matches the input .fasta file(s)
-2. Gene Annotation – This workflow runs gene annotation on fasta-formatted genomes using one of three annotation methods: RepeatMasker and Liftoff, VADR or BAKTA
-3. Submission – This workflow generates the necessary files and information for submission to NCBI and optionally and optionally submit to NCBI. 
+TOSTADAS is a tool for simplifying and automating routine sequence submission processes.  TOSTADAS will perform batch processing of your fasta or fastq files, validating metadata and preparing submission files for you.  TOSTADAS can even use open source tools to annotate your sequence data and prepare annotated submissions.  Currently, TOSTADAS supports submission preparation for National Center for Biotechnology Information (NCBI), GenBank and Short Read Archive (SRA) databases, with support for GISAID submissions planned soon.
 
-TOSTADAS is flexible, allowing you to choose which portions of the pipeline to run and which to skip. For example, you can submit .fastq files and metadata without performing gene annotation.   
+TOSTADAS breaks the submission process into three optional and independently configurable stages:
+1.	Metadata Validation – TOSTADAS checks that metadata conforms to NCBI standards and executes custom user rules, allowing you to customize field naming, missing data handling, and other metadata manipulation functions.
+2.	Gene Annotation – TOSTADAS offers optional gene annotation for both viral and bacterial sequences. Users can select from three configurable annotation pipelines to ensure high quality gene and functional annotations.
+3.	Submission – TOSTADAS can request BioSample IDs and generate the necessary submission files for NCBI GenBank or SRA.  In some cases, TOSTADAS can even complete the submission process on its own.
 
- The current distribution has been tested with Pox virus sequences as well as some bacteria. Ongoing development aims to make the pipeline pathogen agnostic.
+## Quick Start
+❗ Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide)
 
-## Environment Setup 
-
-For in-depth set-up instructions, follow the [Installation Guide](https://github.com/CDCgov/tostadas/wiki/Installation) in our wiki. 
-
-:exclamation: Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide)
-
-#### (1) Install Nextflow using Use Mamba and the Bioconda Channel:
-
-There are several options for install if you don't already have nextflow on your system. 
-
-```bash
-mamba install -c bioconda nextflow
+### 1. Clone the repository to your local machine
 ```
-:exclamation: Optionally, you may install nextflow without mamba by following the instructions found in the Nextflow Installation Documentation Page: [Nextflow Install](https://www.nextflow.io/docs/latest/getstarted.html)
-
-#### (2) Clone the repository to your local machine:  
-```bash
 git clone https://github.com/CDCgov/tostadas.git
-cd tostadas
 ```
-:exclamation: Note: If you have mamba or nextflow installed in your local environment, you may skip steps 2, 3 (mamba installation) and 6 (nextflow installation) accordingly. 
+### 2. Install mamba and add it to your PATH 
 
-#### (3) Create and activate the conda environment: 
+ **2a. Install mamba** 
+ 
+❗ Note: If you have mamba installed in your local environment, skip ahead to step 3 ([Create and activate a conda environment](https://github.com/CDCgov/tostadas/edit/dev/README.md#3-create-and-activate-a-conda-environment))
+```
+curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
+```
+ **2b. Add mamba to PATH:**
+```
+export PATH="$HOME/mambaforge/bin:$PATH"
+```
+### 3. Create and activate a conda environment
 
-```bash
-mamba env create -n tostadas -f environment.yml
+ **3a. Create an empty conda environment**
+```
+conda create --name tostadas
+```
+This conda environment will be used to install Nextflow.
+
+ **3b. Activate the environment**
+```
 conda activate tostadas
 ```
-#### (4) Test your installation by running one of the following nextflow commands on test data
+Verify which environment is active by running the following conda command: conda env list . The active environment will be denoted with an asterisk *
 
-```bash
-# for virus reads
-nextflow run main.nf -profile test,<singularity/docker/conda> --virus
-# for bacterial reads
-nextflow run main.nf -profile test,<singularity/docker/conda> --bacteria 
+### 4. Install Nextflow using mamba and the bioconda Channel
 ```
-The pipeline outputs appear in the ```test_output``` folder within the tostadas directory. 
+mamba install -c bioconda nextflow
+```
+### 5. Test your installation by running the following nextflow commands on test data
+```
+nextflow run main.nf -profile test,<singularity|docker|conda> --virus
+```
+The pipeline outputs appear in `tostadas/test_output`
 
-#### (5) Start running your own analysis
+### 6. Start running your own analysis
+
 **Annotate and submit viral reads**
-```{bash}
+```
 nextflow run main.nf -profile docker --virus --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --output_dir <path/to/output/dir/>
 ```
 **Annotate and submit bacterial reads**
-```{bash}
+```
 nextflow run main.nf -profile docker --bacteria --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light/full>--output_dir <path/to/output/dir/>
 ```
-Refer to the [wiki](https://github.com/CDCgov/tostadas/wiki) for more information on input parameters and use cases 
+Refer to the wiki for more information on input parameters and use cases
 
 ## Get in Touch
-
-If you have any ideas for ways to improve our existing codebase, feel free to open an Issue Request (found here: [Open New Issue](https://github.com/CDCgov/tostadas/issues/new/choose))
-
-### Steps to Open Issue Request:
-  
-#### **(1) Select Appropriate Template**
-  Following the link above, there are four options for issue templates and your selection will depend on (1) if you are a user vs maintainer/collaborator and (2) if the request pertains to a bug vs feature enhancement. Please select the template that accurately reflects your situation. 
-
-#### **(2) Fill Out Necessary Information**
-  Once the appropriate template has been selected, you must fill/answer all fields/questions specified. The information provided will be valuable in getting more information about the issue and any necessary context surrounding it.
-
-#### **(3) Submit the Issue**
-
-Once all information has been provided, you may now submit it!
-
-Please allow for some turnaround time for us to review the issue and potentially start addressing it. If this is an urgent request and have not heard from us nor see any progress being made after quite some time (longer than a week), feel free to start a discussion (found here: [Start New Discussion](https://github.com/CDCgov/tostadas/discussions)) mentioning the following: 
-  * Issue Number 
-  * Date Submitted
-  * General Background on Bug/Feature 
-  * Reason for Urgency
-
-  And we will get back to you as soon as possible. 
+If you need to report a bug, suggest new features, or just say “thanks”, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we’ll try to get back to you as soon as possible!
 
 ## Acknowledgements
-  ### Contributors
-  Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison\
-  Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Ankush Gupta\
-  Kyle O'Connell | Yesh Kulasekarapandian |  Cole Tindall | Lynsey Kovar | Hunter Seabolt\
-  Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Swarnali Louha\
-  Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
-  ### Tools
-  The submission portion of this pipeline was adapted from SeqSender. To find more information on this tool, please refer to their GitHub page: [SeqSender](https://github.com/CDCgov/seqsender). 
+### Contributors
+Kyle O'Connell | Yesh Kulasekarapandian | Ankush Gupta | Cole Tindall | Jessica Rowell | Swarnali Louha | Ramiya Sivakumar | Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison | Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Lynsey Kovar | Hunter Seabolt | Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
+
+### Tools
+The submission portion of this pipeline was adapted from SeqSender. To find more information on this tool, please refer to their GitHub page: SeqSender.
+
+## Resources
+
+:link: NCBI Submission Guidelines:https://submit.ncbi.nlm.nih.gov/sarscov2/sra/#step6
+
+:link: SeqSender Documentation: https://github.com/CDCgov/seqsender
+
+:link: Liftoff Documentation: https://github.com/agshumate/Liftoff
+
+:link: VADR Documentation:  https://github.com/ncbi/vadr.git
+
+:link: Bakta Documentation:  https://github.com/oschwengers/bakta
+
+:link: RepeatMasker Documentation: https://www.repeatmasker.org/
+
