@@ -8,12 +8,16 @@
 For the complete TOSTADAS documentation, please see the [Wiki](https://github.com/CDCgov/tostadas/wiki)
 
 ## Overview
-TOSTADAS is a tool for simplifying and automating routine sequence submission processes.  TOSTADAS will perform batch processing of your fasta or fastq files, validating metadata and preparing submission files for you.  TOSTADAS can even use open source tools to annotate your sequence data and prepare annotated submissions.  Currently, TOSTADAS supports submission preparation for National Center for Biotechnology Information (NCBI), GenBank and Short Read Archive (SRA) databases, with support for GISAID submissions planned soon.
+**T O S T A D A S**  
+**T**oolkit for **O**pen **S**equence **T**riage, **A**nnotation, and **DA**tabase **S**ubmission  
+  
+A portable, open-source pipeline designed to streamline submission of pathogen genomic data to public repositories.  Reducing barriers to timely data submission increases the value of public repositories for both public health decision making and scientific research. TOSTADAS facilitates routine sequence submission by standardizing:  
 
-TOSTADAS breaks the submission process into three optional and independently configurable stages:
-1.	Metadata Validation – TOSTADAS checks that metadata conforms to NCBI standards and executes custom user rules, allowing you to customize field naming, missing data handling, and other metadata manipulation functions.
-2.	Gene Annotation – TOSTADAS offers optional gene annotation for both viral and bacterial sequences. Users can select from three configurable annotation pipelines to ensure high quality gene and functional annotations.
-3.	Submission – TOSTADAS can request BioSample IDs and generate the necessary submission files for NCBI GenBank or SRA.  In some cases, TOSTADAS can even complete the submission process on its own.
++ Metadata Validation   
++ Genome Annotation    
++ File submission    
+
+The current release is tested with sequence data from Poxviruses and select bacteria but TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both.
 
 ## Quick Start
 ❗ Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide)
