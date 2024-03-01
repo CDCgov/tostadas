@@ -79,7 +79,7 @@ If you need to report a bug, suggest new features, or just say “thanks”, [op
 Kyle O'Connell | Yesh Kulasekarapandian | Ankush Gupta | Cole Tindall | Jessica Rowell | Swarnali Louha | Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison | Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Lynsey Kovar | Hunter Seabolt | Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
 
 ### Tools
-The submission portion of this pipeline was adapted from SeqSender. To find more information on this tool, please refer to their GitHub page: SeqSender.
+The submission portion of this pipeline was adapted from SeqSender. To find more information on this tool, please refer to their GitHub page: [SeqSender](https://github.com/CDCgov/seqsender)
 
 ## Resources
 
