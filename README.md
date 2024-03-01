@@ -47,7 +47,7 @@ This conda environment will be used to install Nextflow.
 ```
 conda activate tostadas
 ```
-Verify which environment is active by running the following conda command: conda env list . The active environment will be denoted with an asterisk *
+Verify which environment is active by running the following conda command: `conda env list`. The active environment will be denoted with an asterisk *
 
 ### 4. Install Nextflow using mamba and the bioconda Channel
 ```
