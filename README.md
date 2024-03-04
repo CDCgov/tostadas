@@ -57,8 +57,11 @@ Verify which environment is active by running the following conda command: `cond
 ```
 mamba install -c bioconda nextflow
 ```
-### 5. Test your installation by running the following nextflow commands on test data
+### 5. Update the default submissions config file with your NCBI username and password, and run the following nextflow command to execute the scripts with default parameters and the local run environment: 
 ```
+# update this config file (you don't have to use vim)
+vim bin/config_files/default_config.yaml
+# test command for virus reads
 nextflow run main.nf -profile test,<singularity|docker|conda> --virus
 ```
 The pipeline outputs appear in `tostadas/test_output`
@@ -67,11 +70,11 @@ The pipeline outputs appear in `tostadas/test_output`
 
 **Annotate and submit viral reads**
 ```
-nextflow run main.nf -profile docker --virus --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --output_dir <path/to/output/dir/>
+nextflow run main.nf -profile docker --virus --fasta_path <path/to/fasta/files> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --output_dir <path/to/output/dir/>
 ```
 **Annotate and submit bacterial reads**
 ```
-nextflow run main.nf -profile docker --bacteria --fasta_path <path/to/fasta/files> ---meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light/full>--output_dir <path/to/output/dir/>
+nextflow run main.nf -profile docker --bacteria --fasta_path <path/to/fasta/files> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light/full> --output_dir <path/to/output/dir/>
 ```
 Refer to the wiki for more information on input parameters and use cases
 
