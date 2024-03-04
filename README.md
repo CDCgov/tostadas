@@ -74,7 +74,7 @@ nextflow run main.nf -profile docker --virus --fasta_path <path/to/fasta/files> 
 ```
 **Annotate and submit bacterial reads**
 ```
-nextflow run main.nf -profile docker --bacteria --fasta_path <path/to/fasta/files> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light/full> --output_dir <path/to/output/dir/>
+nextflow run main.nf -profile docker --bacteria --fasta_path <path/to/fasta/files> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>
 ```
 Refer to the wiki for more information on input parameters and use cases
 
