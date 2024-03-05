@@ -960,7 +960,8 @@ class HandleDfInserts:
 
 	# todo: this is a temporary fx to convert the illumina paths as input to seqsender
 	def change_illumina_paths(self):
-		""" Change illumina_sra_file_path_1 & illumina_sra_file_path_2 to sra-file_name
+		""" Create sra-file_name from illumina_sra_file_path_1 & illumina_sra_file_path_2 
+			Rename illumina_sra_file_path_1 & illumina_sra_file_path_2 to fastq_path_1 & fastq_path_2
 		"""
 
 		# function to extract file name from path
@@ -973,10 +974,9 @@ class HandleDfInserts:
 		# create new column 'sra-file_name'
 		self.filled_df['sra-file_name'] = self.filled_df.apply(lambda row: extract_filename(row['illumina_sra_file_path_1']) + ',' + extract_filename(row['illumina_sra_file_path_2']), axis=1)
 
-		# drop original columns
-		self.filled_df = self.filled_df.drop(['illumina_sra_file_path_1', 'illumina_sra_file_path_2'], axis=1)
+		# rename original columns
+		self.filled_df = self.filled_df.rename(columns={'illumina_sra_file_path_1': 'fastq_path_1', 'illumina_sra_file_path_2': 'fastq_path_1'})
 		
-
 	# todo: apply this function to Ankush's insert checks as well
 	def check_nan_for_column(self, column_name):
 		""" Check for NaN values (if not a string) in a column of the dataframe """
