@@ -1,4 +1,4 @@
-process SAMPLESHEET_CHECK {
+process METADATA_CHECK {
     tag "$samplesheet"
 
     conda (params.enable_conda ? "conda-forge::python=3.8.3" : null)

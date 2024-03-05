@@ -13,6 +13,7 @@ include { GET_WAIT_TIME                                     } from "../modules/l
 
 // get metadata validation processes
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
+include { INPUT_CHECK                                       } from '../subworkflows/local/input_check'
 
 // get viral annotation process/subworkflows
 include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
@@ -40,14 +41,6 @@ include { WAIT                                          } from '../modules/local
 // To Do, create logic to run workflows for virus vs. bacteria
 workflow TOSTADAS {
     
-    // To Do, maybe? create samplesheet input to initiate this channel instead
-
-    // initialize channels
-    // fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta}")
-    // if (!params.final_annotated_files_path.isEmpty()) {
-    //     annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
-    // }
-
     fastq_ch = 
     Channel.fromPath("$params.fastq_path").first()
 
@@ -80,22 +73,12 @@ workflow TOSTADAS {
         meta['id'] = it.getSimpleName()
         [ meta, it ] 
     }
-
-    // initialize files (stage and change names for files)
-    // CHECK_FILES (
-    //     RUN_UTILITY.out,
-    //     false,
-    //     false,
-    //     false,
-    //     METADATA_VALIDATION.out.tsv_dir)
-
-    // todo: check fasta_ch ids against metadata sample name, don't require fasta file name in metadata
-    // fasta_ch = CHECK_FILES.out.fasta_files.flatten()
-    // .map { 
-    //     def meta = [:] 
-    //     meta['id'] = it.getSimpleName()
-    //     [ meta, it ] 
-    // }
+    //
+    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+    //
+    INPUT_CHECK (
+        METADATA_VALIDATION.out.csv_Files.flatten()
+    )
 
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {

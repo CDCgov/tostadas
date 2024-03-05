@@ -20,12 +20,16 @@ process METADATA_VALIDATION {
 
     script:
     """
-    validate_metadata.py --meta_path $meta_path --output_dir $params.val_output_dir \
-    --custom_fields_file $params.custom_fields_file --validate_custom_fields $params.validate_custom_fields
+    validate_metadata.py \
+        --meta_path $meta_path \
+        --output_dir $params.val_output_dir \
+        --custom_fields_file $params.custom_fields_file \
+        --validate_custom_fields $params.validate_custom_fields
     """
 
     output:
     path "$params.val_output_dir/*/tsv_per_sample/*.tsv", emit: tsv_Files
+    path "$params.val_output_dir/*/tsv_per_sample/*.csv", emit: csv_Files
     path "$params.val_output_dir/*/tsv_per_sample", emit: tsv_dir
     path "$params.val_output_dir/*/errors", emit: errors
 }

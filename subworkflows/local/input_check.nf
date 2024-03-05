@@ -2,36 +2,60 @@
 // Check input samplesheet and get read channels
 //
 
-include { SAMPLESHEET_CHECK } from '../../modules/nf-core/samplesheet_check'
+include { METADATA_CHECK } from '../../modules/local/samplesheet_check/main'
 
 workflow INPUT_CHECK {
     take:
-    samplesheet // file: /path/to/samplesheet.csv
+    //file samplesheet from samplesheet_to_check
+    metadata // file: /path/to/samplesheet.csv
 
     main:
-    SAMPLESHEET_CHECK ( samplesheet )
+    METADATA_CHECK ( metadata )
         .csv
         .splitCsv ( header:true, sep:',' )
         .map { create_fasta_channel(it) }
-        .set { fastas }
+        .map { create_fastq_channel(it) }
+        .set { reads }
 
     emit:
-    fastas                                    // channel: [ val(meta), [ fastas ] ]
-    versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
+    reads                                     // channel: [ val(meta), [ reads ] ]
+    // versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }
 
-// Function to get list of [ meta, [ fasta ] ]
-def create_fasta_channel(LinkedHashMap row) {
-    // create meta map
-    def meta = [:]
-    meta.id      = row.sequence
+    // Function to get list of [ meta, [ fasta ] ]
+    def create_fasta_channel(LinkedHashMap row) {
+        // create meta map
+        def meta = [:]
+        meta.id      = row.sequence
 
-    // add path of the fasta file to the meta map
-    def fasta_meta = []
-    if (!file(row.fasta).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> Fasta file does not exist!\n${row.fasta}"
+        // add path of the fasta file to the meta map
+        def fasta_meta = []
+        if (!file(row.fasta_path).exists()) {
+            fasta_meta = [ meta, " " ]
+        }
+        fasta_meta = [ meta, file(row.fasta_path) ]
+
+        return fasta_meta
     }
-    fasta_meta = [ meta, file(row.fasta) ]
+    // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
+    def create_fastq_channel(LinkedHashMap row) {
+        // create meta map
+        def meta = [:]
+        meta.id         = row.sample_name
+        meta.single_end = row.single_end.toBoolean()
 
-    return fasta_meta
-}
+        // add path(s) of the fastq file(s) to the meta map
+        def fastq_meta = []
+        if (!file(row.illumina_sra_file_path_1).exists()) {
+            fastq_meta = [ meta, [ file(row.illumina_sra_file_path_1), file(row.illumina_sra_file_path_1) ] ]
+        }
+        if (meta.single_end) {
+            fastq_meta = [ meta, [ file(row.fastq_1) ] ]
+        } else {
+            if (!file(row.illumina_sra_file_path_2).exists()) {
+                fastq_meta = [ meta, [ file(row.illumina_sra_file_path_1), file(row.illumina_sra_file_path_1) ] ]
+            }
+            fastq_meta = [ meta, [ file(row.illumina_sra_file_path_1), file(row.illumina_sra_file_path_1) ] ]
+        }
+        return fastq_meta
+    }
