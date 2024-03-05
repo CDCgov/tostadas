@@ -47,11 +47,11 @@ process BAKTA {
         --species $params.bakta_species \
         --strain $params.bakta_strain \
         --plasmid $params.bakta_plasmid  \
-        --complete $params.bakta_complete \
         --translation-table $params.bakta_translation_table \
         --gram $params.bakta_gram \
         --locus $params.bakta_locus \
         --locus-tag $params.bakta_locus_tag \
+        $complete \
         $compliant \
         $keep_contig_headers \
         $proteins \
