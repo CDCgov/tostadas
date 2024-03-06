@@ -24,7 +24,7 @@ process SUBMISSION_FULL {
 
     script:
     """     
-    mkdir $meta.id $meta.id/raw_reads
+    mkdir -p $meta.id $meta.id/raw_reads
     mv $fastq_1 $meta.id/raw_reads/
     mv $fastq_2 $meta.id/raw_reads/
 
