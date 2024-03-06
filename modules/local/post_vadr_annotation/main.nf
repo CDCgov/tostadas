@@ -12,7 +12,7 @@ process VADR_POST_CLEANUP {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
 
-    // publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:
     path vadr_outputs

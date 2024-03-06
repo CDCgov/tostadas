@@ -9,16 +9,9 @@ process LIFTOFF {
     
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-<<<<<<< HEAD
-        'https://depot.galaxyproject.org/singularity/liftoff:1.6.3--pyhdfd78af_0' :
-        'quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_0'}"
-        
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
-=======
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
-    // publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
->>>>>>> 883756c... cleaned up containers and publish dirs
+    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:
     val signal
