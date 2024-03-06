@@ -5,16 +5,7 @@
 */
 process VADR {
 
-<<<<<<< HEAD
-    label 'vadr'
-    
-    container 'https://hub.docker.com/r/staphb/vadr/tags:latest'
-
-    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    maxRetries 5
-=======
     // label 'vadr'
->>>>>>> 883756c... cleaned up containers and publish dirs
     
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -22,7 +13,7 @@ process VADR {
 
     input:
     val signal
-    path fasta_path
+	tuple val(meta), path(fasta_path)
     path vadr_models_dir
 
     script:

@@ -5,16 +5,6 @@
 */
 process VADR_POST_CLEANUP {
 
-<<<<<<< HEAD
-    //label 'main'
-    
-    conda (params.enable_conda ? params.env_yml : null)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' :
-        'staphb/tostadas:latest' }"
-    
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
-=======
     // label 'main'
     
     conda (params.enable_conda ? params.env_yml : null)
@@ -23,12 +13,11 @@ process VADR_POST_CLEANUP {
 
 
     // publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
->>>>>>> 883756c... cleaned up containers and publish dirs
 
     input:
     path vadr_outputs
-    path meta_path
-    path fasta_path
+    tuple val(meta), path meta_path
+	tuple val(meta), path(fasta_path)
     
     script:
     """

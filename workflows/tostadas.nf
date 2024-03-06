@@ -7,7 +7,7 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // get the utility processes / subworkflows
-include { CHECK_FILES                                       } from "../modules/local/general_util/check_files/main"
+// include { CHECK_FILES                                       } from "../modules/local/general_util/check_files/main"
 include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
 include { GET_WAIT_TIME                                     } from "../modules/local/general_util/get_wait_time/main"
 
@@ -16,7 +16,7 @@ include { METADATA_VALIDATION                               } from "../modules/l
 include { EXTRACT_INPUTS                                    } from '../modules/local/extract_inputs/main'
 
 // get viral annotation process/subworkflows
-include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
+// include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
 include { REPEATMASKER_LIFTOFF                              } from "../subworkflows/local/repeatmasker_liftoff"
 include { RUN_VADR                                          } from "../subworkflows/local/vadr"
 
