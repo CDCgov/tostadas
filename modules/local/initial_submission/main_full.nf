@@ -38,6 +38,8 @@ process SUBMISSION_FULL {
         --fasta_file $fasta_path \
         --gff_file $annotations_path \
         --table2asn $test_flag $send_email_flag
+
+    rm table2asn
     """
 
     output:
