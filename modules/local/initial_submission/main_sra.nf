@@ -14,7 +14,7 @@ process SUBMISSION_SRA {
         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev'  }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path)
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2)
     path submission_config
     val annotation_name
 

@@ -73,11 +73,10 @@ workflow TOSTADAS {
         meta['id'] = it.getSimpleName()
         [ meta, it ] 
     }
-    .view()
 
     // Generate the fasta and fastq paths
     fasta_ch = 
-        METADATA_VALIDATION.out.csv_Files
+        METADATA_VALIDATION.out.csv_Files.flatten()
         | splitCsv(header: true)
         | map { row ->
             meta = [id:row.sequence_name]
@@ -86,7 +85,7 @@ workflow TOSTADAS {
         }
 
     fastq_ch = 
-        METADATA_VALIDATION.out.csv_Files
+        METADATA_VALIDATION.out.csv_Files.flatten()
         | splitCsv(header: true)
         | map { row ->
             meta = [id:row.sequence_name]
@@ -94,28 +93,12 @@ workflow TOSTADAS {
             fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
             [meta, fastq1, fastq2]
         }
+    // Create initial submission channel
     submission_ch = metadata_ch.join(fasta_ch)
     submission_ch = submission_ch.join(fastq_ch)
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         if ( params.virus && !params.bacteria ) {
-        // To Do remove liftoff only annotation from pipeline
-        // run liftoff annotation process (deprecated)
-            // if ( params.liftoff ) {
-            //     LIFTOFF (
-            //         RUN_UTILITY.out,
-            //         params.meta_path, 
-            //         params.fasta_path, 
-            //         params.ref_fasta_path, 
-            //         params.ref_gff_path 
-            //     )
-            //     liftoff_gff_ch = LIFTOFF.out.gff.collect().flatten()
-            //     .map { 
-            //         def meta = [:] 
-            //         meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-            //         [ meta, it ] 
-            //     }
-            // }
 
             // run liftoff annotation process + repeatmasker 
             if ( params.repeatmasker_liftoff ) {
