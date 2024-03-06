@@ -30,6 +30,6 @@ workflow RUN_VADR {
         )
     
     emit:
-        VADR_POST_CLEANUP.out.gff
+        gff = VADR_POST_CLEANUP.out.gff
 }
 

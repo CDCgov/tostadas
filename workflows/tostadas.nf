@@ -41,16 +41,16 @@ include { WAIT                                          } from '../modules/local
 // To Do, create logic to run workflows for virus vs. bacteria
 workflow TOSTADAS {
     
-    fastq_ch = 
-    Channel.fromPath("$params.fastq_path").first()
+    // fastq_ch = 
+    // Channel.fromPath("$params.fastq_path").first()
 
-    fasta_ch = 
-    Channel.fromPath("${params.fasta_path}/*.fasta")
-    .map { 
-         def meta = [:] 
-         meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-         [ meta, it ] 
-    }
+    // fasta_ch = 
+    // Channel.fromPath("${params.fasta_path}/*.fasta")
+    // .map { 
+    //      def meta = [:] 
+    //      meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+    //      [ meta, it ] 
+    // }
 
     // check if help parameter is set
     if ( params.help == true ) {
@@ -74,37 +74,48 @@ workflow TOSTADAS {
         [ meta, it ] 
     }
     .view()
+
     // Generate the fasta and fastq paths
-    METADATA_VALIDATION.out.csv_Files
+    fasta_ch = 
+        METADATA_VALIDATION.out.csv_Files
         | splitCsv(header: true)
         | map { row ->
             meta = [id:row.sequence_name]
             fasta_path = row.fasta_path ? file(row.fasta_path) : null
+            [meta, fasta_path]
+        }
+
+    fastq_ch = 
+        METADATA_VALIDATION.out.csv_Files
+        | splitCsv(header: true)
+        | map { row ->
+            meta = [id:row.sequence_name]
             fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : null
             fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
-            [meta, fasta_path, fastq1, fastq2]
+            [meta, fastq1, fastq2]
         }
-    | view
+    submission_ch = metadata_ch.join(fasta_ch)
+    submission_ch = submission_ch.join(fastq_ch)
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         if ( params.virus && !params.bacteria ) {
         // To Do remove liftoff only annotation from pipeline
         // run liftoff annotation process (deprecated)
-            if ( params.liftoff ) {
-                LIFTOFF (
-                    RUN_UTILITY.out,
-                    params.meta_path, 
-                    params.fasta_path, 
-                    params.ref_fasta_path, 
-                    params.ref_gff_path 
-                )
-                liftoff_gff_ch = LIFTOFF.out.gff.collect().flatten()
-                .map { 
-                    def meta = [:] 
-                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                    [ meta, it ] 
-                }
-            }
+            // if ( params.liftoff ) {
+            //     LIFTOFF (
+            //         RUN_UTILITY.out,
+            //         params.meta_path, 
+            //         params.fasta_path, 
+            //         params.ref_fasta_path, 
+            //         params.ref_gff_path 
+            //     )
+            //     liftoff_gff_ch = LIFTOFF.out.gff.collect().flatten()
+            //     .map { 
+            //         def meta = [:] 
+            //         meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+            //         [ meta, it ] 
+            //     }
+            // }
 
             // run liftoff annotation process + repeatmasker 
             if ( params.repeatmasker_liftoff ) {
@@ -121,8 +132,8 @@ workflow TOSTADAS {
                 }
 
             // set up submission channels
-            submission_ch = metadata_ch.join(fasta_ch)
-            submission_ch = submission_ch.join(repeatmasker_gff_ch)
+            // submission_ch = metadata_ch.join(fasta_ch)
+            submission_ch = submission_ch.join(repeatmasker_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }
     
             // run vadr processes
@@ -131,12 +142,13 @@ workflow TOSTADAS {
                     RUN_UTILITY.out, 
                     fasta_ch
                 )
-                vadr_gff_ch = RUN_VADR.out.collect().flatten()
+                vadr_gff_ch = RUN_VADR.out.gff.collect().flatten()
                 .map { 
                     def meta = [:] 
                     meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
                     [ meta, it ] 
                 }
+                submission_ch = submission_ch.join(vadr_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }
         }
         if ( params.bacteria ) {
@@ -153,8 +165,8 @@ workflow TOSTADAS {
                         meta['id'] = it.getSimpleName()
                         [ meta, it ]
                         }
-                submission_ch = metadata_ch.join(fasta_ch)
-                submission_ch = submission_ch.join(bakta_gff_ch)
+                // submission_ch = metadata_ch.join(fasta_ch)
+                submission_ch = submission_ch.join(bakta_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }   
         }
     }
@@ -171,8 +183,7 @@ workflow TOSTADAS {
         if ( params.annotation ) {   
             if (params.sra && params.genbank ) {                     // sra and genbank
                 INITIAL_SUBMISSION (
-                    submission_ch,  // meta.id, metadata_path, fasta, gff
-                    fastq_ch,
+                    submission_ch,  // meta.id, fasta, fastq1, fastq2, gff
                     params.submission_config,  
                     GET_WAIT_TIME.out
                     )
@@ -180,8 +191,7 @@ workflow TOSTADAS {
             else {      
                 if (! params.sra && params.genbank ) {               // only genebankk
                     INITIAL_SUBMISSION ( 
-                        submission_ch,     // meta.id, metadata_path, fasta, gff
-                        fastq_ch,
+                        submission_ch,     // meta.id, fasta, "", "", gff
                         params.submission_config, 
                         GET_WAIT_TIME.out
                         )
@@ -190,23 +200,9 @@ workflow TOSTADAS {
         }
         }
         if ( !params.annotation && params.sra ) {        // no annotation only fastq submission
-            // submission_ch = metadata_ch
-    
-            // SUBMISSION_SRA ( submission_ch, fastq_ch, params.submission_config, params.req_col_config, '' )
-            
-            // // actual process to initiate wait 
-            // WAIT ( SUBMISSION_SRA.out.submission_files.collect(), GET_WAIT_TIME.out )
-
-            // // process for updating the submitted samples
-            // UPDATE_SUBMISSION ( WAIT.out, params.submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
-
-            // // combine the different upload_log csv files together 
-            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
-
 
             INITIAL_SUBMISSION (
-                metadata_ch,       // metadata_path
-                fastq_ch,
+                submission_ch,       // meta.id, "", fastq1, fastq2, gff
                 params.submission_config, 
                 GET_WAIT_TIME.out
             )
@@ -216,12 +212,12 @@ workflow TOSTADAS {
                 throw new Exception("Cannot submit to GenBank without assembly and annotation files")
         }
 
-        // To Do test update submission
+        // todo test update submission
         if ( params.update_submission ) {
             UPDATE_SUBMISSION (
                 RUN_UTILITY.out,
                 params.submission_config, 
-                params.submission_output
+                INITIAL_SUBMISSION.out.submission_files
             )
         }
         // combine the different upload_log csv files together 
@@ -237,6 +233,6 @@ workflow TOSTADAS {
             )
         }
 
-        // To Do add Genbank / GISAID only submission
+        // todo add GISAID only submission
     }
 

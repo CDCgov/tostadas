@@ -14,8 +14,7 @@ process SUBMISSION_FULL {
         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
-    path(fastq_dir)
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path)
     path submission_config
     val annotation_name
 
@@ -25,8 +24,9 @@ process SUBMISSION_FULL {
 
     script:
     """     
-    mkdir $meta.id
-    mv $fastq_dir $meta.id/raw_reads
+    mkdir $meta.id $meta.id/raw_reads
+    mv $fastq_1 $meta.id/raw_reads/
+    mv $fastq_2 $meta.id/raw_reads/
 
     submission.py submit \
         --genbank --sra --biosample \

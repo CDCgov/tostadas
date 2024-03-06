@@ -16,7 +16,6 @@ include { MERGE_UPLOAD_LOG                              } from "../../modules/lo
 workflow INITIAL_SUBMISSION {
     take:
         submission_ch
-        fastq_ch
         submission_config
         wait_time
     
@@ -24,7 +23,7 @@ workflow INITIAL_SUBMISSION {
         // submit the files to database of choice (after fixing config and getting wait time)
         if ( params.genbank && params.sra ){ // genbank and sra
             // submit the files to database of choice (after fixing config and getting wait time)
-            SUBMISSION_FULL ( submission_ch, fastq_ch, submission_config, '' )
+            SUBMISSION_FULL ( submission_ch, submission_config, '' )
             
             // actual process to initiate wait 
             WAIT ( SUBMISSION_FULL.out.submission_files.collect(), wait_time )
@@ -37,7 +36,7 @@ workflow INITIAL_SUBMISSION {
         }
 
         if ( !params.genbank && params.sra ){ //only sra
-            SUBMISSION_SRA ( submission_ch, fastq_ch, submission_config, '' )
+            SUBMISSION_SRA ( submission_ch, submission_config, '' )
             // actual process to initiate wait 
             WAIT ( SUBMISSION_SRA.out.submission_files.collect(), wait_time )
 
@@ -50,7 +49,7 @@ workflow INITIAL_SUBMISSION {
 
         if ( params.genbank && !params.sra ){ //only genbank, fastq_ch can be empty
         // submit the files to database of choice (after fixing config and getting wait time)
-            SUBMISSION_GENBANK ( submission_ch, fastq_ch, submission_config, '' )
+            SUBMISSION_GENBANK ( submission_ch, submission_config, '' )
             
             // actual process to initiate wait 
             WAIT ( SUBMISSION_GENBANK.out.submission_files.collect(), wait_time )
