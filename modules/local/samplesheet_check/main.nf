@@ -1,5 +1,5 @@
 process METADATA_CHECK {
-    tag "$samplesheet"
+    // tag "$samplesheet"
 
     conda (params.enable_conda ? "conda-forge::python=3.8.3" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -7,18 +7,15 @@ process METADATA_CHECK {
         'quay.io/biocontainers/python:3.8.3' }"
 
     input:
-    path samplesheet
+    path metadata
 
     output:
     path '*.csv'       , emit: csv
-    path "versions.yml", emit: versions
+    // path "versions.yml", emit: versions
 
     script: 
     """
-    check_samplesheet.py \\
-        $samplesheet \\
-        samplesheet.valid.csv
-
+    cp $metadata metadata.valid.csv
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
