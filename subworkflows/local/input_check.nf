@@ -18,6 +18,7 @@ workflow INPUT_CHECK {
         .set { reads }
 
     emit:
+    fasta                                     // channel: [ val(meta), [ fasta ] ]
     reads                                     // channel: [ val(meta), [ reads ] ]
     // versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }

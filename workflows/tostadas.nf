@@ -13,7 +13,7 @@ include { GET_WAIT_TIME                                     } from "../modules/l
 
 // get metadata validation processes
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
-include { INPUT_CHECK                                       } from '../subworkflows/local/input_check'
+include { EXTRACT_INPUTS                                    } from '../modules/local/extract_inputs/main'
 
 // get viral annotation process/subworkflows
 include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
@@ -73,13 +73,18 @@ workflow TOSTADAS {
         meta['id'] = it.getSimpleName()
         [ meta, it ] 
     }
-    //
-    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    //
-    INPUT_CHECK (
-        METADATA_VALIDATION.out.csv_Files.flatten()
-    )
-
+    .view()
+    // Generate the fasta and fastq paths
+    METADATA_VALIDATION.out.csv_Files
+        | splitCsv(header: true)
+        | map { row ->
+            meta = [id:row.sequence_name]
+            fasta_path = row.fasta_path ? file(row.fasta_path) : null
+            fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : null
+            fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
+            [meta, fasta_path, fastq1, fastq2]
+        }
+    | view
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         if ( params.virus && !params.bacteria ) {
