@@ -20,7 +20,7 @@ process LIFTOFF_CLI {
 
 	script:
     """
-    liftoff 
+    liftoff \
         -g $ref_gff_path \
         -o ${fasta.baseName}_liftoff-orig.gff \
         -u $params.lift_unmapped_features_file_name \
