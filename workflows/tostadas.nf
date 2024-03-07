@@ -195,12 +195,13 @@ workflow TOSTADAS {
                 throw new Exception("Cannot submit to GenBank without assembly and annotation files")
         }
 
-        // todo test update submission
         if ( params.update_submission ) {
             UPDATE_SUBMISSION (
-                RUN_UTILITY.out,
-                params.submission_config, 
-                INITIAL_SUBMISSION.out.submission_files
+                GET_WAIT_TIME.out
+                params.submission_config,
+                INITIAL_SUBMISSION.out.submission_files,
+                INITIAL_SUBMISSION.out.submission_log,
+                ''
             )
         }
         // combine the different upload_log csv files together 
