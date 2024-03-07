@@ -464,7 +464,7 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 	submission_status = "processed-ok"
 	submission_id = "Table2asn"
 	# Create a temp file to store the downloaded table2asn
-	table2asn_dir = PROG_DIR + "/table2asn"
+	table2asn_dir = os.getcwd() + "/table2asn"
 	# Download the table2asn
 	print("Downloading Table2asn.", file=sys.stdout)
 	download_table2asn(table2asn_dir=table2asn_dir)
