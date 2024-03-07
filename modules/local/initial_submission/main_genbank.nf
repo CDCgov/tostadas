@@ -14,8 +14,7 @@ process SUBMISSION_GENBANK {
         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
-    path(fastq_dir)
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path)
     path submission_config
     val annotation_name
 

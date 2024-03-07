@@ -5,13 +5,13 @@
 */
 process UPDATE_SUBMISSION {
 
-    //label 'main'
-    
-    conda (params.enable_conda ? params.env_yml : null)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
+    // label 'main'
 
     publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: true
+
+    conda (params.enable_conda ? params.env_yml : null)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
     input:   
     val wait_signal

@@ -8,7 +8,6 @@
 
 include { BAKTA                                             } from "../../modules/nf-core/bakta/bakta/main"
 include { BAKTADBDOWNLOAD                                   } from "../../modules/nf-core/bakta/baktadbdownload/main"
-include { BAKTA_POST_CLEANUP                                } from "../../modules/local/post_bakta_annotation/main"
 // get BAKTA related processes
 
 workflow RUN_BAKTA {

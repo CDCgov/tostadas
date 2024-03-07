@@ -5,7 +5,10 @@
 */
 process BAKTA {
 
-    // label 'bakta'
+    //label 'bakta'
+
+    // errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    //maxRetries 5
     
     conda (params.enable_conda ? "bioconda::bakta==1.9.1" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -47,11 +50,11 @@ process BAKTA {
         --species $params.bakta_species \
         --strain $params.bakta_strain \
         --plasmid $params.bakta_plasmid  \
-        --complete $params.bakta_complete \
         --translation-table $params.bakta_translation_table \
         --gram $params.bakta_gram \
         --locus $params.bakta_locus \
         --locus-tag $params.bakta_locus_tag \
+        $complete \
         $compliant \
         $keep_contig_headers \
         $proteins \

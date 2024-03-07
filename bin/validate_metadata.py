@@ -73,10 +73,13 @@ def metadata_validation_main():
 			sample_df = final_df.iloc[row].to_frame().transpose()
 			sample_df = sample_df.set_index('sequence_name')
 			sample_dfs[final_df.iloc[row]['sequence_name']] = sample_df
-		# now export the .xlsx file as a .tsv
+		# now export the .xlsx file as a .tsv and csv
 		for sample in sample_dfs.keys():
 			tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
 			sample_dfs[sample].to_csv(tsv_file, sep="\t")
+			# *** Added this to export to csv as well *** #
+			csv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.csv'
+			sample_dfs[sample].to_csv(csv_file)
 			print(f'\nMetadata Validation was Successful!!!\n')
 	else:
 		print(f'\nMetadata Validation Failed Please Consult : {parameters["output_dir"]}/{parameters["file_name"]}/errors/full_error.txt for a Detailed List\n')
@@ -957,7 +960,8 @@ class HandleDfInserts:
 
 	# todo: this is a temporary fx to convert the illumina paths as input to seqsender
 	def change_illumina_paths(self):
-		""" Change illumina_sra_file_path_1 & illumina_sra_file_path_2 to sra-file_name
+		""" Create sra-file_name from illumina_sra_file_path_1 & illumina_sra_file_path_2 
+			Rename illumina_sra_file_path_1 & illumina_sra_file_path_2 to fastq_path_1 & fastq_path_2
 		"""
 
 		# function to extract file name from path
@@ -970,10 +974,9 @@ class HandleDfInserts:
 		# create new column 'sra-file_name'
 		self.filled_df['sra-file_name'] = self.filled_df.apply(lambda row: extract_filename(row['illumina_sra_file_path_1']) + ',' + extract_filename(row['illumina_sra_file_path_2']), axis=1)
 
-		# drop original columns
-		self.filled_df = self.filled_df.drop(['illumina_sra_file_path_1', 'illumina_sra_file_path_2'], axis=1)
+		# rename original columns
+		self.filled_df = self.filled_df.rename(columns={'illumina_sra_file_path_1': 'fastq_path_1', 'illumina_sra_file_path_2': 'fastq_path_2'})
 		
-
 	# todo: apply this function to Ankush's insert checks as well
 	def check_nan_for_column(self, column_name):
 		""" Check for NaN values (if not a string) in a column of the dataframe """
