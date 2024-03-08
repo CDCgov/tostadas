@@ -12,7 +12,6 @@ process REPEATMASKER {
         'quay.io/biocontainers/repeatmasker:4.1.5--pl5321hdfd78af_0'}"
 
 	input:
-	val signal
 	tuple val(meta), path(fasta_path)
 	path repeat_library
 

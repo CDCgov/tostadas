@@ -8,7 +8,9 @@ nextflow.enable.dsl=2
 */
 // get the utility processes / subworkflows
 // include { CHECK_FILES                                       } from "../modules/local/general_util/check_files/main"
-include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
+// include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
+include { VALIDATE_PARAMS                                   } from '../modules/local/general_util/validate_params/main'
+
 include { GET_WAIT_TIME                                     } from "../modules/local/general_util/get_wait_time/main"
 
 // get metadata validation processes
@@ -41,29 +43,17 @@ include { WAIT                                          } from '../modules/local
 // To Do, create logic to run workflows for virus vs. bacteria
 workflow TOSTADAS {
     
-    // fastq_ch = 
-    // Channel.fromPath("$params.fastq_path").first()
-
-    // fasta_ch = 
-    // Channel.fromPath("${params.fasta_path}/*.fasta")
-    // .map { 
-    //      def meta = [:] 
-    //      meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-    //      [ meta, it ] 
-    // }
-
     // check if help parameter is set
     if ( params.help == true ) {
         PRINT_PARAMS_HELP()
         exit 0
     }
 
-    // run utility subworkflow
-    RUN_UTILITY()
-
+    // validate params
+    VALIDATE_PARAMS()
+    
     // run metadata validation process
     METADATA_VALIDATION ( 
-        RUN_UTILITY.out,
         params.meta_path
     )
     // todo: the names of these tsv_Files need to be from sample name not fasta file name 
@@ -104,7 +94,6 @@ workflow TOSTADAS {
             if ( params.repeatmasker_liftoff ) {
              // run repeatmasker annotation on files
                 REPEATMASKER_LIFTOFF (
-                    RUN_UTILITY.out, 
                     fasta_ch
                 )
                 repeatmasker_gff_ch = REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
@@ -122,7 +111,6 @@ workflow TOSTADAS {
             // run vadr processes
             if ( params.vadr ) {
                 RUN_VADR (
-                    RUN_UTILITY.out, 
                     fasta_ch
                 )
                 vadr_gff_ch = RUN_VADR.out.gff.collect().flatten()
@@ -138,7 +126,6 @@ workflow TOSTADAS {
         // run bakta annotation process
             if ( params.bakta == true ) {
                 RUN_BAKTA(
-                    RUN_UTILITY.out, 
                     fasta_ch
                 )
                 // set up submission channels
@@ -198,7 +185,6 @@ workflow TOSTADAS {
         // todo test update submission
         if ( params.update_submission ) {
             UPDATE_SUBMISSION (
-                RUN_UTILITY.out,
                 params.submission_config, 
                 INITIAL_SUBMISSION.out.submission_files
             )
