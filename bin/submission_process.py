@@ -116,6 +116,10 @@ def get_metadata(database, organism, metadata_file):
 		# Make sure specific fields have a correct date format
 		if name in [re.sub("[*?#&]", "", x) for x in required_date_colnames]:
 			metadata[name] = pd.to_datetime(metadata[name], errors="coerce")
+			# identify the minimum valid datetime value
+			min_valid_date = metadata[name].dropna().min()
+			# replace NaT values with the minimum valid datetime value if it exists
+			metadata[name] = metadata[name].fillna(min_valid_date)
 			if pd.isna(metadata[name]).any():
 				print("Error: The required 'collection_date' field in metadata file contains incorrect date format. Date must be in the ISO format: YYYYMMDD/YYYYDDMM/DDMMYYYY/MMDDYYYY. For example: 2020-03-25.", file=sys.stderr)
 				sys.exit(1)
