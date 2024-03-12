@@ -633,9 +633,9 @@
 
 
 <h1 id="parameters">Parameters</h1>
-<p>Default parameters are given in the nextflow.config file. This table lists the parameters that can be changed to a value, path or true/false. When changing these parameters pay attention to the required inputs and make sure that paths line up and values are within range. To change a parameter you may change with a flag after the <code>nextflow</code> command or change them within your nextflow.config file.</p>
+<p>Default parameters are given in the nextflow.config file. This table lists the parameters that can be changed to a value, path or true/false. When changing these parameters pay attention to the required inputs and make sure that paths line-up and values are within range. To change a parameter you may change with a flag after the nextflow command or change them within your nextflow.config file.</p>
 <ul>
-<li>Please note the correct formatting and the default calculation of <strong>submission_wait_time</strong> at the bottom of the params table.</li>
+<li>Please note the correct formatting and the default calculation of submission_wait_time at the bottom of the params table.</li>
 </ul>
 <h2 id="input-files">Input Files</h2>
 <table>
@@ -680,11 +680,6 @@
 </thead>
 <tbody>
 <tr>
-<td>--scicomp</td>
-<td>Flag for whether running on Scicomp or not</td>
-<td>Yes (true/false as bool)</td>
-</tr>
-<tr>
 <td>--docker_container</td>
 <td>Name of the Docker container</td>
 <td>Yes, if running with docker profile (name as string)</td>
@@ -697,27 +692,11 @@
 </tbody>
 </table>
 <h2 id="general-subworkflow">General Subworkflow</h2>
-<table>
-<thead>
-<tr>
-<th>Param</th>
-<th>Description</th>
-<th>Input Required</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>--submission</td>
-<td>Toggle for running submission</td>
-<td>Yes (true/false as bool)</td>
-</tr>
-<tr>
-<td>--cleanup</td>
-<td>Toggle for running cleanup subworkflows</td>
-<td>Yes (true/false as bool)</td>
-</tr>
-</tbody>
-</table>
+<p>Param   Description Input Required
+|---|----|---|
+|--submission   |Toggle for running submission  |Yes (true/false as bool)|
+|--annotation   |Toggle for running annotation  |Yes (true/false as bool)|
+|--cleanup  |Toggle for running cleanup subworkflows    |Yes (true/false as bool)|</p>
 <h2 id="cleanup-subworkflow">Cleanup Subworkflow</h2>
 <table>
 <thead>
@@ -804,8 +783,8 @@
 </tr>
 <tr>
 <td>--custom_fields_file</td>
-<td>Path to the JSON file containing custom metadata fields and their information</td>
-<td>No (path as string)</td>
+<td>Path to the JSON file containing custom metadata fields and their information  No (path as string)</td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -836,8 +815,8 @@
 </tr>
 <tr>
 <td>--lift_parallel_processes</td>
-<td>Number of parallel processes to use for liftoff</td>
-<td>Yes (integer)</td>
+<td># of parallel processes to use for liftoff</td>
+<td>Yes (Integer)</td>
 </tr>
 <tr>
 <td>--lift_delete_temp_files</td>
@@ -846,8 +825,8 @@
 </tr>
 <tr>
 <td>--lift_child_feature_align_threshold</td>
-<td>Only if its child features usually exons/CDS align with sequence identity</td>
-<td></td>
+<td>Map only if its child features align with sequence identity &gt; this value</td>
+<td>Yes (Integer)</td>
 </tr>
 <tr>
 <td>--lift_unmapped_feature_file_name</td>
@@ -934,6 +913,7 @@
 </tbody>
 </table>
 <h2 id="bakta">BAKTA</h2>
+<p>Controlling Bakta within TOSTADAS uses parameters of the same name with prefix --bakta_ as described below. For more details, visit the <a href="https://github.com/oschwengers/bakta">Bakta GitHub page</a>.</p>
 <table>
 <thead>
 <tr>
@@ -1009,8 +989,13 @@
 <td>Yes (integer)</td>
 </tr>
 <tr>
+<td>--bakta_gram</td>
+<td>Gram type for signal peptide predictions</td>
+<td>No ('+' '-' '?')</td>
+</tr>
+<tr>
 <td>--bakta</td>
-<td>Toggle for running BAKTA annotation</td>
+<td>Toggle for running Bakta annotation</td>
 <td>Yes (true/false as bool)</td>
 </tr>
 </tbody>
@@ -1025,6 +1010,16 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>--genbank</td>
+<td>Submit to GenBank</td>
+<td>Yes (true/false as bool)</td>
+</tr>
+<tr>
+<td>--sra</td>
+<td>Submit to SRA</td>
+<td>Yes (true/false as bool)</td>
+</tr>
 <tr>
 <td>--submission_output_dir</td>
 <td>Either name or relative/absolute path for the outputs from submission</td>
@@ -1062,7 +1057,7 @@
 </tr>
 </tbody>
 </table>
-<p>❗ Important note about <code>send_submission_email</code>: An email is only triggered if Genbank is being submitted to AND table2asn is the genbank_submission_type. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'*</p>
+<p>❗ Important note about send_submission_email: An email is only triggered if Genbank is being submitted to AND <code>table2asn</code> is the <code>genbank_submission_type</code>. As for the recipient, this must be specified within your submission config file under 'general' as 'notif_email_recipient'*</p>
 
 
 
