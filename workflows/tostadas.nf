@@ -200,18 +200,22 @@ workflow TOSTADAS {
             UPDATE_SUBMISSION (
                 RUN_UTILITY.out,
                 params.submission_config, 
-                INITIAL_SUBMISSION.out.submission_files
+                INITIAL_SUBMISSION.out.submission_files,
+                INITIAL_SUBMISSION.out.submission_log,
+                ''
             )
         }
         // combine the different upload_log csv files together 
         if ( ! params.update_submission ) {
             MERGE_UPLOAD_LOG ( 
-                INITIAL_SUBMISSION.out.submission_files.collect(), INITIAL_SUBMISSION.out.submission_log.collect(), 
+                INITIAL_SUBMISSION.out.submission_files.collect(), 
+                INITIAL_SUBMISSION.out.submission_log.collect(), 
                 '' )
         }
         else {
             MERGE_UPLOAD_LOG ( 
-                UPDATE_SUBMISSION.out.submission_files.collect(), UPDATE_SUBMISSION.out.submission_log.collect(), 
+                UPDATE_SUBMISSION.out.submission_files.collect(), 
+                UPDATE_SUBMISSION.out.submission_log.collect(), 
                 ''
             )
         }

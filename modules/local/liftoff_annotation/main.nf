@@ -11,7 +11,7 @@ process LIFTOFF {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
+    //publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:
     val signal

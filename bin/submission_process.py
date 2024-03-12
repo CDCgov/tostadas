@@ -294,7 +294,7 @@ def update_submission_status(submission_dir, submission_name, organism, test, se
 	if test == True:
 		submission_type = "Test"
 	else:
-		submission_type = "production"
+		submission_type = "Production"
 	# Check if given organism exist in the log
 	df_partial = df.loc[(df["Organism"] == organism) & (df["Submission_Name"] == submission_name) & (df["Submission_Type"] == submission_type)]
 	if df_partial.shape[0] == 0:
