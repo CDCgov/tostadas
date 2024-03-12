@@ -19,7 +19,7 @@ A portable, open-source pipeline designed to streamline submission of pathogen g
 
 TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses and select bacteria. Testing for additional pathogen is planned for future releases.
 
-## Quick Start
+## Installation and Quick Start
 ❗ Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide)
 
 For non-CDC users, please follow the instructions below.
