@@ -361,27 +361,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#61-pipeline-overview" class="md-nav__link">
+  <a href="#pipeline-overview" class="md-nav__link">
     <span class="md-ellipsis">
-      6.1 Pipeline Overview:
+      Pipeline Overview:
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#62-output-directory-formatting" class="md-nav__link">
+  <a href="#output-directory-formatting" class="md-nav__link">
     <span class="md-ellipsis">
-      6.2 Output Directory Formatting:
+      Output Directory Formatting:
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#63-understanding-pipeline-outputs" class="md-nav__link">
+  <a href="#understanding-pipeline-outputs" class="md-nav__link">
     <span class="md-ellipsis">
-      6.3 Understanding Pipeline Outputs:
+      Understanding Pipeline Outputs:
     </span>
   </a>
   
@@ -462,27 +462,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#61-pipeline-overview" class="md-nav__link">
+  <a href="#pipeline-overview" class="md-nav__link">
     <span class="md-ellipsis">
-      6.1 Pipeline Overview:
+      Pipeline Overview:
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#62-output-directory-formatting" class="md-nav__link">
+  <a href="#output-directory-formatting" class="md-nav__link">
     <span class="md-ellipsis">
-      6.2 Output Directory Formatting:
+      Output Directory Formatting:
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#63-understanding-pipeline-outputs" class="md-nav__link">
+  <a href="#understanding-pipeline-outputs" class="md-nav__link">
     <span class="md-ellipsis">
-      6.3 Understanding Pipeline Outputs:
+      Understanding Pipeline Outputs:
     </span>
   </a>
   
@@ -507,67 +507,59 @@
 
 
 <h1 id="outputs">Outputs</h1>
-<p>The following section walks through the outputs from the pipeline.</p>
-<h2 id="61-pipeline-overview">6.1 Pipeline Overview:</h2>
-<p>The workflow will generate outputs in the following order:</p>
-<ul>
-<li>Validation</li>
-<li>Responsible for QC of metadata</li>
-<li>Aligns sample metadata .xlsx to sample .fasta</li>
-<li>Formats metadata into .tsv format</li>
-<li>Annotation</li>
-<li>Extracts features from .gff</li>
-<li>Aligns features</li>
-<li>Annotates sample genomes outputting .gff</li>
-<li>Submission</li>
-<li>Formats for database submission
- This section runs twice, with the second run occuring after a wait time to allow for all samples to be uploaded to NCBI. Entrypoint <code>only_update_submission</code> can be run as many times as necessary until all files are fully uploaded.</li>
-</ul>
-<h2 id="62-output-directory-formatting">6.2 Output Directory Formatting:</h2>
-<p>The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:</p>
-<ul>
-<li>validation_outputs (name configurable with <code>val_output_dir</code>)</li>
-<li>name of metadata sample file</li>
-<li>errors</li>
-<li>fasta</li>
-<li>tsv_per_sample</li>
-<li>liftoff_outputs (name configurable with <code>final_liftoff_output_dir</code>)</li>
-<li>name of metadata sample file</li>
-<li>errors</li>
-<li>fasta</li>
-<li>liftoff</li>
-<li>tbl</li>
-<li>vadr_outputs (name configurable with <code>vadr_output_dir</code>)</li>
-<li>name of metadata sample file</li>
-<li>errors</li>
-<li>fasta</li>
-<li>gffs</li>
-<li>tbl</li>
-<li>bakta_outputs (name configurable with <code>bakta_output_dir</code>)</li>
-<li>name of metadata sample file</li>
-<li>fasta</li>
-<li>gff</li>
-<li>tbl</li>
-<li>submission_outputs (name and path configurable with <code>submission_output_dir</code>)</li>
-<li>name of annotation results (Liftoff or VADR, etc.)</li>
-<li>individual_sample_batch_info</li>
-<li>biosample_sra</li>
-<li>genbank</li>
-<li>accessions.csv</li>
-<li>terminal_outputs</li>
-<li>commands_used</li>
-</ul>
-<h2 id="63-understanding-pipeline-outputs">6.3 Understanding Pipeline Outputs:</h2>
-<p>The pipeline outputs include:</p>
-<ul>
-<li>metadata.tsv files for each sample</li>
-<li>separate fasta files for each sample</li>
-<li>separate gff files for each sample</li>
-<li>separate tbl files containing feature information for each sample</li>
-<li>submission log file</li>
-<li>This output is found in the <code>submission_outputs</code> file in your specified <code>output_directory</code>.</li>
-<li>If the file can not be found you can run the <code>only_update_submission</code> entrypoint for the pipeline.</li>
-</ul>
+<h2 id="pipeline-overview">Pipeline Overview:</h2>
+<p>The workflow will generate outputs in the following order:
+* Validation
+ * Responsible for QC of metadata
+ * Aligns sample metadata .xlsx to sample .fasta
+ * Formats metadata into .tsv format
+* Annotation
+ * Extracts features from .gff
+ * Aligns features
+ * Annotates sample genomes outputting .gff
+* Submission
+ * Formats for database submission
+ * This section runs twice, with the second run occurring after a wait time to allow for all samples to be uploaded to NCBI.</p>
+<h2 id="output-directory-formatting">Output Directory Formatting:</h2>
+<p>The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:
+* validation_outputs (name configurable with <code>val_output_dir</code>)
+ * name of metadata sample file
+  * errors
+  * fasta
+  * tsv_per_sample
+* liftoff_outputs (name configurable with <code>final_liftoff_output_dir</code>)
+ * name of metadata sample file
+  * errors
+  * fasta
+  * liftoff
+  * tbl
+* vadr_outputs (name configurable with <code>vadr_output_dir</code>)
+ * name of metadata sample file
+  * errors
+  * fasta
+  * gffs
+  * tbl
+* bakta_outputs (name configurable with <code>bakta_output_dir</code>)
+ * name of metadata sample file
+  * fasta
+  * gff
+  * tbl
+* submission_outputs (name and path configurable with <code>submission_output_dir</code>)
+ * name of annotation results (Liftoff or VADR, etc.)
+  * individual_sample_batch_info
+   * biosample_sra
+   * genbank
+   * accessions.csv
+  * terminal_outputs
+  * commands_used</p>
+<h2 id="understanding-pipeline-outputs">Understanding Pipeline Outputs:</h2>
+<p>The pipeline outputs include:
+* metadata.tsv files for each sample
+* separate fasta files for each sample
+* separate gff files for each sample
+* separate tbl files containing feature information for each sample
+* submission log file
+  * This output is found in the submission_outputs file in your specified output_directory</p>
 
 
 
