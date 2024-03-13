@@ -69,8 +69,7 @@ workflow TOSTADAS {
     // todo: the names of these tsv_Files need to be from sample name not fasta file name 
     metadata_ch = METADATA_VALIDATION.out.tsv_Files.flatten()
     .map { 
-        def meta = [:] 
-        meta['id'] = it.getSimpleName()
+        meta = [id:it.getSimpleName()] 
         [ meta, it ] 
     }
 
@@ -101,7 +100,7 @@ workflow TOSTADAS {
                 )
                 repeatmasker_gff_ch = REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
                 .map { 
-                    def meta = [:] 
+                    meta = [:] 
                     meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
                     [ meta, it ] 
                 }
@@ -117,12 +116,14 @@ workflow TOSTADAS {
                     RUN_UTILITY.out, 
                     fasta_ch
                 )
-                vadr_gff_ch = RUN_VADR.out.gff.collect().flatten()
-                .map { 
-                    def meta = [:] 
-                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                    [ meta, it ] 
-                }
+                vadr_gff_ch = RUN_VADR.out.gff
+                    .collect()
+                    .flatten()
+                    .map { 
+                        meta = [:] 
+                        meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+                        [ meta, it ] 
+                    }
                 submission_ch = submission_ch.join(vadr_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }
         }
@@ -134,12 +135,12 @@ workflow TOSTADAS {
                     fasta_ch
                 )
                 // set up submission channels
-                bakta_gff_ch = RUN_BAKTA.out.gff3.flatten()
+                bakta_gff_ch = RUN_BAKTA.out.gff3
+                    .flatten()
                     .map { 
-                        def meta = [:] 
-                        meta['id'] = it.getSimpleName()
+                        meta = [id:it.getSimpleName()] 
                         [ meta, it ]
-                        }
+                    }
                 // submission_ch = metadata_ch.join(fasta_ch)
                 submission_ch = submission_ch.join(bakta_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }   
