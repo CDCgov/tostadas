@@ -67,15 +67,17 @@ workflow TOSTADAS {
         params.meta_path
     )
     // todo: the names of these tsv_Files need to be from sample name not fasta file name 
-    metadata_ch = METADATA_VALIDATION.out.tsv_Files.flatten()
-    .map { 
-        meta = [id:it.getSimpleName()] 
-        [ meta, it ] 
-    }
+    metadata_ch = METADATA_VALIDATION.out.tsv_Files
+        .flatten()
+        .map { 
+            meta = [id:it.getSimpleName()] 
+            [ meta, it ] 
+        }
 
     // Generate the fasta and fastq paths
     reads_ch = 
-        METADATA_VALIDATION.out.csv_Files.flatten()
+        METADATA_VALIDATION.out.csv_Files
+        .flatten()
         .splitCsv(header: true)
         .map { row ->
             meta = [id:row.sequence_name]
