@@ -75,27 +75,19 @@ workflow TOSTADAS {
     }
 
     // Generate the fasta and fastq paths
-    fasta_ch = 
+    reads_ch = 
         METADATA_VALIDATION.out.csv_Files.flatten()
-        | splitCsv(header: true)
-        | map { row ->
+        .splitCsv(header: true)
+        .map { row ->
             meta = [id:row.sequence_name]
             fasta_path = row.fasta_path ? file(row.fasta_path) : null
-            [meta, fasta_path]
-        }
-
-    fastq_ch = 
-        METADATA_VALIDATION.out.csv_Files.flatten()
-        | splitCsv(header: true)
-        | map { row ->
-            meta = [id:row.sequence_name]
             fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : null
             fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
-            [meta, fastq1, fastq2]
+            [meta, fasta_path, fastq1, fastq2]
         }
+
     // Create initial submission channel
-    submission_ch = metadata_ch.join(fasta_ch)
-    submission_ch = submission_ch.join(fastq_ch)
+    submission_ch = metadata_ch.join(reads_ch)
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         if ( params.virus && !params.bacteria ) {
