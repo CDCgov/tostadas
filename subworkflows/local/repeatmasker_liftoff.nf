@@ -13,19 +13,16 @@ include { CONCAT_GFFS                                       } from "../../module
 workflow REPEATMASKER_LIFTOFF {
 
     take:
-        utility_signal
         fasta
 
     main:
         // run repeatmasker annotation on files
         REPEATMASKER (
-           utility_signal,
            fasta,
            params.repeat_library
         )
         // run liftoff annotation on files
         LIFTOFF_CLI ( 
-            utility_signal,
             fasta,
             params.ref_fasta_path, 
             params.ref_gff_path 

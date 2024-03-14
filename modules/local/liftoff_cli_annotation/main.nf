@@ -20,7 +20,6 @@ process LIFTOFF_CLI {
         }
 
 	input:
-    val signal
 	tuple val(meta), path(fasta)
     path ref_fasta_path 
     path ref_gff_path 

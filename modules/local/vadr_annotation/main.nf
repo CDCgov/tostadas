@@ -12,7 +12,6 @@ process VADR {
         'staphb/vadr:latest' : 'staphb/vadr:latest' }"
 
     input:
-    val signal
 	tuple val(meta), path(fasta_path)
     path vadr_models_dir
 

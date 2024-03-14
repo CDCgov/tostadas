@@ -12,23 +12,19 @@ include { BAKTADBDOWNLOAD                                   } from "../../module
 
 workflow RUN_BAKTA {
     take: 
-    utility_signal
     fasta_ch
 
     main:
         if ( params.download_bakta_db ) {
             BAKTADBDOWNLOAD (
-                utility_signal 
                 )
             BAKTA (
-                utility_signal,
                 BAKTADBDOWNLOAD.out.db,
                 fasta_ch
                 )
             }
         else {
             BAKTA (
-            utility_signal,
             params.bakta_db_path,
             fasta_ch
             )

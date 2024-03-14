@@ -14,7 +14,6 @@ process LIFTOFF {
     //publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     input:
-    val signal
     path meta_path
     path fasta_path
     path ref_fasta_path 

@@ -13,8 +13,8 @@ process UPDATE_SUBMISSION {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
-    input:   
-    val wait_signal
+    input:
+    val wait
     path submission_config
     path submission_output
     path submission_log
