@@ -67,35 +67,28 @@ workflow TOSTADAS {
         params.meta_path
     )
     // todo: the names of these tsv_Files need to be from sample name not fasta file name 
-    metadata_ch = METADATA_VALIDATION.out.tsv_Files.flatten()
-    .map { 
-        def meta = [:] 
-        meta['id'] = it.getSimpleName()
-        [ meta, it ] 
-    }
+    metadata_ch = METADATA_VALIDATION.out.tsv_Files
+        .flatten()
+        .map { 
+            meta = [id:it.getSimpleName()] 
+            [ meta, it ] 
+        }
 
     // Generate the fasta and fastq paths
-    fasta_ch = 
-        METADATA_VALIDATION.out.csv_Files.flatten()
-        | splitCsv(header: true)
-        | map { row ->
+    reads_ch = 
+        METADATA_VALIDATION.out.csv_Files
+        .flatten()
+        .splitCsv(header: true)
+        .map { row ->
             meta = [id:row.sequence_name]
             fasta_path = row.fasta_path ? file(row.fasta_path) : null
-            [meta, fasta_path]
-        }
-
-    fastq_ch = 
-        METADATA_VALIDATION.out.csv_Files.flatten()
-        | splitCsv(header: true)
-        | map { row ->
-            meta = [id:row.sequence_name]
             fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : null
             fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
-            [meta, fastq1, fastq2]
+            [meta, fasta_path, fastq1, fastq2]
         }
+
     // Create initial submission channel
-    submission_ch = metadata_ch.join(fasta_ch)
-    submission_ch = submission_ch.join(fastq_ch)
+    submission_ch = metadata_ch.join(reads_ch)
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         if ( params.virus && !params.bacteria ) {
@@ -109,7 +102,7 @@ workflow TOSTADAS {
                 )
                 repeatmasker_gff_ch = REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
                 .map { 
-                    def meta = [:] 
+                    meta = [:] 
                     meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
                     [ meta, it ] 
                 }
@@ -125,12 +118,14 @@ workflow TOSTADAS {
                     RUN_UTILITY.out, 
                     fasta_ch
                 )
-                vadr_gff_ch = RUN_VADR.out.gff.collect().flatten()
-                .map { 
-                    def meta = [:] 
-                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                    [ meta, it ] 
-                }
+                vadr_gff_ch = RUN_VADR.out.gff
+                    .collect()
+                    .flatten()
+                    .map { 
+                        meta = [:] 
+                        meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
+                        [ meta, it ] 
+                    }
                 submission_ch = submission_ch.join(vadr_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }
         }
@@ -142,12 +137,12 @@ workflow TOSTADAS {
                     fasta_ch
                 )
                 // set up submission channels
-                bakta_gff_ch = RUN_BAKTA.out.gff3.flatten()
+                bakta_gff_ch = RUN_BAKTA.out.gff3
+                    .flatten()
                     .map { 
-                        def meta = [:] 
-                        meta['id'] = it.getSimpleName()
+                        meta = [id:it.getSimpleName()] 
                         [ meta, it ]
-                        }
+                    }
                 // submission_ch = metadata_ch.join(fasta_ch)
                 submission_ch = submission_ch.join(bakta_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }   
