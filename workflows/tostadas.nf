@@ -79,6 +79,7 @@ workflow TOSTADAS {
 
     // Create initial submission channel
     submission_ch = metadata_ch.join(reads_ch)
+
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         if ( params.virus && !params.bacteria ) {
@@ -87,7 +88,7 @@ workflow TOSTADAS {
             if ( params.repeatmasker_liftoff ) {
              // run repeatmasker annotation on files
                 REPEATMASKER_LIFTOFF (
-                    fasta_ch
+                    reads_ch
                 )
                 repeatmasker_gff_ch = REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
                 .map { 
@@ -97,14 +98,13 @@ workflow TOSTADAS {
                 }
 
             // set up submission channels
-            // submission_ch = metadata_ch.join(fasta_ch)
             submission_ch = submission_ch.join(repeatmasker_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }
     
             // run vadr processes
             if ( params.vadr ) {
                 RUN_VADR (
-                    fasta_ch
+                    reads_ch
                 )
                 vadr_gff_ch = RUN_VADR.out.gff
                     .collect()
@@ -121,7 +121,7 @@ workflow TOSTADAS {
         // run bakta annotation process
             if ( params.bakta == true ) {
                 RUN_BAKTA(
-                    fasta_ch
+                    reads_ch
                 )
                 // set up submission channels
                 bakta_gff_ch = RUN_BAKTA.out.gff3
@@ -130,7 +130,6 @@ workflow TOSTADAS {
                         meta = [id:it.getSimpleName()] 
                         [ meta, it ]
                     }
-                // submission_ch = metadata_ch.join(fasta_ch)
                 submission_ch = submission_ch.join(bakta_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }   
         }

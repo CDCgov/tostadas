@@ -12,7 +12,7 @@ process REPEATMASKER {
         'quay.io/biocontainers/repeatmasker:4.1.5--pl5321hdfd78af_0'}"
 
 	input:
-	tuple val(meta), path(fasta_path)
+	tuple val(meta), path(fasta_path), path(fast1), path(fastq2)
 	path repeat_library
 
 	script:

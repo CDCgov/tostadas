@@ -18,9 +18,8 @@ process BAKTA {
     publishDir "$params.output_dir/$params.bakta_output_dir", mode: 'copy', overwrite: params.overwrite_output
     
     input:
-    val signal
     path db_path
-    tuple val(meta), path(fasta_path)
+    tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
     
     script:
     def args = task.ext.args  ?: ''
