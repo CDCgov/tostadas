@@ -182,7 +182,6 @@ workflow TOSTADAS {
                 params.submission_config, 
                 INITIAL_SUBMISSION.out.submission_files,
                 INITIAL_SUBMISSION.out.submission_log,
-                ''
             )
         }
         // combine the different upload_log csv files together 
@@ -190,13 +189,12 @@ workflow TOSTADAS {
             MERGE_UPLOAD_LOG ( 
                 INITIAL_SUBMISSION.out.submission_files.collect(), 
                 INITIAL_SUBMISSION.out.submission_log.collect(), 
-                '' )
+                )
         }
         else {
             MERGE_UPLOAD_LOG ( 
                 UPDATE_SUBMISSION.out.submission_files.collect(), 
                 UPDATE_SUBMISSION.out.submission_log.collect(), 
-                ''
             )
         }
 

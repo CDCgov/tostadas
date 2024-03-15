@@ -16,7 +16,6 @@ process SUBMISSION_SRA {
     input:
     tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2)
     path submission_config
-    val annotation_name
 
     // define the command line arguments based on the value of params.submission_test_or_prod
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''

@@ -23,48 +23,39 @@ workflow INITIAL_SUBMISSION {
         // submit the files to database of choice (after fixing config and getting wait time)
         if ( params.genbank && params.sra ){ // genbank and sra
             // submit the files to database of choice (after fixing config and getting wait time)
-            SUBMISSION_FULL ( submission_ch, submission_config, '' )
+            SUBMISSION_FULL ( submission_ch, submission_config )
             
             // actual process to initiate wait 
             WAIT ( SUBMISSION_FULL.out.submission_files.collect(), wait_time )
 
             // process for updating the submitted samples
-            UPDATE_SUBMISSION (  WAIT.out, submission_config, SUBMISSION_FULL.out.submission_files, SUBMISSION_FULL.out.submission_log, '' )
-
-            // combine the different upload_log csv files together 
-            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
+            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_FULL.out.submission_files, SUBMISSION_FULL.out.submission_log )
         }
 
         if ( !params.genbank && params.sra ){ //only sra
-            SUBMISSION_SRA ( submission_ch, submission_config, '' )
+            SUBMISSION_SRA ( submission_ch, submission_config )
             // actual process to initiate wait 
             WAIT ( SUBMISSION_SRA.out.submission_files.collect(), wait_time )
 
             // process for updating the submitted samples
-            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
-
-            // combine the different upload_log csv files together 
-            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
+            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log )
         }
 
-        if ( params.genbank && !params.sra ){ //only genbank, fastq_ch can be empty
+        if ( params.genbank && !params.sra ){ //only genbank
         // submit the files to database of choice (after fixing config and getting wait time)
-            SUBMISSION_GENBANK ( submission_ch, submission_config, '' )
+            SUBMISSION_GENBANK ( submission_ch, submission_config )
             
             // actual process to initiate wait 
             WAIT ( SUBMISSION_GENBANK.out.submission_files.collect(), wait_time )
 
             // process for updating the submitted samples
-            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_GENBANK.out.submission_files, SUBMISSION_GENBANK.out.submission_log, '' )
-
-            // combine the different upload_log csv files together 
-            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
+            UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION_GENBANK.out.submission_files, SUBMISSION_GENBANK.out.submission_log )
         }
 
     emit:
         submission_files = UPDATE_SUBMISSION.out.submission_files
         submission_log = UPDATE_SUBMISSION.out.submission_log
 
-        //ToDo add GISAID module
+        //to do: add GISAID module
         
 }

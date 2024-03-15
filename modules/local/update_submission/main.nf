@@ -14,11 +14,10 @@ process UPDATE_SUBMISSION {
         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
     input:
-    val wait
+    val wait_time
     path submission_config
     path submission_output
     path submission_log
-    val annotation_name
     
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     script:
