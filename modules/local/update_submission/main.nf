@@ -14,6 +14,7 @@ process UPDATE_SUBMISSION {
         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
     input:
+    val wait_time
     path submission_config
     path submission_output
     path submission_log

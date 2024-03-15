@@ -179,6 +179,7 @@ workflow TOSTADAS {
         // todo test update submission
         if ( params.update_submission ) {
             UPDATE_SUBMISSION (
+                '',
                 params.submission_config, 
                 INITIAL_SUBMISSION.out.submission_files,
                 INITIAL_SUBMISSION.out.submission_log,
