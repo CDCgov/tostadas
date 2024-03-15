@@ -66,14 +66,14 @@ workflow TOSTADAS {
 
     // Generate the fasta and fastq paths
     reads_ch = 
-        METADATA_VALIDATION.out.csv_Files
+        METADATA_VALIDATION.out.tsv_Files
         .flatten()
-        .splitCsv(header: true)
+        .splitCsv(header: true, sep: "\t")
         .map { row ->
-            meta = [id:row.sequence_name]
             fasta_path = row.fasta_path ? file(row.fasta_path) : null
             fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : null
             fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
+            meta = [id:row.sequence_name]
             [meta, fasta_path, fastq1, fastq2]
         }
 
