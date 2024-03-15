@@ -12,7 +12,7 @@ process VADR {
         'staphb/vadr:latest' : 'staphb/vadr:latest' }"
 
     input:
-	tuple val(meta), path(fasta_path)
+	tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
     path vadr_models_dir
 
     script:

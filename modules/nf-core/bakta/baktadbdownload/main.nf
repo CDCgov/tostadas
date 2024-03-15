@@ -6,8 +6,7 @@ process BAKTADBDOWNLOAD {
         'quay.io/biocontainers/bakta:1.8.2--pyhdfd78af_0' }"
 
     input: 
-    val signal
-
+    
     output:
     path "bakta_db/*"           , emit: db
 
