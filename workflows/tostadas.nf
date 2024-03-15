@@ -66,14 +66,14 @@ workflow TOSTADAS {
 
     // Generate the fasta and fastq paths
     reads_ch = 
-        METADATA_VALIDATION.out.csv_Files
+        METADATA_VALIDATION.out.tsv_Files
         .flatten()
-        .splitCsv(header: true)
+        .splitCsv(header: true, sep: "\t")
         .map { row ->
-            meta = [id:row.sequence_name]
             fasta_path = row.fasta_path ? file(row.fasta_path) : null
             fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : null
             fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
+            meta = [id:row.sequence_name]
             [meta, fasta_path, fastq1, fastq2]
         }
 
@@ -179,10 +179,10 @@ workflow TOSTADAS {
         // todo test update submission
         if ( params.update_submission ) {
             UPDATE_SUBMISSION (
+                '',
                 params.submission_config, 
                 INITIAL_SUBMISSION.out.submission_files,
                 INITIAL_SUBMISSION.out.submission_log,
-                ''
             )
         }
         // combine the different upload_log csv files together 
@@ -190,13 +190,12 @@ workflow TOSTADAS {
             MERGE_UPLOAD_LOG ( 
                 INITIAL_SUBMISSION.out.submission_files.collect(), 
                 INITIAL_SUBMISSION.out.submission_log.collect(), 
-                '' )
+                )
         }
         else {
             MERGE_UPLOAD_LOG ( 
                 UPDATE_SUBMISSION.out.submission_files.collect(), 
                 UPDATE_SUBMISSION.out.submission_log.collect(), 
-                ''
             )
         }
 

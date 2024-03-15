@@ -7,18 +7,17 @@ process UPDATE_SUBMISSION {
 
     // label 'main'
 
-    publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: true
+    publishDir "$params.output_dir/$params.submission_output_dir/", mode: 'copy', overwrite: true
 
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
 
     input:
-    val wait
+    val wait_time
     path submission_config
     path submission_output
     path submission_log
-    val annotation_name
     
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     script:
