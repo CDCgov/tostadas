@@ -23,7 +23,7 @@ process CONCAT_GFFS {
 	path ref_gff_path
 	path repeatmasker_gff
     path liftoff_gff
-	tuple val(meta), path(fasta_path)
+	tuple val(meta), path(fasta_path), path(fastq_1), path(fastq_2)
 
 	script:
 	"""
