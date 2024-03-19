@@ -74,11 +74,18 @@ workflow TOSTADAS {
             fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : null
             fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
             meta = [id:row.sequence_name]
-            [meta, fasta_path, fastq1, fastq2]
+            gff = row.gff_path ? file(row.gff_path) : null
+            [meta, fasta_path, fastq1, fastq2, gff]
         }
 
     // Create initial submission channel
     submission_ch = metadata_ch.join(reads_ch)
+
+    // print error if they provide gff and annotation flag
+    // if ( !params.annotation && params.genbank ) {
+    //             // todo: make an error msg that follows the rest of the code protocol
+    //             throw new Exception("Cannot submit to GenBank without assembly and annotation files")
+    //     }
 
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
@@ -142,41 +149,48 @@ workflow TOSTADAS {
         GET_WAIT_TIME (
             METADATA_VALIDATION.out.tsv_Files.collect() 
         )
+        INITIAL_SUBMISSION (
+            submission_ch,  // meta.id, fasta, fastq1, fastq2, gff
+            params.submission_config,  
+            GET_WAIT_TIME.out
+            )
 
         // check if annotation is set to true 
-        if ( params.annotation ) {   
-            if (params.sra && params.genbank ) {                     // sra and genbank
-                INITIAL_SUBMISSION (
-                    submission_ch,  // meta.id, fasta, fastq1, fastq2, gff
-                    params.submission_config,  
-                    GET_WAIT_TIME.out
-                    )
-                } 
-            else {      
-                if (! params.sra && params.genbank ) {               // only genebankk
-                    INITIAL_SUBMISSION ( 
-                        submission_ch,     // meta.id, fasta, "", "", gff
-                        params.submission_config, 
-                        GET_WAIT_TIME.out
-                        )
-                    }
-                }
-        }
-        }
-        if ( !params.annotation && params.sra ) {        // no annotation only fastq submission
+        // if ( params.annotation ) {   
+        //     if (params.sra && params.genbank ) {                     // sra and genbank
+        //         INITIAL_SUBMISSION (
+        //             submission_ch,  // meta.id, fasta, fastq1, fastq2, gff
+        //             params.submission_config,  
+        //             GET_WAIT_TIME.out
+        //             )
+        //         } 
+        //     else {      
+        //         if (! params.sra && params.genbank ) {               // only genebankk
+        //             INITIAL_SUBMISSION ( 
+        //                 submission_ch,     // meta.id, fasta, "", "", gff
+        //                 params.submission_config, 
+        //                 GET_WAIT_TIME.out
+        //                 )
+        //             }
+        //         }
+        // }
+        // }
+        // if ( !params.annotation && !params.genbank && params.sra ) {        // no annotation only fastq submission
 
-            INITIAL_SUBMISSION (
-                submission_ch,       // meta.id, "", fastq1, fastq2, gff
-                params.submission_config, 
-                GET_WAIT_TIME.out
-            )
-        } 
-        if ( !params.annotation && params.genbank ) {
-                // todo: make an error msg that follows the rest of the code protocol
-                throw new Exception("Cannot submit to GenBank without assembly and annotation files")
+        //     INITIAL_SUBMISSION (
+        //         submission_ch,       // meta.id, "", fastq1, fastq2, gff
+        //         params.submission_config, 
+        //         GET_WAIT_TIME.out
+        //     )
+        // } 
+        // if ( !params.annotation && params.genbank || !params.annotation && params.genbank && params.sra ) {
+        //     INITIAL_SUBMISSION (
+        //         submission_ch,       // meta.id, fasta, "", "", user-provided gff
+        //         params.submission_config, 
+        //         GET_WAIT_TIME.out
+        //     )
         }
-
-        // todo test update submission
+        // to do remove if not needed
         if ( params.update_submission ) {
             UPDATE_SUBMISSION (
                 '',
