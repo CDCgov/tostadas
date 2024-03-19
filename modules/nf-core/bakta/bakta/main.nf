@@ -71,16 +71,16 @@ process BAKTA {
     """
     
     output:
-    path "${fasta_path.getSimpleName()}/*.fna",   emit: fna
-    path "${fasta_path.getSimpleName()}/*.gff3",   emit: gff3
-    path "${fasta_path.getSimpleName()}/*.faa",   emit: faa
-    path "${fasta_path.getSimpleName()}/*.embl",   emit: embl
-    path "${fasta_path.getSimpleName()}/*.ffn",   emit: ffn
-    path "${fasta_path.getSimpleName()}/*.gbff",   emit: gbff
-    path "${fasta_path.getSimpleName()}/*.json",   emit: json
-    path "${fasta_path.getSimpleName()}/*.log",   emit: log
-    path "${fasta_path.getSimpleName()}/*.png",   emit: png
-    path "${fasta_path.getSimpleName()}/*.svg",   emit: svg
-    path "${fasta_path.getSimpleName()}/*.tsv",   emit: tsv
-    path "${fasta_path.getSimpleName()}/*.txt",   emit: txt
+    path "${meta.id}/*.fna",   emit: fna
+    path "${meta.id}/*.gff3",   emit: gff3
+    path "${meta.id}/*.faa",   emit: faa
+    path "${meta.id}/*.embl",   emit: embl
+    path "${meta.id}/*.ffn",   emit: ffn
+    path "${meta.id}/*.gbff",   emit: gbff
+    path "${meta.id}/*.json",   emit: json
+    path "${meta.id}/*.log",   emit: log
+    path "${meta.id}/*.png",   emit: png
+    path "${meta.id}/*.svg",   emit: svg
+    path "${meta.id}/*.tsv",   emit: tsv
+    path "${meta.id}/*.txt",   emit: txt
 }
