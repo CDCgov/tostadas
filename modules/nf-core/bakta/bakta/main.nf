@@ -38,6 +38,7 @@ process BAKTA {
     def skip_ori = params.bakta_skip_ori ? "--skip-ori" : ""
     def compliant = params.bakta_compliant ? "--compliant" : ""
     def complete = params.bakta_complete ? "--complete" : ""
+    def skip_plot = params.bakta_skip_plot ? "--skip-plot" : ""
     def keep_contig_headers = params.bakta_keep_contig_headers ? "--keep-contig-headers" : ""
 
     """
@@ -53,21 +54,9 @@ process BAKTA {
         --gram $params.bakta_gram \
         --locus $params.bakta_locus \
         --locus-tag $params.bakta_locus_tag \
-        $complete \
-        $compliant \
-        $keep_contig_headers \
-        $proteins \
-        $prodigal_tf \
-        $skip_trna \
-        $skip_rrna \
-        $skip_ncrna \
-        $skip_ncrna_region \
-        $skip_crispr \
-        $skip_cds \
-        $skip_sorf \
-        $skip_gap \
-        $skip_ori \
-        $fasta_path
+        $complete $compliant $keep_contig_headers $proteins $prodigal_tf $skip_trna $skip_rrna \
+        $skip_ncrna $skip_ncrna_region $skip_crispr $skip_cds $skip_sorf $skip_gap $skip_ori $skip_plot \
+        $fasta_path 
     """
     
     output:
@@ -79,8 +68,8 @@ process BAKTA {
     path "${meta.id}/*.gbff",   emit: gbff
     path "${meta.id}/*.json",   emit: json
     path "${meta.id}/*.log",   emit: log
-    path "${meta.id}/*.png",   emit: png
-    path "${meta.id}/*.svg",   emit: svg
+    //path "${meta.id}/*.png",   emit: png
+    //path "${meta.id}/*.svg",   emit: svg
     path "${meta.id}/*.tsv",   emit: tsv
     path "${meta.id}/*.txt",   emit: txt
 }
