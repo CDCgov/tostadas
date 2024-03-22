@@ -15,8 +15,6 @@ process BAKTA {
         'https://depot.galaxyproject.org/singularity/bakta:1.9.1--pyhdfd78af_0' :
         'quay.io/biocontainers/bakta:1.9.1--pyhdfd78af_0' }"
     
-    publishDir "$params.output_dir/$params.bakta_output_dir", mode: 'copy', overwrite: params.overwrite_output
-    
     input:
     path db_path
     tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
@@ -68,8 +66,6 @@ process BAKTA {
     path "${meta.id}/*.gbff",   emit: gbff
     path "${meta.id}/*.json",   emit: json
     path "${meta.id}/*.log",   emit: log
-    //path "${meta.id}/*.png",   emit: png
-    //path "${meta.id}/*.svg",   emit: svg
     path "${meta.id}/*.tsv",   emit: tsv
     path "${meta.id}/*.txt",   emit: txt
 }
