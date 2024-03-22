@@ -75,7 +75,12 @@ workflow TOSTADAS {
             fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
             meta = [id:row.sequence_name]
             gff = row.gff_path ? file(row.gff_path) : null
-            [meta, fasta_path, fastq1, fastq2, gff]
+            if (gff == null) {
+                [meta, fasta_path, fastq1, fastq2]
+            }
+            else {
+                [meta, fasta_path, fastq1, fastq2, gff]
+            }
         }
 
     // Create initial submission channel
@@ -144,7 +149,6 @@ workflow TOSTADAS {
 
     // run submission for the annotated samples 
     if ( params.submission ) {
-
         // pre submission process + get wait time (parallel)
         GET_WAIT_TIME (
             METADATA_VALIDATION.out.tsv_Files.collect() 
@@ -155,40 +159,6 @@ workflow TOSTADAS {
             GET_WAIT_TIME.out
             )
 
-        // check if annotation is set to true 
-        // if ( params.annotation ) {   
-        //     if (params.sra && params.genbank ) {                     // sra and genbank
-        //         INITIAL_SUBMISSION (
-        //             submission_ch,  // meta.id, fasta, fastq1, fastq2, gff
-        //             params.submission_config,  
-        //             GET_WAIT_TIME.out
-        //             )
-        //         } 
-        //     else {      
-        //         if (! params.sra && params.genbank ) {               // only genebankk
-        //             INITIAL_SUBMISSION ( 
-        //                 submission_ch,     // meta.id, fasta, "", "", gff
-        //                 params.submission_config, 
-        //                 GET_WAIT_TIME.out
-        //                 )
-        //             }
-        //         }
-        // }
-        // }
-        // if ( !params.annotation && !params.genbank && params.sra ) {        // no annotation only fastq submission
-
-        //     INITIAL_SUBMISSION (
-        //         submission_ch,       // meta.id, "", fastq1, fastq2, gff
-        //         params.submission_config, 
-        //         GET_WAIT_TIME.out
-        //     )
-        // } 
-        // if ( !params.annotation && params.genbank || !params.annotation && params.genbank && params.sra ) {
-        //     INITIAL_SUBMISSION (
-        //         submission_ch,       // meta.id, fasta, "", "", user-provided gff
-        //         params.submission_config, 
-        //         GET_WAIT_TIME.out
-        //     )
         }
         // to do remove if not needed
         if ( params.update_submission ) {
