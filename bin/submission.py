@@ -109,7 +109,7 @@ def args_parser():
 			help="Fasta file stored in submission directory",
 			required=True)
 	else:
-		print(f'fasta not required')
+		# fasta not required
 		file_parser.add_argument("--fasta_file",
 			help="Fasta file stored in submission directory",
 			required=False)	
