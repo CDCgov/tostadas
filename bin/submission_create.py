@@ -123,7 +123,7 @@ def create_gisaid_submission(organism, database, submission_name, submission_dir
 	# Create submission files
 	gisaid_df.to_csv(os.path.join(submission_files_dir, "metadata.csv"), index=False, sep=",")
 	shutil.copy(os.path.join(submission_files_dir, "metadata.csv"), os.path.join(submission_files_dir, "orig_metadata.csv"))
-	create_fasta(organism=organism, database="GISAID", metadata=metadata, submission_files_dir=submission_files_dir, fasta_file=fasta_file)
+	create_fasta(organism=organism, database="GISAID", submission_files_dir=submission_files_dir, fasta_file=fasta_file)
 	shutil.copy(os.path.join(submission_files_dir, "sequence.fsa"), os.path.join(submission_files_dir, "orig_sequence.fsa"))
 	print("\n"+"Creating submission files for " + database, file=sys.stdout)
 	print("Files are stored at: " + os.path.join(submission_files_dir), file=sys.stdout)
@@ -405,9 +405,21 @@ def create_authorset(config_dict, metadata, submission_name, submission_files_di
 		f.write("}\n")
 
 # Create fasta file based on database
-def create_fasta(organism, database, metadata, fasta_file, submission_files_dir):
-	# Make sure sequence name is found in fasta file header
-	fasta_df = submission_process.process_fasta_samples(metadata=metadata, fasta_file=fasta_file)
+def create_fasta(organism, database, fasta_file, submission_files_dir):
+	# This part deviates from seqsender code
+	# create the fasta_df without merging metadata 
+	with open(fasta_file, "r") as fsa:
+		records = SeqIO.parse(fsa, "fasta")
+		for record in records:
+			fasta_dict.append({"fasta_name_orig":record.id, "fasta_sequence_orig":record.seq, "fasta_description_orig":record.description})
+	fasta_df = pd.DataFrame(fasta_dict)
+	# Remove rows if they contain all Nan
+	fasta_df = fasta_df.dropna(how='all')
+	# Check duplicates in fasta_df
+	duplicated_df = fasta_df[fasta_df.duplicated(subset = ["fasta_name_orig"], keep = False)]
+	if not duplicated_df.empty:
+		print("Error: Sequences in fasta file must be unique at: " + fasta_file + "\nDuplicate Sequences\n" + fasta_df["fasta_sequence_orig"].to_string(index=False), file=sys.stderr)
+		sys.exit(1)
 	# Now replace fasta header with appropriate sequence ids
 	# Extract the required fields for specified database
 	db_required_colnames = submission_process.get_required_colnames(database=database, organism=organism)
@@ -424,7 +436,7 @@ def create_fasta(organism, database, metadata, fasta_file, submission_files_dir)
 def create_genbank_files(organism, config_dict, metadata, fasta_file, submission_name, submission_files_dir):
 	# Create authorset file
 	create_authorset(config_dict=config_dict, metadata=metadata, submission_name=submission_name, submission_files_dir=submission_files_dir)
-	create_fasta(organism=organism, database=["GENBANK"], metadata=metadata, fasta_file=fasta_file, submission_files_dir=submission_files_dir)
+	create_fasta(organism=organism, database=["GENBANK"], fasta_file=fasta_file, submission_files_dir=submission_files_dir)
 	# Retrieve the source df
 	source_df = metadata.filter(regex="^gb-seq_id$|^src-|^ncbi-spuid$|^ncbi-bioproject$|^organism$|^collection_date$").copy()
 	source_df.columns = source_df.columns.str.replace("src-","").str.strip()
