@@ -110,6 +110,7 @@ workflow TOSTADAS {
                 }
 
             // set up submission channels
+            submission_ch = 
             submission_ch = submission_ch.join(repeatmasker_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }
     
@@ -142,6 +143,13 @@ workflow TOSTADAS {
                         meta = [id:it.getSimpleName()] 
                         [ meta, it ]
                     }
+                bakta_fasta_ch = RUN_BAKTA.out.fna
+                    .flatten()
+                        .map { 
+                            meta = [id:it.getSimpleName()] 
+                            [ meta, it ]
+                    }
+                submission_ch = submission_ch[0], submission_ch[1], bakta_fasta_ch, submission_ch[3], submission_ch[4]
                 submission_ch = submission_ch.join(bakta_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
             }   
         }
