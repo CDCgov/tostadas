@@ -406,6 +406,29 @@ def create_authorset(config_dict, metadata, submission_name, submission_files_di
 		f.write("  }\n")
 		f.write("}\n")
 
+# get locus tag from gff file for Table2asn submission
+def get_gff_locus_tag(gff_file):
+	""" Read the locus lag from the GFF3 file for use in table2asn command"""
+	locus_tag = None
+	with open(gff_file, 'r') as file:
+		for line in file:
+			if line.startswith('##FASTA'):
+				break  # Stop reading if FASTA section starts
+			elif line.startswith('#'):
+				continue  # Skip comment lines
+			else:
+				columns = line.strip().split('\t')
+				if columns[2] == 'CDS':
+					attributes = columns[8].split(';')
+					for attribute in attributes:
+						key, value = attribute.split('=')
+						if key == 'locus_tag':
+							locus_tag = value.split('_')[0]
+							break  # Found locus tag, stop searching
+					if locus_tag:
+						break  # Found locus tag, stop searching
+	return locus_tag
+
 # Create a zip file for genbank submission
 def create_genbank_files(organism, config_dict, metadata, fasta_file, submission_name, submission_files_dir):
 	# Create authorset file
@@ -458,7 +481,9 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 	print("Downloading Table2asn.", file=sys.stdout)
 	download_table2asn(table2asn_dir=table2asn_dir)
 	# Command to generate table2asn submission file
-	command = [table2asn_dir, "-t", os.path.join(submission_files_dir, "authorset.sbt"), "-i", os.path.join(submission_files_dir, "sequence.fsa"), "-src-file", os.path.join(submission_files_dir, "source.src"), "-o", os.path.join(submission_files_dir, submission_name + ".sqn")]
+	command = [table2asn_dir, "-t", os.path.join(submission_files_dir, "authorset.sbt"), "-i", os.path.join(submission_files_dir, "sequence.fsa"), \
+							  "-src-file", os.path.join(submission_files_dir, "source.src"), "-locus-tag-prefix", get_gff_locus_tag(gff_file), \
+							  "-o", os.path.join(submission_files_dir, submission_name + ".sqn")]
 	if os.path.isfile(os.path.join(submission_files_dir, "comment.cmt")):
 		command.append("-w")
 		command.append( os.path.join(submission_files_dir, "comment.cmt"))
