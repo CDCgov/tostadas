@@ -14,7 +14,7 @@ process SUBMISSION_SRA {
         'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev'  }"
 
     input:
-    tuple val(meta), path(validated_meta_path), val(fasta_path), path(fastq_1), path(fastq_2)
+    tuple val(meta), path(validated_meta_path), path(fastq_1), path(fastq_2)
     path submission_config
 
     // define the command line arguments based on the value of params.submission_test_or_prod

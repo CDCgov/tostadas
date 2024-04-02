@@ -23,6 +23,7 @@ workflow INITIAL_SUBMISSION {
         // submit the files to database of choice (after fixing config and getting wait time)
         if ( params.genbank && params.sra ){ // genbank and sra
             // submit the files to database of choice (after fixing config and getting wait time)
+            submission_ch.view()
             SUBMISSION_FULL ( submission_ch, submission_config )
             
             // actual process to initiate wait 
@@ -33,7 +34,14 @@ workflow INITIAL_SUBMISSION {
         }
 
         if ( !params.genbank && params.sra ){ //only sra
+            // drop fasta_path from ch
+            submission_ch = submission_ch
+                .map { 
+                    it -> [it[0], it[1], it[3], it[4]] 
+                }
+            submission_ch.view()
             SUBMISSION_SRA ( submission_ch, submission_config )
+            
             // actual process to initiate wait 
             WAIT ( SUBMISSION_SRA.out.submission_files.collect(), wait_time )
 
@@ -42,7 +50,12 @@ workflow INITIAL_SUBMISSION {
         }
 
         if ( params.genbank && !params.sra ){ //only genbank
-        // submit the files to database of choice (after fixing config and getting wait time)
+            // drop fastq paths
+            submission_ch = submission_ch
+                .map { 
+                    it -> [it[0], it[1], it[2], it[5]] 
+                }
+            submission_ch.view()
             SUBMISSION_GENBANK ( submission_ch, submission_config )
             
             // actual process to initiate wait 
