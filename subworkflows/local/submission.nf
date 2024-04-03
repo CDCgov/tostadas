@@ -23,7 +23,6 @@ workflow INITIAL_SUBMISSION {
         // submit the files to database of choice (after fixing config and getting wait time)
         if ( params.genbank && params.sra ){ // genbank and sra
             // submit the files to database of choice (after fixing config and getting wait time)
-            submission_ch.view()
             SUBMISSION_FULL ( submission_ch, submission_config )
             
             // actual process to initiate wait 
@@ -39,7 +38,6 @@ workflow INITIAL_SUBMISSION {
                 .map { 
                     it -> [it[0], it[1], it[3], it[4]] 
                 }
-            submission_ch.view()
             SUBMISSION_SRA ( submission_ch, submission_config )
             
             // actual process to initiate wait 
@@ -55,7 +53,6 @@ workflow INITIAL_SUBMISSION {
                 .map { 
                     it -> [it[0], it[1], it[2], it[5]] 
                 }
-            submission_ch.view()
             SUBMISSION_GENBANK ( submission_ch, submission_config )
             
             // actual process to initiate wait 
