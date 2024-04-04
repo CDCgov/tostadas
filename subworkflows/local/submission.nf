@@ -53,9 +53,8 @@ workflow INITIAL_SUBMISSION {
             // drop fastq paths
             submission_ch = submission_ch
                 .map { 
-                    it -> [it[0], it[1], it[2], it[5]] 
+                    meta, _, fq1, fq2 -> [meta, fq1, fq2] 
                 }
-            submission_ch.view()
             SUBMISSION_GENBANK ( submission_ch, submission_config )
             
             // actual process to initiate wait 
