@@ -11,7 +11,7 @@ process SUBMISSION_GENBANK {
 
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
     tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
