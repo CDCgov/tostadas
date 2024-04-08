@@ -27,11 +27,27 @@ workflow REPEATMASKER_LIFTOFF {
             params.ref_fasta_path, 
             params.ref_gff_path 
         )
+
+        repeatmasker_gff_ch = REPEATMASKER.out.gff.collect().flatten()
+                .map { 
+                    meta = [:] 
+                    meta['id'] = [id:it.getSimpleName()] 
+                    [ meta, it ] 
+                }
+
+        liftoff_gff_ch = LIFTOFF_CLI.out.gff.collect().flatten()
+                .map { 
+                    meta = [:] 
+                    meta['id'] = [id:it.getSimpleName()] 
+                    [ meta, it ] 
+                }
+
+        concat_gffs_ch = repeatmasker_gff_ch.join(liftoff_gff_ch) // meta.id, fasta, repeatmasker_gff, liftoff_gff
+
         // concat gffs
         CONCAT_GFFS (
            params.ref_gff_path,
-           REPEATMASKER.out.gff,
-           LIFTOFF_CLI.out.gff,
+           concat_gffs_ch,
            fasta
         )
 

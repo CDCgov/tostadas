@@ -21,13 +21,15 @@ process CONCAT_GFFS {
 
 	input:
 	path ref_gff_path
-	path repeatmasker_gff
-    path liftoff_gff
+	//path repeatmasker_gff
+    //path liftoff_gff
+    tuple val(meta), path(repeatmasker_gff), path(liftoff_gff)
 	tuple val(meta), path(fasta_path), path(fastq_1), path(fastq_2)
 
 	script:
 	"""
-	repeatmasker_liftoff.py --repeatm_gff $repeatmasker_gff --liftoff_gff $liftoff_gff --refgff $ref_gff_path --fasta $fasta_path   
+    echo "repeatmasker_liftoff.py --repeatm_gff $repeatmasker_gff --liftoff_gff $liftoff_gff --refgff $ref_gff_path --fasta $fasta_path  --sample_name $meta.id"
+	repeatmasker_liftoff.py --repeatm_gff $repeatmasker_gff --liftoff_gff $liftoff_gff --refgff $ref_gff_path --fasta $fasta_path  --sample_name $meta.id
 	"""
 
 	output:

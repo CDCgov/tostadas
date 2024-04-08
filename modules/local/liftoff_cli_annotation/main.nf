@@ -12,7 +12,7 @@ process LIFTOFF_CLI {
         'https://depot.galaxyproject.org/singularity/liftoff:1.6.3--pyhdfd78af_0' :
         'quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_0'}"
 
-    publishDir "$params.output_dir/repeatmasker_liftoff_outputs", mode: "copy", overwrite: params.overwrite_output,
+    publishDir "$params.output_dir/liftoff", mode: "copy", overwrite: params.overwrite_output,
         saveAs: { filename ->
                       filename.indexOf('.fasta') > 0 ? "fasta/${filename}":
                       filename.indexOf('.txt') > 0 ? "errors/${filename}":
@@ -26,7 +26,7 @@ process LIFTOFF_CLI {
 
 	script:
     """
-    liftoff -g $ref_gff_path -o ${fasta.baseName}_liftoff-orig.gff \
+    liftoff -g $ref_gff_path -o ${fasta.baseName}.liftoff-orig.gff \
     -u $params.lift_unmapped_features_file_name \
     -a $params.lift_coverage_threshold -s $params.lift_child_feature_align_threshold \
     -d $params.lift_distance_scaling_factor -flank $params.lift_flank -p $params.lift_parallel_processes \
