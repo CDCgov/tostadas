@@ -11,9 +11,6 @@ process VADR_POST_CLEANUP {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
-
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
-
     input:
     path vadr_outputs
     tuple val(meta), path meta_path
