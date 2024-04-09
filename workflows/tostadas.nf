@@ -86,12 +86,6 @@ workflow TOSTADAS {
     // Create initial submission channel
     submission_ch = metadata_ch.join(reads_ch)
 
-    // print error if they provide gff and annotation flag
-    // if ( !params.annotation && params.genbank ) {
-    //             // todo: make an error msg that follows the rest of the code protocol
-    //             throw new Exception("Cannot submit to GenBank without assembly and annotation files")
-    //     }
-
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         if ( params.virus && !params.bacteria ) {
