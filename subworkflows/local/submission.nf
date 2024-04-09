@@ -36,7 +36,7 @@ workflow INITIAL_SUBMISSION {
             // drop fasta_path from ch
             submission_ch = submission_ch
                 .map { 
-                    it -> [it[0], it[1], it[3], it[4]] 
+                    meta, _, fq1, fq2 -> [meta, fq1, fq2]  
                 }
             SUBMISSION_SRA ( submission_ch, submission_config )
             
@@ -51,7 +51,8 @@ workflow INITIAL_SUBMISSION {
             // drop fastq paths
             submission_ch = submission_ch
                 .map { 
-                    meta, _, fq1, fq2 -> [meta, fq1, fq2] 
+                    it -> [it[0], it[1], it[2], it[5]] // meta, fasta, gff
+                    //meta, fasta, _, _, gff -> [meta, fasta, gff]  // duplicate underscore error
                 }
             SUBMISSION_GENBANK ( submission_ch, submission_config )
             
