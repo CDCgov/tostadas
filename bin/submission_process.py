@@ -248,36 +248,8 @@ def check_raw_read_files(submission_name, submission_dir, metadata):
 	return validated_files
 
 # Check sample names in metadata file are listed in fasta file
-def process_fasta_samples(metadata, fasta_file):
-	fasta_dict = []
-	# Convert fasta into df
-	with open(fasta_file, "r") as fsa:
-		records = SeqIO.parse(fsa, "fasta")
-		for record in records:
-			fasta_dict.append({"fasta_name_orig":record.id, "fasta_sequence_orig":record.seq, "fasta_description_orig":record.description})
-	fasta_df = pd.DataFrame(fasta_dict)
-	# Remove rows if they contain all Nan
-	fasta_df = fasta_df.dropna(how='all')
-	# Check duplicates in fasta_df
-	duplicated_df = fasta_df[fasta_df.duplicated(subset = ["fasta_name_orig"], keep = False)]
-	if not duplicated_df.empty:
-		print("Error: Sequences in fasta file must be unique at: " + fasta_file + "\nDuplicate Sequences\n" + fasta_df["fasta_sequence_orig"].to_string(index=False), file=sys.stderr)
-		sys.exit(1)
-	# Validate duplicates don't appear on merge
-	try:
-		merged_df = metadata.merge(fasta_df, how = "outer", left_on = "sequence_name", right_on = "fasta_name_orig", validate = "1:1")
-	except:
-		print("Error: Unable to merge fasta file to metadata file. Please validate there are not duplicate sequences in both files.", file=sys.stderr)
-		sys.exit(1)
-	# Check if fasta file has sequences not in metadata
-	if merged_df["sequence_name"].isnull().any():
-		print("Error: Sequences in fasta file do not have an associated sequence in metadata file. Please update sequences below:\n" + merged_df[merged_df["sequence_name"].isnull()]["fasta_name_orig"].to_string(), file=sys.stderr)
-		sys.exit(1)
-	# Check if metadata has sequences not in fasta file
-	if merged_df["fasta_name_orig"].isnull().any():
-		print("Error: Sequences in metadata file do not have an associated sequence in fasta file. Please update sequences below:\n" + merged_df[merged_df["fasta_name_orig"].isnull()]["sequence_name"].to_string(), file=sys.stderr)
-		sys.exit(1)
-	return merged_df
+# Removed process_fasta_samples(metadata, fasta_file), originally referenced in submission_create.create_fasta
+# Only purpose of this function was to check that fasta matched metadata, and this is done in nextflow now
 
 # Update submission log
 def update_submission_status(submission_dir, submission_name, organism, test, send_email=False):
