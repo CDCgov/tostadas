@@ -153,6 +153,9 @@ workflow TOSTADAS {
         GET_WAIT_TIME (
             METADATA_VALIDATION.out.tsv_Files.collect() 
         )
+
+        submission_ch.view()
+
         INITIAL_SUBMISSION (
             submission_ch,  // meta.id, fasta, fastq1, fastq2, gff
             params.submission_config,  
