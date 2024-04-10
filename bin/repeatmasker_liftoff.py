@@ -61,6 +61,8 @@ def annotation_main():
     
     #gather ref sample id
     ref_id=ref_gff['seq_id'][0]
+    print(f'refgff is {args.refgff}')
+    print(ref_gff.head())
     #gather index of attributes for first and second ITRs; needed for repeatmasker ITR attributes
     first_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR")].index[0]
     last_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR")].index[-1]

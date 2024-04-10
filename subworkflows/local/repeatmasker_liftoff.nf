@@ -13,7 +13,7 @@ include { CONCAT_GFFS                                       } from "../../module
 workflow REPEATMASKER_LIFTOFF {
 
     take:
-        fasta
+        fasta // meta, fasta_path, fastq1, fastq2
 
     main:
         // run repeatmasker annotation on files
@@ -31,24 +31,23 @@ workflow REPEATMASKER_LIFTOFF {
         repeatmasker_gff_ch = REPEATMASKER.out.gff.collect().flatten()
                 .map { 
                     meta = [:] 
-                    meta['id'] = [id:it.getSimpleName()] 
+                    meta['id'] = it.getSimpleName()
                     [ meta, it ] 
                 }
 
         liftoff_gff_ch = LIFTOFF_CLI.out.gff.collect().flatten()
                 .map { 
                     meta = [:] 
-                    meta['id'] = [id:it.getSimpleName()] 
+                    meta['id'] = it.getSimpleName()
                     [ meta, it ] 
                 }
 
-        concat_gffs_ch = repeatmasker_gff_ch.join(liftoff_gff_ch) // meta.id, fasta, repeatmasker_gff, liftoff_gff
+        concat_gffs_ch = fasta.join(repeatmasker_gff_ch).join(liftoff_gff_ch) // meta.id, fasta, fastq1, fastq2, repeatmasker_gff, liftoff_gff
 
-        // concat gffs
+        // concat gffs 
         CONCAT_GFFS (
            params.ref_gff_path,
-           concat_gffs_ch,
-           fasta
+           concat_gffs_ch
         )
 
     emit:
