@@ -360,7 +360,7 @@ class ValidateChecks:
 						  'meta_core_grade': self.meta_core_grade},
 				errors = {'sample_error_msg': self.sample_error_msg, 'sra_msg': self.sra_msg,
 						  'illumina_error_msg': self.illumina_error_msg, 'nanopore_error_msg': self.nanopore_error_msg,
-					      'list_of_sample_errors': self.list_of_sample_errors,},
+						  'list_of_sample_errors': self.list_of_sample_errors,},
 				valid_sample_num = self.valid_sample_num,
 				sample_info = sample_info,
 				sample_flag = True,
@@ -688,6 +688,7 @@ class Check_Illumina_Nanopore_SRA:
 				self.meta_illumina_grade = False
 
 		# check if the SRA file exists for the first file path
+		path_failed = False
 		if instrument_type == 'illumina':
 			if self.sample_info["illumina_library_layout"].tolist()[0] == 'paired':
 				paths = [file_path1, file_path2]
@@ -1008,8 +1009,8 @@ class CustomFieldsFuncs:
 		# save contents to dictionary
 		for field_name, field_data in data.items():
 			self.custom_fields_dict[field_name] = {
-        		'type': field_data['type'],
-        		'samples': field_data['samples'],
+				'type': field_data['type'],
+				'samples': field_data['samples'],
 				'replace_empty_with': field_data['replace_empty_with'], 
 				'new_field_name': field_data['new_field_name']
 			}
