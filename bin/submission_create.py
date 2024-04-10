@@ -471,6 +471,17 @@ def create_genbank_zip(submission_name, submission_files_dir):
 	while not os.path.isfile(os.path.join(submission_files_dir, submission_name + ".zip")):
 		time.sleep(10)
 
+# Detect multiple contig fasta
+def is_multicontig_fasta(fasta):
+	headers = set()
+	with open(fasta, 'r') as file:
+		for line in file:
+			if line.startswith('>'):
+				headers.add(line.strip())
+				if len(headers) > 1:
+					return True
+	return False
+
 # Run Table2asn to generate sqn file for submission
 def create_genbank_table2asn(submission_dir, submission_name, submission_files_dir, gff_file=None):
 	submission_status = "processed-ok"
@@ -481,9 +492,14 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 	print("Downloading Table2asn.", file=sys.stdout)
 	download_table2asn(table2asn_dir=table2asn_dir)
 	# Command to generate table2asn submission file
-	command = [table2asn_dir, "-t", os.path.join(submission_files_dir, "authorset.sbt"), "-i", os.path.join(submission_files_dir, "sequence.fsa"), \
-							  "-src-file", os.path.join(submission_files_dir, "source.src"), "-locus-tag-prefix", get_gff_locus_tag(gff_file), \
-							  "-o", os.path.join(submission_files_dir, submission_name + ".sqn")]
+	fasta = os.path.join(submission_files_dir, "sequence.fsa")
+	command = [table2asn_dir, "-t", os.path.join(submission_files_dir, "authorset.sbt"), "-i", fasta, \
+			"-src-file", os.path.join(submission_files_dir, "source.src"), "-locus-tag-prefix", get_gff_locus_tag(gff_file), \
+			"-o", os.path.join(submission_files_dir, submission_name + ".sqn")]
+	if is_multicontig_fasta(fasta):
+		command.append("-M")
+		command.append("n")
+		command.append("-Z")
 	if os.path.isfile(os.path.join(submission_files_dir, "comment.cmt")):
 		command.append("-w")
 		command.append( os.path.join(submission_files_dir, "comment.cmt"))
@@ -491,6 +507,7 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 		command.append("-f")
 		command.append(os.path.join(submission_dir, gff_file))
 	print("Running Table2asn.", file=sys.stdout)
+	print(command)
 	proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = os.path.join(os.path.dirname(os.path.abspath(__file__))))
 	if proc.returncode != 0:
 		print("Table2asn-Error", file=sys.stderr)

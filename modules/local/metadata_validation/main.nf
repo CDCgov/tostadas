@@ -14,8 +14,6 @@ process METADATA_VALIDATION {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
-    publishDir "$params.output_dir", mode: 'copy', overwrite: params.overwrite_output
-
     input:
     path meta_path
 

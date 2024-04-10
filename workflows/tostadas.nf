@@ -86,12 +86,6 @@ workflow TOSTADAS {
     // Create initial submission channel
     submission_ch = metadata_ch.join(reads_ch)
 
-    // print error if they provide gff and annotation flag
-    // if ( !params.annotation && params.genbank ) {
-    //             // todo: make an error msg that follows the rest of the code protocol
-    //             throw new Exception("Cannot submit to GenBank without assembly and annotation files")
-    //     }
-
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         if ( params.virus && !params.bacteria ) {
@@ -110,7 +104,7 @@ workflow TOSTADAS {
                 }
 
             // set up submission channels
-            submission_ch = submission_ch.join(repeatmasker_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
+            submission_ch = submission_ch.join(repeatmasker_gff_ch) // meta.id, tsv, fasta, fastq1, fastq2, gff
             }
     
             // run vadr processes
@@ -126,7 +120,7 @@ workflow TOSTADAS {
                         meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
                         [ meta, it ] 
                     }
-                submission_ch = submission_ch.join(vadr_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
+                submission_ch = submission_ch.join(vadr_gff_ch) // meta.id, tsv, fasta, fastq1, fastq2, gff
             }
         }
         if ( params.bacteria ) {
@@ -140,9 +134,20 @@ workflow TOSTADAS {
                     .flatten()
                     .map { 
                         meta = [id:it.getSimpleName()] 
+                        //meta = it.getSimpleName()
                         [ meta, it ]
                     }
-                submission_ch = submission_ch.join(bakta_gff_ch) // meta.id, fasta, fastq1, fastq2, gff
+                bakta_fasta_ch = RUN_BAKTA.out.fna
+                    .flatten()
+                    .map { 
+                        meta = [id:it.getSimpleName()] 
+                        //meta = it.getSimpleName()
+                        [ meta, it ]
+                    }
+                submission_ch = submission_ch.join(bakta_gff_ch) // meta.id, tsv, fasta, fastq1, fastq2, gff
+                submission_ch = submission_ch.map { meta, tsv, _, fq1, fq2, gff -> [meta, tsv, fq1, fq2, gff] } // drop original fasta
+                submission_ch = submission_ch.join(bakta_fasta_ch) // join annotated fasta
+                submission_ch = submission_ch.map { meta, tsv, fq1, fq2, gff, fasta -> [meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
             }   
         }
     }
