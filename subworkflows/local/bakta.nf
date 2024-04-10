@@ -32,6 +32,7 @@ workflow RUN_BAKTA {
         
         emit:
         gff3 = BAKTA.out.gff3
+        fna = BAKTA.out.fna
     }
 
 
