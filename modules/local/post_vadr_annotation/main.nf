@@ -13,7 +13,7 @@ process VADR_POST_CLEANUP {
 
     input:
     path vadr_outputs
-    tuple val(meta), path meta_path
+    tuple val(meta), path (meta_path)
 	tuple val(meta), path(fasta_path)
     
     script:

@@ -17,12 +17,24 @@ process VADR {
 
     script:
     """
-    VADRMODELDIR=$vadr_models_dir && \
-    v-annotate.pl --split --cpu 8 --glsearch --minimap2 -s -r --nomisc \
-    --r_lowsimok --r_lowsimxd 100 --r_lowsimxl 2000 --alt_pass \
-    discontn,dupregin --s_overhang 150 -i $vadr_models_dir/mpxv.rpt.minfo -n \
-    $vadr_models_dir/mpxv.fa -x $vadr_models_dir $fasta_path \
-    original_outputs -f
+    // VADRMODELDIR=$vadr_models_dir && \
+    v-annotate.pl
+        --split \
+        --cpu $task.cpus \
+        --glsearch \
+        --minimap2 \
+        -s \
+        -r \
+        --nomisc \
+        --r_lowsimok \
+        --r_lowsimxd 100 \
+        --r_lowsimxl 2000 \
+        --alt_pass \
+        --s_overhang 150 -i $vadr_models_dir/mpxv.rpt.minfo \
+        -n $vadr_models_dir/mpxv.fa \
+        -x $vadr_models_dir \
+        $fasta_path \
+        original_outputs -f
     """
 
     output:

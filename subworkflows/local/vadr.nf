@@ -12,19 +12,19 @@ include { VADR_POST_CLEANUP                                 } from "../../module
 
 workflow RUN_VADR {
     take:
-        fasta_files
+        fasta
 
     main:
         // run vadr processes
         VADR (
-            fasta_files,
+            fasta,
             params.vadr_models_dir
         )
 
         VADR_POST_CLEANUP (
             VADR.out.vadr_outputs,
             params.meta_path,
-            fasta_files
+            fasta
         )
     
     emit:

@@ -40,7 +40,6 @@ include { WAIT                                          } from '../modules/local
                                     MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-// To Do, create logic to run workflows for virus vs. bacteria
 workflow TOSTADAS {
     
     // check if help parameter is set
@@ -82,14 +81,12 @@ workflow TOSTADAS {
                 [meta, fasta_path, fastq1, fastq2, gff]
             }
         }
-
     // Create initial submission channel
     submission_ch = metadata_ch.join(reads_ch)
 
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
-        if ( params.virus && !params.bacteria ) {
-
+        if (params.species == 'mpox' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
             // run liftoff annotation process + repeatmasker 
             if ( params.repeatmasker_liftoff ) {
              // run repeatmasker annotation on files
@@ -106,7 +103,6 @@ workflow TOSTADAS {
             // set up submission channels
             submission_ch = submission_ch.join(repeatmasker_gff_ch) // meta.id, tsv, fasta, fastq1, fastq2, gff
             }
-    
             // run vadr processes
             if ( params.vadr ) {
                 RUN_VADR (
@@ -123,7 +119,7 @@ workflow TOSTADAS {
                 submission_ch = submission_ch.join(vadr_gff_ch) // meta.id, tsv, fasta, fastq1, fastq2, gff
             }
         }
-        if ( params.bacteria ) {
+        else if (params.species == 'bacteria' || params.species == 'Cdiphtheriae') {
         // run bakta annotation process
             if ( params.bakta == true ) {
                 RUN_BAKTA(
