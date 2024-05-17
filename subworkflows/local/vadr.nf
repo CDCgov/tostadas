@@ -5,25 +5,30 @@
                             VADR SUBWORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-include { VADR                                              } from "../../modules/local/vadr_annotation/main"
+include { VADR_TRIM                                         } from "../../modules/local/vadr_trim/main"
+include { VADR_ANNOTATION                                   } from "../../modules/local/vadr_annotation/main"
 include { VADR_POST_CLEANUP                                 } from "../../modules/local/post_vadr_annotation/main"
 
 
 workflow RUN_VADR {
     take:
         fasta
-
+        metadata_ch
     main:
         // run vadr processes
-        VADR (
-            fasta,
+
+        VADR_TRIM (
+            fasta
+        )
+
+        VADR_ANNOTATION (
+            VADR_TRIM.out.trimmed_fasta,
             params.vadr_models_dir
         )
 
         VADR_POST_CLEANUP (
-            VADR.out.vadr_outputs,
-            params.meta_path,
+            VADR_ANNOTATION.out.vadr_outputs,
+            metadata_ch,
             fasta
         )
     

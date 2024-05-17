@@ -55,7 +55,6 @@ workflow TOSTADAS {
     METADATA_VALIDATION ( 
         params.meta_path
     )
-    // todo: the names of these tsv_Files need to be from sample name not fasta file name 
     metadata_ch = METADATA_VALIDATION.out.tsv_Files
         .flatten()
         .map { 
@@ -106,7 +105,8 @@ workflow TOSTADAS {
             // run vadr processes
             if ( params.vadr ) {
                 RUN_VADR (
-                    reads_ch
+                    reads_ch,
+                    metadata_ch
                 )
                 vadr_gff_ch = RUN_VADR.out.gff
                     .collect()
@@ -184,7 +184,6 @@ workflow TOSTADAS {
                 UPDATE_SUBMISSION.out.submission_log.collect(), 
             )
         }
-
         // todo add GISAID only submission
     }
 

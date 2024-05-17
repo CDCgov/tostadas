@@ -1,29 +1,28 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                POST VADR CLEANUP
+                                RUN VADR TRIMMING
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process VADR_POST_CLEANUP {
-    
+process VADR_TRIM {
+
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+        'staphb/vadr:latest' : 'staphb/vadr:latest' }"
 
     input:
-    path vadr_outputs
-    tuple val(meta), path (meta_path)
 	tuple val(meta), path(fasta_path)
-    
+
     output:
-    path('*.gff') , emit: gff
-    path('*.txt'), emit: errors
-    path('*.tbl'), emit: tbl
+    tuple val(meta), path('*.trimmed.fasta') , emit: trimmed_fasta
 
     script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+
     """
-    post_vadr_cleanup.py \
-        --meta_path $meta_path \
-        --vadr_outdir $vadr_outputs \
-        --vadr_outputs $vadr_outputs
+    fasta-trim-terminal-ambigs.pl \
+        --minlen 50 \
+        --maxlen 210000 \
+        $fasta_path > \
+        ${prefix}.trimmed.fasta
     """
 }
