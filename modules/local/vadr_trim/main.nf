@@ -10,7 +10,7 @@ process VADR_TRIM {
         'staphb/vadr:latest' : 'staphb/vadr:latest' }"
 
     input:
-	tuple val(meta), path(fasta_path)
+	tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
 
     output:
     tuple val(meta), path('*.trimmed.fasta') , emit: trimmed_fasta

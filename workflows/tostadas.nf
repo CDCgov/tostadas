@@ -85,9 +85,9 @@ workflow TOSTADAS {
 
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
-        if (params.species == 'mpox' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
+        if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
             // run liftoff annotation process + repeatmasker 
-            if ( params.repeatmasker_liftoff ) {
+            if ( params.repeatmasker_liftoff && !params.vadr ) {
              // run repeatmasker annotation on files
                 REPEATMASKER_LIFTOFF (
                     reads_ch

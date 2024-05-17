@@ -12,18 +12,18 @@ process VADR_POST_CLEANUP {
     input:
     path vadr_outputs
     tuple val(meta), path (meta_path)
-	tuple val(meta), path(fasta_path)
+	tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
     
     output:
-    path('*.gff') , emit: gff
-    path('*.txt'), emit: errors
-    path('*.tbl'), emit: tbl
+    path('*/transformed_outputs/gffs/*.gff') , emit: gff
+    path('*/transformed_outputs/errors/*.txt'), emit: errors
+    path('*/transformed_outputs/tbl/*.tbl'), emit: tbl
 
     script:
     """
     post_vadr_cleanup.py \
         --meta_path $meta_path \
-        --vadr_outdir $vadr_outputs \
+        --vadr_outdir '.' \
         --vadr_outputs $vadr_outputs
     """
 }

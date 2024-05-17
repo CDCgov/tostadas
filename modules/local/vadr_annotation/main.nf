@@ -14,7 +14,7 @@ process VADR_ANNOTATION {
     path vadr_models_dir
 
     output:
-    path "vadr_outputs", emit: vadr_outputs
+    path "${meta.id}_${params.species}", emit: vadr_outputs
 
     script:
     """
@@ -34,6 +34,6 @@ process VADR_ANNOTATION {
         --s_overhang 150 \
         --mdir $vadr_models_dir \
         $fasta_path \
-        vadr_outputs_${params.species}
+        ${meta.id}_${params.species}
     """
 }
