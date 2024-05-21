@@ -10,9 +10,7 @@ process VADR_POST_CLEANUP {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
-    tuple val(meta), path(vadr_outputs)
-    tuple val(meta), path(meta_path)
-	tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
+    tuple val(meta), path(meta_path), path(fasta_path), path(fastq1), path(fastq2), path(vadr_outputs)
     
     output:
     tuple val(meta), path('*/transformed_outputs/gffs/*.gff'), emit: gff

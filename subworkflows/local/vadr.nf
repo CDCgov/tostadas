@@ -25,11 +25,11 @@ workflow RUN_VADR {
             VADR_TRIM.out.trimmed_fasta,
             params.vadr_models_dir
         )
+        cleanup_ch = metadata_ch.join(fasta)
+        cleanup_ch = cleanup_ch.join(VADR_ANNOTATION.out.vadr_outputs)
 
         VADR_POST_CLEANUP (
-            VADR_ANNOTATION.out.vadr_outputs,
-            metadata_ch,
-            fasta
+            cleanup_ch
         )
     
     emit:
