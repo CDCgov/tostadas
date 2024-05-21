@@ -14,7 +14,7 @@ process SUBMISSION_SRA {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest'  }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta), path(fastq_1), path(fastq_2), path(gff)
+    tuple val(meta), path(validated_meta_path), path(fasta), path(fastq_1), path(fastq_2)
     path submission_config
 
     // define the command line arguments based on the value of params.submission_test_or_prod

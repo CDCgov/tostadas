@@ -14,7 +14,7 @@ process VADR_ANNOTATION {
     path vadr_models_dir
 
     output:
-    path "${meta.id}_${params.species}", emit: vadr_outputs
+    tuple val(meta), path("${meta.id}_${params.species}"), emit: vadr_outputs
 
     script:
     """

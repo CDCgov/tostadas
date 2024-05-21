@@ -7,7 +7,7 @@
 */
 include { VADR_TRIM                                         } from "../../modules/local/vadr_trim/main"
 include { VADR_ANNOTATION                                   } from "../../modules/local/vadr_annotation/main"
-include { VADR_POST_CLEANUP                                 } from "../../modules/local/post_vadr_annotation/main"
+include { VADR_POST_CLEANUP                                 } from "../../modules/local/vadr_post_cleanup/main"
 
 
 workflow RUN_VADR {

@@ -5,11 +5,6 @@
 */
 process BAKTA {
 
-    //label 'bakta'
-
-    // errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    //maxRetries 5
-    
     conda (params.enable_conda ? "bioconda::bakta==1.9.1" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bakta:1.9.1--pyhdfd78af_0' :
@@ -18,7 +13,19 @@ process BAKTA {
     input:
     path db_path
     tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
-    
+
+    output:
+    tuple val(meta), path("${meta.id}/*.fna"), emit: fna
+    tuple val(meta), path("${meta.id}/*.gff3"), emit: gff
+    tuple val(meta), path("${meta.id}/*.faa"), emit: faa
+    tuple val(meta), path("${meta.id}/*.embl"), emit: embl
+    tuple val(meta), path("${meta.id}/*.ffn"), emit: ffn
+    tuple val(meta), path("${meta.id}/*.gbff"), emit: gbff
+    tuple val(meta), path("${meta.id}/*.json"), emit: json
+    tuple val(meta), path("${meta.id}/*.log"), emit: log
+    tuple val(meta), path("${meta.id}/*.tsv"), emit: tsv
+    tuple val(meta), path("${meta.id}/*.txt"), emit: txt
+        
     script:
     def args = task.ext.args  ?: ''
     def prefix   = task.ext.prefix ?: "${meta.id}"
@@ -56,16 +63,4 @@ process BAKTA {
         $skip_ncrna $skip_ncrna_region $skip_crispr $skip_cds $skip_sorf $skip_gap $skip_ori $skip_plot \
         $fasta_path 
     """
-    
-    output:
-    path "${meta.id}/*.fna",   emit: fna
-    path "${meta.id}/*.gff3",   emit: gff3
-    path "${meta.id}/*.faa",   emit: faa
-    path "${meta.id}/*.embl",   emit: embl
-    path "${meta.id}/*.ffn",   emit: ffn
-    path "${meta.id}/*.gbff",   emit: gbff
-    path "${meta.id}/*.json",   emit: json
-    path "${meta.id}/*.log",   emit: log
-    path "${meta.id}/*.tsv",   emit: tsv
-    path "${meta.id}/*.txt",   emit: txt
 }

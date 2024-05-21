@@ -6,9 +6,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { BAKTA                                             } from "../../modules/nf-core/bakta/bakta/main"
 include { BAKTADBDOWNLOAD                                   } from "../../modules/nf-core/bakta/baktadbdownload/main"
-// get BAKTA related processes
+include { BAKTA                                             } from "../../modules/nf-core/bakta/bakta/main"
 
 workflow RUN_BAKTA {
     take: 
@@ -31,7 +30,7 @@ workflow RUN_BAKTA {
         }
         
         emit:
-        gff3 = BAKTA.out.gff3
+        gff = BAKTA.out.gff
         fna = BAKTA.out.fna
     }
 

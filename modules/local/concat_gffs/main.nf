@@ -35,9 +35,8 @@ process CONCAT_GFFS {
 
 	output:
     
-    path "*.gff", emit: gff
-    path "*.txt", emit: errors
-    path "*.tbl", emit: tbl
-
+    tuple val(meta), path('*.gff'), emit: gff
+    tuple val(meta), path('*.txt'), emit: errors
+    tuple val(meta), path('*.tbl'), emit: tbl
 }
 
