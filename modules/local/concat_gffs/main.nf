@@ -25,7 +25,12 @@ process CONCAT_GFFS {
 
 	script:
 	"""
-	repeatmasker_liftoff.py --repeatm_gff $repeatmasker_gff --liftoff_gff $liftoff_gff --refgff $ref_gff_path --fasta $fasta_path  --sample_name $meta.id
+	repeatmasker_liftoff.py \
+        --repeatm_gff $repeatmasker_gff \
+        --liftoff_gff $liftoff_gff \
+        --refgff $ref_gff_path \
+        --fasta $fasta_path  \
+        --sample_name $meta.id
 	"""
 
 	output:

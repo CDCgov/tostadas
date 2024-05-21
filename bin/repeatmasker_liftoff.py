@@ -62,14 +62,16 @@ def annotation_main():
     #gather ref sample id
     ref_id=ref_gff['seq_id'][0]
     print(f'refgff is {args.refgff}')
-    print(ref_gff.head())
+    #print(ref_gff.head())
     #gather index of attributes for first and second ITRs; needed for repeatmasker ITR attributes
-    first_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR")].index[0]
-    last_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR")].index[-1]
+    #print(ref_gff[ref_gff['attributes'][0]])
+    first_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR",na=False)].index[0]
+    last_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR",na=False)].index[-1]
+    print(first_ITR_index,last_ITR_index)
     #gather the acutal attributes from the index
     first_ITR_refattr=ref_gff.loc[first_ITR_index,'attributes']
     last_ITR_refattr=ref_gff.loc[last_ITR_index,'attributes']
-
+    print(first_ITR_refattr, last_ITR_refattr)
     #####RUN MAIN PROCESS#####
 
     repMannotation_prep = RepeatMasker_Annotations(args.repeatm_gff, headerList, first_ITR_refattr, last_ITR_refattr, args.outdir)
