@@ -11,7 +11,7 @@ process UPDATE_SUBMISSION {
 
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'cdcgov/seqsender-dev' : 'cdcgov/seqsender-dev' }"
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
     val wait_time
