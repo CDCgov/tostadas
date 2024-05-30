@@ -33,7 +33,7 @@ process SUBMISSION_FULL {
         --config $submission_config  \
         --metadata_file $validated_meta_path \
         --fasta_file $fasta_path \
-        --gff_file $annotations_path \
+        --annotation_file $annotations_path \
         --table2asn $test_flag $send_email_flag
 
     rm table2asn
