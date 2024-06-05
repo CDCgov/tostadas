@@ -33,6 +33,6 @@ workflow RUN_VADR {
         )
     
     emit:
-        gff = VADR_POST_CLEANUP.out.tbl
+        tbl = VADR_POST_CLEANUP.out.tbl
 }
 
