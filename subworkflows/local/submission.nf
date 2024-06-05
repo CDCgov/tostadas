@@ -35,9 +35,9 @@ workflow INITIAL_SUBMISSION {
         if ( !params.genbank && params.sra ){ //only sra
             // drop fasta_path from ch
             submission_ch = submission_ch
-                .map { 
-                    meta, _, fq1, fq2 -> [meta, fq1, fq2]  
-                }
+                // .map { 
+                //     meta, tsv, fasta, fq1, fq2, gff -> [meta, tsv, fq1, fq2]  
+                // }
             SUBMISSION_SRA ( submission_ch, submission_config )
             
             // actual process to initiate wait 

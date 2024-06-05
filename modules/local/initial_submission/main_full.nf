@@ -7,8 +7,6 @@ process SUBMISSION_FULL {
 
     publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
-    // label'main'
-
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
@@ -35,7 +33,7 @@ process SUBMISSION_FULL {
         --config $submission_config  \
         --metadata_file $validated_meta_path \
         --fasta_file $fasta_path \
-        --gff_file $annotations_path \
+        --annotation_file $annotations_path \
         --table2asn $test_flag $send_email_flag
 
     rm table2asn

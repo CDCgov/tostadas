@@ -292,7 +292,7 @@ def update_submission_status(submission_dir, submission_name, organism, test, se
 		submission_id, submission_status = df_processing["Submission_Status"][0].strip().split(";")
 		config_file = df_processing["Config_File"][0]
 		table2asn = df_processing["Table2asn"][0]
-		gff_file = df_processing["GFF_File"][0]
+		annotation_file = df_processing["Annotation_File"][0]
 		# Check if submission files exist in parent directory
 		submission_files_dir = os.path.join(submission_dir, submission_name, "submission_files", database_name)
 		if os.path.exists(submission_files_dir) == False:
@@ -352,9 +352,9 @@ def update_submission_status(submission_dir, submission_name, organism, test, se
 							# Submit via Table2asn
 							if all(all_status):
 								if table2asn == True:
-									if os.path.isfile(str(gff_file)) == False:
-										gff_file = None
-									submission_id, submission_status = submission_create.create_genbank_table2asn(submission_name=submission_name, submission_files_dir=submission_files_dir, gff_file=gff_file)
+									if os.path.isfile(str(annotation_file)) == False:
+										annotation_file = None
+									submission_id, submission_status = submission_create.create_genbank_table2asn(submission_name=submission_name, submission_files_dir=submission_files_dir, annotation_file=annotation_file)
 									if submission_status == "processed-ok":
 										if send_email == True:
 											submission_status = submission_submit.sendmail(database=database_name, submission_name=submission_name, submission_dir=submission_dir, config_dict=config_dict['NCBI'], test=test)
@@ -382,7 +382,7 @@ def update_submission_status(submission_dir, submission_name, organism, test, se
 						submission_status = submission_submit.submit_gisaid(organism=organism, database=database_name, submission_dir=submission_dir, submission_name=submission_name, config_dict=config_dict["GISAID"], gisaid_cli=gisaid_cli, submission_status_file=submission_status_file, submission_type=submission_type)
 						submission_id = ""	  
 			# Update status in the submission log
-			submission_create.create_submission_log(database=database_name, submission_position=submission_position, organism=organism, submission_name=submission_name, submission_dir=submission_dir, config_file=config_file, submission_status=submission_status, submission_id=submission_id, table2asn=table2asn, gff_file=gff_file, submission_type=submission_type)
+			submission_create.create_submission_log(database=database_name, submission_position=submission_position, organism=organism, submission_name=submission_name, submission_dir=submission_dir, config_file=config_file, submission_status=submission_status, submission_id=submission_id, table2asn=table2asn, annotation_file=annotation_file, submission_type=submission_type)
 			# Print out the submission status
 			print("Submission status: " + submission_status, file=sys.stdout)
 

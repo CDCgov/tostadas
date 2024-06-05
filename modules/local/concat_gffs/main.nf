@@ -25,14 +25,18 @@ process CONCAT_GFFS {
 
 	script:
 	"""
-	repeatmasker_liftoff.py --repeatm_gff $repeatmasker_gff --liftoff_gff $liftoff_gff --refgff $ref_gff_path --fasta $fasta_path  --sample_name $meta.id
+	repeatmasker_liftoff.py \
+        --repeatm_gff $repeatmasker_gff \
+        --liftoff_gff $liftoff_gff \
+        --refgff $ref_gff_path \
+        --fasta $fasta_path  \
+        --sample_name $meta.id
 	"""
 
 	output:
     
-    path "*.gff", emit: gff
-    path "*.txt", emit: errors
-    path "*.tbl", emit: tbl
-
+    tuple val(meta), path('*.gff'), emit: gff
+    tuple val(meta), path('*.txt'), emit: errors
+    tuple val(meta), path('*.tbl'), emit: tbl
 }
 

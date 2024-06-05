@@ -14,47 +14,44 @@ process VALIDATE_PARAMS {
              throw new Exception("Either docker, conda, or singularity must be selected as profile [docker, conda, singularity]. None passed in.")
         }
 
-        // check that at least one of <bacteria,virus> is selected 
-        assert params.bacteria == true || params.virus == true
-  
-        // check paths
-        if ( params.liftoff == true ) {
-            assert params.fasta_path
-            assert params.ref_fasta_path
-            assert params.ref_gff_path
-            assert params.meta_path
-        } 
-        if ( params.bakta == true ) {
-            assert params.fasta_path
-            assert params.meta_path
-            if ( params.download_bakta_db == false ) {
-                assert params.bakta_db_path
+        // check that that metadata file is provided
+        assert params.meta_path
+
+        // check annotation paths
+        if ( params.annotation ) {
+            if ( params.repeatmasker_liftoff ) {
+                assert params.ref_fasta_path
+                assert params.ref_fasta_path
+                assert params.ref_gff_path
+                assert params.repeat_library
             }
+            if ( params.vadr ) {
+                assert params.vadr_models_dir
+            }
+            if ( params.bakta ) {
+                if ( !params.download_bakta_db ) {
+                    assert params.bakta_db_path
+                    }
+                }
         }
         
-        // check script params
-        assert params.env_yml
-
-        // check batch name 
-        // assert params.batch_name 
-
         // check output directories
-        assert params.output_dir
-        assert params.val_output_dir
-        assert params.submission_output_dir
+        // assert params.output_dir
+        // assert params.val_output_dir
+        // assert params.submission_output_dir
         
-        if ( params.liftoff == true ) {
-            assert params.final_liftoff_output_dir
-        }
-        if ( params.vadr == true ) {
-            assert params.vadr_output_dir
-        }
-        if ( params.bakta == true ) {
-            assert params.bakta_output_dir
-        }
+        // if ( params.liftoff == true ) {
+        //     assert params.final_liftoff_output_dir
+        // }
+        // if ( params.vadr == true ) {
+        //     assert params.vadr_output_dir
+        // }
+        // if ( params.bakta == true ) {
+        //     assert params.bakta_output_dir
+        // }
 
         // check liftoff params with int or float values
-        if ( params.liftoff == true ) {
+        if ( params.repeatmasker_liftoff == true ) {
             // Check whether populated or not 
             assert params.lift_parallel_processes == 0 || params.lift_parallel_processes
             assert params.lift_mismatch
@@ -108,7 +105,6 @@ process VALIDATE_PARAMS {
 
         // check bakta specific params 
         if ( params.bakta == true ) {
-            assert params.fasta_path
             assert params.meta_path
             assert params.bakta_min_contig_length
             assert params.bakta_translation_table
@@ -118,11 +114,6 @@ process VALIDATE_PARAMS {
             assert params.bakta_plasmid
             assert params.bakta_locus
             assert params.bakta_locus_tag
-            if ( params.annotation ) {
-                if ( params.bakta_db_path instanceof String == false ) {
-                    throw new Exception("Value must be of string type: $value used for $key parameter")
-                }
-            }
         }
 
         // check list of params with bool values
@@ -137,11 +128,9 @@ process VALIDATE_PARAMS {
 
         // check types for inputs
         expected_strings = [
-            "fasta_path": params.fasta_path,
             "ref_fasta_path": params.ref_fasta_path,
             "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-            "env_yml": params.env_yml,
             "output_dir": params.output_dir,    
         ]
         expected_strings.each { key, value ->

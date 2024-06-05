@@ -1,0 +1,142 @@
+Release notes for vadr respiratory syncytial virus (RSV) models:
+
+Download site:
+https://ftp.ncbi.nlm.nih.gov/pub/nawrocki/vadr-models/rsv
+
+Bitbucket repo:
+https://bitbucket.org/nawrockie/vadr-models-rsv
+
+====================================================
+
+1.5-2: [Jan 2023] Bug fix release. Only change is a fixed typo in
+       recommended command-line options in 00README.txt.
+
+--
+
+1.5-1: [Jan 2023] Following changes were made relative to 1.3-1dev4
+          - -r added as a recommended option
+          - name change of files from 'rsv2' to 'rsv' prefix.
+          - additional proteins added for both KY654518.protein.fa and
+            MZ516105.protein.fa as follows:
+
+            KY654518 (RSV A):
+            (Final sequence is M2-1. All others are attachment glycoprotein)
+            o OM857255.1:4629..5591:+/4681..5643:+
+            o KU316164.1:4611..5504:+/4681..5646:+
+            o AF065254.1:16..909:+/4681..5646:+
+            o OK649616.1:4670..5563:+/4681..5646:+
+            o hybrid:KY654518.1:4681..4695:+:AF065410.1:1..879:+/4681..5646:+
+            o KF826850.1:4675..5568:+/4681..5646:+
+            o KU316092.1:4620..5516:+/4681..5646:+
+            o MZ515659.1:4681..5649:+/4681..5649:+
+            o HQ699266.1:1..897:+/4681..5649:+
+            o KJ641590.1:4630..5526:+/4681..5649:+
+            o OK649616.1:4670..5566:+/4681..5649:+
+            o M17212.1:16..912:+/4681..5649:+
+            o OM857351.1/7614..8180:+/7669..8235:+
+            
+            Name format example:
+            OM857351.1/7614..8180:+/7669..8235:+
+            Protein translation of positions 7614..8180, positive
+            strand, from OM857351.1, which corresponds to KY654518
+            model positions 7669..8235.
+            
+            The 'hybrid' sequence hybrid:KY654518.1:4681..4695:+:AF065410.1:1..879:+/4681..5646:+
+            protein is a fabricated sequence that is a protein
+            translation of the concatenated sequence from KY654518.1
+            positions 4618 to 4695 and AF065410 positions 1 to 879. 
+
+          - adds following lines to rsv.minfo:
+            FEATURE KY654518 type:"gene" coords:"4681..5643:+" parent_idx_str:"GBNULL" gene:"G" alternative_ftr_set:"attachment(gene)" alternative_ftr_set_subn:"15"
+            FEATURE KY654518 type:"CDS" coords:"4681..5643:+" parent_idx_str:"GBNULL" gene:"G" product:"attachment glycoprotein" nmaxdel_exc:"5493:72;5494:72;5495:72;5496:72;5497:72;5498:72;5499:72;5500:72;5531:72;" xmaxdel_exc:"259:72;260:72;261:72;262:72;263:72;264:72;265:72;266:72;267:72;268:72;269:72;270:72;271:72;272:72;273:72;274:72;275:72;276:72;" alternative_ftr_set:"attachment(cds)"
+            FEATURE KY654518 type:"gene" coords:"7669..8235:+" parent_idx_str:"GBNULL" gene:"M2-1" alternative_ftr_set:"M2-1(gene)" alternative_ftr_set_subn:"22"
+            FEATURE KY654518 type:"CDS" coords:"7669..8235:+" parent_idx_str:"GBNULL" gene:"M2-1" product:"M2-1 protein" alternative_ftr_set:"M2-1(cds)"
+
+            and makes other related changes to KY654518 lines in .minfo file
+
+          For MZ516105 (RSV B):
+            (Final sequence is polymerase. All others are attachment glycoprotein)
+            o MG642047.1:4666..5565:+/4688..5620:+
+            o MG431253.1:4674..5567:+/4688..5620:+
+            o LC474547.1:4663..5595:+/4688..5620:+
+            o MZ962122.1:1..933:+/4688..5620:+      310 
+            o KC297442.1:1..933:+/4688..5620:+      310 
+            o LC311384.1:1..933:+/4688..5620:+      310 
+            o MZ515748.1:4689..5621:+/4688..5620:+      310 
+            o MT040088.1:4679..5572:+/4688..5620:+      290 
+            o KJ627364.1:4618..5550:+/4688..5620:+      310 
+            o MH760718.1:4597..5529:+/4688..5620:+      310 
+            o KP856962.1:4618..5505:+/4688..5629:+
+            o KU950619.1:4663..5604:+/4688..5629:+
+            o KP258745.1:4620..5507:+/4688..5629:+
+            o KU316181.1:4618..5505:+/4688..5629:+
+            o MF185751.1:4640..5527:+/4688..5629:+      295 
+            o KJ627249.1:4618..5565:+/4688..5635:+
+            o KU316144.1:4618..5517:+/4688..5641:+
+            o MN365572.1:4676..5629:+/4688..5641:+      317 
+            o OK649740.1:4675..5574:+/4688..5641:+      299 
+            o LC474543.1:8538..15038:+/8560..15039:+
+          
+          - adds following lines to rsv.minfo:
+            FEATURE MZ516105 type:"gene" coords:"4688..5635:+" parent_idx_str:"GBNULL" gene:"G" alternative_ftr_set:"attachment(gene)" alternative_ftr_set_subn:"18"
+            FEATURE MZ516105 type:"CDS" coords:"4688..5635:+" parent_idx_str:"GBNULL" gene:"G" product:"attachment glycoprotein" nmaxdel_exc:"5441:60;" alternative_ftr_set:"attachment(cds)"
+            FEATURE MZ516105 type:"gene" coords:"8560..15039:+" parent_idx_str:"GBNULL" gene:"L" alternative_ftr_set:"polymerase(gene)" alternative_ftr_set_subn:"28"
+            FEATURE MZ516105 type:"CDS" coords:"8560..15039:+" parent_idx_str:"GBNULL" gene:"L" product:"RNA-dependent RNA polymerase" alternative_ftr_set:"polymerase(cds)"
+
+        - CDS product name for the L gene changed from
+          "polymerase protein" to "polymerase" for both models
+
+--
+
+1.3-1dev4: [Dec 2022]: Initial set of two models built from KY654518
+         (subgroup A) and MZ516105 (subgroup B) built on 
+         2022 using vadr 1.3 command:
+
+         v-build.pl KY654518
+         v-build.pl MX516105
+
+         Then the output files were combined to make a model library
+         as explained here:
+         https://github.com/ncbi/vadr/blob/master/documentation/build.md#building-a-vadr-model-library
+
+         And the combined files with '.fa', '.cm', 'hmm', and '.minfo'
+         suffixes were renamed to have prefix 'rsv2'. 
+
+         Also, the rsv2.minfo file was changed so that the 
+         two lines that begin with MODEL are:
+         
+         MODEL KY654518 blastdb:"KY654518.vadr.protein.fa" cmfile:"KY654518.vadr.cm" length:"15277" group:"RSV" subgroup:"A"
+         MODEL MZ516105 blastdb:"MZ516105.vadr.protein.fa" cmfile:"MZ516105.vadr.cm" length:"15276" group:"RSV" subgroup:"B"
+
+         And in rsv2.minfo files, all lines with 'gene:"G"' were
+         replaced with:
+
+         FEATURE KY654518 type:"gene" coords:"4681..5646:+" parent_idx_str:"GBNULL" gene:"G" alternative_ftr_set:"attachment(gene)" alternative_ftr_set_subn:"14"
+         FEATURE KY654518 type:"gene" coords:"4681..5649:+" parent_idx_str:"GBNULL" gene:"G" alternative_ftr_set:"attachment(gene)" alternative_ftr_set_subn:"15"
+         FEATURE KY654518 type:"CDS" coords:"4681..5646:+" parent_idx_str:"GBNULL" gene:"G" product:"attachment glycoprotein" nmaxdel_exc:"5493:72;5494:72;5495:72;5496:72;5497:72;5498:72;5531:72;" xmaxdel_exc:"260:72;274:72;276:72;" alternative_ftr_set:"attachment(cds)"
+         FEATURE KY654518 type:"CDS" coords:"4681..5649:+" parent_idx_str:"GBNULL" gene:"G" product:"attachment glycoprotein" nmaxdel_exc:"5500:72;" xmaxdel_exc:"260:72;274:72;276:72;" frameshift_exc:"5499..5576:+;" alternative_ftr_set:"attachment(cds)"
+
+         FEATURE MZ516105 type:"gene" coords:"4688..5620:+" parent_idx_str:"GBNULL" gene:"G" alternative_ftr_set:"attachment(gene)" alternative_ftr_set_subn:"15"
+         FEATURE MZ516105 type:"gene" coords:"4688..5629:+" parent_idx_str:"GBNULL" gene:"G" alternative_ftr_set:"attachment(gene)" alternative_ftr_set_subn:"16"
+         FEATURE MZ516105 type:"gene" coords:"4688..5641:+" parent_idx_str:"GBNULL" gene:"G" alternative_ftr_set:"attachment(gene)" alternative_ftr_set_subn:"17"
+         FEATURE MZ516105 type:"CDS" coords:"4688..5620:+" parent_idx_str:"GBNULL" gene:"G" product:"attachment glycoprotein" alternative_ftr_set:"attachment(cds)"
+         FEATURE MZ516105 type:"CDS" coords:"4688..5629:+" parent_idx_str:"GBNULL" gene:"G" product:"attachment glycoprotein" alternative_ftr_set:"attachment(cds)"
+         FEATURE MZ516105 type:"CDS" coords:"4688..5641:+" parent_idx_str:"GBNULL" gene:"G" product:"attachment glycoprotein" xmaxins_exc:"250:60;251:60;252:60;253:60;254:60;255:60;256:60;257:60;258:60;" alternative_ftr_set:"attachment(cds)"
+
+         Additionally, 1 protein sequence was added to
+         the KY654518.vadr.protein.fa file, by translating positions
+         4688 to 5584 of NC_038235.1. That sequence was named:
+         NC_038235.1:4688..5584:+/4681..5649:+
+         and the corresponding HMM was added to the rsv2.hmm file.
+
+         And 2 protein sequences were added to the 
+         MZ516105.vadr.protein.fa file, by translating positions 
+         4690 to 5589 of NC_001781.1 and positions 1 to 882 of
+         KC297470.1. Those two sequences were named:
+         NC_001781.1:4690..5589:+/4688..5641:+
+         and
+         KC297470.1:1..882:+/4688..5629:+
+         and the corresponding HMMs were added to the rsv2.hmm file.
+
+====================================================
+contact: eric.nawrocki@nih.gov

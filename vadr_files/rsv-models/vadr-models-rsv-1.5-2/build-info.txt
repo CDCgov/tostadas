@@ -1,0 +1,5 @@
+current git commit hash: c036b50
+git repo:     https://nawrockie@bitbucket.org/nawrockie/vadr-models-rsv.git
+git branch:   master
+dir name:     vadr-models-rsv-1.5-2
+packaged on: Tue Jan 31 13:15:07 EST 2023

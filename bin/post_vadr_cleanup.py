@@ -80,6 +80,7 @@ class MainVADRFuncs:
         # split the combined table into individual samples
         with open(new_tbl, 'r') as tbl: 
             lines = [line.strip() for line in tbl.readlines() if line.strip()]
+
             tbl.close() 
 
         # get where the sample names are
@@ -91,12 +92,12 @@ class MainVADRFuncs:
             else:
                 self.sample_info[key] = lines[indices[i]+1:]
             
-            # assert that there is not three repeat regions in the sample block (could cause issues)
-            try:
-                num_repeat_regions = len([x for x in self.sample_info[key] if 'repeat_region' in x])
-                assert num_repeat_regions == 2
-            except AssertionError:
-                raise AssertionError(f"Found either less than or greater than two repeat regions in {key}: {num_repeat_regions}")
+            # # assert that there is not three repeat regions in the sample block (could cause issues)
+            # try:
+            #     num_repeat_regions = len([x for x in self.sample_info[key] if 'repeat_region' in x])
+            #     assert num_repeat_regions == 2
+            # except AssertionError:
+            #     raise AssertionError(f"Found either less than or greater than two repeat regions in {key}: {num_repeat_regions}")
             
         # using the sample names, update the two flag dictionaries
         self.stop_codon_flag = {key: False for key in self.sample_info.keys()}
@@ -122,8 +123,9 @@ class MainVADRFuncs:
                     sample=sample, 
                     second_itr_index=self.second_itr_index
                 )
-            else:
-                raise ValueError(f"Did not find a second ITR in {sample}")
+
+            # else:
+            #     raise ValueError(f"Did not find a second ITR in {sample}")
 
             # write the sample information to gff 
             self.write_to_gff(sample)
@@ -162,15 +164,15 @@ class MainVADRFuncs:
             raise AssertionError(f"Notes was stored in the raw_strings list... assumes that 'Additional notes(s) to submitter' prefixes the entire error message. Please fix.")
         
         # assert that there is not three repeat regions in the sample block (could cause issues)
-        try:
-            repeat = 0
-            for x in self.raw_strings:
-                for y in x:
-                    if "repeat_region" in y:
-                        repeat += 1 
-            assert repeat == 2
-        except AssertionError:
-            raise AssertionError(f"Found either less than or greater than two repeat regions in {sample}: {repeat} total found")
+        # try:
+        #     repeat = 0
+        #     for x in self.raw_strings:
+        #         for y in x:
+        #             if "repeat_region" in y:
+        #                 repeat += 1 
+        #     assert repeat == 2
+        # except AssertionError:
+        #     raise AssertionError(f"Found either less than or greater than two repeat regions in {sample}: {repeat} total found")
 
     def clean_lines(self, sample):
 

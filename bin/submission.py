@@ -123,7 +123,7 @@ def args_parser():
 			default=False,
 			const=True)	
 		# Optional: add annotation to table2asn submission
-		gff_parser.add_argument("--gff_file",
+		gff_parser.add_argument("--annotation_file",
 			help="An annotation file to add to a Table2asn submission",
 			required=False)
 
@@ -219,14 +219,14 @@ def create_zip_template(organism, database, submission_dir, submission_name):
 	print("Files are stored at: "+os.path.join(out_dir), file=sys.stdout)
 
 # Setup needed requirements for running
-def start(command, database, organism, submission_dir, submission_name, config_file, metadata_file, send_email=False, fasta_file=None, table2asn=False, gff_file=None, test=False):
+def start(command, database, organism, submission_dir, submission_name, config_file, metadata_file, send_email=False, fasta_file=None, table2asn=False, annotation_file=None, test=False):
 	# Create the appropriate files
 	submission_dir = os.path.abspath(submission_dir)
 	# todo: I think all these paths with be absolute paths when called by nextflow process
     #config_file = os.path.join(submission_dir, submission_name, config_file)
 	#metadata_file = os.path.join(submission_dir, submission_name, metadata_file)
 	#fasta_file = os.path.join(submission_dir, submission_name, str(fasta_file)) if fasta_file is not None else None
-	#gff_file = os.path.join(submission_dir, submission_name, str(gff_file)) if gff_file is not None else None
+	#annotation_file = os.path.join(submission_dir, submission_name, str(annotation_file)) if annotation_file is not None else None
 	submission_status_file = os.path.join(submission_dir, submission_name, "submission_report_status.csv")
 	# Check if submission directory exists
 	if os.path.exists(submission_dir) == False:
@@ -245,8 +245,8 @@ def start(command, database, organism, submission_dir, submission_name, config_f
 		print("There is no fasta file at " + fasta_file, file=sys.stderr)
 		sys.exit(1)
 	# If table2asn is true, if gff file is given, check if file exists
-	if (table2asn == True) and (gff_file is not None) and (os.path.isfile(gff_file) == False):
-		print("Error: gff file does not exist at: " + gff_file, file=sys.stderr)
+	if (table2asn == True) and (annotation_file is not None) and (os.path.isfile(annotation_file) == False):
+		print("Error: annotation file does not exist at: " + annotation_file, file=sys.stderr)
 		sys.exit(1)
 	# IF database is GISAID, check if CLI is downloaded and store in the correct directory
 	gisaid_cli = os.path.join(submission_dir, "gisaid_cli", organism.lower()+"CLI", organism.lower()+"CLI") if "GISAID" in database else None#
@@ -271,7 +271,7 @@ def start(command, database, organism, submission_dir, submission_name, config_f
 	for database_name in database:
 		if database_name in ["BIOSAMPLE", "SRA", "GENBANK"]:
 			identifier_columns.update({"ncbi-spuid": "ncbi-sample_name"})
-			submission_create.create_ncbi_submission(organism=organism, database=database_name, submission_name=submission_name, submission_dir=submission_dir, config_dict=config_dict["NCBI"], metadata=metadata, fasta_file=fasta_file, table2asn=table2asn, gff_file=gff_file)
+			submission_create.create_ncbi_submission(organism=organism, database=database_name, submission_name=submission_name, submission_dir=submission_dir, config_dict=config_dict["NCBI"], metadata=metadata, fasta_file=fasta_file, table2asn=table2asn, annotation_file=annotation_file)
 			if "GENBANK" in database_name:
 				identifier_columns.update({"gb-seq_id": "ncbi-sequence_name"})
 		elif "GISAID" in database_name:
@@ -332,7 +332,7 @@ def start(command, database, organism, submission_dir, submission_name, config_f
 					submission_position = 1
 					submission_status = submission_submit.submit_gisaid(organism=organism, database=database_name, submission_dir=submission_dir, submission_name=submission_name, config_dict=config_dict["GISAID"], gisaid_cli=gisaid_cli,  submission_status_file=submission_status_file, submission_type=submission_type)
 					submission_id = ""
-			submission_create.create_submission_log(database=database_name, submission_position=submission_position, organism=organism, submission_name=submission_name, submission_dir=submission_dir, config_file=config_file, submission_status=submission_status, submission_id=submission_id, table2asn=table2asn, gff_file=gff_file, submission_type=submission_type)
+			submission_create.create_submission_log(database=database_name, submission_position=submission_position, organism=organism, submission_name=submission_name, submission_dir=submission_dir, config_file=config_file, submission_status=submission_status, submission_id=submission_id, table2asn=table2asn, annotation_file=annotation_file, submission_type=submission_type)
 
 def main():
 	"""The main routine"""
@@ -374,11 +374,11 @@ def main():
 		table2asn = args.table2asn
 	else:
 		table2asn = False
-	# gff_file
-	if "gff_file" in args:
-		gff_file = args.gff_file
+	# annotation_file
+	if "annotation_file" in args:
+		annotation_file = args.annotation_file
 	else:
-		gff_file = None
+		annotation_file = None
 	# test submission
 	if "test" in args:
 		test = args.test
@@ -399,7 +399,7 @@ def main():
 			print("\n"+"ERROR: Missing a database selection. See USAGE below."+"\n", file=sys.stdout)
 			submit_prep_subparser.print_help()
 			sys.exit(0)
-		start(command=command, organism=organism, database=database, submission_name=submission_name, submission_dir=submission_dir, config_file=config_file, metadata_file=metadata_file, fasta_file=fasta_file, table2asn=table2asn, gff_file=gff_file, test=test, send_email=send_email)
+		start(command=command, organism=organism, database=database, submission_name=submission_name, submission_dir=submission_dir, config_file=config_file, metadata_file=metadata_file, fasta_file=fasta_file, table2asn=table2asn, annotation_file=annotation_file, test=test, send_email=send_email)
 	elif command == "check_submission_status":
 		submission_process.update_submission_status(submission_dir=submission_dir, submission_name=submission_name, organism=organism, test=test, send_email=send_email)
 	elif command == "template":

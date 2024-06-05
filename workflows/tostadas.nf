@@ -40,7 +40,6 @@ include { WAIT                                          } from '../modules/local
                                     MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-// To Do, create logic to run workflows for virus vs. bacteria
 workflow TOSTADAS {
     
     // check if help parameter is set
@@ -56,7 +55,6 @@ workflow TOSTADAS {
     METADATA_VALIDATION ( 
         params.meta_path
     )
-    // todo: the names of these tsv_Files need to be from sample name not fasta file name 
     metadata_ch = METADATA_VALIDATION.out.tsv_Files
         .flatten()
         .map { 
@@ -82,72 +80,43 @@ workflow TOSTADAS {
                 [meta, fasta_path, fastq1, fastq2, gff]
             }
         }
-
     // Create initial submission channel
     submission_ch = metadata_ch.join(reads_ch)
 
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
-        if ( params.virus && !params.bacteria ) {
-
+        if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
             // run liftoff annotation process + repeatmasker 
-            if ( params.repeatmasker_liftoff ) {
+            if ( params.repeatmasker_liftoff && !params.vadr ) {
              // run repeatmasker annotation on files
                 REPEATMASKER_LIFTOFF (
                     reads_ch
                 )
-                repeatmasker_gff_ch = REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
-                .map { 
-                    meta = [:] 
-                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                    [ meta, it ] 
-                }
-
-            // set up submission channels
-            submission_ch = submission_ch.join(repeatmasker_gff_ch) // meta.id, tsv, fasta, fastq1, fastq2, gff
+                submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
             }
-    
             // run vadr processes
             if ( params.vadr ) {
                 RUN_VADR (
-                    reads_ch
+                    reads_ch,
+                    metadata_ch
                 )
-                vadr_gff_ch = RUN_VADR.out.gff
-                    .collect()
-                    .flatten()
-                    .map { 
-                        meta = [:] 
-                        meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                        [ meta, it ] 
-                    }
-                submission_ch = submission_ch.join(vadr_gff_ch) // meta.id, tsv, fasta, fastq1, fastq2, gff
+                submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, tbl
             }
         }
-        if ( params.bacteria ) {
+        else if (params.species == 'bacteria' || params.species == 'Cdiphtheriae') {
         // run bakta annotation process
-            if ( params.bakta == true ) {
+            if ( params.bakta ) {
                 RUN_BAKTA(
                     reads_ch
                 )
                 // set up submission channels
-                bakta_gff_ch = RUN_BAKTA.out.gff3
-                    .flatten()
-                    .map { 
-                        meta = [id:it.getSimpleName()] 
-                        //meta = it.getSimpleName()
-                        [ meta, it ]
-                    }
-                bakta_fasta_ch = RUN_BAKTA.out.fna
-                    .flatten()
-                    .map { 
-                        meta = [id:it.getSimpleName()] 
-                        //meta = it.getSimpleName()
-                        [ meta, it ]
-                    }
-                submission_ch = submission_ch.join(bakta_gff_ch) // meta.id, tsv, fasta, fastq1, fastq2, gff
-                submission_ch = submission_ch.map { meta, tsv, _, fq1, fq2, gff -> [meta, tsv, fq1, fq2, gff] } // drop original fasta
-                submission_ch = submission_ch.join(bakta_fasta_ch) // join annotated fasta
-                submission_ch = submission_ch.map { meta, tsv, fq1, fq2, gff, fasta -> [meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
+                submission_ch = submission_ch
+                | join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, gff
+                | map { meta, tsv, _, fq1, fq2, gff -> 
+                    [meta, tsv, fq1, fq2, gff] } // drop original fasta
+                | join(RUN_BAKTA.out.fna) // join annotated fasta
+                | map { meta, tsv, fq1, fq2, gff, fasta -> 
+                    [meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
             }   
         }
     }
@@ -165,30 +134,10 @@ workflow TOSTADAS {
             GET_WAIT_TIME.out
             )
 
-        }
-        // to do remove if not needed
-        if ( params.update_submission ) {
-            UPDATE_SUBMISSION (
-                '',
-                params.submission_config, 
-                INITIAL_SUBMISSION.out.submission_files,
-                INITIAL_SUBMISSION.out.submission_log,
-            )
-        }
-        // combine the different upload_log csv files together 
-        if ( ! params.update_submission ) {
             MERGE_UPLOAD_LOG ( 
                 INITIAL_SUBMISSION.out.submission_files.collect(), 
                 INITIAL_SUBMISSION.out.submission_log.collect(), 
-                )
+             )
         }
-        else {
-            MERGE_UPLOAD_LOG ( 
-                UPDATE_SUBMISSION.out.submission_files.collect(), 
-                UPDATE_SUBMISSION.out.submission_log.collect(), 
-            )
-        }
-
-        // todo add GISAID only submission
     }
 

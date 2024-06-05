@@ -54,7 +54,7 @@ def download_table2asn(table2asn_dir):
 		sys.exit(1)
 
 # Create directory and files for NCBI database submissions
-def create_ncbi_submission(organism, database, submission_name, submission_dir, config_dict, metadata, fasta_file=None, table2asn=False, gff_file=None):
+def create_ncbi_submission(organism, database, submission_name, submission_dir, config_dict, metadata, fasta_file=None, table2asn=False, annotation_file=None):
 	# Create a database subfolder within the submission directory to dump all submission files
 	submission_files_dir = os.path.join(submission_dir, submission_name, "submission_files", database)
 	# Create submission files directory
@@ -77,7 +77,7 @@ def create_ncbi_submission(organism, database, submission_name, submission_dir, 
 		create_genbank_files(organism=organism, submission_name=submission_name, submission_files_dir=submission_files_dir, config_dict=config_dict, metadata=metadata, fasta_file=fasta_file)
 		# If using Table2asn do not generate extra genbank files
 		if table2asn == True:
-			create_genbank_table2asn(submission_dir=submission_dir, submission_name=submission_name, submission_files_dir=submission_files_dir, gff_file=gff_file)
+			create_genbank_table2asn(submission_dir=submission_dir, submission_name=submission_name, submission_files_dir=submission_files_dir, annotation_file=annotation_file)
 			return			
 		else:
 			# If FTP upload for Genbank, create ZIP file for upload if table2asn is set to False
@@ -483,7 +483,7 @@ def is_multicontig_fasta(fasta):
 	return False
 
 # Run Table2asn to generate sqn file for submission
-def create_genbank_table2asn(submission_dir, submission_name, submission_files_dir, gff_file=None):
+def create_genbank_table2asn(submission_dir, submission_name, submission_files_dir, annotation_file=None):
 	submission_status = "processed-ok"
 	submission_id = "Table2asn"
 	# Create a temp file to store the downloaded table2asn
@@ -493,9 +493,20 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 	download_table2asn(table2asn_dir=table2asn_dir)
 	# Command to generate table2asn submission file
 	fasta = os.path.join(submission_files_dir, "sequence.fsa")
+	if annotation_file.endswith('tbl'):
+		locus_tag_val = "-no-locus-tags-needed"
+	else:
+		locus_tag_val = f'"-locus-tag-prefix", {get_gff_locus_tag(annotation_file)}'
+	#if annotation_file.endswith('tbl'):
+	#	locus_tag_val = f' "-no-locus-tags-needed," '
+	#else:
+	#	locus_tag_val = f' "-locus-tag-prefix", {get_gff_locus_tag(annotation_file)},'
 	command = [table2asn_dir, "-t", os.path.join(submission_files_dir, "authorset.sbt"), "-i", fasta, \
-			"-src-file", os.path.join(submission_files_dir, "source.src"), "-locus-tag-prefix", get_gff_locus_tag(gff_file), \
-			"-o", os.path.join(submission_files_dir, submission_name + ".sqn")]
+		"-src-file", os.path.join(submission_files_dir, "source.src"), "-o", os.path.join(submission_files_dir, submission_name + ".sqn")]
+	command.append(locus_tag_val)
+	#command = [table2asn_dir, "-t", os.path.join(submission_files_dir, "authorset.sbt"), "-i", fasta, \
+	#		"-src-file", os.path.join(submission_files_dir, "source.src"), "-locus-tag-prefix", get_gff_locus_tag(gff_file), \
+	#		"-o", os.path.join(submission_files_dir, submission_name + ".sqn")]
 	if is_multicontig_fasta(fasta):
 		command.append("-M")
 		command.append("n")
@@ -503,9 +514,9 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 	if os.path.isfile(os.path.join(submission_files_dir, "comment.cmt")):
 		command.append("-w")
 		command.append( os.path.join(submission_files_dir, "comment.cmt"))
-	if gff_file is not None:
+	if annotation_file is not None:
 		command.append("-f")
-		command.append(os.path.join(submission_dir, gff_file))
+		command.append(os.path.join(submission_dir, annotation_file))
 	print("Running Table2asn.", file=sys.stdout)
 	print(command)
 	proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = os.path.join(os.path.dirname(os.path.abspath(__file__))))
@@ -517,13 +528,13 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 	return submission_id, submission_status
 
 # Create submission log csv
-def create_submission_log(database, submission_position, organism, submission_name, submission_dir, config_file, submission_status, submission_id, table2asn, gff_file, submission_type):
+def create_submission_log(database, submission_position, organism, submission_name, submission_dir, config_file, submission_status, submission_id, table2asn, annotation_file, submission_type):
 	# If file doesn't exist create it
 	submission_log_file = os.path.join(submission_dir, f"{submission_name}_submission_log.csv")
 	if os.path.isfile(submission_log_file) == True:
 		df = pd.read_csv(submission_log_file, header = 0, dtype = str, engine = "python", encoding="utf-8", index_col=False)
 	else:
-		df = pd.DataFrame(columns = ["Submission_Name", "Organism", "Database", "Submission_Position", "Submission_Type", "Submission_Date", "Submission_Status", "Submission_Directory", "Config_File", "Table2asn", "GFF_File", "Update_Date"])
+		df = pd.DataFrame(columns = ["Submission_Name", "Organism", "Database", "Submission_Position", "Submission_Type", "Submission_Date", "Submission_Status", "Submission_Directory", "Config_File", "Table2asn", "Annotation_File", "Update_Date"])
 	# Fill in the log field if it exists, otherwise create new
 	df_partial = df.loc[(df["Organism"] == organism) & (df["Database"] == database) & (df["Submission_Directory"] == submission_dir) & (df["Submission_Name"] == submission_name) & (df["Submission_Type"] == submission_type)]
 	# Update existing field	
@@ -531,7 +542,7 @@ def create_submission_log(database, submission_position, organism, submission_na
 		df.loc[df_partial.index.values, "Submission_Position"] = submission_position			
 		df.loc[df_partial.index.values, "Submission_Status"] = submission_id + ";" + submission_status
 		df.loc[df_partial.index.values, "Table2asn"] = table2asn
-		df.loc[df_partial.index.values, "GFF_File"] = gff_file
+		df.loc[df_partial.index.values, "Annotation_File"] = annotation_file
 		df.loc[df_partial.index.values, 'Update_Date'] = datetime.now().strftime("%Y-%m-%d")
 	else:
 		# Create new field
@@ -546,7 +557,7 @@ def create_submission_log(database, submission_position, organism, submission_na
 					 'Submission_Directory': submission_dir,
 					 'Config_File': config_file,
 					 'Table2asn': table2asn,
-					 'GFF_File': gff_file,
+					 'Annotation_File': annotation_file,
 					 'Update_Date': datetime.now().strftime("%Y-%m-%d")
 					}
 		df.loc[len(df)] = new_entry
