@@ -577,7 +577,7 @@ def create_ncbi_submission(organism, database, submission_name, config_dict, met
 # Note: probably need to rework some of this, haven't tested
 def create_gisaid_submission(organism, database, submission_name, config_dict, metadata, fasta_file):
 	# Create a database subfolder within the submission directory to dump all submission files
-	submission_files_dir = os.path.join(os.getcwd(), submission_name, "submission_files", database)
+	submission_files_dir = os.path.join(os.getcwd(), submission_name, database)
 	# Create submission files directory
 	os.makedirs(submission_files_dir, exist_ok=True)
 	# Get column names for gisaid submission only
@@ -677,15 +677,6 @@ def main():
 		database.append('gisaid')
 
 	submission_status_file = os.path.join(os.getcwd(), submission_name, "submission_report_status.csv")
-	
-	# IF database is GISAID, check if CLI is downloaded and store in the correct directory
-	gisaid_cli = os.path.join(os.getcwd(), "gisaid_cli", organism.lower()+"CLI", organism.lower()+"CLI") if "gisaid" in database else None
-	# Check if the gisaid_cli exists
-	if (gisaid_cli is not None) and os.path.isfile(gisaid_cli) == False:
-		print("There is no GISAID CLI package for " + organism + " located at "+ gisaid_cli, file=sys.stderr)
-		print("Please download the GISAID " + organism + " CLI package from the GISAID platform", file=sys.stderr)
-		print("Extract the zip file and place a copy of the CLI binary at "+ gisaid_cli, file=sys.stderr)
-		sys.exit(1)	
 	
 	# Check config file
 	config_dict = get_config(config_file=config_file, gisaid_submission=gisaid_submission)

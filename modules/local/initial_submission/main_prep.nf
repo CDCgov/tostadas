@@ -41,5 +41,4 @@ process SUBMISSION_PREP {
     """
     output:
     path "${validated_meta_path.getBaseName()}", emit: submission_files
-    path "*.csv", emit: submission_log
 }
