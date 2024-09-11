@@ -3,6 +3,7 @@ NCBI_username: username
 NCBI_password: password
 NCBI_ftp_host: 'sftp-private.ncbi.nlm.nih.gov'
 NCBI_API_URL: 'https://submit.ncbi.nlm.nih.gov/api/2.0/files/FILE_ID/?format=attachment'
+TABLE2ASN_EMAIL: 'gb-admin@ncbi.nlm.nih.gov'
 BioSample_package: "Pathogen.cl.1.0"
 table2asn_email: 'gb-admin@ncbi.nlm.nih.gov'
 # tbl2asn_flags: -M n -Z -J -c w
