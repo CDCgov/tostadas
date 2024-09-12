@@ -494,19 +494,12 @@ def create_genbank_table2asn(submission_dir, submission_name, submission_files_d
 	# Command to generate table2asn submission file
 	fasta = os.path.join(submission_files_dir, "sequence.fsa")
 	if annotation_file.endswith('tbl'):
-		locus_tag_val = "-no-locus-tags-needed"
+		locus_tag_val = f'-no-locus-tags-needed'
 	else:
-		locus_tag_val = f'"-locus-tag-prefix", {get_gff_locus_tag(annotation_file)}'
-	#if annotation_file.endswith('tbl'):
-	#	locus_tag_val = f' "-no-locus-tags-needed," '
-	#else:
-	#	locus_tag_val = f' "-locus-tag-prefix", {get_gff_locus_tag(annotation_file)},'
+		locus_tag_val = ['-locus-tag-prefix', get_gff_locus_tag(annotation_file)]
 	command = [table2asn_dir, "-t", os.path.join(submission_files_dir, "authorset.sbt"), "-i", fasta, \
 		"-src-file", os.path.join(submission_files_dir, "source.src"), "-o", os.path.join(submission_files_dir, submission_name + ".sqn")]
-	command.append(locus_tag_val)
-	#command = [table2asn_dir, "-t", os.path.join(submission_files_dir, "authorset.sbt"), "-i", fasta, \
-	#		"-src-file", os.path.join(submission_files_dir, "source.src"), "-locus-tag-prefix", get_gff_locus_tag(gff_file), \
-	#		"-o", os.path.join(submission_files_dir, submission_name + ".sqn")]
+	command.extend(locus_tag_val)
 	if is_multicontig_fasta(fasta):
 		command.append("-M")
 		command.append("n")
