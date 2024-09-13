@@ -85,6 +85,15 @@ workflow TOSTADAS {
 
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
+        // Remove user-provided gff, if present, before performing annotation
+        reads_ch = reads_ch.map { elements ->
+            if (elements.size() == 5) {
+                elements.take(4)  // Remove the last element (gff)
+            } 
+            else {
+                elements  // If there's no gff, keep the original list
+            }
+    }
         if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
             // run liftoff annotation process + repeatmasker 
             if ( params.repeatmasker_liftoff && !params.vadr ) {

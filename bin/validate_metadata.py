@@ -189,14 +189,14 @@ class GetMetaAsDf:
 	def populate_fields(self):
 		""" Replacing the NaN values in certain columns with "Not Provided" or ""
 		"""
-		terms_2_replace = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
+		terms_2_replace = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling", "age", "host_disease", "sex", "isolation_source"]
 		# remove any nans
 		field_value_mapping = {term: "Not Provided" for term in terms_2_replace}
-		replaced_df = self.df.fillna(value=field_value_mapping)
+		replaced_df = self.df.replace(to_replace={term: ["", None] for term in terms_2_replace}, value=field_value_mapping)
 		final_df = replaced_df.fillna("")
 		# remove any N/A or na or N/a or n/A
 		for col in terms_2_replace:
-			for unwanted_val in ['N/A', 'N/a', 'na', 'n/A']:
+			for unwanted_val in ['N/A', 'N/a', 'na', 'n/A', 'NA']:
 				for x in range(len(final_df[col].tolist())):
 					if final_df[col].tolist()[x] == unwanted_val:
 						final_df[col][x] = 'Not Provided'
