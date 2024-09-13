@@ -179,6 +179,7 @@ class GetMetaAsDf:
 		"""
 		self.df = self.load_meta()
 		self.final_df = self.populate_fields()
+		self.final_df = self.manage_biosample_package()
 
 	def load_meta(self):
 		""" Loads the metadata file in as a dataframe from an Excel file (.xlsx)
@@ -189,14 +190,15 @@ class GetMetaAsDf:
 	def populate_fields(self):
 		""" Replacing the NaN values in certain columns with "Not Provided" or ""
 		"""
-		terms_2_replace = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
+		terms_2_replace = ["collected_by", "sample_type", "lat_lon", "age", "host_disease", "sex", "isolation_source", "purpose_of_sampling", "strain", "source_type"]
 		# remove any nans
 		field_value_mapping = {term: "Not Provided" for term in terms_2_replace}
-		replaced_df = self.df.fillna(value=field_value_mapping)
+		replaced_df = self.df.replace(to_replace={term: ["", None] for term in terms_2_replace}, value=field_value_mapping)
+		#replaced_df = self.df.fillna(value=field_value_mapping)
 		final_df = replaced_df.fillna("")
 		# remove any N/A or na or N/a or n/A
 		for col in terms_2_replace:
-			for unwanted_val in ['N/A', 'N/a', 'na', 'n/A']:
+			for unwanted_val in ['N/A', 'N/a', 'na', 'n/A','NA']:
 				for x in range(len(final_df[col].tolist())):
 					if final_df[col].tolist()[x] == unwanted_val:
 						final_df[col][x] = 'Not Provided'
@@ -208,6 +210,14 @@ class GetMetaAsDf:
 			raise AssertionError(f'Populating certain fields in the metadata df with "" or "Not Provided" was unsuccessful')
 		return final_df
 
+	def manage_biosample_package(self):
+		""" BioSample package defaults to Pathogen.cl.1.0 unless it is OneHealthEnteric.1.0
+		"""
+		mask = ~self.df["bs-package"].isin(['OneHealthEnteric.1.0', 'Pathogen.cl.1.0'])
+		# Set 'bs-package' to 'Pathogen.cl.1.0' for rows where the condition is met
+		self.df.loc[mask, "bs-package"] = 'Pathogen.cl.1.0'
+	
+		return self.df
 
 class ValidateChecks:
 	""" Class constructor for performing a variety of checks on metadata
@@ -894,8 +904,6 @@ class HandleDfInserts:
 		self.filled_df.insert(self.filled_df.shape[1], "src-serotype", ["Not Provided"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "sra-library_name", ["Not Provided"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "bs-geo_loc_name", ["Not Provided"] * len(self.filled_df.index))
-		# todo: default to Pathogen.cl.1.0 biosample package, might change this later
-		self.filled_df.insert(self.filled_df.shape[1], "bs-package", ["Pathogen.cl.1.0"] * len(self.filled_df.index))
 		# todo: these two cmt- fields have different values if organism== flu or cov
 		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentPrefix", ["Assembly-Data"] * len(self.filled_df.index))
 		self.filled_df.insert(self.filled_df.shape[1], "cmt-StructuredCommentSuffix", ["Assembly-Data"] * len(self.filled_df.index))
@@ -931,6 +939,9 @@ class HandleDfInserts:
 									   'lat_lon': 'bs-lat_lon',
 									   'sex': 'bs-host_sex',
 									   'age': 'bs-host_age',
+									   'strain': 'bs-strain',
+									   'source_type': 'bs-source_type',
+									   'purpose_of_sampling': 'bs-purpose_of_sampling',
 									   'assembly_method': 'cmt-Assembly-Method',
 									   'mean_coverage': 'cmt-Coverage',
 									   'illumina_sequencing_instrument': 'sra-instrument_model',
