@@ -108,12 +108,8 @@ workflow TOSTADAS {
             // change virus to mpxv if running VADR because mpxv is the default
             // todo: I really don't like this
             if ( params.vadr ) {
-                if (params.species == 'virus') {
-                   params.species = 'mpxv'
-                }
                 RUN_VADR (
-                    reads_ch,
-                    metadata_ch
+                    submission_ch
                 )
                 submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, tbl
             }
