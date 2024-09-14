@@ -82,10 +82,10 @@ workflow TOSTADAS {
         }
     // Create initial submission channel
     submission_ch = metadata_ch.join(reads_ch)
-
+    
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
-        // Remove user-provided gff, if present, before performing annotation
+        // Remove user-provided gff, if present, from annotation input channel before performing annotation
         reads_ch = reads_ch.map { elements ->
             if (elements.size() == 5) {
                 elements.take(4)  // Remove the last element (gff)
@@ -93,7 +93,8 @@ workflow TOSTADAS {
             else {
                 elements  // If there's no gff, keep the original list
             }
-    }
+        }
+
         if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
             // run liftoff annotation process + repeatmasker 
             if ( params.repeatmasker_liftoff && !params.vadr ) {
@@ -104,7 +105,12 @@ workflow TOSTADAS {
                 submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
             }
             // run vadr processes
+            // change virus to mpxv if running VADR because mpxv is the default
+            // todo: I really don't like this
             if ( params.vadr ) {
+                if (params.species == 'virus') {
+                   params.species = 'mpxv'
+                }
                 RUN_VADR (
                     reads_ch,
                     metadata_ch
