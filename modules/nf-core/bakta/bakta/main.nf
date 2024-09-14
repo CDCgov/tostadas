@@ -12,7 +12,7 @@ process BAKTA {
     
     input:
     path db_path
-    tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
+    tuple val(meta), path(metadata), path(fasta_path), path(fastq1), path(fastq2)
 
     output:
     tuple val(meta), path("${meta.id}/*.fna"), emit: fna

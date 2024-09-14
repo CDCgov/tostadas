@@ -86,9 +86,9 @@ workflow TOSTADAS {
     // check if the user wants to skip annotation or not
     if ( params.annotation ) {
         // Remove user-provided gff, if present, from annotation input channel before performing annotation
-        reads_ch = reads_ch.map { elements ->
-            if (elements.size() == 5) {
-                elements.take(4)  // Remove the last element (gff)
+        submission_ch = submission_ch.map { elements ->
+            if (elements.size() == 6) {
+                elements.take(5)  // Remove the last element (gff)
             } 
             else {
                 elements  // If there's no gff, keep the original list
@@ -100,7 +100,7 @@ workflow TOSTADAS {
             if ( params.repeatmasker_liftoff && !params.vadr ) {
              // run repeatmasker annotation on files
                 REPEATMASKER_LIFTOFF (
-                    reads_ch
+                    submission_ch
                 )
                 submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
             }
@@ -122,7 +122,7 @@ workflow TOSTADAS {
         // run bakta annotation process
             if ( params.bakta ) {
                 RUN_BAKTA(
-                    reads_ch
+                    submission_ch
                 )
                 // set up submission channels
                 submission_ch = submission_ch
