@@ -98,7 +98,7 @@ def get_config(config_file, gisaid_submission):
 					sys.exit(1)					
 			else:
 				# If NCBI submission, check that non-GISAID keys have values (note: this only check top-level keys)
-				if not k.startswith('GISAID') and not v:
+				if not k.startswith('NCBI') and not v:
 					print("Error: There are missing values in the config file.", file=sys.stderr)
 					sys.exit(1)	
 	else:	
