@@ -28,7 +28,7 @@ workflow RUN_VADR {
             [meta, tsv] // drop everything except the tsv for post-cleanup input
         }
         cleanup_ch = cleanup_ch.join(VADR_ANNOTATION.out.vadr_outputs)
-        cleanup_ch.view()
+        
         VADR_POST_CLEANUP (
             cleanup_ch
         )
