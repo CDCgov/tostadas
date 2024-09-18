@@ -28,7 +28,7 @@ class SubmissionConfigParser:
 						#sys.exit(1)					
 				else:
 					# If NCBI submission, check that non-GISAID keys have values (note: this only check top-level keys)
-					if not k.startswith('NCBI') and not v:
+					if k.startswith('NCBI') and not v:
 						print("Error: There are missing NCBI values in the config file.", file=sys.stderr)
 						#sys.exit(1)	
 		else:	
@@ -44,7 +44,6 @@ class Sample:
 		self.fastq2 = fastq2
 		self.fasta_file = fasta_file
 		self.gff_file = gff_file
-	
 	# todo: add (or ignore) validation for cloud files 
 	def validate_files(self):
 		files_to_check = [self.metadata_file, self.fastq1, self.fastq2]
@@ -59,20 +58,22 @@ class Sample:
 			print(f"All required files for sample {self.sample_id} are present.")
 
 class MetadataParser:
-	""" Class constructor to read in metadata as dict
-	"""
-	def __init__(self, metadata_tsv):
-		self.metadata_df = self.load_metadata(metadata_tsv)
-	def load_metadata(self, metadata_tsv):
-		"""Load the metadata tsv file into a pandas DataFrame."""
-		return pd.read_csv(metadata_tsv, sep='\t')
-	def get_all_data(self):
-		"""Return the entire metadata row as a dictionary."""
-		return self.metadata_df.iloc[0].to_dict()
-
-
-
-
+	def __init__(self, metadata_df):
+		self.metadata_df = metadata_df
+		#self.top_metadata = self.extract_top_metadata()
+	def extract_top_metadata(self):
+		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Reused columns
+		return self.metadata_df[columns].to_dict(orient='records')[0]  # Get first row as a dictionary
+	def extract_biosample_metadata(self):
+		columns = ['bs_package','isolate','isolation_source','host_disease','host','collected_by','lat_lon',
+				   'host_sex','host_age','geo_location','geo_loc_name','organism','purpose_of_sampling',
+				   'race','ethnicity','sample_type','source_type','strain']  # BioSample specific columns
+		return self.metadata_df[columns].to_dict(orient='records')[0]
+	def extract_sra_metadata(self):
+		columns = ['instrument_model','library_construction_protocol','library_layout','library_name','library_selection',
+				   'library_source','library_strategy','nanopore_library_layout','nanopore_library_protocol','nanopore_library_selection',
+				   'nanopore_library_source','nanopore_library_strategy','nanopore_sequencing_instrument']  # SRA specific columns
+		return self.metadata_df[columns].to_dict(orient='records')[0]
 
 
 
@@ -142,9 +143,9 @@ class BiosampleSubmission:
 		contact_el = ET.SubElement(organization_el, 'Contact', {'email': self.submission_config['Email']})
 		contact_name = ET.SubElement(contact_el, 'Name')
 		first = ET.SubElement(contact_name, 'First')
-		first.text = self.contact['first_name']
+		first.text = self.submission_config['Submitter']['Name']['First']
 		last = ET.SubElement(contact_name, 'Last')
-		last.text = self.contact['last_name']
+		last.text = self.submission_config['Submitter']['Name']['Last']
 
 		# Action block
 		action = ET.SubElement(submission, 'Action')
@@ -158,7 +159,7 @@ class BiosampleSubmission:
 		# SampleId block
 		sample_id = ET.SubElement(biosample, 'SampleId')
 		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': ''})
-		spuid.text = self.sample['sample_id']
+		spuid.text = self.metadata_dict['ncbi-spuid_namespace']
 
 		# Descriptor block
 		descriptor = ET.SubElement(biosample, 'Descriptor')
@@ -168,11 +169,11 @@ class BiosampleSubmission:
 		# Organism block
 		organism = ET.SubElement(biosample, 'Organism')
 		organism_name = ET.SubElement(organism, 'OrganismName')
-		organism_name.text = self.sample['organism_name']
+		organism_name.text = self.metadata_dict['organism']
 
 		# Package block
 		package = ET.SubElement(biosample, 'Package')
-		package.text = self.sample['package']
+		package.text = self.metadata_dict['bs-package']
 
 		# Attributes block
 		attributes = ET.SubElement(biosample, 'Attributes')
@@ -183,7 +184,7 @@ class BiosampleSubmission:
 		# Identifier block
 		identifier = ET.SubElement(add_data, 'Identifier')
 		spuid_identifier = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': '_bs'})
-		spuid_identifier.text = self.sample['sample_id']
+		spuid_identifier.text = self.metadata_dict['ncbi-spuid_namespace']
 
 		# Save the XML to file
 		tree = ET.ElementTree(submission)
@@ -196,9 +197,13 @@ class BiosampleSubmission:
 
 
 class SRASubmission:
-	def __init__(self, sample, sftp_client):
+	def __init__(self, sample, submission_config, metadata_df, sftp_client):
 		self.sample = sample
+		self.submission_contact = submission_config
 		self.sftp_client = sftp_client
+		parser = MetadataParser(metadata_df)
+		self.top_metadata = parser.extract_top_metadata()
+		self.sra_metadata = parser.extract_sra_metadata()
 
 	def submit(self):
 		# Upload FASTQ files to SRA via SFTP
@@ -207,6 +212,69 @@ class SRASubmission:
 		self.sftp_client.upload_file(self.sample.fastq2, f"/uploads/{self.sample.sample_id}_fastq2.fastq")
 		self.sftp_client.close()
 		print(f"Submitted {self.sample.sample_id} to SRA")
+
+		def create_sra_xml(self, file_name='sra_submission.xml'):
+		"""Creates an SRA submission XML file based on the provided metadata and file paths."""
+		root = ET.Element("Submission")
+		
+		# Description block
+		description = ET.SubElement(submission, 'Description')
+		title = ET.SubElement(description, 'Title')
+		title.text = self.top_metadata['title']
+		comment = ET.SubElement(description, 'Comment')
+		comment.text = self.top_metadata['description']
+
+		# Organization block
+		organization_el = ET.SubElement(description, 'Organization', {
+			'type': self.submission_config['Type'], 'role': self.submission_config['Role'], 'org_id': self.submission_config['Org_ID']
+		})
+		name = ET.SubElement(organization_el, 'Name')
+		name.text = self.submission_config['Name']
+
+		# Contact block
+		contact_el = ET.SubElement(organization_el, 'Contact', {'email': self.submission_config['Email']})
+		contact_name = ET.SubElement(contact_el, 'Name')
+		first = ET.SubElement(contact_name, 'First')
+		first.text = self.submission_config['Submitter']['Name']['First']
+		last = ET.SubElement(contact_name, 'Last')
+		last.text = self.submission_config['Submitter']['Name']['Last']
+
+
+		# Create Action
+		action = ET.SubElement(root, "Action")
+		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
+
+		# Add file paths
+		file1 = ET.SubElement(add_files, "File", file_path=self.sample.fastq1)
+		data_type1 = ET.SubElement(file1, "DataType")
+		data_type1.text = "generic-data"
+		
+		file2 = ET.SubElement(add_files, "File", file_path=self.sample.fastq2)
+		data_type2 = ET.SubElement(file2, "DataType")
+		data_type2.text = "generic-data"
+
+		# Attributes block
+		attributes = ET.SubElement(sra, 'Attributes')
+		for attr_name, attr_value in self.sra_metadata.items():
+			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
+			attribute.text = attr_value if attr_value else "Not Provided"  # Handle missing values if needed
+
+		# Add AttributeRefId for BioSample
+		attribute_ref_id = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
+		ref_id = ET.SubElement(attribute_ref_id, "RefId")
+		spuid = ET.SubElement(ref_id, "SPUID", spuid_namespace="_bs")
+		spuid.text = self.top_metadata['ncbi-spuid_namespace']
+
+		# Add Identifier for SRA
+		identifier = ET.SubElement(add_files, "Identifier")
+		spuid_sra = ET.SubElement(identifier, "SPUID", spuid_namespace="_sra")
+		spuid_sra.text = self.top_metadata['ncbi-spuid']
+
+		# Write the XML to file
+		tree = ET.ElementTree(root)
+		output_path = os.path.join(output_dir, f"{self.sample['sample_id']}_sra.xml")
+		tree.write(output_path, encoding="utf-8", xml_declaration=True)
+		print(f"SRA XML generated at {output_path}")
 
 
 
