@@ -3,6 +3,9 @@ import sys
 import yaml
 from lxml import etree
 import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom  # Import minidom for pretty-printing
+import os
+import math  # Required for isnan check
 import pandas as pd
 
 import paramiko
@@ -62,11 +65,11 @@ class MetadataParser:
 		self.metadata_df = metadata_df
 		#self.top_metadata = self.extract_top_metadata()
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Reused columns
+		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Reused columns
 		return self.metadata_df[columns].to_dict(orient='records')[0]  # Get first row as a dictionary
 	def extract_biosample_metadata(self):
 		columns = ['bs_package','isolate','isolation_source','host_disease','host','collected_by','lat_lon',
-				   'host_sex','host_age','geo_location','geo_loc_name','organism','purpose_of_sampling',
+				   'host_sex','host_age','geo_location','organism','purpose_of_sampling',
 				   'race','ethnicity','sample_type','source_type','strain']  # BioSample specific columns
 		return self.metadata_df[columns].to_dict(orient='records')[0]
 	def extract_sra_metadata(self):
@@ -111,171 +114,167 @@ class SFTPClient:
 		print("SFTP connection closed.")
 
 class BiosampleSubmission:
-	def __init__(self, sample, submission_config, metadata_dict):
+	def __init__(self, sample, submission_config, metadata_df):
 		self.sample = sample
 		self.submission_config = submission_config
-		self.metadata_dict = metadata_dict
-
+		parser = MetadataParser(metadata_df)
+		self.top_metadata = parser.extract_top_metadata()
+		self.biosample_metadata = parser.extract_biosample_metadata()
 	def submit(self):
 		# Code to prepare and submit to BioSample
 		print(f"Submitting sample {self.sample.sample_id} to BioSample")
 		# Implement BioSample-specific submission logic here
-
 	def create_biosample_xml(self, output_dir):
+		# Helper function to safely set text, checking for None or NaN values
+		def safe_text(value):
+			if value is None or (isinstance(value, float) and math.isnan(value)):
+				return "Not Provided"
+			return str(value)
 		# Root element
 		submission = ET.Element('Submission')
-
 		# Description block
 		description = ET.SubElement(submission, 'Description')
 		title = ET.SubElement(description, 'Title')
-		title.text = self.metadata['title']
+		title.text = safe_text(self.top_metadata['title'])
 		comment = ET.SubElement(description, 'Comment')
-		comment.text = self.metadata['description']
-
+		comment.text = safe_text(self.top_metadata['description'])
 		# Organization block
 		organization_el = ET.SubElement(description, 'Organization', {
-			'type': self.submission_config['Type'], 'role': self.submission_config['Role'], 'org_id': self.submission_config['Org_ID']
+			'type': self.submission_config['Type'], 
+			'role': self.submission_config['Role'], 
+			'org_id': self.submission_config['Org_ID']
 		})
 		name = ET.SubElement(organization_el, 'Name')
-		name.text = self.submission_config['Name']
-
+		name.text = safe_text(self.submission_config['Submitting_Org'])
 		# Contact block
 		contact_el = ET.SubElement(organization_el, 'Contact', {'email': self.submission_config['Email']})
 		contact_name = ET.SubElement(contact_el, 'Name')
 		first = ET.SubElement(contact_name, 'First')
-		first.text = self.submission_config['Submitter']['Name']['First']
+		first.text = safe_text(self.submission_config['Submitter']['Name']['First'])
 		last = ET.SubElement(contact_name, 'Last')
-		last.text = self.submission_config['Submitter']['Name']['Last']
-
+		last.text = safe_text(self.submission_config['Submitter']['Name']['Last'])
 		# Action block
 		action = ET.SubElement(submission, 'Action')
 		add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
 		data = ET.SubElement(add_data, 'Data', {'content_type': 'xml'})
 		xml_content = ET.SubElement(data, 'XmlContent')
-
 		# BioSample block
 		biosample = ET.SubElement(xml_content, 'BioSample', {'schema_version': '2.0'})
-
 		# SampleId block
 		sample_id = ET.SubElement(biosample, 'SampleId')
 		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': ''})
-		spuid.text = self.metadata_dict['ncbi-spuid_namespace']
-
+		spuid.text = safe_text(self.top_metadata['ncbi-spuid_namespace'])
 		# Descriptor block
 		descriptor = ET.SubElement(biosample, 'Descriptor')
 		sample_title = ET.SubElement(descriptor, 'Title')
-		sample_title.text = self.sample['title']
-
+		sample_title.text = safe_text(self.top_metadata['title'])
 		# Organism block
 		organism = ET.SubElement(biosample, 'Organism')
 		organism_name = ET.SubElement(organism, 'OrganismName')
-		organism_name.text = self.metadata_dict['organism']
-
+		organism_name.text = safe_text(self.biosample_metadata['organism'])
 		# Package block
 		package = ET.SubElement(biosample, 'Package')
-		package.text = self.metadata_dict['bs-package']
-
+		package.text = safe_text(self.biosample_metadata['bs_package'])
 		# Attributes block
 		attributes = ET.SubElement(biosample, 'Attributes')
-		for attr_name, attr_value in self.sample['attributes'].items():
+		for attr_name, attr_value in self.biosample_metadata.items():
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
-			attribute.text = attr_value
-
+			attribute.text = safe_text(attr_value)
 		# Identifier block
 		identifier = ET.SubElement(add_data, 'Identifier')
 		spuid_identifier = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': '_bs'})
-		spuid_identifier.text = self.metadata_dict['ncbi-spuid_namespace']
-
+		spuid_identifier.text = safe_text(self.top_metadata['ncbi-spuid_namespace'])
 		# Save the XML to file
-		tree = ET.ElementTree(submission)
-		output_path = os.path.join(output_dir, f"{self.sample['sample_id']}_biosample.xml")
-		tree.write(output_path, encoding='utf-8', xml_declaration=True)
+		output_path = os.path.join(output_dir, f"{self.sample.sample_id}_biosample.xml")
+		# Pretty-print the XML
+		rough_string = ET.tostring(submission, encoding='utf-8')
+		reparsed = minidom.parseString(rough_string)
+		pretty_xml = reparsed.toprettyxml(indent="  ")
+		with open(output_path, 'w', encoding='utf-8') as f:
+			f.write(pretty_xml)
 		print(f"BioSample XML generated at {output_path}")
 
-
-
+	
 
 
 class SRASubmission:
-	def __init__(self, sample, submission_config, metadata_df, sftp_client):
+	def __init__(self, sample, submission_config, metadata_df):
+	#def __init__(self, sample, submission_config, metadata_df, sftp_client):
 		self.sample = sample
-		self.submission_contact = submission_config
-		self.sftp_client = sftp_client
+		self.submission_config = submission_config
+		#self.sftp_client = sftp_client
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
 		self.sra_metadata = parser.extract_sra_metadata()
-
 	def submit(self):
 		# Upload FASTQ files to SRA via SFTP
-		self.sftp_client.connect()
-		self.sftp_client.upload_file(self.sample.fastq1, f"/uploads/{self.sample.sample_id}_fastq1.fastq")
-		self.sftp_client.upload_file(self.sample.fastq2, f"/uploads/{self.sample.sample_id}_fastq2.fastq")
-		self.sftp_client.close()
+		#self.sftp_client.connect()
+		#self.sftp_client.upload_file(self.sample.fastq1, f"/uploads/{self.sample.sample_id}_fastq1.fastq")
+		#self.sftp_client.upload_file(self.sample.fastq2, f"/uploads/{self.sample.sample_id}_fastq2.fastq")
+		#self.sftp_client.close()
 		print(f"Submitted {self.sample.sample_id} to SRA")
-
-		def create_sra_xml(self, file_name='sra_submission.xml'):
+	def create_sra_xml(self, output_dir):
 		"""Creates an SRA submission XML file based on the provided metadata and file paths."""
-		root = ET.Element("Submission")
-		
+		def safe_text(value):
+			if value is None or (isinstance(value, float) and math.isnan(value)):
+				return "Not Provided"
+			return str(value)
+		# Root element
+		submission = ET.Element('Submission')
 		# Description block
 		description = ET.SubElement(submission, 'Description')
 		title = ET.SubElement(description, 'Title')
-		title.text = self.top_metadata['title']
+		title.text = safe_text(self.top_metadata['title'])
 		comment = ET.SubElement(description, 'Comment')
-		comment.text = self.top_metadata['description']
-
+		comment.text = safe_text(self.top_metadata['description'])
 		# Organization block
 		organization_el = ET.SubElement(description, 'Organization', {
-			'type': self.submission_config['Type'], 'role': self.submission_config['Role'], 'org_id': self.submission_config['Org_ID']
+			'type': self.submission_config['Type'], 
+			'role': self.submission_config['Role'], 
+			'org_id': self.submission_config['Org_ID']
 		})
 		name = ET.SubElement(organization_el, 'Name')
-		name.text = self.submission_config['Name']
-
+		name.text = safe_text(self.submission_config['Submitting_Org'])
 		# Contact block
 		contact_el = ET.SubElement(organization_el, 'Contact', {'email': self.submission_config['Email']})
 		contact_name = ET.SubElement(contact_el, 'Name')
 		first = ET.SubElement(contact_name, 'First')
-		first.text = self.submission_config['Submitter']['Name']['First']
+		first.text = safe_text(self.submission_config['Submitter']['Name']['First'])
 		last = ET.SubElement(contact_name, 'Last')
-		last.text = self.submission_config['Submitter']['Name']['Last']
-
-
+		last.text = safe_text(self.submission_config['Submitter']['Name']['Last'])
 		# Create Action
-		action = ET.SubElement(root, "Action")
+		action = ET.SubElement(submission, "Action")
 		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
-
 		# Add file paths
 		file1 = ET.SubElement(add_files, "File", file_path=self.sample.fastq1)
 		data_type1 = ET.SubElement(file1, "DataType")
-		data_type1.text = "generic-data"
-		
+		data_type1.text = "generic-data"	
 		file2 = ET.SubElement(add_files, "File", file_path=self.sample.fastq2)
 		data_type2 = ET.SubElement(file2, "DataType")
 		data_type2.text = "generic-data"
-
 		# Attributes block
-		attributes = ET.SubElement(sra, 'Attributes')
+		attributes = ET.SubElement(add_files, 'Attributes')
 		for attr_name, attr_value in self.sra_metadata.items():
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
-			attribute.text = attr_value if attr_value else "Not Provided"  # Handle missing values if needed
-
+			attribute.text = safe_text(attr_value)
 		# Add AttributeRefId for BioSample
 		attribute_ref_id = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
 		ref_id = ET.SubElement(attribute_ref_id, "RefId")
-		spuid = ET.SubElement(ref_id, "SPUID", spuid_namespace="_bs")
-		spuid.text = self.top_metadata['ncbi-spuid_namespace']
-
+		spuid = ET.SubElement(ref_id, 'SPUID', {'spuid_namespace': '_bs'})
+		spuid.text = safe_text(self.top_metadata['ncbi-spuid_namespace'])
 		# Add Identifier for SRA
 		identifier = ET.SubElement(add_files, "Identifier")
 		spuid_sra = ET.SubElement(identifier, "SPUID", spuid_namespace="_sra")
-		spuid_sra.text = self.top_metadata['ncbi-spuid']
-
+		spuid_sra.text = safe_text(self.top_metadata['ncbi-spuid'])
 		# Write the XML to file
-		tree = ET.ElementTree(root)
-		output_path = os.path.join(output_dir, f"{self.sample['sample_id']}_sra.xml")
-		tree.write(output_path, encoding="utf-8", xml_declaration=True)
+		output_path = os.path.join(output_dir, f"{self.sample.sample_id}_sra.xml")
+		# Pretty-print the XML
+		rough_string = ET.tostring(submission, encoding='utf-8')
+		reparsed = minidom.parseString(rough_string)
+		pretty_xml = reparsed.toprettyxml(indent="  ")
+		with open(output_path, 'w', encoding='utf-8') as f:
+			f.write(pretty_xml)
 		print(f"SRA XML generated at {output_path}")
-
 
 
 class GenbankSubmission:
@@ -324,11 +323,13 @@ class GenbankSubmission:
 sftp_client = SFTPClient(config.config)
 
 # Perform BioSample submission
-biosample_submission = BiosampleSubmission(sample)
-biosample_submission.submit()
+biosample_submission = BiosampleSubmission(sample, config_dict, metadata_df)
+biosample_submission.create_biosample_xml(os.getcwd())
 
 # Perform SRA submission
-sra_submission = SRASubmission(sample, sftp_client)
+sra_submission = SRASubmission(sample, config_dict, metadata_df, sftp_client)
+sra_submission = SRASubmission(sample, config_dict, metadata_df)
+sra_submission.create_sra_xml(os.getcwd())
 sra_submission.submit()
 
 # Perform Genbank submission
@@ -342,10 +343,20 @@ config_parser = SubmissionConfigParser("submission_config.yaml")
 config_dict = config_parser.load_config()
 sample = Sample(sample_id="IL0005", metadata_file="IL0005.tsv", fastq1="IL0005/raw_reads/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz", 
 				fastq2="IL0005/raw_reads/LIY15306A2_2022_054_3005007722.R_2.mpx.fastq.gz", fasta_file="IL0005.fasta", gff_file="IL0005.tbl")
-metadata_parser = MetadataParser("IL0005.tsv")
-metadata_dict = metadata_parser.get_all_data()
+metadata_df = pd.read_csv('IL0005_new.tsv', sep='\t')
+
+
 submission = NCBISubmission(sample, config.config)
 submission.submit()
+
+
+
+
+
+
+
+
+
 
 
 
