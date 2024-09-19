@@ -185,7 +185,7 @@ class RepeatMasker_Annotations:
         if rem_gff.loc[self.first_ITR,'start'] !=1:
             error = f"First repeat region coordinates does not start at 1: ({first_region_coord1}, {first_region_coord2}) in {self.samp_name} gff"
             itr_errors.append(error)
-        # change the ITR to start at 1
+            # change the ITR to start at 1
             rem_gff.loc[self.first_ITR,'start'] = 1
 
         # Check that the final coordinate in the second ITR extends to the end, if not output so in errors file

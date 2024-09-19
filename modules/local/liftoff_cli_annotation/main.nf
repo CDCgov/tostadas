@@ -20,7 +20,7 @@ process LIFTOFF_CLI {
         }
 
 	input:
-	tuple val(meta), path(fasta), path(fastq1), path(fastq2)
+	tuple val(meta), path(metadata), path(fasta), path(fastq1), path(fastq2)
     path ref_fasta_path 
     path ref_gff_path 
 

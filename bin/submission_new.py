@@ -11,6 +11,7 @@ import math  # Required for isnan check
 import pandas as pd
 from abc import ABC, abstractmethod
 import paramiko
+import ftplib
 from zipfile import ZipFile
 
 def submission_main():
@@ -39,6 +40,7 @@ def submission_main():
 
 	# Create the SFTP client
 	sftp_client = SFTPClient(config_dict)
+	ftp_client = FTPClient(config_dict)
 
 	# Conditional submissions based on argparse flags
 	if parameters['biosample']:
@@ -195,6 +197,19 @@ class SFTPClient:
 			self.ssh.close()
 		print("SFTP connection closed.")
 
+class FTPClient:
+	def __init__(self, config):
+		self.host = config['NCBI_ftp_host']
+		self.username = config['NCBI_username']
+		self.password = config['NCBI_password']
+		self.port = config.get('port', 22)
+		self.ftp = ftplib.FTP(self.host)
+		self.ssh = None
+
+		#ftp.login(user=self.username, passwd=self.password)
+
+
+
 class XMLSubmission(ABC):
 	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
 		self.sample = sample
@@ -251,7 +266,7 @@ class XMLSubmission(ABC):
 	def add_attributes_block(self, submission):
 		"""Add the attributes block, which differs between submissions."""
 		pass
-	
+
 class BiosampleSubmission(XMLSubmission):
 	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
 		# Properly initialize the base class (XMLSubmission) 

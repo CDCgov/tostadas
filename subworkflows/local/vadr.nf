@@ -12,8 +12,8 @@ include { VADR_POST_CLEANUP                                 } from "../../module
 
 workflow RUN_VADR {
     take:
-        fasta
-        metadata_ch
+        fasta // meta, metadata, fasta_path, fastq1, fastq2
+
     main:
         // run vadr processes
 
@@ -25,9 +25,12 @@ workflow RUN_VADR {
             VADR_TRIM.out.trimmed_fasta,
             params.vadr_models_dir
         )
-        cleanup_ch = metadata_ch.join(fasta)
-        cleanup_ch = cleanup_ch.join(VADR_ANNOTATION.out.vadr_outputs)
 
+        cleanup_ch = fasta.map { meta, tsv, fa, fq1, fq2 ->
+            [meta, tsv] // drop everything except the tsv for post-cleanup input
+        }
+        cleanup_ch = cleanup_ch.join(VADR_ANNOTATION.out.vadr_outputs)
+        
         VADR_POST_CLEANUP (
             cleanup_ch
         )
