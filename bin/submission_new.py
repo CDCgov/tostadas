@@ -1,5 +1,7 @@
 import os
 import sys
+from pathlib import Path
+import argparse
 import yaml
 from lxml import etree
 import xml.etree.ElementTree as ET
@@ -7,25 +9,111 @@ import xml.dom.minidom as minidom  # Import minidom for pretty-printing
 import os
 import math  # Required for isnan check
 import pandas as pd
-
+from abc import ABC, abstractmethod
 import paramiko
 from zipfile import ZipFile
 
+def submission_main():
+	""" Main for initiating submission steps
+	"""
+	# Get all parameters from argparse
+	parameters_class = GetParams()
+	parameters = parameters_class.parameters
+
+	# Example usage:
+	config_parser = SubmissionConfigParser(parameters)
+	config_dict = config_parser.load_config()
+	
+	# Read in metadata file
+	metadata_df = pd.read_csv(parameters['metadata_file'], sep='\t')
+	
+	# Initialize the Sample object with parameters from argparse
+	sample = Sample(
+		sample_id=parameters['submission_name'],
+		metadata_file=parameters['metadata_file'],
+		fastq1=parameters.get('fastq1'),
+		fastq2=parameters.get('fastq2'),
+		fasta_file=parameters.get('fasta_file'),
+		gff_file=parameters.get('annotation_file')
+	)
+
+	# Create the SFTP client
+	sftp_client = SFTPClient(config_dict)
+
+	# Conditional submissions based on argparse flags
+	if parameters['biosample']:
+		# Perform BioSample submission
+		biosample_submission = BiosampleSubmission(sample, config_dict, metadata_df, f'{parameters['output_dir']}/biosample', sftp_client)
+		biosample_submission.submit()
+
+	if parameters['sra']:
+		# Perform SRA submission
+		sra_submission = SRASubmission(sample, config_dict, metadata_df, f'{parameters['output_dir']}/sra', sftp_client)
+		sra_submission.submit()
+
+	if parameters['genbank']:
+		# Perform Genbank submission
+		genbank_submission = GenbankSubmission(sample, config_dict, metadata_df, f'{parameters['output_dir']}/genbank', sftp_client)
+		genbank_submission.submit()
+		# Add more GB functions for table2asn submission and creating/emailing zip files
+
+	# Add more submission logic for GISAID, etc.
+
+class GetParams:
+	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
+	"""
+	def __init__(self):
+		self.parameters = self.get_inputs()
+
+	# read in parameters
+	def get_inputs(self):
+		""" Gets the user inputs from the argparse
+		"""
+		args = self.get_args().parse_args()
+		parameters = vars(args)
+		return parameters
+
+	@staticmethod
+	def get_args():
+		""" Expected args from user and default values associated with them
+		"""
+		# initialize parser
+		parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+									 description='Automate the process of batch uploading consensus sequences and metadata to databases of your choices')
+		# required parameters (do not have default)
+		parser.add_argument("--submission_name", help='Name of the submission',	required=True)	
+		parser.add_argument("--config_file", help="Name of the submission onfig file",	required=True)
+		parser.add_argument("--metadata_file", help="Name of the validated metadata tsv file", required=True)
+		parser.add_argument("--species", help="Type of organism data", required=True)
+		# optional parameters
+		parser.add_argument("-o", "--output_dir", type=str, default='submission_outputs',
+							help="Output Directory for final Files, default is current directory")
+		parser.add_argument("--test", help="Whether to perform a test submission.", required=False,	action="store_const", default=False, const=True)
+		parser.add_argument("--fasta_file",	help="Fasta file to be submitted", required=False)
+		parser.add_argument("--annotation_file", help="An annotation file to add to a Genbank submission", required=False)
+		parser.add_argument("--fastq1", help="Fastq R1 file to be submitted", required=False)	
+		parser.add_argument("--fastq2", help="Fastq R2 file to be submitted", required=False)	
+		parser.add_argument("--genbank", help="Optional flag to run Genbank submission", action="store_const", default=False, const=True)
+		parser.add_argument("--biosample", help="Optional flag to run BioSample submission", action="store_const", default=False, const=True)
+		parser.add_argument("--sra", help="Optional flag to run SRA submission", action="store_const", default=False, const=True)
+		parser.add_argument("--gisaid", help="Optional flag to run GISAID submission", action="store_const", default=False, const=True)
+		return parser
+	
 class SubmissionConfigParser:
 	""" Class constructor to read in config file as dict
 	"""
-	def __init__(self, config_file):
+	def __init__(self, parameters):
 		# Load submission configuration
-		self.config_file = config_file
+		self.parameters = parameters
 	def load_config(self):
 		# Parse the config file (could be JSON, YAML, etc.)
 		# Example: returns a dictionary with SFTP credentials, paths, etc.
-		with open(self.config_file, "r") as f:
+		with open(self.parameters['config_file'], "r") as f:
 			config_dict = yaml.load(f, Loader=yaml.BaseLoader) # Load yaml as str only
 		if type(config_dict) is dict:
 			for k, v in config_dict.items():
 				# If GISAID submission, check that GISAID keys have values
-				if gisaid_submission:
+				if self.parameters["gisaid_submission"]:
 					if k.startswith('GISAID') and not v:
 						print("Error: There are missing GISAID values in the config file.", file=sys.stderr)
 						#sys.exit(1)					
@@ -63,9 +151,8 @@ class Sample:
 class MetadataParser:
 	def __init__(self, metadata_df):
 		self.metadata_df = metadata_df
-		#self.top_metadata = self.extract_top_metadata()
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Reused columns
+		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Main columns
 		return self.metadata_df[columns].to_dict(orient='records')[0]  # Get first row as a dictionary
 	def extract_biosample_metadata(self):
 		columns = ['bs_package','isolate','isolation_source','host_disease','host','collected_by','lat_lon',
@@ -78,17 +165,14 @@ class MetadataParser:
 				   'nanopore_library_source','nanopore_library_strategy','nanopore_sequencing_instrument']  # SRA specific columns
 		return self.metadata_df[columns].to_dict(orient='records')[0]
 
-
-
 class SFTPClient:
 	def __init__(self, config):
-		self.host = config['sftp_host']
-		self.username = config['username']
-		self.password = config['password']
+		self.host = config['NCBI_sftp_host']
+		self.username = config['NCBI_username']
+		self.password = config['NCBI_password']
 		self.port = config.get('port', 22)
 		self.sftp = None
 		self.ssh = None
-
 	def connect(self):
 		try:
 			self.ssh = paramiko.SSHClient()
@@ -98,14 +182,12 @@ class SFTPClient:
 			print(f"Connected to SFTP: {self.host}")
 		except Exception as e:
 			raise ConnectionError(f"Failed to connect to SFTP: {e}")
-
 	def upload_file(self, file_path, destination_path):
 		try:
 			self.sftp.put(file_path, destination_path)
 			print(f"Uploaded {file_path} to {destination_path}")
 		except Exception as e:
 			raise IOError(f"Failed to upload {file_path}: {e}")
-
 	def close(self):
 		if self.sftp:
 			self.sftp.close()
@@ -113,332 +195,184 @@ class SFTPClient:
 			self.ssh.close()
 		print("SFTP connection closed.")
 
-class BiosampleSubmission:
-	def __init__(self, sample, submission_config, metadata_df):
+class XMLSubmission(ABC):
+	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
 		self.sample = sample
 		self.submission_config = submission_config
+		self.output_dir = output_dir
+		self.sftp_client = sftp_client
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
-		self.biosample_metadata = parser.extract_biosample_metadata()
-	def submit(self):
-		# Code to prepare and submit to BioSample
-		print(f"Submitting sample {self.sample.sample_id} to BioSample")
-		# Implement BioSample-specific submission logic here
-	def create_biosample_xml(self, output_dir):
-		# Helper function to safely set text, checking for None or NaN values
-		def safe_text(value):
-			if value is None or (isinstance(value, float) and math.isnan(value)):
-				return "Not Provided"
-			return str(value)
+	def safe_text(self, value):
+		if value is None or (isinstance(value, float) and math.isnan(value)):
+			return "Not Provided"
+		return str(value)
+	def create_xml(self, output_dir):
 		# Root element
 		submission = ET.Element('Submission')
-		# Description block
+		# Description block (common across all submissions)
 		description = ET.SubElement(submission, 'Description')
 		title = ET.SubElement(description, 'Title')
-		title.text = safe_text(self.top_metadata['title'])
+		title.text = self.safe_text(self.top_metadata['title'])
 		comment = ET.SubElement(description, 'Comment')
-		comment.text = safe_text(self.top_metadata['description'])
-		# Organization block
+		comment.text = self.safe_text(self.top_metadata['description'])
+		# Organization block (common across all submissions)
 		organization_el = ET.SubElement(description, 'Organization', {
-			'type': self.submission_config['Type'], 
-			'role': self.submission_config['Role'], 
+			'type': self.submission_config['Type'],
+			'role': self.submission_config['Role'],
 			'org_id': self.submission_config['Org_ID']
 		})
 		name = ET.SubElement(organization_el, 'Name')
-		name.text = safe_text(self.submission_config['Submitting_Org'])
-		# Contact block
+		name.text = self.safe_text(self.submission_config['Submitting_Org'])
+		# Contact block (common across all submissions)
 		contact_el = ET.SubElement(organization_el, 'Contact', {'email': self.submission_config['Email']})
 		contact_name = ET.SubElement(contact_el, 'Name')
 		first = ET.SubElement(contact_name, 'First')
-		first.text = safe_text(self.submission_config['Submitter']['Name']['First'])
+		first.text = self.safe_text(self.submission_config['Submitter']['Name']['First'])
 		last = ET.SubElement(contact_name, 'Last')
-		last.text = safe_text(self.submission_config['Submitter']['Name']['Last'])
-		# Action block
+		last.text = self.safe_text(self.submission_config['Submitter']['Name']['Last'])
+		# Call subclass-specific methods to add the unique parts
+		self.add_action_block(submission)
+		self.add_attributes_block(submission)
+		# Save the XML to file
+		xml_output_path = os.path.join(output_dir, "submission.xml")
+		rough_string = ET.tostring(submission, encoding='utf-8')
+		reparsed = minidom.parseString(rough_string)
+		pretty_xml = reparsed.toprettyxml(indent="  ")
+		with open(xml_output_path, 'w', encoding='utf-8') as f:
+			f.write(pretty_xml)
+		print(f"XML generated at {xml_output_path}")
+		return xml_output_path
+	@abstractmethod
+	def add_action_block(self, submission):
+		"""Add the action block, which differs between submissions."""
+		pass
+	@abstractmethod
+	def add_attributes_block(self, submission):
+		"""Add the attributes block, which differs between submissions."""
+		pass
+	
+class BiosampleSubmission(XMLSubmission):
+	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
+		# Properly initialize the base class (XMLSubmission) 
+		super().__init__(sample, submission_config, metadata_df, output_dir, sftp_client)
+		# Use the MetadataParser to extract metadata
+		parser = MetadataParser(metadata_df)
+		self.top_metadata = parser.extract_top_metadata()
+		self.biosample_metadata = parser.extract_biosample_metadata()
+		# Generate the BioSample XML upon initialization
+		self.xml_output_path = self.create_xml(output_dir) 
+	def add_action_block(self, submission):
 		action = ET.SubElement(submission, 'Action')
 		add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
 		data = ET.SubElement(add_data, 'Data', {'content_type': 'xml'})
 		xml_content = ET.SubElement(data, 'XmlContent')
-		# BioSample block
+		# BioSample-specific XML elements
 		biosample = ET.SubElement(xml_content, 'BioSample', {'schema_version': '2.0'})
-		# SampleId block
 		sample_id = ET.SubElement(biosample, 'SampleId')
 		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': ''})
-		spuid.text = safe_text(self.top_metadata['ncbi-spuid_namespace'])
-		# Descriptor block
-		descriptor = ET.SubElement(biosample, 'Descriptor')
-		sample_title = ET.SubElement(descriptor, 'Title')
-		sample_title.text = safe_text(self.top_metadata['title'])
-		# Organism block
-		organism = ET.SubElement(biosample, 'Organism')
-		organism_name = ET.SubElement(organism, 'OrganismName')
-		organism_name.text = safe_text(self.biosample_metadata['organism'])
-		# Package block
-		package = ET.SubElement(biosample, 'Package')
-		package.text = safe_text(self.biosample_metadata['bs_package'])
-		# Attributes block
+		spuid.text = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+	def add_attributes_block(self, submission):
+		biosample = submission.find(".//BioSample")
 		attributes = ET.SubElement(biosample, 'Attributes')
 		for attr_name, attr_value in self.biosample_metadata.items():
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
-			attribute.text = safe_text(attr_value)
-		# Identifier block
-		identifier = ET.SubElement(add_data, 'Identifier')
-		spuid_identifier = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': '_bs'})
-		spuid_identifier.text = safe_text(self.top_metadata['ncbi-spuid_namespace'])
-		# Save the XML to file
-		output_path = os.path.join(output_dir, f"{self.sample.sample_id}_biosample.xml")
-		# Pretty-print the XML
-		rough_string = ET.tostring(submission, encoding='utf-8')
-		reparsed = minidom.parseString(rough_string)
-		pretty_xml = reparsed.toprettyxml(indent="  ")
-		with open(output_path, 'w', encoding='utf-8') as f:
-			f.write(pretty_xml)
-		print(f"BioSample XML generated at {output_path}")
+			attribute.text = self.safe_text(attr_value)
+	def submit(self):
+		# Code to prepare and submit to BioSample
+		submit_ready_file = Path(os.path.join(output_dir, 'submit.ready'))
+		submit_ready_file.touch()
+		self.sftp_client.connect()
+		self.sftp_client.upload_file(submit_ready_file, f"{self.sample.sample_id}/{submit_ready_file}")
+		self.sftp_client.upload_file(self.xml_output_path, f"{self.sample.sample_id}/{os.path.basename}")
+		self.sftp_client.close()
+		print(f"Submitted sample {self.sample.sample_id} to BioSample")
 
-	
-
-
-class SRASubmission:
-	def __init__(self, sample, submission_config, metadata_df):
-	#def __init__(self, sample, submission_config, metadata_df, sftp_client):
-		self.sample = sample
-		self.submission_config = submission_config
-		#self.sftp_client = sftp_client
+class SRASubmission(XMLSubmission):
+	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
+		# Properly initialize the base class (XMLSubmission) 
+		super().__init__(sample, submission_config, metadata_df, output_dir, sftp_client)
+		# Use the MetadataParser to extract metadata
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
 		self.sra_metadata = parser.extract_sra_metadata()
-	def submit(self):
-		# Upload FASTQ files to SRA via SFTP
-		#self.sftp_client.connect()
-		#self.sftp_client.upload_file(self.sample.fastq1, f"/uploads/{self.sample.sample_id}_fastq1.fastq")
-		#self.sftp_client.upload_file(self.sample.fastq2, f"/uploads/{self.sample.sample_id}_fastq2.fastq")
-		#self.sftp_client.close()
-		print(f"Submitted {self.sample.sample_id} to SRA")
-	def create_sra_xml(self, output_dir):
-		"""Creates an SRA submission XML file based on the provided metadata and file paths."""
-		def safe_text(value):
-			if value is None or (isinstance(value, float) and math.isnan(value)):
-				return "Not Provided"
-			return str(value)
-		# Root element
-		submission = ET.Element('Submission')
-		# Description block
-		description = ET.SubElement(submission, 'Description')
-		title = ET.SubElement(description, 'Title')
-		title.text = safe_text(self.top_metadata['title'])
-		comment = ET.SubElement(description, 'Comment')
-		comment.text = safe_text(self.top_metadata['description'])
-		# Organization block
-		organization_el = ET.SubElement(description, 'Organization', {
-			'type': self.submission_config['Type'], 
-			'role': self.submission_config['Role'], 
-			'org_id': self.submission_config['Org_ID']
-		})
-		name = ET.SubElement(organization_el, 'Name')
-		name.text = safe_text(self.submission_config['Submitting_Org'])
-		# Contact block
-		contact_el = ET.SubElement(organization_el, 'Contact', {'email': self.submission_config['Email']})
-		contact_name = ET.SubElement(contact_el, 'Name')
-		first = ET.SubElement(contact_name, 'First')
-		first.text = safe_text(self.submission_config['Submitter']['Name']['First'])
-		last = ET.SubElement(contact_name, 'Last')
-		last.text = safe_text(self.submission_config['Submitter']['Name']['Last'])
-		# Create Action
+		# Generate the BioSample XML upon initialization
+		self.xml_output_path = self.create_xml(output_dir) 
+	def add_action_block(self, submission):
 		action = ET.SubElement(submission, "Action")
 		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
-		# Add file paths
 		file1 = ET.SubElement(add_files, "File", file_path=self.sample.fastq1)
 		data_type1 = ET.SubElement(file1, "DataType")
-		data_type1.text = "generic-data"	
+		data_type1.text = "generic-data"
 		file2 = ET.SubElement(add_files, "File", file_path=self.sample.fastq2)
 		data_type2 = ET.SubElement(file2, "DataType")
 		data_type2.text = "generic-data"
-		# Attributes block
+	def add_attributes_block(self, submission):
+		add_files = submission.find(".//AddFiles")
 		attributes = ET.SubElement(add_files, 'Attributes')
 		for attr_name, attr_value in self.sra_metadata.items():
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
-			attribute.text = safe_text(attr_value)
-		# Add AttributeRefId for BioSample
-		attribute_ref_id = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
-		ref_id = ET.SubElement(attribute_ref_id, "RefId")
-		spuid = ET.SubElement(ref_id, 'SPUID', {'spuid_namespace': '_bs'})
-		spuid.text = safe_text(self.top_metadata['ncbi-spuid_namespace'])
-		# Add Identifier for SRA
-		identifier = ET.SubElement(add_files, "Identifier")
-		spuid_sra = ET.SubElement(identifier, "SPUID", spuid_namespace="_sra")
-		spuid_sra.text = safe_text(self.top_metadata['ncbi-spuid'])
-		# Write the XML to file
-		output_path = os.path.join(output_dir, f"{self.sample.sample_id}_sra.xml")
-		# Pretty-print the XML
-		rough_string = ET.tostring(submission, encoding='utf-8')
-		reparsed = minidom.parseString(rough_string)
-		pretty_xml = reparsed.toprettyxml(indent="  ")
-		with open(output_path, 'w', encoding='utf-8') as f:
-			f.write(pretty_xml)
-		print(f"SRA XML generated at {output_path}")
+			attribute.text = self.safe_text(attr_value)
+	def submit(self):
+		# Upload FASTQ files and XML to SRA via SFTP
+		submit_ready_file = Path(os.path.join(self.output_dir, 'submit.ready'))
+		submit_ready_file.touch()
+		self.sftp_client.connect()
+		self.sftp_client.upload_file(submit_ready_file,f"{self.sample.sample_id}/{submit_ready_file}")
+		self.sftp_client.upload_file(self.xml_output_path, f"{self.sample.sample_id}/{os.path.basename}")
+		self.sftp_client.upload_file(self.sample.fastq1, f"{self.sample.sample_id}/{self.sample.fastq1}")
+		self.sftp_client.upload_file(self.sample.fastq2, f"{self.sample.sample_id}/{self.sample.fastq2}")
+		self.sftp_client.close()
+		print(f"Submitted {self.sample.sample_id} to SRA")
 
 
-class GenbankSubmission:
-	def __init__(self, sample, config, sftp_client):
-		self.sample = sample
-		self.config = config
-		self.sftp_client = sftp_client
-		self.submission_files_dir = f"{sample.sample_id}_genbank_submission_files"
-
-	def prepare_genbank_files(self):
-		os.makedirs(self.submission_files_dir, exist_ok=True)
-		create_genbank_files(self.config, self.sample.metadata_file, self.sample.fasta_file, self.sample.sample_id, self.submission_files_dir)
-		print(f"Genbank files prepared for {self.sample.sample_id}")
-
-	def run_table2asn(self):
-		create_genbank_table2asn(self.sample.sample_id, self.submission_files_dir, self.sample.gff_file)
-		print(f"Table2asn executed for {self.sample.sample_id}")
-
-	def zip_genbank_files(self):
-		create_genbank_zip(self.sample.sample_id, self.submission_files_dir)
-		print(f"Genbank submission files zipped for {self.sample.sample_id}")
-
+class GenbankSubmission(XMLSubmission):
+	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
+		# Properly initialize the base class (XMLSubmission) 
+		super().__init__(sample, submission_config, metadata_df, output_dir, sftp_client)
+		# Use the MetadataParser to extract metadata
+		parser = MetadataParser(metadata_df)
+		self.top_metadata = parser.extract_top_metadata()
+		self.genbank_metadata = parser.extract_genbank_metadata()
+		# Generate the BioSample XML upon initialization
+		self.xml_output_path = self.create_xml(output_dir) 
+	def add_action_block(self, submission):
+		action = ET.SubElement(submission, "Action")
+		add_files = ET.SubElement(action, "AddFiles", target_db="Genbank")
+		file1 = ET.SubElement(add_files, "File", file_path=self.sample.fasta_file)
+		data_type1 = ET.SubElement(file1, "DataType")
+		data_type1.text = "generic-data"
+		file2 = ET.SubElement(add_files, "File", file_path=self.sample.gff_file)
+		data_type2 = ET.SubElement(file2, "DataType")
+		data_type2.text = "generic-data"
+	def add_attributes_block(self, submission):
+		add_files = submission.find(".//AddFiles")
+		attributes = ET.SubElement(add_files, 'Attributes')
+		for attr_name, attr_value in self.genbank_metadata.items():
+			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
+			attribute.text = self.safe_text(attr_value)
 	def submit_sftp(self):
+		# Upload FASTQ files and XML to SRA via SFTP
+		submit_ready_file = Path(os.path.join(self.output_dir, 'submit.ready'))
+		submit_ready_file.touch()
 		self.sftp_client.connect()
-		self.sftp_client.upload_file(os.path.join(self.submission_files_dir, f"{self.sample.sample_id}.sqn"), f"/uploads/{self.sample.sample_id}.sqn")
+		self.sftp_client.upload_file(submit_ready_file,f"{self.sample.sample_id}/{submit_ready_file}")
+		self.sftp_client.upload_file(self.xml_output_path, f"{self.sample.sample_id}/{os.path.basename}")
+		self.sftp_client.upload_file(self.sample.fasta_file, f"{self.sample.sample_id}/{self.sample.fasta_file}")
+		self.sftp_client.upload_file(self.sample.gff_file, f"{self.sample.sample_id}/{self.sample.gff_file}")
 		self.sftp_client.close()
-		print(f"Genbank .sqn file submitted via SFTP for {self.sample.sample_id}")
-
-	def submit_email(self):
-		self.zip_genbank_files()
-		print(f"Genbank files ready for email submission for {self.sample.sample_id}")
-		# Logic to email the zipped files would go here
-
-	def submit(self):
-		self.prepare_genbank_files()
-		self.run_table2asn()
-
-		if self.config['genbank_submission_method'] == 'sftp':
-			self.submit_sftp()
-		elif self.config['genbank_submission_method'] == 'email':
-			self.submit_email()
-
-
-
-# Create the SFTP client
-sftp_client = SFTPClient(config.config)
-
-# Perform BioSample submission
-biosample_submission = BiosampleSubmission(sample, config_dict, metadata_df)
-biosample_submission.create_biosample_xml(os.getcwd())
-
-# Perform SRA submission
-sra_submission = SRASubmission(sample, config_dict, metadata_df, sftp_client)
-sra_submission = SRASubmission(sample, config_dict, metadata_df)
-sra_submission.create_sra_xml(os.getcwd())
-sra_submission.submit()
-
-# Perform Genbank submission
-genbank_submission = GenbankSubmission(sample, config.config, sftp_client)
-genbank_submission.submit()
-
-
-
-# Example usage:
-config_parser = SubmissionConfigParser("submission_config.yaml")
-config_dict = config_parser.load_config()
-sample = Sample(sample_id="IL0005", metadata_file="IL0005.tsv", fastq1="IL0005/raw_reads/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz", 
-				fastq2="IL0005/raw_reads/LIY15306A2_2022_054_3005007722.R_2.mpx.fastq.gz", fasta_file="IL0005.fasta", gff_file="IL0005.tbl")
-metadata_df = pd.read_csv('IL0005_new.tsv', sep='\t')
-
-
-submission = NCBISubmission(sample, config.config)
-submission.submit()
-
-
-
-
-
-
-
-
-
-
-
-
-
-class NCBISubmission:
-	def __init__(self, sample, config):
-		self.sample = sample
-		self.config = config
-		self.sftp_client = SFTPClient(self.config)
-		self.submission_files_dir = f"{sample.sample_id}_submission_files"
-
-	def prepare_submission(self):
-		# Prepare files for submission
-		self.sample.validate_files()
-
-	def submit_biosample(self):
-		# Code to prepare and submit to BioSample
-		print(f"Submitting sample {self.sample.sample_id} to BioSample")
-
-	def submit_sra(self):
-		# Upload FASTQ files to SRA
-		self.sftp_client.connect()
-		self.sftp_client.upload_file(self.sample.fastq1, f"/uploads/{self.sample.sample_id}_fastq1.fastq")
-		self.sftp_client.upload_file(self.sample.fastq2, f"/uploads/{self.sample.sample_id}_fastq2.fastq")
-		self.sftp_client.close()
-
+		print(f"Submitted {self.sample.sample_id} to SRA")
 	def prepare_genbank_files(self):
-		# Prepare the Genbank submission files using the provided function
-		os.makedirs(self.submission_files_dir, exist_ok=True)
-		create_genbank_files(self.config, self.sample.metadata_file, self.sample.fasta_file, self.sample.sample_id, self.submission_files_dir)
+		# Code for preparing table2asn files
 		print(f"Genbank files prepared for {self.sample.sample_id}")
-
-	def run_table2asn(self):
-		# Run the table2asn command using the provided function
-		create_genbank_table2asn(self.sample.sample_id, self.submission_files_dir, self.sample.gff_file)
-		print(f"Table2asn executed for {self.sample.sample_id}")
-
-	def zip_genbank_files(self):
-		# Create a zip file for Genbank submission using the provided function
-		create_genbank_zip(self.sample.sample_id, self.submission_files_dir)
-		print(f"Genbank submission files zipped for {self.sample.sample_id}")
-
-	def submit_genbank_sftp(self):
-		# Submit Genbank files via SFTP
-		self.sftp_client.connect()
-		self.sftp_client.upload_file(os.path.join(self.submission_files_dir, f"{self.sample.sample_id}.sqn"), f"/uploads/{self.sample.sample_id}.sqn")
-		self.sftp_client.close()
-
-	def submit_genbank_email(self):
-		# Zipping the files to email
-		self.zip_genbank_files()
-		# You can add an email function here to automate sending an email with the zip file as an attachment.
-		print(f"Genbank files ready for email submission for {self.sample.sample_id}")
-
-	def submit_genbank(self):
-		# First, prepare Genbank files
-		self.prepare_genbank_files()
-		# Run table2asn to create .sqn file
-		self.run_table2asn()
-
-		# Determine how to submit Genbank files based on config
-		if self.config['genbank_submission_method'] == 'sftp':
-			self.submit_genbank_sftp()
-		elif self.config['genbank_submission_method'] == 'email':
-			self.submit_genbank_email()
-
-	def submit(self):
-		self.prepare_submission()
-		self.submit_biosample()
-		self.submit_sra()
-		if self.sample.fasta_file and self.sample.gff_file:
-			self.submit_genbank()
+	def table2asn(self):
+		# Code for table2asn process
+		print("Running table2asn...")
+	def create_zip_files(self):
+		# Code for creating a zip archive for Genbank submission
+		print("Creating zip files...")
 
 
 
-
-#submission_name = "IL0005"
-#config_file = "default_config.yaml"
-#metadata_file = "IL0005.tsv"
-#fasta_file = "IL0005.fasta"
-#annotation_file = "IL0005.tbl"
-#fastq1 = "IL0005/raw_reads/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz"
-#fastq2 = "IL0005/raw_reads/LIY15306A2_2022_054_3005007722.R_2.mpx.fastq.gz"
-#organism = "mpxv"
-#genbank, biosample, sra, gisaid
+if __name__ == "__main__":
+	submission_main()
