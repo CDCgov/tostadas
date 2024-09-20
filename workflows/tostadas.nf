@@ -92,7 +92,6 @@ workflow TOSTADAS {
             // run liftoff annotation process + repeatmasker 
             if ( params.repeatmasker_liftoff && !params.vadr ) {
                 // run repeatmasker annotation on files
-                submission_ch.view()
                 REPEATMASKER_LIFTOFF (
                     submission_ch
                 )
