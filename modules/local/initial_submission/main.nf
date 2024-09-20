@@ -1,10 +1,10 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                            RUNNING SUBMISSION PREP
+                            RUNNING SUBMISSION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-process SUBMISSION_PREP {
+process SUBMISSION {
 
     publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
@@ -18,18 +18,18 @@ process SUBMISSION_PREP {
 
     // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
-    def biosample = params.biosample == 'true' ? '--biosample' : ''
-    def sra = params.sra == 'true' ? '--sra' : ''
-    def genbank = params.genbank == 'true' ? '--genbank' : ''
+    def biosample = params.biosample == true ? '--biosample' : ''
+    def sra = params.sra == true ? '--sra' : ''
+    def genbank = params.genbank == true ? '--genbank' : ''
 
     script:
     """     
     submission_new.py \
-        --submission_name $meta.id
+        --submission_name $meta.id \
         --config_file $submission_config  \
         --metadata_file $validated_meta_path \
-        --species $params.organism \
-        --output_dir  \
+        --species $params.species \
+        --output_dir  . \
         --fasta_file $fasta_path \
         --annotation_file $annotations_path \
         --fastq1 $fastq_1 \
@@ -40,4 +40,5 @@ process SUBMISSION_PREP {
     """
     output:
     path "${validated_meta_path.getBaseName()}", emit: submission_files
+    path "*.csv", emit: submission_log
 }
