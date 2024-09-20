@@ -237,7 +237,7 @@ class ValidateChecks:
 		self.final_cols = []
 
 		# field requirements
-		self.required_core = ["sample_name", "ncbi-spuid", "author", "isolate", "organism",
+		self.required_core = ["sample_name", "ncbi-spuid", "authors", "isolate", "organism",
 							  "collection_date", "country"]
 		self.optional_core = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
 		self.case_fields = ["sex", "age", "race", "ethnicity"]
@@ -311,9 +311,9 @@ class ValidateChecks:
 				assert self.author_valid is True
 			except AssertionError:
 				raise AssertionError(f'Author valid flag does not have the proper default value of True')
-			if str(sample_info["author"]) != "" and str(sample_info["author"]) != '':
+			if str(sample_info["authors"]) != "" and str(sample_info["authors"]) != '':
 				try:
-					fixed_authors = self.check_authors(sample_info["author"].to_list()[0].split(';'))
+					fixed_authors = self.check_authors(sample_info["authors"].to_list()[0].split(';'))
 					self.metadata_df.loc[self.metadata_df['sample_name'] == name, 'author'] = fixed_authors
 				except:
 					self.author_valid = False
