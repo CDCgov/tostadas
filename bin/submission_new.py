@@ -122,12 +122,12 @@ class SubmissionConfigParser:
 				if self.parameters["gisaid"]:
 					if k.startswith('GISAID') and not v:
 						print("Error: There are missing GISAID values in the config file.", file=sys.stderr)
-						#sys.exit(1)					
+						sys.exit(1)					
 				else:
 					# If NCBI submission, check that non-GISAID keys have values (note: this only check top-level keys)
 					if k.startswith('NCBI') and not v:
 						print("Error: There are missing NCBI values in the config file.", file=sys.stderr)
-						#sys.exit(1)	
+						sys.exit(1)	
 		else:	
 			print("Error: Config file is incorrect. File must has a valid yaml format.", file=sys.stderr)
 			sys.exit(1)
@@ -173,6 +173,38 @@ class MetadataParser:
 				   'nanopore_library_source','nanopore_library_strategy','nanopore_sequencing_instrument']  # SRA specific columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+	def extract_genbank_metadata(self):
+		columns = ['submitting_lab','submitting_lab_division','submitting_lab_address','publication_status','publication_title',
+			 	   'assembly_protocol','assembly_method','mean_coverage']  # Genbank specific columns
+		available_columns = [col for col in columns if col in self.metadata_df.columns]
+		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+
+class Submission:
+	def __init__(self, sample, submission_config, output_dir, submission_mode, submission_dir):
+		self.sample = sample
+		self.submission_config = submission_config
+		self.output_dir = output_dir
+		self.submission_mode = submission_mode
+		self.submission_dir = submission_dir
+		self.client = self.get_client()
+	def get_client(self):
+		if self.submission_mode == 'sftp':
+			return SFTPClient(self.submission_config)
+		elif self.submission_mode == 'ftp':
+			return FTPClient(self.submission_config)
+		else:
+			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
+	def submit_files(self, files, type):
+		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
+		self.client.connect()
+		self.client.change_dir('submit')  # Change to 'submit' directory
+		self.client.change_dir(self.submission_dir) # Change to test or prod
+		self.client.change_dir(sample_subtype_dir) # Change to unique dir for sample_destination
+		for file_path in files:
+			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
+		print(f"Submitted files for sample {self.sample.sample_id}")
+	def close(self):
+		self.client.close()
 
 class SFTPClient:
 	def __init__(self, config):
@@ -191,6 +223,13 @@ class SFTPClient:
 			print(f"Connected to SFTP: {self.host}")
 		except Exception as e:
 			raise ConnectionError(f"Failed to connect to SFTP: {e}")
+	def change_dir(self, dir_path):
+		try:
+			self.sftp.chdir(dir_path)  # Try to change to the directory
+		except IOError:
+			self.sftp.mkdir(dir_path)  # Create the directory if it doesn't exist
+			self.sftp.chdir(dir_path)  # Change to the newly created directory
+		print(f"Changed directories to {dir_path} ")
 	def upload_file(self, file_path, destination_path):
 		try:
 			self.sftp.put(file_path, destination_path)
@@ -220,13 +259,25 @@ class FTPClient:
 			print(f"Connected to FTP: {self.host}")
 		except Exception as e:
 			raise ConnectionError(f"Failed to connect to FTP: {e}")
+	def change_dir(self, dir_path):
+		try:
+			self.ftp.cwd(dir_path)  # Try to change to the directory
+		except ftplib.error_perm:
+			self.ftp.mkd(dir_path)  # Create the directory if it doesn't exist
+			self.ftp.cwd(dir_path)  # Change to the newly created directory
+		print(f"Changed directories to {dir_path}")
 	def upload_file(self, file_path, destination_path):
 		try:
-			# Open the file and upload it
-			with open(file_path, 'r') as file:
-				print(file)
-				self.ftp.storlines(f'STOR {destination_path}', file)
-				print(f"Uploaded {file_path} to {destination_path}")
+			if file_path.endswith(('.fasta', '.fastq', '.gff', '.gz', 'xml')):  
+				with open(file_path, 'rb') as file:
+					print(f"Uploading binary file: {file_path}")
+					self.ftp.storbinary(f'STOR {destination_path}', file)
+			else:
+				with open(file_path, 'r') as file:
+					print(f"Uploading text file: {file_path}")
+					self.ftp.storlines(f'STOR {destination_path}', file)
+				# Open the file and upload it
+			print(f"Uploaded {file_path} to {destination_path}")
 		except Exception as e:
 			raise IOError(f"Failed to upload {file_path}: {e}")
 	def close(self):
@@ -293,29 +344,6 @@ class XMLSubmission(ABC):
 	def add_attributes_block(self, submission):
 		"""Add the attributes block, which differs between submissions."""
 		pass
-
-class Submission:
-	def __init__(self, sample, submission_config, output_dir, submission_mode, submission_dir):
-		self.sample = sample
-		self.submission_config = submission_config
-		self.output_dir = output_dir
-		self.submission_mode = submission_mode
-		self.submission_dir = submission_dir
-		self.client = self.get_client()
-	def get_client(self):
-		if self.submission_mode == 'sftp':
-			return SFTPClient(self.submission_config)
-		elif self.submission_mode == 'ftp':
-			return FTPClient(self.submission_config)
-		else:
-			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
-	def submit_files(self, files):
-		for file_path in files:
-			self.client.upload_file(file_path, f"{self.submission_dir}/{self.sample.sample_id}/{os.path.basename(file_path)}")
-		print(f"Submitted files for sample {self.sample.sample_id}")
-	def close(self):
-		self.client.close()
-
 class BiosampleSubmission(XMLSubmission, Submission):
 	def __init__(self, sample, submission_config, metadata_df, output_dir, submission_mode, submission_dir):
 		# Properly initialize the base classes 
@@ -344,12 +372,13 @@ class BiosampleSubmission(XMLSubmission, Submission):
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 			attribute.text = self.safe_text(attr_value)
 	def submit(self):
-		# Create submit.ready file
-		submit_ready_file = Path(os.path.join(self.output_dir, 'submit.ready'))
-		submit_ready_file.touch()
+		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
+		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
+		with open(submit_ready_file, 'w') as fp:
+			pass 
 		# Submit files
 		files_to_submit = [submit_ready_file, self.xml_output_path]
-		self.submit_files(files_to_submit)
+		self.submit_files(files_to_submit, 'biosample')
 		print(f"Submitted sample {self.sample.sample_id} to BioSample")
 
 class SRASubmission(XMLSubmission, Submission):
@@ -379,12 +408,13 @@ class SRASubmission(XMLSubmission, Submission):
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 			attribute.text = self.safe_text(attr_value)
 	def submit(self):
-		# Create submit.ready file
-		submit_ready_file = Path(os.path.join(self.output_dir, 'submit.ready'))
-		submit_ready_file.touch()
+		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
+		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
+		with open(submit_ready_file, 'w') as fp:
+			pass 
 		# Submit files
 		files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fastq1, self.sample.fastq2]
-		self.submit_files(files_to_submit)
+		self.submit_files(files_to_submit, 'sra')
 		print(f"Submitted sample {self.sample.sample_id} to SRA")
 
 class GenbankSubmission(XMLSubmission, Submission):
@@ -414,12 +444,13 @@ class GenbankSubmission(XMLSubmission, Submission):
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 			attribute.text = self.safe_text(attr_value)
 	def submit(self):
-		# Create submit.ready file
-		submit_ready_file = Path(os.path.join(self.output_dir, 'submit.ready'))
-		submit_ready_file.touch()
+		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
+		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
+		with open(submit_ready_file, 'w') as fp:
+			pass 
 		# Submit files
 		files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fasta_file, self.sample.gff_file]
-		self.submit_files(files_to_submit)
+		self.submit_files(files_to_submit, 'genbank')
 		print(f"Submitted sample {self.sample.sample_id} to Genbank")
 	def prepare_genbank_files(self):
 		# Code for preparing table2asn files
