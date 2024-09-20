@@ -45,21 +45,21 @@ def submission_main():
 	else:
 		submission_dir = 'prod'
 
-	# Conditional submissions based on argparse flags
+	# Prepare all submissions first (so files are generated even if submission step fails)
 	if parameters['biosample']:
-		# Perform BioSample submission
 		biosample_submission = BiosampleSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/biosample", parameters['submission_mode'], submission_dir)
-		biosample_submission.submit()
-
 	if parameters['sra']:
-		# Perform SRA submission
 		sra_submission = SRASubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/sra", parameters['submission_mode'], submission_dir)
-		#sra_submission.submit()
-
 	if parameters['genbank']:
-		# Perform Genbank submission
 		genbank_submission = GenbankSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/genbank", parameters['submission_mode'], submission_dir)
-		#genbank_submission.submit()
+
+	# Submit all prepared submissions
+	if parameters['biosample']:
+		biosample_submission.submit()
+	if parameters['sra']:
+		sra_submission.submit()
+	if parameters['genbank']:
+		genbank_submission.submit()
 		# Add more GB functions for table2asn submission and creating/emailing zip files
 
 	# Add more submission logic for GISAID, etc.
@@ -311,7 +311,7 @@ class Submission:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
 	def submit_files(self, files):
 		for file_path in files:
-			self.client.upload_file(file_path, f"{submission_dir}/{self.sample.sample_id}/{os.path.basename(file_path)}")
+			self.client.upload_file(file_path, f"{self.submission_dir}/{self.sample.sample_id}/{os.path.basename(file_path)}")
 		print(f"Submitted files for sample {self.sample.sample_id}")
 	def close(self):
 		self.client.close()
