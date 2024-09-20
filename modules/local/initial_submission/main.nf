@@ -34,6 +34,7 @@ process SUBMISSION {
         --annotation_file $annotations_path \
         --fastq1 $fastq_1 \
         --fastq2 $fastq_2 \
+        --submission_mode $params.submission_mode \
         $test_flag \
         $genbank $sra $biosample 
 

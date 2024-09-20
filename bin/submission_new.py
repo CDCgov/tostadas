@@ -40,26 +40,26 @@ def submission_main():
 		gff_file=parameters.get('annotation_file')
 	)
 
-	# Create the SFTP client
-	sftp_client = SFTPClient(config_dict)
-	ftp_client = FTPClient(config_dict)
+	if parameters['test']:
+		submission_dir = 'test'
+	else:
+		submission_dir = 'prod'
 
 	# Conditional submissions based on argparse flags
 	if parameters['biosample']:
 		# Perform BioSample submission
-		#f'{parameters['output_dir']}/biosample'
-		biosample_submission = BiosampleSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/biosample", sftp_client)
+		biosample_submission = BiosampleSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/biosample", parameters['submission_mode'], submission_dir)
 		biosample_submission.submit()
 
 	if parameters['sra']:
 		# Perform SRA submission
-		sra_submission = SRASubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/sra", sftp_client)
-		sra_submission.submit()
+		sra_submission = SRASubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/sra", parameters['submission_mode'], submission_dir)
+		#sra_submission.submit()
 
 	if parameters['genbank']:
 		# Perform Genbank submission
-		genbank_submission = GenbankSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/genbank", sftp_client)
-		genbank_submission.submit()
+		genbank_submission = GenbankSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/genbank", parameters['submission_mode'], submission_dir)
+		#genbank_submission.submit()
 		# Add more GB functions for table2asn submission and creating/emailing zip files
 
 	# Add more submission logic for GISAID, etc.
@@ -97,7 +97,8 @@ class GetParams:
 		parser.add_argument("--fasta_file",	help="Fasta file to be submitted", required=False)
 		parser.add_argument("--annotation_file", help="An annotation file to add to a Genbank submission", required=False)
 		parser.add_argument("--fastq1", help="Fastq R1 file to be submitted", required=False)	
-		parser.add_argument("--fastq2", help="Fastq R2 file to be submitted", required=False)	
+		parser.add_argument("--fastq2", help="Fastq R2 file to be submitted", required=False)
+		parser.add_argument("--submission_mode", help="Whether to upload via ftp or sftp", required=False, default='ftp')	
 		parser.add_argument("--genbank", help="Optional flag to run Genbank submission", action="store_const", default=False, const=True)
 		parser.add_argument("--biosample", help="Optional flag to run BioSample submission", action="store_const", default=False, const=True)
 		parser.add_argument("--sra", help="Optional flag to run SRA submission", action="store_const", default=False, const=True)
@@ -208,20 +209,39 @@ class FTPClient:
 		self.host = config['NCBI_ftp_host']
 		self.username = config['NCBI_username']
 		self.password = config['NCBI_password']
-		self.port = config.get('port', 22)
-		self.ftp = ftplib.FTP(self.host)
-		self.ssh = None
-
-		#ftp.login(user=self.username, passwd=self.password)
-
-
+		self.port = config.get('port', 21)  # Default FTP port is 21
+		self.ftp = None
+	def connect(self):
+		try:
+			# Connect to FTP host and login
+			self.ftp = ftplib.FTP()
+			self.ftp.connect(self.host, self.port)
+			self.ftp.login(user=self.username, passwd=self.password)
+			print(f"Connected to FTP: {self.host}")
+		except Exception as e:
+			raise ConnectionError(f"Failed to connect to FTP: {e}")
+	def upload_file(self, file_path, destination_path):
+		try:
+			# Open the file and upload it
+			with open(file_path, 'r') as file:
+				print(file)
+				self.ftp.storlines(f'STOR {destination_path}', file)
+				print(f"Uploaded {file_path} to {destination_path}")
+		except Exception as e:
+			raise IOError(f"Failed to upload {file_path}: {e}")
+	def close(self):
+		if self.ftp:
+			try:
+				self.ftp.quit()  # Gracefully close the connection
+			except Exception:
+				self.ftp.close()  # Force close if quit() fails
+		print("FTP connection closed.")
 
 class XMLSubmission(ABC):
-	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
+	def __init__(self, sample, submission_config, metadata_df, output_dir):
 		self.sample = sample
 		self.submission_config = submission_config
 		self.output_dir = output_dir
-		self.sftp_client = sftp_client
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
 	def safe_text(self, value):
@@ -274,10 +294,33 @@ class XMLSubmission(ABC):
 		"""Add the attributes block, which differs between submissions."""
 		pass
 
-class BiosampleSubmission(XMLSubmission):
-	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
-		# Properly initialize the base class (XMLSubmission) 
-		super().__init__(sample, submission_config, metadata_df, output_dir, sftp_client)
+class Submission:
+	def __init__(self, sample, submission_config, output_dir, submission_mode, submission_dir):
+		self.sample = sample
+		self.submission_config = submission_config
+		self.output_dir = output_dir
+		self.submission_mode = submission_mode
+		self.submission_dir = submission_dir
+		self.client = self.get_client()
+	def get_client(self):
+		if self.submission_mode == 'sftp':
+			return SFTPClient(self.submission_config)
+		elif self.submission_mode == 'ftp':
+			return FTPClient(self.submission_config)
+		else:
+			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
+	def submit_files(self, files):
+		for file_path in files:
+			self.client.upload_file(file_path, f"{submission_dir}/{self.sample.sample_id}/{os.path.basename(file_path)}")
+		print(f"Submitted files for sample {self.sample.sample_id}")
+	def close(self):
+		self.client.close()
+
+class BiosampleSubmission(XMLSubmission, Submission):
+	def __init__(self, sample, submission_config, metadata_df, output_dir, submission_mode, submission_dir):
+		# Properly initialize the base classes 
+		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
+		Submission.__init__(self, sample, submission_config, output_dir, submission_mode, submission_dir) 
 		# Use the MetadataParser to extract metadata
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
@@ -301,19 +344,19 @@ class BiosampleSubmission(XMLSubmission):
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 			attribute.text = self.safe_text(attr_value)
 	def submit(self):
-		# Code to prepare and submit to BioSample
+		# Create submit.ready file
 		submit_ready_file = Path(os.path.join(self.output_dir, 'submit.ready'))
 		submit_ready_file.touch()
-		self.sftp_client.connect()
-		self.sftp_client.upload_file(submit_ready_file, f"{self.sample.sample_id}/{submit_ready_file}")
-		self.sftp_client.upload_file(self.xml_output_path, f"{self.sample.sample_id}/{os.path.basename}")
-		self.sftp_client.close()
+		# Submit files
+		files_to_submit = [submit_ready_file, self.xml_output_path]
+		self.submit_files(files_to_submit)
 		print(f"Submitted sample {self.sample.sample_id} to BioSample")
 
-class SRASubmission(XMLSubmission):
-	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
-		# Properly initialize the base class (XMLSubmission) 
-		super().__init__(sample, submission_config, metadata_df, output_dir, sftp_client)
+class SRASubmission(XMLSubmission, Submission):
+	def __init__(self, sample, submission_config, metadata_df, output_dir, submission_mode, submission_dir):
+		# Properly initialize the base classes 
+		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
+		Submission.__init__(self, sample, submission_config, output_dir, submission_mode, submission_dir) 
 		# Use the MetadataParser to extract metadata
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
@@ -336,22 +379,19 @@ class SRASubmission(XMLSubmission):
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 			attribute.text = self.safe_text(attr_value)
 	def submit(self):
-		# Upload FASTQ files and XML to SRA via SFTP
+		# Create submit.ready file
 		submit_ready_file = Path(os.path.join(self.output_dir, 'submit.ready'))
 		submit_ready_file.touch()
-		self.sftp_client.connect()
-		self.sftp_client.upload_file(submit_ready_file,f"{self.sample.sample_id}/{submit_ready_file}")
-		self.sftp_client.upload_file(self.xml_output_path, f"{self.sample.sample_id}/{os.path.basename}")
-		self.sftp_client.upload_file(self.sample.fastq1, f"{self.sample.sample_id}/{self.sample.fastq1}")
-		self.sftp_client.upload_file(self.sample.fastq2, f"{self.sample.sample_id}/{self.sample.fastq2}")
-		self.sftp_client.close()
-		print(f"Submitted {self.sample.sample_id} to SRA")
+		# Submit files
+		files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fastq1, self.sample.fastq2]
+		self.submit_files(files_to_submit)
+		print(f"Submitted sample {self.sample.sample_id} to SRA")
 
-
-class GenbankSubmission(XMLSubmission):
-	def __init__(self, sample, submission_config, metadata_df, output_dir, sftp_client):
-		# Properly initialize the base class (XMLSubmission) 
-		super().__init__(sample, submission_config, metadata_df, output_dir, sftp_client)
+class GenbankSubmission(XMLSubmission, Submission):
+	def __init__(self, sample, submission_config, metadata_df, output_dir, submission_mode, submission_dir):
+		# Properly initialize the base classes 
+		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
+		Submission.__init__(self, sample, submission_config, output_dir, submission_mode, submission_dir)
 		# Use the MetadataParser to extract metadata
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
@@ -373,17 +413,14 @@ class GenbankSubmission(XMLSubmission):
 		for attr_name, attr_value in self.genbank_metadata.items():
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 			attribute.text = self.safe_text(attr_value)
-	def submit_sftp(self):
-		# Upload FASTQ files and XML to SRA via SFTP
+	def submit(self):
+		# Create submit.ready file
 		submit_ready_file = Path(os.path.join(self.output_dir, 'submit.ready'))
 		submit_ready_file.touch()
-		self.sftp_client.connect()
-		self.sftp_client.upload_file(submit_ready_file,f"{self.sample.sample_id}/{submit_ready_file}")
-		self.sftp_client.upload_file(self.xml_output_path, f"{self.sample.sample_id}/{os.path.basename}")
-		self.sftp_client.upload_file(self.sample.fasta_file, f"{self.sample.sample_id}/{self.sample.fasta_file}")
-		self.sftp_client.upload_file(self.sample.gff_file, f"{self.sample.sample_id}/{self.sample.gff_file}")
-		self.sftp_client.close()
-		print(f"Submitted {self.sample.sample_id} to SRA")
+		# Submit files
+		files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fasta_file, self.sample.gff_file]
+		self.submit_files(files_to_submit)
+		print(f"Submitted sample {self.sample.sample_id} to Genbank")
 	def prepare_genbank_files(self):
 		# Code for preparing table2asn files
 		print(f"Genbank files prepared for {self.sample.sample_id}")
