@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 from pathlib import Path
@@ -10,7 +12,7 @@ import os
 import math  # Required for isnan check
 import pandas as pd
 from abc import ABC, abstractmethod
-import paramiko
+#import paramiko
 import ftplib
 from zipfile import ZipFile
 
@@ -45,17 +47,18 @@ def submission_main():
 	# Conditional submissions based on argparse flags
 	if parameters['biosample']:
 		# Perform BioSample submission
-		biosample_submission = BiosampleSubmission(sample, config_dict, metadata_df, f'{parameters['output_dir']}/biosample', sftp_client)
+		#f'{parameters['output_dir']}/biosample'
+		biosample_submission = BiosampleSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/biosample", sftp_client)
 		biosample_submission.submit()
 
 	if parameters['sra']:
 		# Perform SRA submission
-		sra_submission = SRASubmission(sample, config_dict, metadata_df, f'{parameters['output_dir']}/sra', sftp_client)
+		sra_submission = SRASubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/sra", sftp_client)
 		sra_submission.submit()
 
 	if parameters['genbank']:
 		# Perform Genbank submission
-		genbank_submission = GenbankSubmission(sample, config_dict, metadata_df, f'{parameters['output_dir']}/genbank', sftp_client)
+		genbank_submission = GenbankSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/genbank", sftp_client)
 		genbank_submission.submit()
 		# Add more GB functions for table2asn submission and creating/emailing zip files
 
@@ -115,7 +118,7 @@ class SubmissionConfigParser:
 		if type(config_dict) is dict:
 			for k, v in config_dict.items():
 				# If GISAID submission, check that GISAID keys have values
-				if self.parameters["gisaid_submission"]:
+				if self.parameters["gisaid"]:
 					if k.startswith('GISAID') and not v:
 						print("Error: There are missing GISAID values in the config file.", file=sys.stderr)
 						#sys.exit(1)					
@@ -153,19 +156,22 @@ class Sample:
 class MetadataParser:
 	def __init__(self, metadata_df):
 		self.metadata_df = metadata_df
+	# todo: will need to adjust these to handle custom metadata for whatever biosample pkg
 	def extract_top_metadata(self):
 		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Main columns
-		return self.metadata_df[columns].to_dict(orient='records')[0]  # Get first row as a dictionary
+		available_columns = [col for col in columns if col in self.metadata_df.columns]
+		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_biosample_metadata(self):
 		columns = ['bs_package','isolate','isolation_source','host_disease','host','collected_by','lat_lon',
-				   'host_sex','host_age','geo_location','organism','purpose_of_sampling',
-				   'race','ethnicity','sample_type','source_type','strain']  # BioSample specific columns
-		return self.metadata_df[columns].to_dict(orient='records')[0]
+				   'sex','age','geo_location','organism','purpose_of_sampling', 'race','ethnicity','sample_type']  # BioSample specific columns
+		available_columns = [col for col in columns if col in self.metadata_df.columns]
+		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_sra_metadata(self):
 		columns = ['instrument_model','library_construction_protocol','library_layout','library_name','library_selection',
 				   'library_source','library_strategy','nanopore_library_layout','nanopore_library_protocol','nanopore_library_selection',
 				   'nanopore_library_source','nanopore_library_strategy','nanopore_sequencing_instrument']  # SRA specific columns
-		return self.metadata_df[columns].to_dict(orient='records')[0]
+		available_columns = [col for col in columns if col in self.metadata_df.columns]
+		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 
 class SFTPClient:
 	def __init__(self, config):
@@ -251,6 +257,7 @@ class XMLSubmission(ABC):
 		self.add_attributes_block(submission)
 		# Save the XML to file
 		xml_output_path = os.path.join(output_dir, "submission.xml")
+		os.makedirs(os.path.dirname(xml_output_path), exist_ok=True)
 		rough_string = ET.tostring(submission, encoding='utf-8')
 		reparsed = minidom.parseString(rough_string)
 		pretty_xml = reparsed.toprettyxml(indent="  ")
@@ -295,7 +302,7 @@ class BiosampleSubmission(XMLSubmission):
 			attribute.text = self.safe_text(attr_value)
 	def submit(self):
 		# Code to prepare and submit to BioSample
-		submit_ready_file = Path(os.path.join(output_dir, 'submit.ready'))
+		submit_ready_file = Path(os.path.join(self.output_dir, 'submit.ready'))
 		submit_ready_file.touch()
 		self.sftp_client.connect()
 		self.sftp_client.upload_file(submit_ready_file, f"{self.sample.sample_id}/{submit_ready_file}")
