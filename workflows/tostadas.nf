@@ -69,11 +69,11 @@ workflow TOSTADAS {
         .flatten()
         .splitCsv(header: true, sep: "\t")
         .map { row ->
-            fasta_path = row.fasta_path ? file(row.fasta_path) : null
-            fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : null
-            fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
+            fasta_path = row.fasta_path ? file(row.fasta_path) : []
+            fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : []
+            fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : []
             meta = [id:row.sequence_name]
-            gff = row.gff_path ? file(row.gff_path) : null
+            gff = row.gff_path ? file(row.gff_path) : []
             // Return a list with 5 elements
             [meta, fasta_path, fastq1, fastq2, gff]
             }
@@ -92,6 +92,7 @@ workflow TOSTADAS {
             // run liftoff annotation process + repeatmasker 
             if ( params.repeatmasker_liftoff && !params.vadr ) {
                 // run repeatmasker annotation on files
+                submission_ch.view()
                 REPEATMASKER_LIFTOFF (
                     submission_ch
                 )
