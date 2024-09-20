@@ -30,10 +30,11 @@ include { INITIAL_SUBMISSION                                } from "../subworkfl
 include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
 include { MERGE_UPLOAD_LOG                                  } from "../modules/local/general_util/merge_upload_log/main"
 
-include { SUBMISSION_FULL                               } from '../modules/local/initial_submission/main_full'
-include { SUBMISSION_SRA                                } from '../modules/local/initial_submission/main_sra'
-include { SUBMISSION_GENBANK                            } from '../modules/local/initial_submission/main_genbank'
-include { WAIT                                          } from '../modules/local/general_util/wait/main'
+include { SUBMISSION                                        } from '../modules/local/initial_submission/main'
+//include { SUBMISSION_FULL                               } from '../modules/local/initial_submission/main_full'
+//include { SUBMISSION_SRA                                } from '../modules/local/initial_submission/main_sra'
+//include { SUBMISSION_GENBANK                            } from '../modules/local/initial_submission/main_genbank'
+include { WAIT                                              } from '../modules/local/general_util/wait/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,13 +74,10 @@ workflow TOSTADAS {
             fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : null
             meta = [id:row.sequence_name]
             gff = row.gff_path ? file(row.gff_path) : null
-            if (gff == null) {
-                [meta, fasta_path, fastq1, fastq2]
+            // Return a list with 5 elements
+            [meta, fasta_path, fastq1, fastq2, gff]
             }
-            else {
-                [meta, fasta_path, fastq1, fastq2, gff]
-            }
-        }
+
     // Create initial submission channel
     submission_ch = metadata_ch.join(reads_ch)
 
@@ -87,26 +85,21 @@ workflow TOSTADAS {
     if ( params.annotation ) {
         // Remove user-provided gff, if present, from annotation input channel before performing annotation
         submission_ch = submission_ch.map { elements ->
-            if (elements.size() == 6) {
-                elements.take(5)  // Remove the last element (gff)
-            } 
-            else {
-                elements  // If there's no gff, keep the original list
+            elements.take(5)  // Remove the last element (gff)
             }
-        }
 
         if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
             // run liftoff annotation process + repeatmasker 
             if ( params.repeatmasker_liftoff && !params.vadr ) {
-             // run repeatmasker annotation on files
+                // run repeatmasker annotation on files
+                submission_ch.view()
                 REPEATMASKER_LIFTOFF (
                     submission_ch
                 )
                 submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
             }
             // run vadr processes
-            // change virus to mpxv if running VADR because mpxv is the default
-            // todo: I really don't like this
+            // issue: VADR fails when species == virus because it uses that flag to call the vadr_models files
             if ( params.vadr ) {
                 RUN_VADR (
                     submission_ch
@@ -140,7 +133,7 @@ workflow TOSTADAS {
         )
 
         INITIAL_SUBMISSION (
-            submission_ch,  // meta.id, fasta, fastq1, fastq2, gff
+            submission_ch,  // meta.id, tsv, fasta, fastq1, fastq2, gff
             params.submission_config,  
             GET_WAIT_TIME.out
             )

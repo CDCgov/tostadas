@@ -863,6 +863,7 @@ class HandleDfInserts:
 		# adds the Geolocation field
 		self.insert_loc_data()
 		self.insert_additional_columns()
+		self.change_illumina_paths()
 		try:
 			assert 'geo_location' in self.filled_df.columns.values
 			assert True not in [math.isnan(x) for x in self.filled_df['geo_location'].tolist() if isinstance(x, str) is False]
@@ -889,7 +890,7 @@ class HandleDfInserts:
 		# todo: this fx does not include req'd cols for GISAID (see seqsender main config and submission_process.py script)
 		self.filled_df.insert(self.filled_df.shape[1], "structuredcomment", ["Assembly-Data"] * len(self.filled_df.index))
 
-	# todo: this is a temporary fx to convert the illumina paths as input to seqsender
+	# todo: this is a temporary fx to convert the illumina paths as input to seqsender & tostadas.nf
 	def change_illumina_paths(self):
 		""" Create sra-file_name from illumina_sra_file_path_1 & illumina_sra_file_path_2 
 			Rename illumina_sra_file_path_1 & illumina_sra_file_path_2 to fastq_path_1 & fastq_path_2
@@ -900,20 +901,11 @@ class HandleDfInserts:
 				return path.split('/')[-1] # todo: assume Unix paths ok?
 			else:
 				return path
-
-		# create new column 'sra-file_name'
-		self.filled_df['sra-file_name'] = self.filled_df.apply(lambda row: extract_filename(row['illumina_sra_file_path_1']) + ',' + extract_filename(row['illumina_sra_file_path_2']), axis=1)
-
+		# todo: this and fx above may be no longer needed (create new column 'sra-file_name')
+		#self.filled_df['sra-file_name'] = self.filled_df.apply(lambda row: extract_filename(row['illumina_sra_file_path_1']) + ',' + extract_filename(row['illumina_sra_file_path_2']), axis=1)
 		# rename original columns
 		self.filled_df = self.filled_df.rename(columns={'illumina_sra_file_path_1': 'fastq_path_1', 'illumina_sra_file_path_2': 'fastq_path_2'})
-		
-	# todo: apply this function to Ankush's insert checks as well
-	def check_nan_for_column(self, column_name):
-		""" Check for NaN values (if not a string) in a column of the dataframe """
-		assert column_name in self.filled_df.columns.values
-		assert True not in [math.isnan(x) for x in self.filled_df[column_name].tolist() if isinstance(x, str) is False]
-
-# todo: handle multiple tsvs for illumina vs. nanopore - another class?
+	# todo: handle multiple tsvs for illumina vs. nanopore - another class?
 
 class CustomFieldsFuncs:
 	""" Class constructor containing attributes/methods for handling custom fields processes
