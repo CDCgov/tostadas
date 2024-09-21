@@ -17,6 +17,8 @@ from abc import ABC, abstractmethod
 import ftplib
 from zipfile import ZipFile
 
+DATABASES = ['biosample','sra','genbank','gisaid']
+
 def submission_main():
 	""" Main for initiating submission steps
 	"""
@@ -209,7 +211,7 @@ class Submission:
 			'Submission_Type': self.submission_dir,
 			'Submission_Date': datetime.now().strftime('%m/%d/%Y'),
 			'Submission_Status': submission_id + ";" + status,
-			'Submission_Directory': self.output_dir,
+			'Submission_Directory': os.path.abspath(self.output_dir),
 			'Config_File': self.parameters['config_file'],
 			'Table2asn': self.submission_config['table2asn'],
 			'Annotation_File': self.parameters['annotation_file'],
@@ -217,7 +219,11 @@ class Submission:
 			}
 		# Write the log to the CSV file
 		# todo: better to use pandas?
-		log_file = os.path.join(self.output_dir, 'submission_log.csv')
+		if os.path.basename(self.output_dir) in DATABASES:
+			log_file = os.path.join(os.path.dirname(self.output_dir), 'submission_log.csv')
+		else:
+			log_file = os.path.join(self.output_dir, 'submission_log.csv')
+		print(log_file)
 		with open(log_file, mode='a', newline='') as file:
 			writer = csv.DictWriter(file, fieldnames=submission_data.keys())
 			if file.tell() == 0:
