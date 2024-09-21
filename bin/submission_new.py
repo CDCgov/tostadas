@@ -2,7 +2,7 @@
 
 import os
 import sys
-from pathlib import Path
+from datetime import datetime
 import argparse
 import yaml
 from lxml import etree
@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom  # Import minidom for pretty-printing
 import os
 import math  # Required for isnan check
+import csv
 import pandas as pd
 from abc import ABC, abstractmethod
 #import paramiko
@@ -47,11 +48,14 @@ def submission_main():
 
 	# Prepare all submissions first (so files are generated even if submission step fails)
 	if parameters['biosample']:
-		biosample_submission = BiosampleSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/biosample", parameters['submission_mode'], submission_dir)
+		biosample_submission = BiosampleSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/biosample", 
+												   parameters['submission_mode'], submission_dir, 'BioSample')
 	if parameters['sra']:
-		sra_submission = SRASubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/sra", parameters['submission_mode'], submission_dir)
+		sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/sra",
+									   parameters['submission_mode'], submission_dir, 'SRA')
 	if parameters['genbank']:
-		genbank_submission = GenbankSubmission(sample, config_dict, metadata_df, f"{parameters['output_dir']}/genbank", parameters['submission_mode'], submission_dir)
+		genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/genbank",
+											   parameters['submission_mode'], submission_dir, 'Genbank')
 
 	# Submit all prepared submissions
 	if parameters['biosample']:
@@ -63,7 +67,6 @@ def submission_main():
 		# Add more GB functions for table2asn submission and creating/emailing zip files
 
 	# Add more submission logic for GISAID, etc.
-
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
 	"""
@@ -179,13 +182,16 @@ class MetadataParser:
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 
+# todo: this opens an ftp connection for every submission; would be better I think to open it once every x submissions?
 class Submission:
-	def __init__(self, sample, submission_config, output_dir, submission_mode, submission_dir):
+	def __init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type):
 		self.sample = sample
+		self.parameters = parameters
 		self.submission_config = submission_config
 		self.output_dir = output_dir
 		self.submission_mode = submission_mode
 		self.submission_dir = submission_dir
+		self.type = type
 		self.client = self.get_client()
 	def get_client(self):
 		if self.submission_mode == 'sftp':
@@ -194,6 +200,30 @@ class Submission:
 			return FTPClient(self.submission_config)
 		else:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
+	def log_submission(self, status, submission_id="---;---"):
+		# Prepare the log data for this submission
+		submission_data = {
+			'Submission_Name': self.sample.sample_id,
+			'Organism': self.parameters['species'],
+			'Database': self.type,
+			'Submission_Type': self.submission_dir,
+			'Submission_Date': datetime.now().strftime('%m/%d/%Y'),
+			'Submission_Status': submission_id + ";" + status,
+			'Submission_Directory': self.output_dir,
+			'Config_File': self.parameters['config_file'],
+			'Table2asn': self.submission_config['table2asn'],
+			'Annotation_File': self.parameters['annotation_file'],
+			'Update_Date': datetime.now().strftime('%m/%d/%Y')
+			}
+		# Write the log to the CSV file
+		# todo: better to use pandas?
+		log_file = os.path.join(self.output_dir, 'submission_log.csv')
+		with open(log_file, mode='a', newline='') as file:
+			writer = csv.DictWriter(file, fieldnames=submission_data.keys())
+			if file.tell() == 0:
+				writer.writeheader()  # Write headers if file is empty
+			writer.writerow(submission_data)
+		print(f"Updated log file {log_file} for {self.sample.sample_id}")
 	def submit_files(self, files, type):
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
@@ -202,6 +232,8 @@ class Submission:
 		self.client.change_dir(sample_subtype_dir) # Change to unique dir for sample_destination
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
+		submission_id = "pending"
+		self.log_submission(status="submitted", submission_id=submission_id)
 		print(f"Submitted files for sample {self.sample.sample_id}")
 	def close(self):
 		self.client.close()
@@ -345,10 +377,10 @@ class XMLSubmission(ABC):
 		"""Add the attributes block, which differs between submissions."""
 		pass
 class BiosampleSubmission(XMLSubmission, Submission):
-	def __init__(self, sample, submission_config, metadata_df, output_dir, submission_mode, submission_dir):
+	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
-		Submission.__init__(self, sample, submission_config, output_dir, submission_mode, submission_dir) 
+		Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type) 
 		# Use the MetadataParser to extract metadata
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
@@ -382,10 +414,10 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		print(f"Submitted sample {self.sample.sample_id} to BioSample")
 
 class SRASubmission(XMLSubmission, Submission):
-	def __init__(self, sample, submission_config, metadata_df, output_dir, submission_mode, submission_dir):
+	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
-		Submission.__init__(self, sample, submission_config, output_dir, submission_mode, submission_dir) 
+		Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type) 
 		# Use the MetadataParser to extract metadata
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
@@ -418,10 +450,10 @@ class SRASubmission(XMLSubmission, Submission):
 		print(f"Submitted sample {self.sample.sample_id} to SRA")
 
 class GenbankSubmission(XMLSubmission, Submission):
-	def __init__(self, sample, submission_config, metadata_df, output_dir, submission_mode, submission_dir):
+	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
-		Submission.__init__(self, sample, submission_config, output_dir, submission_mode, submission_dir)
+		Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type)
 		# Use the MetadataParser to extract metadata
 		parser = MetadataParser(metadata_df)
 		self.top_metadata = parser.extract_top_metadata()
