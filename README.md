@@ -72,11 +72,11 @@ The pipeline outputs appear in `tostadas/test_output`
 
 **Annotate and submit viral reads**
 ```
-nextflow run main.nf -profile docker --virus --fasta_path <path/to/fasta/files> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --output_dir <path/to/output/dir/>
+nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
 ```
 **Annotate and submit bacterial reads**
 ```
-nextflow run main.nf -profile docker --bacteria --fasta_path <path/to/fasta/files> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>
+nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation  --genbank true --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>
 ```
 Refer to the wiki for more information on input parameters and use cases
 
