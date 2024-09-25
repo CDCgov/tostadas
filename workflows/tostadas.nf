@@ -29,11 +29,7 @@ include { RUN_BAKTA                                         } from "../subworkfl
 include { INITIAL_SUBMISSION                                } from "../subworkflows/local/submission"
 include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
 include { MERGE_UPLOAD_LOG                                  } from "../modules/local/general_util/merge_upload_log/main"
-
 include { SUBMISSION                                        } from '../modules/local/initial_submission/main'
-//include { SUBMISSION_FULL                               } from '../modules/local/initial_submission/main_full'
-//include { SUBMISSION_SRA                                } from '../modules/local/initial_submission/main_sra'
-//include { SUBMISSION_GENBANK                            } from '../modules/local/initial_submission/main_genbank'
 include { WAIT                                              } from '../modules/local/general_util/wait/main'
 
 /*
