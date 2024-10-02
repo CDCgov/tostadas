@@ -11,13 +11,35 @@ import xml.dom.minidom as minidom  # Import minidom for pretty-printing
 import os
 import math  # Required for isnan check
 import csv
+import time
 import pandas as pd
 from abc import ABC, abstractmethod
 #import paramiko
 import ftplib
 from zipfile import ZipFile
 
-DATABASES = ['biosample','sra','genbank','gisaid']
+def fetch_and_parse_report(submission_object, client, submission_id, submission_dir, output_dir, type):
+	# Connect to the FTP/SFTP client
+	client.connect()
+	client.change_dir('submit')  # Change to 'submit' directory
+	client.change_dir(submission_dir)  # Change to test or prod
+	client.change_dir(f"{submission_id}_{type}")  # Change to sample-specific directory
+	# Check if report.xml exists and download it
+	report_path = f"{submission_id}_{type}/report.xml"
+	if client.file_exists(report_path):
+		print(f"Report found at {report_path}")
+		report_local_path = os.path.join(output_dir, 'report.xml')
+		client.download_file(report_path, report_local_path)
+		# Parse the report.xml
+		parsed_report = submission_object.parse_report_xml(report_local_path)
+		# Save as CSV to top level sample submission folder
+		# output_dir = 'path/to/results/sample_name/database' and we want to save a report for all samples to 'path/to/results/'
+		report_file = os.path.join(os.path.dirname(os.path.dirname(output_dir)), 'submission_report.csv')
+		submission_object.save_report_to_csv(parsed_report, report_file)
+		return parsed_report
+	else:
+		print(f"No report found for submission {submission_id}")
+		return None
 
 def submission_main():
 	""" Main for initiating submission steps
@@ -26,7 +48,7 @@ def submission_main():
 	parameters_class = GetParams()
 	parameters = parameters_class.parameters
 
-	# Example usage:
+	# Get the submission config file dictionary
 	config_parser = SubmissionConfigParser(parameters)
 	config_dict = config_parser.load_config()
 	
@@ -42,7 +64,13 @@ def submission_main():
 		fasta_file=parameters.get('fasta_file'),
 		gff_file=parameters.get('annotation_file')
 	)
+	# Perform file validation
+	sample.validate_files()
 
+	# Get list of all databases to submit to (or update)
+	databases = [db for db in parameters if parameters[db] and db in ['biosample', 'sra', 'genbank', 'gisaid']]
+
+	# Set the submission directory (test or prod)
 	if parameters['test']:
 		submission_dir = 'test'
 	else:
@@ -50,25 +78,43 @@ def submission_main():
 
 	# Prepare all submissions first (so files are generated even if submission step fails)
 	if parameters['biosample']:
-		biosample_submission = BiosampleSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/biosample", 
-												   parameters['submission_mode'], submission_dir, 'BioSample')
+		biosample_submission = BiosampleSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/biosample", 
+												   parameters['submission_mode'], submission_dir, 'biosample')
 	if parameters['sra']:
-		sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/sra",
-									   parameters['submission_mode'], submission_dir, 'SRA')
+		sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/sra",
+									   parameters['submission_mode'], submission_dir, 'sra')
 	if parameters['genbank']:
-		genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/genbank",
-											   parameters['submission_mode'], submission_dir, 'Genbank')
+		genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/genbank",
+											   parameters['submission_mode'], submission_dir, 'genbank')
 
-	# Submit all prepared submissions
-	if parameters['biosample']:
-		biosample_submission.submit()
-	if parameters['sra']:
-		sra_submission.submit()
-	if parameters['genbank']:
-		genbank_submission.submit()
-		# Add more GB functions for table2asn submission and creating/emailing zip files
+	# If submission mode
+	if parameters['submit']:
+		# Submit all prepared submissions and fetch report once
+		if parameters['biosample']:
+			biosample_submission.submit()
+		if parameters['sra']:
+			sra_submission.submit()
+		if parameters['genbank']:
+			genbank_submission.submit()
+			# Add more GB functions for table2asn submission and creating/emailing zip files
 
-	# Add more submission logic for GISAID, etc.
+	# If update mode
+	elif parameters['update']:
+		start_time = time.time()
+		timeout = 300  # 300 seconds (5 minutes)
+		
+		while time.time() - start_time < timeout:
+			submission_objects = { 'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission }
+			for db in databases:
+				submission_object = submission_objects[db]
+				result = submission_object.update_report()  # Call the fetch_report function repeatedly
+				if result:  # If report fetch is successful, break the loop
+					print("Report successfully fetched")
+					break
+				time.sleep(30)  # Wait before retrying
+			else:
+				print("Timeout occurred while trying to fetch the report")
+
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
 	"""
@@ -95,6 +141,8 @@ class GetParams:
 		parser.add_argument("--config_file", help="Name of the submission onfig file",	required=True)
 		parser.add_argument("--metadata_file", help="Name of the validated metadata tsv file", required=True)
 		parser.add_argument("--species", help="Type of organism data", required=True)
+		parser.add_argument('--submit', action='store_true', help='Run the full submission process')
+		parser.add_argument('--update', action='store_true', help='Run the update process to fetch and parse report')
 		# optional parameters
 		parser.add_argument("-o", "--output_dir", type=str, default='submission_outputs',
 							help="Output Directory for final Files, default is current directory")
@@ -202,34 +250,57 @@ class Submission:
 			return FTPClient(self.submission_config)
 		else:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
-	def log_submission(self, status, submission_id="---;---"):
-		# Prepare the log data for this submission
-		submission_data = {
-			'Submission_Name': self.sample.sample_id,
-			'Organism': self.parameters['species'],
-			'Database': self.type,
-			'Submission_Type': self.submission_dir,
-			'Submission_Date': datetime.now().strftime('%m/%d/%Y'),
-			'Submission_Status': submission_id + ";" + status,
-			'Submission_Directory': os.path.abspath(self.output_dir),
-			'Config_File': self.parameters['config_file'],
-			'Table2asn': self.submission_config['table2asn'],
-			'Annotation_File': self.parameters['annotation_file'],
-			'Update_Date': datetime.now().strftime('%m/%d/%Y')
-			}
-		# Write the log to the CSV file
-		# todo: better to use pandas?
-		if os.path.basename(self.output_dir) in DATABASES:
-			log_file = os.path.join(os.path.dirname(self.output_dir), 'submission_log.csv')
-		else:
-			log_file = os.path.join(self.output_dir, 'submission_log.csv')
-		print(log_file)
-		with open(log_file, mode='a', newline='') as file:
-			writer = csv.DictWriter(file, fieldnames=submission_data.keys())
-			if file.tell() == 0:
-				writer.writeheader()  # Write headers if file is empty
-			writer.writerow(submission_data)
-		print(f"Updated log file {log_file} for {self.sample.sample_id}")
+	def parse_report_xml(self, report_path):
+		# Parse the XML file and extract required information
+		tree = ET.parse(report_path)
+		root = tree.getroot()
+		report_dict = {
+			'submission_name': self.sample.sample_id,
+			'submission_type': self.type,
+			'submission_status': None,
+			'biosample_status': None,
+			'biosample_accession': None,
+			'biosample_message': None,
+			'sra_status': None,
+			'sra_accession': None,
+			'sra_message': None,
+			'genbank_status': None,
+			'genbank_accession': None,
+			'genbank_message': None,
+			'genbank_release_date': None,
+		}
+		for action in root.findall('Action'):
+			db = action.attrib.get('target_db')
+			status = action.attrib.get('status')
+			accession = action.attrib.get('accession')
+			message = action.find('Message').text if action.find('Message') is not None else ""
+			if db == 'biosample':
+				report_dict['biosample_status'] = status
+				report_dict['biosample_accession'] = accession
+				report_dict['biosample_message'] = message
+			elif db == 'sra':
+				report_dict['sra_status'] = status
+				report_dict['sra_accession'] = accession
+				report_dict['sra_message'] = message
+			elif db == 'genbank':
+				report_dict['genbank_status'] = status
+				if status == 'processed-ok':
+					# Handle Genbank-specific logic (AccessionReport.tsv)
+					accession_report = action.find('AccessionReport')
+					if accession_report is not None:
+						report_dict['genbank_accession'] = accession_report.find('Accession').text
+						report_dict['genbank_release_date'] = accession_report.find('ReleaseDate').text
+				report_dict['genbank_message'] = message
+		return report_dict
+	def save_report_to_csv(self, submission_report):
+		csv_file = os.path.join(self.output_dir, 'submission_report.csv')
+		file_exists = os.path.isfile(csv_file)
+		with open(csv_file, 'a', newline='') as f:
+			writer = csv.DictWriter(f, fieldnames=submission_report.keys())
+			if not file_exists:
+				writer.writeheader()
+			writer.writerow(submission_report)
+		print(f"Submission report saved to {csv_file}")
 	def submit_files(self, files, type):
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
@@ -238,11 +309,11 @@ class Submission:
 		self.client.change_dir(sample_subtype_dir) # Change to unique dir for sample_destination
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
-		submission_id = "pending"
-		self.log_submission(status="submitted", submission_id=submission_id)
 		print(f"Submitted files for sample {self.sample.sample_id}")
 	def close(self):
 		self.client.close()
+	def fetch_report(self):
+		fetch_and_parse_report(self, self.client, self.sample.sample_id, self.submission_dir, self.output_dir, self.type)
 
 class SFTPClient:
 	def __init__(self, config):
@@ -268,6 +339,18 @@ class SFTPClient:
 			self.sftp.mkdir(dir_path)  # Create the directory if it doesn't exist
 			self.sftp.chdir(dir_path)  # Change to the newly created directory
 		print(f"Changed directories to {dir_path} ")
+	def file_exists(self, file_path):
+		try:
+			self.sftp.stat(file_path)
+			return True
+		except IOError:
+			return False
+	def download_file(self, remote_path, local_path):
+		try:
+			self.sftp.get(remote_path, local_path)
+			print(f"Downloaded file from {remote_path} to {local_path}")
+		except Exception as e:
+			raise IOError(f"Failed to download {remote_path}: {e}")
 	def upload_file(self, file_path, destination_path):
 		try:
 			self.sftp.put(file_path, destination_path)
@@ -304,6 +387,15 @@ class FTPClient:
 			self.ftp.mkd(dir_path)  # Create the directory if it doesn't exist
 			self.ftp.cwd(dir_path)  # Change to the newly created directory
 		print(f"Changed directories to {dir_path}")
+	def file_exists(self, file_path):
+		if file_path in self.ftp.nlst():
+			return True
+		else:
+			return False
+	def download_file(self, remote_path, local_path):
+		with open(local_path, 'wb') as f:
+			self.ftp.retrbinary(f'RETR {remote_path}', f.write)
+		print(f"Downloaded file from {remote_path} to {local_path}")
 	def upload_file(self, file_path, destination_path):
 		try:
 			if file_path.endswith(('.fasta', '.fastq', '.gff', '.gz', 'xml')):  
@@ -382,6 +474,8 @@ class XMLSubmission(ABC):
 	def add_attributes_block(self, submission):
 		"""Add the attributes block, which differs between submissions."""
 		pass
+
+# todo: don't think I need separate classes for each db
 class BiosampleSubmission(XMLSubmission, Submission):
 	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
 		# Properly initialize the base classes 
@@ -418,6 +512,9 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		files_to_submit = [submit_ready_file, self.xml_output_path]
 		self.submit_files(files_to_submit, 'biosample')
 		print(f"Submitted sample {self.sample.sample_id} to BioSample")
+	# Trigger report fetching
+	def update_report(self):
+		self.fetch_report()
 
 class SRASubmission(XMLSubmission, Submission):
 	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
@@ -454,6 +551,9 @@ class SRASubmission(XMLSubmission, Submission):
 		files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fastq1, self.sample.fastq2]
 		self.submit_files(files_to_submit, 'sra')
 		print(f"Submitted sample {self.sample.sample_id} to SRA")
+	# Trigger report fetching
+	def update_report(self):
+		self.fetch_report()
 
 class GenbankSubmission(XMLSubmission, Submission):
 	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
@@ -490,6 +590,9 @@ class GenbankSubmission(XMLSubmission, Submission):
 		files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fasta_file, self.sample.gff_file]
 		self.submit_files(files_to_submit, 'genbank')
 		print(f"Submitted sample {self.sample.sample_id} to Genbank")
+	# Trigger report fetching
+	def update_report(self):
+		self.fetch_report()
 	def prepare_genbank_files(self):
 		# Code for preparing table2asn files
 		print(f"Genbank files prepared for {self.sample.sample_id}")

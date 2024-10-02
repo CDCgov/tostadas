@@ -7,9 +7,6 @@
 */
 
 include { SUBMISSION                                    } from '../../modules/local/initial_submission/main'
-//include { SUBMISSION_FULL                               } from '../../modules/local/initial_submission/main_full'
-//include { SUBMISSION_SRA                                } from '../../modules/local/initial_submission/main_sra'
-//include { SUBMISSION_GENBANK                            } from '../../modules/local/initial_submission/main_genbank'
 include { UPDATE_SUBMISSION                             } from '../../modules/local/update_submission/main'
 include { WAIT                                          } from '../../modules/local/general_util/wait/main'
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
@@ -28,11 +25,11 @@ workflow INITIAL_SUBMISSION {
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
         // process for updating the submitted samples
-        UPDATE_SUBMISSION ( WAIT.out, submission_config, SUBMISSION.out.submission_files, SUBMISSION.out.submission_log )
+        UPDATE_SUBMISSION ( WAIT.out, submission_ch, submission_config )
 
     emit:
         submission_files = UPDATE_SUBMISSION.out.submission_files
-        submission_log = UPDATE_SUBMISSION.out.submission_log
+        //submission_log = UPDATE_SUBMISSION.out.submission_log
 
         //to do: add GISAID module
 }

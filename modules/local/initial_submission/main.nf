@@ -25,6 +25,7 @@ process SUBMISSION {
     script:
     """     
     submission_new.py \
+        --submit \
         --submission_name $meta.id \
         --config_file $submission_config  \
         --metadata_file $validated_meta_path \
@@ -41,5 +42,5 @@ process SUBMISSION {
     """
     output:
     path "${validated_meta_path.getBaseName()}", emit: submission_files
-    path "*.csv", emit: submission_log
+    //path "*.csv", emit: submission_log
 }

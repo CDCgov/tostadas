@@ -133,10 +133,6 @@ workflow TOSTADAS {
 			GET_WAIT_TIME.out
 			)
 
-			MERGE_UPLOAD_LOG ( 
-				INITIAL_SUBMISSION.out.submission_files.collect(), 
-				INITIAL_SUBMISSION.out.submission_log.collect(), 
-			 )
 		}
 	}
 
