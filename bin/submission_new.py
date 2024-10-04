@@ -12,6 +12,7 @@ import os
 import math  # Required for isnan check
 import csv
 import time
+import subprocess
 import pandas as pd
 from abc import ABC, abstractmethod
 #import paramiko
@@ -22,20 +23,21 @@ def fetch_and_parse_report(submission_object, client, submission_id, submission_
 	# Connect to the FTP/SFTP client
 	client.connect()
 	client.change_dir('submit')  # Change to 'submit' directory
-	client.change_dir(submission_dir)  # Change to test or prod
+	client.change_dir(submission_dir)  # Change to Test or Prod
 	client.change_dir(f"{submission_id}_{type}")  # Change to sample-specific directory
 	# Check if report.xml exists and download it
-	report_path = f"{submission_id}_{type}/report.xml"
-	if client.file_exists(report_path):
-		print(f"Report found at {report_path}")
+	report_file = "report.xml"
+	if client.file_exists(report_file):
+		print(f"Report found at {report_file}")
 		report_local_path = os.path.join(output_dir, 'report.xml')
-		client.download_file(report_path, report_local_path)
+		client.download_file(report_file, report_local_path)
 		# Parse the report.xml
 		parsed_report = submission_object.parse_report_xml(report_local_path)
 		# Save as CSV to top level sample submission folder
 		# output_dir = 'path/to/results/sample_name/database' and we want to save a report for all samples to 'path/to/results/'
-		report_file = os.path.join(os.path.dirname(os.path.dirname(output_dir)), 'submission_report.csv')
-		submission_object.save_report_to_csv(parsed_report, report_file)
+		report_filename = os.path.join(os.path.dirname(os.path.dirname(output_dir)), 'submission_report.csv')
+		print(f"save_report_to_csv inputs are: {parsed_report}, {report_filename}")
+		submission_object.save_report_to_csv(parsed_report, report_filename)
 		return parsed_report
 	else:
 		print(f"No report found for submission {submission_id}")
@@ -62,7 +64,7 @@ def submission_main():
 		fastq1=parameters.get('fastq1'),
 		fastq2=parameters.get('fastq2'),
 		fasta_file=parameters.get('fasta_file'),
-		gff_file=parameters.get('annotation_file')
+		annotation_file=parameters.get('annotation_file')
 	)
 	# Perform file validation
 	sample.validate_files()
@@ -72,9 +74,9 @@ def submission_main():
 
 	# Set the submission directory (test or prod)
 	if parameters['test']:
-		submission_dir = 'test'
+		submission_dir = 'Test'
 	else:
-		submission_dir = 'prod'
+		submission_dir = 'Prod'
 
 	# Prepare all submissions first (so files are generated even if submission step fails)
 	if parameters['biosample']:
@@ -187,20 +189,20 @@ class SubmissionConfigParser:
 		return config_dict
 
 class Sample:
-	def __init__(self, sample_id, metadata_file, fastq1, fastq2, fasta_file=None, gff_file=None):
+	def __init__(self, sample_id, metadata_file, fastq1, fastq2, fasta_file=None, annotation_file=None):
 		self.sample_id = sample_id
 		self.metadata_file = metadata_file
 		self.fastq1 = fastq1
 		self.fastq2 = fastq2
 		self.fasta_file = fasta_file
-		self.gff_file = gff_file
+		self.annotation_file = annotation_file
 	# todo: add (or ignore) validation for cloud files 
 	def validate_files(self):
 		files_to_check = [self.metadata_file, self.fastq1, self.fastq2]
 		if self.fasta_file:
 			files_to_check.append(self.fasta_file)
-		if self.gff_file:
-			files_to_check.append(self.gff_file)
+		if self.annotation_file:
+			files_to_check.append(self.annotation_file)
 		missing_files = [f for f in files_to_check if not os.path.exists(f)]
 		if missing_files:
 			raise FileNotFoundError(f"Missing required files: {missing_files}")
@@ -292,12 +294,10 @@ class Submission:
 						report_dict['genbank_release_date'] = accession_report.find('ReleaseDate').text
 				report_dict['genbank_message'] = message
 		return report_dict
-	def save_report_to_csv(self, submission_report):
-		csv_file = os.path.join(self.output_dir, 'submission_report.csv')
-		file_exists = os.path.isfile(csv_file)
+	def save_report_to_csv(self, submission_report, csv_file):
 		with open(csv_file, 'a', newline='') as f:
 			writer = csv.DictWriter(f, fieldnames=submission_report.keys())
-			if not file_exists:
+			if not os.path.isfile(csv_file):
 				writer.writeheader()
 			writer.writerow(submission_report)
 		print(f"Submission report saved to {csv_file}")
@@ -305,7 +305,7 @@ class Submission:
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
 		self.client.change_dir('submit')  # Change to 'submit' directory
-		self.client.change_dir(self.submission_dir) # Change to test or prod
+		self.client.change_dir(self.submission_dir) # Change to Test or Prod
 		self.client.change_dir(sample_subtype_dir) # Change to unique dir for sample_destination
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
@@ -572,7 +572,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		file1 = ET.SubElement(add_files, "File", file_path=self.sample.fasta_file)
 		data_type1 = ET.SubElement(file1, "DataType")
 		data_type1.text = "generic-data"
-		file2 = ET.SubElement(add_files, "File", file_path=self.sample.gff_file)
+		file2 = ET.SubElement(add_files, "File", file_path=self.sample.annotation_file)
 		data_type2 = ET.SubElement(file2, "DataType")
 		data_type2.text = "generic-data"
 	def add_attributes_block(self, submission):
@@ -587,7 +587,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		with open(submit_ready_file, 'w') as fp:
 			pass 
 		# Submit files
-		files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fasta_file, self.sample.gff_file]
+		files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fasta_file, self.sample.annotation_file]
 		self.submit_files(files_to_submit, 'genbank')
 		print(f"Submitted sample {self.sample.sample_id} to Genbank")
 	# Trigger report fetching
@@ -596,9 +596,56 @@ class GenbankSubmission(XMLSubmission, Submission):
 	def prepare_genbank_files(self):
 		# Code for preparing table2asn files
 		print(f"Genbank files prepared for {self.sample.sample_id}")
-	def table2asn(self):
-		# Code for table2asn process
+		# Create authorset file - separate fx?
+		# Rename the fasta file to sequence.fsa if it exists
+		fasta_file = os.path.join(self.output_dir, f"{self.sample}.fasta")
+		renamed_fasta = os.path.join(self.output_dir, "sequence.fsa")
+		if os.path.exists(fasta_file):
+			os.rename(fasta_file, renamed_fasta)
+		else:
+			raise FileNotFoundError(f"FASTA file {fasta_file} not found.")
+		# Finish file prep
+
+
+	def run_table2asn(self):
+		"""
+		Executes table2asn with appropriate flags and handles errors.
+		"""
 		print("Running table2asn...")
+		# Check if table2asn executable exists in PATH
+		table2asn_path = shutil.which('table2asn')
+		if not table2asn_path:
+			raise FileNotFoundError("table2asn executable not found in PATH.")
+		# Check if a GFF file is supplied and extract the locus tag
+		gff_file = os.path.join(self.sample.gff)
+		locus_tag = None
+		if os.path.exists(gff_file):
+			locus_tag = self.extract_locus_tag(gff_file)
+		# Construct the table2asn command
+		cmd = [
+			"table2asn",
+			"-i", "sequence.fsa",
+			"-f", "source.src",
+			"-o", f"{self.sample.id}.sqn",
+			"-t", "authorset.sbt",
+			"-f", self.sample.annotation_file 
+		]
+		if locus_tag:
+			cmd.extend(["-l", locus_tag])
+		if is_multicontig_fasta(fasta):
+			cmd.append("-M")
+			cmd.append("n")
+			cmd.append("-Z")
+		if os.path.isfile("comment.cmt"):
+			cmd.append("-w")
+			cmd.append("comment.cmt")
+		# Run the command and capture errors
+		try:
+			result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+			print(f"table2asn output: {result.stdout}")
+		except subprocess.CalledProcessError as e:
+			print(f"Error running table2asn: {e.stderr}")
+			raise
 	def create_zip_files(self):
 		# Code for creating a zip archive for Genbank submission
 		print("Creating zip files...")
