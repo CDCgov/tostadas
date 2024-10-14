@@ -125,7 +125,7 @@ class RepeatMasker_Annotations:
         """
         with open(self.repeatMGFF, 'r') as f:
             for i, line in enumerate(f):
-                if i == 1:
+                if i == 3:
                     samp_info=line.split(' ')
             self.samp_name=samp_info[1]
             #self.samp_start=int(samp_info[2])
