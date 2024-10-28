@@ -294,12 +294,12 @@ class Submission:
 						report_dict['genbank_release_date'] = accession_report.find('ReleaseDate').text
 				report_dict['genbank_message'] = message
 		return report_dict
-	def save_report_to_csv(self, submission_report, csv_file):
+	def save_report_to_csv(self, report_dict, csv_file):
 		with open(csv_file, 'a', newline='') as f:
-			writer = csv.DictWriter(f, fieldnames=submission_report.keys())
+			writer = csv.DictWriter(f, fieldnames=report_dict.keys())
 			if not os.path.isfile(csv_file):
-				writer.writeheader()
-			writer.writerow(submission_report)
+				writer.writeheader() # todo: need to use pandas to do this probably, not all keys are being written to the file 
+			writer.writerow(report_dict)
 		print(f"Submission report saved to {csv_file}")
 	def submit_files(self, files, type):
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
@@ -571,7 +571,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		add_files = ET.SubElement(action, "AddFiles", target_db="Genbank")
 		file1 = ET.SubElement(add_files, "File", file_path=self.sample.fasta_file)
 		data_type1 = ET.SubElement(file1, "DataType")
-		data_type1.text = "generic-data"
+		data_type1.text = "generic-data" 
 		file2 = ET.SubElement(add_files, "File", file_path=self.sample.annotation_file)
 		data_type2 = ET.SubElement(file2, "DataType")
 		data_type2.text = "generic-data"
