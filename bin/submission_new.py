@@ -218,14 +218,12 @@ class MetadataParser:
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_biosample_metadata(self):
-		columns = ['bs_package','isolate','isolation_source','host_disease','host','collected_by','lat_lon',
-				   'sex','age','geo_location','organism','purpose_of_sampling', 'race','ethnicity','sample_type']  # BioSample specific columns
+		columns = ['bs_package','strain','isolate','host_disease','host','collected_by','lat_lon','geo_location','organism','sample_type','collection_date']  # BioSample specific columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_sra_metadata(self):
-		columns = ['instrument_model','library_construction_protocol','library_layout','library_name','library_selection',
-				   'library_source','library_strategy','nanopore_library_layout','nanopore_library_protocol','nanopore_library_selection',
-				   'nanopore_library_source','nanopore_library_strategy','nanopore_sequencing_instrument']  # SRA specific columns
+		columns = ['illumina_sequencing_instrument','illumina_library_protocol','illumina_library_layout','illumina_library_selection',
+				   'illumina_library_source','illumina_library_strategy']  # SRA specific columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_genbank_metadata(self):
@@ -475,7 +473,6 @@ class XMLSubmission(ABC):
 		"""Add the attributes block, which differs between submissions."""
 		pass
 
-# todo: don't think I need separate classes for each db
 class BiosampleSubmission(XMLSubmission, Submission):
 	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
 		# Properly initialize the base classes 
@@ -492,11 +489,21 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
 		data = ET.SubElement(add_data, 'Data', {'content_type': 'xml'})
 		xml_content = ET.SubElement(data, 'XmlContent')
+		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+		identifier = ET.SubElement(add_data, 'Identifier')
+		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': spuid_namespace_value})
+		identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		# BioSample-specific XML elements
 		biosample = ET.SubElement(xml_content, 'BioSample', {'schema_version': '2.0'})
 		sample_id = ET.SubElement(biosample, 'SampleId')
-		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': ''})
-		spuid.text = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': spuid_namespace_value})
+		spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+		organism = ET.SubElement(biosample, 'Organism')
+		organismName = ET.SubElement(organism, 'OrganismName')
+		organismName.text = self.safe_text(self.biosample_metadata['organism'])
+		bioproject = ET.SubElement(biosample, 'BioProject')
+		primaryID = ET.SubElement(bioproject, 'PrimaryId')
+		bs_package = ET.SubElement(biosample, 'Package')
 	def add_attributes_block(self, submission):
 		biosample = submission.find(".//BioSample")
 		attributes = ET.SubElement(biosample, 'Attributes')
@@ -533,15 +540,25 @@ class SRASubmission(XMLSubmission, Submission):
 		file1 = ET.SubElement(add_files, "File", file_path=self.sample.fastq1)
 		data_type1 = ET.SubElement(file1, "DataType")
 		data_type1.text = "generic-data"
-		file2 = ET.SubElement(add_files, "File", file_path=self.sample.fastq2)
-		data_type2 = ET.SubElement(file2, "DataType")
-		data_type2.text = "generic-data"
+
 	def add_attributes_block(self, submission):
 		add_files = submission.find(".//AddFiles")
 		attributes = ET.SubElement(add_files, 'Attributes')
 		for attr_name, attr_value in self.sra_metadata.items():
 			attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 			attribute.text = self.safe_text(attr_value)
+		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
+		refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
+		primaryid_bioproject = ET.SubElement(refid_bioproject, "PrimaryId")
+		attribute_ref_id_biosample = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
+		refid_biosample = ET.SubElement(attribute_ref_id_biosample, "RefId")
+		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': spuid_namespace_value})
+		spuid_biosample.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+		identifier = ET.SubElement(add_files, 'Identifier')
+		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': spuid_namespace_value})
+		identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+
 	def submit(self):
 		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
 		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
