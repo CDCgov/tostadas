@@ -447,7 +447,7 @@ class XMLSubmission(ABC):
         name = ET.SubElement(organization_el, 'Name')
         name.text = self.safe_text(self.submission_config['Submitting_Org'])
         # Contact block (common across all submissions)
-        contact_el = ET.SubElement(organization_el, 'Contact', {'email': self.submission_config['Email']})
+        contact_el = ET.SubElement(organization_el, 'Contact', {'email': self.safe_text(self.submission_config['Email'])})
         contact_name = ET.SubElement(contact_el, 'Name')
         first = ET.SubElement(contact_name, 'First')
         first.text = self.safe_text(self.submission_config['Submitter']['Name']['First'])
@@ -583,15 +583,15 @@ class GenbankSubmission(XMLSubmission, Submission):
         assembly_metadata = ET.SubElement(assembly_metadata_choice, "GenomeAssemblyMetadata")
         sequencing_technologies = ET.SubElement(assembly_metadata, "SequencingTechnologies", {"coverage": str(self.genbank_metadata['mean_coverage'])})
         technology = ET.SubElement(sequencing_technologies, "Technology")
-        technology.text = self.genbank_metadata['assembly_protocol']
+        technology.text = self.safe_text(self.genbank_metadata['assembly_protocol'])
         assembly = ET.SubElement(assembly_metadata, "Assembly")
         method = ET.SubElement(assembly, "Method")
-        method.text = self.genbank_metadata['assembly_method']
+        method.text = self.safe_text(self.genbank_metadata['assembly_method'])
         genome_representation = ET.SubElement(description, "GenomeRepresentation")
         genome_representation.text = "Full"
         # Authors
         sequence_authors = ET.SubElement(description, "SequenceAuthors")
-        authors_list = self.top_metadata['authors'].split('; ')
+        authors_list = self.safe_text(self.top_metadata['authors'].split('; '))
         for i, author in enumerate(authors_list, start=1):
             author_el = ET.SubElement(sequence_authors, "Author")
             name_el = ET.SubElement(author_el, "Name")
@@ -613,7 +613,8 @@ class GenbankSubmission(XMLSubmission, Submission):
                 middle_el.text = middle_name
         # Publication
         #todo: db_type?
-        publication = ET.SubElement(description, "Publication", status=self.genbank_metadata['publication_status'], id=self.genbank_metadata['publication_title'])
+        publication = ET.SubElement(description, "Publication", status=self.safe_text(self.genbank_metadata['publication_status']), 
+                                                                id=self.safe_text(self.genbank_metadata['publication_title']))
         db_type = ET.SubElement(publication, "DbType")
         db_type.text = "ePubmed"
         # Additional attributes
@@ -623,16 +624,16 @@ class GenbankSubmission(XMLSubmission, Submission):
         attribute_ref1 = ET.SubElement(add_files, "AttributeRefId")
         ref_id1 = ET.SubElement(attribute_ref1, "RefId")
         primary_id1 = ET.SubElement(ref_id1, "PrimaryId", db="BioProject")
-        primary_id1.text = self.top_metadata['ncbi-bioproject']
+        primary_id1.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
         attribute_ref2 = ET.SubElement(add_files, "AttributeRefId")
         ref_id2 = ET.SubElement(attribute_ref2, "RefId")
         primary_id2 = ET.SubElement(ref_id2, "PrimaryId", db="BioSample")
-        # todo: need to figure out BioSample 
+        # todo: need to figure out BioSample (and don't forget self.safe_text())
         primary_id2.text = ""
         # Identifier
         identifier = ET.SubElement(add_files, "Identifier")
         spuid = ET.SubElement(identifier, "SPUID", spuid_namespace="NCBI")
-        spuid.text = self.top_metadata['ncbi-spuid_namespace']        
+        spuid.text = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
     def submit(self):
         # Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
         submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
