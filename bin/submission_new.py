@@ -581,7 +581,7 @@ class GenbankSubmission(XMLSubmission, Submission):
         description = ET.SubElement(genome, "Description")
         assembly_metadata_choice = ET.SubElement(description, "GenomeAssemblyMetadataChoice")
         assembly_metadata = ET.SubElement(assembly_metadata_choice, "GenomeAssemblyMetadata")
-        sequencing_technologies = ET.SubElement(assembly_metadata, "SequencingTechnologies", self.genbank_metadata['mean_coverage'])
+        sequencing_technologies = ET.SubElement(assembly_metadata, "SequencingTechnologies", {"coverage": str(self.genbank_metadata['mean_coverage'])})
         technology = ET.SubElement(sequencing_technologies, "Technology")
         technology.text = self.genbank_metadata['assembly_protocol']
         assembly = ET.SubElement(assembly_metadata, "Assembly")
@@ -591,7 +591,7 @@ class GenbankSubmission(XMLSubmission, Submission):
         genome_representation.text = "Full"
         # Authors
         sequence_authors = ET.SubElement(description, "SequenceAuthors")
-        authors_list = self.genbank_metadata['authors'].split('; ')
+        authors_list = self.top_metadata['authors'].split('; ')
         for i, author in enumerate(authors_list, start=1):
             author_el = ET.SubElement(sequence_authors, "Author")
             name_el = ET.SubElement(author_el, "Name")
