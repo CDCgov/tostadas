@@ -695,6 +695,9 @@ class GenbankSubmission(XMLSubmission, Submission):
         # Check if a GFF file is supplied and extract the locus tag
         # todo: this needs to be changed - see Mike's comment in NCBI UI-less doc
         locus_tag = self.extract_locus_tag(self.sample.annotation_file)
+        # Rename the fasta file to sequence.fsa
+        os.rename(os.path.join(self.output_dir, f"{self.sample}.fasta"),
+                 os.path.join(self.output_dir, "sequence.fsa"))
         # Construct the table2asn command
         cmd = [
             "table2asn",
