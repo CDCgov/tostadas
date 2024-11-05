@@ -432,6 +432,8 @@ class XMLSubmission(ABC):
 		submission = ET.Element('Submission')
 		# Description block (common across all submissions)
 		description = ET.SubElement(submission, 'Description')
+		if "Specified_Release_Date" in self.submission_config:
+			release_date = etree.SubElement(description, "Hold", release_date=self.submission_config["Specified_Release_Date"])
 		title = ET.SubElement(description, 'Title')
 		title.text = self.safe_text(self.top_metadata['title'])
 		comment = ET.SubElement(description, 'Comment')
@@ -503,7 +505,9 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		organismName.text = self.safe_text(self.biosample_metadata['organism'])
 		bioproject = ET.SubElement(biosample, 'BioProject')
 		primaryID = ET.SubElement(bioproject, 'PrimaryId')
+		primaryID.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
 		bs_package = ET.SubElement(biosample, 'Package')
+		bs_package.text = self.safe_text(self.submission_config['BioSample_package'])
 	def add_attributes_block(self, submission):
 		biosample = submission.find(".//BioSample")
 		attributes = ET.SubElement(biosample, 'Attributes')
@@ -551,6 +555,7 @@ class SRASubmission(XMLSubmission, Submission):
 		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
 		refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
 		primaryid_bioproject = ET.SubElement(refid_bioproject, "PrimaryId")
+		primaryid_bioproject.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
 		attribute_ref_id_biosample = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
 		refid_biosample = ET.SubElement(attribute_ref_id_biosample, "RefId")
 		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': spuid_namespace_value})
