@@ -590,27 +590,33 @@ class GenbankSubmission(XMLSubmission, Submission):
         genome_representation = ET.SubElement(description, "GenomeRepresentation")
         genome_representation.text = "Full"
         # Authors
-        sequence_authors = ET.SubElement(description, "SequenceAuthors")
-        authors_list = self.safe_text(self.top_metadata['authors'].split('; '))
-        for i, author in enumerate(authors_list, start=1):
-            author_el = ET.SubElement(sequence_authors, "Author")
-            name_el = ET.SubElement(author_el, "Name")
-            # Split the author's name into components
-            name_parts = author.split()
-            # Parse first, middle (if exists), and last name
-            first_name = name_parts[0]
-            last_name = name_parts[-1]
-            middle_name = ' '.join(name_parts[1:-1]) if len(name_parts) > 2 else None
-            # Add First element
-            first_el = ET.SubElement(name_el, "First")
-            first_el.text = first_name
-            # Add Last element
-            last_el = ET.SubElement(name_el, "Last")
-            last_el.text = last_name
-            # Add Middle element if there is one
-            if middle_name:
-                middle_el = ET.SubElement(name_el, "Middle")
-                middle_el.text = middle_name
+        authors = self.genbank_metadata.get('authors')
+        if authors and authors not in ["Not Provided", "NaN", ""]:
+            sequence_authors = ET.SubElement(description, "SequenceAuthors")
+            authors_list = authors.split('; ')
+            
+            for author in authors_list:
+                author_el = ET.SubElement(sequence_authors, "Author")
+                name_el = ET.SubElement(author_el, "Name")
+                
+                # Split the author's name into components
+                name_parts = author.split()
+                first_name = name_parts[0]
+                last_name = name_parts[-1]
+                middle_name = ' '.join(name_parts[1:-1]) if len(name_parts) > 2 else None
+                
+                # Add First element
+                first_el = ET.SubElement(name_el, "First")
+                first_el.text = first_name
+                
+                # Add Last element
+                last_el = ET.SubElement(name_el, "Last")
+                last_el.text = last_name
+                
+                # Add Middle element if there is one
+                if middle_name:
+                    middle_el = ET.SubElement(name_el, "Middle")
+                    middle_el.text = middle_name
         # Publication
         #todo: db_type?
         publication = ET.SubElement(description, "Publication", status=self.safe_text(self.genbank_metadata['publication_status']), 
