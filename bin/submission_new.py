@@ -569,12 +569,9 @@ class GenbankSubmission(XMLSubmission, Submission):
     def add_action_block(self, submission):
         action = ET.SubElement(submission, "Action")
         add_files = ET.SubElement(action, "AddFiles", target_db="Genbank")
-        file1 = ET.SubElement(add_files, "File", file_path=self.sample.fasta_file)
+        file1 = ET.SubElement(add_files, "File", file_path=f"{self.sample.sample_id}.sqn")
         data_type1 = ET.SubElement(file1, "DataType")
-        data_type1.text = "generic-data" 
-        file2 = ET.SubElement(add_files, "File", file_path=self.sample.annotation_file)
-        data_type2 = ET.SubElement(file2, "DataType")
-        data_type2.text = "generic-data"
+        data_type1.text = "wgs-contigs-sqn"
     def add_attributes_block(self, submission):
         add_files = submission.find(".//AddFiles")   
         # Meta and Genome information
