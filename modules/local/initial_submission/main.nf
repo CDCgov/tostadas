@@ -18,6 +18,7 @@ process SUBMISSION {
 
     // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+    def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
     def biosample = params.biosample == true ? '--biosample' : ''
     def sra = params.sra == true ? '--sra' : ''
     def genbank = params.genbank == true ? '--genbank' : ''
@@ -37,6 +38,7 @@ process SUBMISSION {
         --fastq2 $fastq_2 \
         --submission_mode $params.submission_mode \
         $test_flag \
+        $send_submission_email \
         $genbank $sra $biosample 
 
     """

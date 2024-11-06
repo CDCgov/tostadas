@@ -106,7 +106,8 @@ def submission_main():
             else:
                 genbank_submission.prepare_files()
                 genbank_submission.run_table2asn()
-                # todo: add functon to send email
+                if parameters['send_email']:
+                    genbank_submission.sendemail()
 
     # If update mode
     elif parameters['update']:
@@ -118,7 +119,7 @@ def submission_main():
                 submission_objects = { 'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission }
             else:
                 submission_objects = { 'biosample': biosample_submission, 'sra': sra_submission }
-            for db in databases:
+            for db in submission_objects.keys():
                 submission_object = submission_objects[db]
                 result = submission_object.update_report()  # Call the fetch_report function repeatedly
                 if result:  # If report fetch is successful, break the loop
@@ -164,7 +165,8 @@ class GetParams:
         parser.add_argument("--annotation_file", help="An annotation file to add to a Genbank submission", required=False)
         parser.add_argument("--fastq1", help="Fastq R1 file to be submitted", required=False)	
         parser.add_argument("--fastq2", help="Fastq R2 file to be submitted", required=False)
-        parser.add_argument("--submission_mode", help="Whether to upload via ftp or sftp", required=False, default='ftp')	
+        parser.add_argument("--submission_mode", help="Whether to upload via ftp or sftp", required=False, default='ftp')
+        parser.add_argument("--send_email", help="Whether to send the ASN.1 file after running table2asn", required=False,action="store_const",  default=False, const=True)
         parser.add_argument("--genbank", help="Optional flag to run Genbank submission", action="store_const", default=False, const=True)
         parser.add_argument("--biosample", help="Optional flag to run BioSample submission", action="store_const", default=False, const=True)
         parser.add_argument("--sra", help="Optional flag to run SRA submission", action="store_const", default=False, const=True)
@@ -936,9 +938,36 @@ class GenbankSubmission(XMLSubmission, Submission):
         except subprocess.CalledProcessError as e:
             print(f"Error running table2asn: {e.stderr}")
             raise
-    def create_zip_files(self):
+    def sendemail(self):
         # Code for creating a zip archive for Genbank submission
-        print("Creating zip files...")
+        TABLE2ASN_EMAIL = self.submission_config["TABLE2ASN_EMAIL"]
+        try:
+            msg = MIMEMultipart('multipart')
+            msg['Subject'] = self.sample.sample_id + " table2asn submission"
+            from_email = self.submission_config["Submitter"]["@email"]
+            to_email = []
+            cc_email = []
+            if test == True:
+                to_email.append(self.submission_config["Submitter"]["@email"])
+            else:
+                to_email.append(TABLE2ASN_EMAIL)
+                #cc_email.append(config_dict["Description"]["Organization"]["Submitter"]["@email"])
+            if self.submission_config["Submitter"]["@alt_email"]:
+                cc_email.append(self.submission_config["Submitter"]["@alt_email"])
+            msg['From'] = from_email
+            msg['To'] = ", ".join(to_email)
+            if len(cc_email) != 0:
+                msg['Cc'] = ", ".join(cc_email)
+            with open(os.path.join(self.output_dor, f"{self.sample.sample_id}.sqn"), 'rb') as file_input:
+                part = MIMEApplication(file_input.read(), Name=f"{self.sample.sample_id}.sqn")
+            part['Content-Disposition'] = "attachment; filename=f'{self.sample.sample_id}.sqn'"
+            msg.attach(part)
+            s = smtplib.SMTP('localhost')
+            s.sendmail(from_email, to_email, msg.as_string())
+        except Exception as e:
+            print("Error: Unable to send mail automatically. If unable to email, submission can be made manually using the sqn file.", file=sys.stderr)
+            print("sqn_file:" + os.path.join(self.output_dor, f"{self.sample.sample_id}.sqn"), file=sys.stderr)
+            print(e, file=sys.stderr)
     # Functions to ftp upload files
     def submit(self):
         # Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
