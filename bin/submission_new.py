@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 from datetime import datetime
 import argparse
 import yaml
@@ -17,6 +18,7 @@ import pandas as pd
 from abc import ABC, abstractmethod
 #import paramiko
 import ftplib
+from nameparser import HumanName
 from zipfile import ZipFile
 
 def fetch_and_parse_report(submission_object, client, submission_id, submission_dir, output_dir, type):
@@ -64,7 +66,8 @@ def submission_main():
         fastq1=parameters.get('fastq1'),
         fastq2=parameters.get('fastq2'),
         fasta_file=parameters.get('fasta_file'),
-        annotation_file=parameters.get('annotation_file')
+        annotation_file=parameters.get('annotation_file'),
+        species = parameters['species']
     )
     # Perform file validation
     sample.validate_files()
@@ -97,13 +100,18 @@ def submission_main():
         if parameters['sra']:
             sra_submission.submit()
         if parameters['genbank']:
-            genbank_submission.submit()
-            # Add more GB functions for table2asn submission and creating/emailing zip files
+            if sample.ftp_upload:
+                genbank_submission.run_table2asn()
+                genbank_submission.submit()
+            else:
+                genbank_submission.prepare_files()
+                genbank_submission.run_table2asn()
+                # todo: add functon to send email
 
     # If update mode
     elif parameters['update']:
         start_time = time.time()
-        timeout = 300  # 300 seconds (5 minutes)
+        timeout = 60  # todo: change to 300 seconds (5 minutes) or make user-optional
         
         while time.time() - start_time < timeout:
             submission_objects = { 'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission }
@@ -189,13 +197,16 @@ class SubmissionConfigParser:
         return config_dict
 
 class Sample:
-    def __init__(self, sample_id, metadata_file, fastq1, fastq2, fasta_file=None, annotation_file=None):
+    def __init__(self, sample_id, metadata_file, fastq1, fastq2, species, fasta_file=None, annotation_file=None):
         self.sample_id = sample_id
         self.metadata_file = metadata_file
         self.fastq1 = fastq1
         self.fastq2 = fastq2
         self.fasta_file = fasta_file
         self.annotation_file = annotation_file
+        self.species = species
+        # ftp_upload is true if GenBank FTP submission is supported for that species, otherwise false
+        self.ftp_upload = species in {"flu", "sars", "bacteria"} # flu, sars, bacteria currently support ftp upload to GenBank
     # todo: add (or ignore) validation for cloud files 
     def validate_files(self):
         files_to_check = [self.metadata_file, self.fastq1, self.fastq2]
@@ -548,7 +559,12 @@ class SRASubmission(XMLSubmission, Submission):
         with open(submit_ready_file, 'w') as fp:
             pass 
         # Submit files
-        files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fastq1, self.sample.fastq2]
+        # todo: this assumes the fastq files are gzipped!!
+        fastq1 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R1.fq.gz")
+        fastq2 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R2.fq.gz")
+        shutil.move( self.sample.fastq1, fastq1)
+        shutil.move( self.sample.fastq2, fastq2)
+        files_to_submit = [submit_ready_file, self.xml_output_path, fastq1, fastq2]
         self.submit_files(files_to_submit, 'sra')
         print(f"Submitted sample {self.sample.sample_id} to SRA")
     # Trigger report fetching
@@ -560,12 +576,14 @@ class GenbankSubmission(XMLSubmission, Submission):
         # Properly initialize the base classes 
         XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
         Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type)
-        # Use the MetadataParser to extract metadata
+        # Use the MetadataParser to extract metadata needed for GB submission
         parser = MetadataParser(metadata_df)
         self.top_metadata = parser.extract_top_metadata()
         self.genbank_metadata = parser.extract_genbank_metadata()
-        # Generate the BioSample XML upon initialization
-        self.xml_output_path = self.create_xml(output_dir) 
+        self.biosample_metadata = parser.extract_biosample_metadata()
+        # Generate the GenBank XML upon initialization only if sample.ftp_upload is True
+        if self.sample.ftp_upload:
+            self.xml_output_path = self.create_xml(output_dir)
     def add_action_block(self, submission):
         action = ET.SubElement(submission, "Action")
         add_files = ET.SubElement(action, "AddFiles", target_db="Genbank")
@@ -640,23 +658,197 @@ class GenbankSubmission(XMLSubmission, Submission):
         identifier = ET.SubElement(add_files, "Identifier")
         spuid = ET.SubElement(identifier, "SPUID", spuid_namespace="NCBI")
         spuid.text = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
-    def submit(self):
-        # Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
-        submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
-        with open(submit_ready_file, 'w') as fp:
-            pass 
-        # Submit files
-        files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fasta_file, self.sample.annotation_file]
-        self.submit_files(files_to_submit, 'genbank')
-        print(f"Submitted sample {self.sample.sample_id} to Genbank")
-    # Trigger report fetching
-    def update_report(self):
-        self.fetch_report()
+    # Functions for manually preparing files for table2asn + manual submission (where ftp upload not supported)
+    def create_source_file(self):
+        source_data = {
+            "Sequence_ID": self.top_metadata.get("sequence_name"),
+            "strain": self.top_metadata.get("sequence_name"),
+            "BioProject": self.top_metadata.get("ncbi-bioproject"),
+            "organism": self.biosample_metadata.get("organism"),
+            "Collection_date": self.biosample_metadata.get("collection_date"),
+            "country": self.biosample_metadata.get("geo_location"),
+            "isolate": self.biosample_metadata.get("isolate"),
+            "host": self.biosample_metadata.get("host"),
+            "isolation_source": self.biosample_metadata.get("isolation_source")
+        }
+        source_df = pd.DataFrame([source_data])
+        source_df.to_csv(os.path.join(self.output_dir, "source.src"), sep="\t", index=False)
+    def create_comment_file(self):
+        comment_data = {
+            "SeqID": self.top_metadata.get("sequence_name"),
+            "StructuredCommentPrefix": "Assembly-Data",
+            "organism": self.biosample_metadata.get("organism"),
+            "collection_date": self.biosample_metadata.get("collection_date"),
+            "Assembly-Method": self.genbank_metadata.get("assembly_method"),
+            "Coverage": self.genbank_metadata.get("mean_coverage"),
+            "HOST_AGE": self.biosample_metadata.get("age"),
+            "HOST_GENDER": self.biosample_metadata.get("sex"),
+            "StructuredCommentSuffix": "Assembly-Data"
+        }
+        comment_df = pd.DataFrame([comment_data])
+        comment_df.to_csv(os.path.join(self.output_dir, "comment.cmt"), sep="\t", index=False)
+    def create_authorset_file(self):
+        """ Create the authorset.sbt file that is required for table2asn to run """
+        submitter_first = self.submission_config["Submitter"]["Name"]["First"]
+        submitter_last = self.submission_config["Submitter"]["Name"]["Last"]
+        submitter_email = self.submission_config["Submitter"]["@email"]
+        alt_submitter_email = self.submission_config["Submitter"]["@alt_email"]
+        affil = self.submission_config["Submitting_Org"]
+        div = self.submission_config["Submitting_Org_Dept"]
+        publication_status = self.safe_text(self.genbank_metadata['publication_status'])
+        publication_title = self.safe_text(self.genbank_metadata['publication_title'])
+        street = self.submission_config["Street"]
+        city = self.submission_config["City"]
+        sub = self.submission_config["State"]
+        country = self.submission_config["Country"]
+        email = self.submission_config["Email"]
+        phone = self.submission_config["Phone"]
+        zip_code = self.submission_config["Postal_code"]
+        authorset_file = os.path.join(self.output_dir, "authorset.sbt")
+        with open(authorset_file, "w+") as f:
+            f.write("Submit-block ::= {\n")
+            f.write("  contact {\n")
+            f.write("    contact {\n")
+            f.write("      name name {\n")
+            f.write("        last \"" + submitter_last + "\",\n")
+            f.write("        first \"" + submitter_first + "\",\n")
+            f.write("        middle \"\",\n")
+            f.write("        initials \"\",\n")
+            f.write("        suffix \"\",\n")
+            f.write("        title \"\"\n")
+            f.write("      },\n")
+            f.write("      affil std {\n")
+            f.write("        affil \""+ affil + "\",\n")
+            f.write("        div \"" + div + "\",\n")
+            f.write("        city \"" + city + "\",\n")
+            f.write("        sub \"" + sub + "\",\n")
+            f.write("        country \"" + country + "\",\n")
+            f.write("        street \"" + street + "\",\n")
+            f.write("        email \"" + email + "\",\n")
+            f.write("        phone \"" + phone + "\",\n")
+            f.write("        postal-code \"" + zip_code + "\"\n")
+            f.write("      }\n")
+            f.write("    }\n")
+            f.write("  },\n")
+            f.write("  cit {\n")
+            f.write("    authors {\n")
+            f.write("      names std {\n")
+            authors_list = self.safe_text(self.genbank_metadata.get("authors")).split("; ")
+            if authors_list[0] not in ["Not Provided", ""]:
+                total_names = len(authors_list)
+                for index, author in enumerate(authors_list, start=1):
+                    # Parse the author name into first, middle, last, suffix, title
+                    name = HumanName(author.strip())
+                    f.write("        {\n")
+                    f.write("          name name {\n")
+                    f.write("            last \"" + self.safe_text(name.last) + "\",\n")
+                    f.write("            first \"" + self.safe_text(name.first) + "\"")
+                    middle_name = self.safe_text(name.middle)
+                    if middle_name != "Not Provided":
+                        f.write(",\n            middle \"" + middle_name + "\"")
+                    suffix = self.safe_text(name.suffix)
+                    if suffix != "Not Provided":
+                        f.write(",\n            suffix \"" + suffix + "\"")
+                    title = self.safe_text(name.title)
+                    if title != "Not Provided":
+                        f.write(",\n            title \"" + title + "\"")
+                    f.write("\n          }\n")
+                    if index == total_names:
+                        f.write("        }\n")
+                    else:
+                        f.write("        },\n")
+            f.write("      },\n")
+            f.write("      affil std {\n")
+            f.write("        affil \"" + affil + "\",\n")
+            f.write("        div \"" + div + "\",\n")
+            f.write("        city \"" + city + "\",\n")
+            f.write("        sub \"" + sub + "\",\n")
+            f.write("        country \"" + country + "\",\n")
+            f.write("        street \"" + street + "\",\n")
+            f.write("        postal-code \"" + zip_code + "\"\n")
+            f.write("      }\n")
+            f.write("    }\n")
+            f.write("  },\n")
+            f.write("  subtype new\n")
+            f.write("}\n")
+            f.write("Seqdesc ::= pub {\n")
+            f.write("  pub {\n")
+            f.write("    gen {\n")
+            f.write("      cit \"" + publication_status + "\",\n")
+            f.write("      authors {\n")
+            f.write("        names std {\n")
+            authors_list = self.safe_text(self.genbank_metadata.get("authors")).split("; ")
+            if authors_list[0] not in ["Not Provided", ""]:
+                total_names = len(authors_list)
+                for index, author in enumerate(authors_list, start=1):
+                    # Parse the author name into first, middle, last, suffix, title
+                    name = HumanName(author.strip())
+                    f.write("        {\n")
+                    f.write("          name name {\n")
+                    f.write("            last \"" + self.safe_text(name.last) + "\",\n")
+                    f.write("            first \"" + self.safe_text(name.first) + "\"")
+                    middle_name = self.safe_text(name.middle)
+                    if middle_name != "Not Provided":
+                        f.write(",\n            middle \"" + middle_name + "\"")
+                    suffix = self.safe_text(name.suffix)
+                    if suffix != "Not Provided":
+                        f.write(",\n            suffix \"" + suffix + "\"")
+                    title = self.safe_text(name.title)
+                    if title != "Not Provided":
+                        f.write(",\n            title \"" + title + "\"")
+                    f.write("\n          }\n")
+                    if index == total_names:
+                        f.write("        }\n")
+                    else:
+                        f.write("        },\n")
+            f.write("        }\n")
+            f.write("      },\n")
+            f.write("      title \"" + publication_title + "\"\n")
+            f.write("    }\n")
+            f.write("  }\n")
+            f.write("}\n")
+            if alt_submitter_email is not None and alt_submitter_email.strip() != "":
+                f.write("Seqdesc ::= user {\n")
+                f.write("  type str \"Submission\",\n")
+                f.write("  data {\n")
+                f.write("    {\n")
+                f.write("      label str \"AdditionalComment\",\n")
+                f.write("      data str \"ALT EMAIL: " + alt_submitter_email + "\"\n")
+                f.write("    }\n")
+                f.write("  }\n")
+                f.write("}\n")
+            f.write("Seqdesc ::= user {\n")
+            f.write("  type str \"Submission\",\n")
+            f.write("  data {\n")
+            f.write("    {\n")
+            f.write("      label str \"AdditionalComment\",\n")
+            f.write("      data str \"Submission Title: " + self.sample.sample_id + "\"\n")
+            f.write("    }\n")
+            f.write("  }\n")
+            f.write("}\n")
+    def prepare_files(self):
+        """ Prepare files for manual upload to GenBank because FTP support not available """
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        # Create the source df
+        # todo: that seq_id needs to be the genbank sequence id
+        self.create_source_file()
+        # Create Structured Comment file
+        self.create_comment_file()
+        # Create authorset file
+        self.create_authorset_file()
+        print(f"Genbank files prepared for {self.sample.sample_id}")
+        # Zip the files for email submission
+        renamed_fasta = os.path.join(f"{self.output_dir}/sequence.fsa")
+        if not os.path.exists(renamed_fasta):
+            shutil.move(self.sample.fasta_file, renamed_fasta)
+        with ZipFile(os.path.join(self.output_dir, self.sample.sample_id + ".zip"), 'w') as zip:
+            zip.write(os.path.join(self.output_dir, "authorset.sbt"), "authorset.sbt")
+            zip.write(os.path.join(self.output_dir, "sequence.fsa"), "sequence.fsa")
+            zip.write(os.path.join(self.output_dir, "source.src"), "source.src")
+            zip.write(os.path.join(self.output_dir, "comment.cmt"), "comment.cmt")
 
-        # Finish file prep
-
-    # get locus tag from gff file for Table2asn submission
-    # todo: the locus tag needs to be fetched (?) after BioSample is assigned (it appears under Manage Data for the BioProject)
+    # Functions for running table2asn
     def get_gff_locus_tag(self):
         """ Read the locus lag from the GFF3 file for use in table2asn command"""
         locus_tag = None
@@ -678,18 +870,16 @@ class GenbankSubmission(XMLSubmission, Submission):
                         if locus_tag:
                             break  # Found locus tag, stop searching
         return locus_tag
-    
     #  Detect multiple contig fasta for Table2asn submission
-    def is_multicontig_fasta(self):
+    def is_multicontig_fasta(self, fasta_file):
         headers = set()
-        with open(self.sample.fasta, 'r') as file:
+        with open(fasta_file, 'r') as file:
             for line in file:
                 if line.startswith('>'):
                     headers.add(line.strip())
                     if len(headers) > 1:
                         return True
         return False
-    
     def run_table2asn(self):
         """
         Executes table2asn with appropriate flags and handles errors.
@@ -700,23 +890,32 @@ class GenbankSubmission(XMLSubmission, Submission):
         if not table2asn_path:
             raise FileNotFoundError("table2asn executable not found in PATH.")
         # Check if a GFF file is supplied and extract the locus tag
-        # todo: this needs to be changed - see Mike's comment in NCBI UI-less doc
-        locus_tag = self.extract_locus_tag(self.sample.annotation_file)
-        # Rename the fasta file to sequence.fsa
-        os.rename(os.path.join(self.output_dir, f"{self.sample}.fasta"),
-                 os.path.join(self.output_dir, "sequence.fsa"))
+        # todo: the locus tag needs to be fetched (?) after BioSample is assigned (it appears under Manage Data for the BioProject)
+        locus_tag = self.get_gff_locus_tag()
+        # If prepare_files() not run, move the fasta file to the genbank submission folder and rename it sequence.fsa
+        renamed_fasta = os.path.join(f"{self.output_dir}/sequence.fsa")
+        if not os.path.exists(renamed_fasta):
+            shutil.move(self.sample.fasta_file, renamed_fasta)
+        shutil.move(self.sample.annotation_file, self.output_dir)
         # Construct the table2asn command
-        cmd = [
-            "table2asn",
-            "-i", "sequence.fsa",
-            "-f", "source.src",
-            "-o", f"{self.sample.id}.sqn",
-            "-t", "authorset.sbt",
-            "-f", self.sample.annotation_file 
-        ]
+        if self.sample.ftp_upload:
+            cmd = [
+                "table2asn",
+                "-indir", self.output_dir,
+                "-outdir", self.output_dir
+            ]
+        else:
+            cmd = [
+                "table2asn",
+                "-i", f"{self.output_dir}/sequence.fsa",
+                "-src-file", f"{self.output_dir}/source.src",
+                "-o", f"{self.output_dir}/{self.sample.sample_id}.sqn",
+                "-t", f"{self.output_dir}/authorset.sbt",
+                "-f", f"{self.output_dir}/{self.sample.annotation_file}"
+            ]
         if locus_tag:
-            cmd.extend(["-l", locus_tag])
-        if self.is_multicontig_fasta(self.sample.fasta):
+            cmd.extend(["-locus-tag-prefix", locus_tag])
+        if self.is_multicontig_fasta(renamed_fasta):
             cmd.append("-M")
             cmd.append("n")
             cmd.append("-Z")
@@ -724,6 +923,7 @@ class GenbankSubmission(XMLSubmission, Submission):
             cmd.append("-w")
             cmd.append("comment.cmt")
         # Run the command and capture errors
+        print(cmd)
         try:
             result = subprocess.run(cmd, check=True, capture_output=True, text=True)
             print(f"table2asn output: {result.stdout}")
@@ -733,7 +933,19 @@ class GenbankSubmission(XMLSubmission, Submission):
     def create_zip_files(self):
         # Code for creating a zip archive for Genbank submission
         print("Creating zip files...")
-
+    # Functions to ftp upload files
+    def submit(self):
+        # Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
+        submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
+        with open(submit_ready_file, 'w') as fp:
+            pass 
+        # Submit files
+        files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fasta_file, self.sample.annotation_file]
+        self.submit_files(files_to_submit, 'genbank')
+        print(f"Submitted sample {self.sample.sample_id} to Genbank")
+    # Trigger report fetching
+    def update_report(self):
+        self.fetch_report()
 
 
 if __name__ == "__main__":
