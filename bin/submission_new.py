@@ -114,14 +114,17 @@ def submission_main():
         timeout = 60  # todo: change to 300 seconds (5 minutes) or make user-optional
         
         while time.time() - start_time < timeout:
-            submission_objects = { 'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission }
+            if sample.ftp_upload:
+                submission_objects = { 'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission }
+            else:
+                submission_objects = { 'biosample': biosample_submission, 'sra': sra_submission }
             for db in databases:
                 submission_object = submission_objects[db]
                 result = submission_object.update_report()  # Call the fetch_report function repeatedly
                 if result:  # If report fetch is successful, break the loop
                     print("Report successfully fetched")
                     break
-                time.sleep(30)  # Wait before retrying
+                time.sleep(10)  # Wait before retrying
             else:
                 print("Timeout occurred while trying to fetch the report")
 
@@ -324,7 +327,8 @@ class Submission:
     def close(self):
         self.client.close()
     def fetch_report(self):
-        fetch_and_parse_report(self, self.client, self.sample.sample_id, self.submission_dir, self.output_dir, self.type)
+        if self.sample.ftp_upload:
+            fetch_and_parse_report(self, self.client, self.sample.sample_id, self.submission_dir, self.output_dir, self.type)
 
 class SFTPClient:
     def __init__(self, config):
@@ -409,7 +413,7 @@ class FTPClient:
         print(f"Downloaded file from {remote_path} to {local_path}")
     def upload_file(self, file_path, destination_path):
         try:
-            if file_path.endswith(('.fasta', '.fastq', '.gff', '.gz', 'xml')):  
+            if file_path.endswith(('.fasta', '.fastq', '.fna', '.fsa', '.gff', '.gff3', '.gz', 'xml', '.sqn')):  
                 with open(file_path, 'rb') as file:
                     print(f"Uploading binary file: {file_path}")
                     self.ftp.storbinary(f'STOR {destination_path}', file)
@@ -901,8 +905,10 @@ class GenbankSubmission(XMLSubmission, Submission):
         if self.sample.ftp_upload:
             cmd = [
                 "table2asn",
-                "-indir", self.output_dir,
-                "-outdir", self.output_dir
+                "-i", f"{self.output_dir}/sequence.fsa",
+                "-o", f"{self.output_dir}/{self.sample.sample_id}.sqn",
+                #"-indir", self.output_dir,
+                #"-outdir", self.output_dir
             ]
         else:
             cmd = [
@@ -940,7 +946,7 @@ class GenbankSubmission(XMLSubmission, Submission):
         with open(submit_ready_file, 'w') as fp:
             pass 
         # Submit files
-        files_to_submit = [submit_ready_file, self.xml_output_path, self.sample.fasta_file, self.sample.annotation_file]
+        files_to_submit = [submit_ready_file, self.xml_output_path, f"{self.output_dir}/{self.sample.sample_id}.sqn", f"{self.output_dir}/sequence.fsa"]
         self.submit_files(files_to_submit, 'genbank')
         print(f"Submitted sample {self.sample.sample_id} to Genbank")
     # Trigger report fetching
