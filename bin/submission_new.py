@@ -218,7 +218,7 @@ class MetadataParser:
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_biosample_metadata(self):
-		columns = ['bs_package','strain','isolate','host_disease','host','collected_by','lat_lon','geo_location','organism','sample_type','collection_date','isolation_source','age','sex','ethnicity']  # BioSample specific columns
+		columns = ['bs_package','strain','isolate','host_disease','host','collected_by','lat_lon','geo_location','organism','sample_type','collection_date','isolation_source','age','sex', 'race','ethnicity']  # BioSample specific columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_sra_metadata(self):
