@@ -435,10 +435,8 @@ class XMLSubmission(ABC):
 		description = ET.SubElement(submission, 'Description')
 		if "Specified_Release_Date" in self.submission_config:
 			release_date_value = self.submission_config["Specified_Release_Date"]
-    			if release_date_value and release_date_value != "Not Provided":
-        			release_date = etree.SubElement(description, "Hold", release_date=release_date_value)
-        # Proceed with creating the etree.SubElement
-        release_date = etree.SubElement(description, "Hold", release_date=release_date_value)
+			if release_date_value and release_date_value != "Not Provided":
+				release_date = etree.SubElement(description, "Hold", release_date=release_date_value)
 		title = ET.SubElement(description, 'Title')
 		title.text = self.safe_text(self.top_metadata['title'])
 		comment = ET.SubElement(description, 'Comment')
