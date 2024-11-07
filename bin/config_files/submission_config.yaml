@@ -18,6 +18,7 @@ Postal_code: 30329
 Country: USA
 Email: test@cdc.gov
 Phone: ""
+Specified_Release_Date: ""
 Submitter:
   '@email': test9@cdc.gov
   '@alt_email': test@cdc.gov
