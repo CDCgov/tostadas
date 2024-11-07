@@ -940,7 +940,8 @@ class GenbankSubmission(XMLSubmission, Submission):
             raise
     def sendemail(self):
         # Code for creating a zip archive for Genbank submission
-        TABLE2ASN_EMAIL = self.submission_config["TABLE2ASN_EMAIL"]
+        print(f"Sending submission email for {self.sample.sample_id}")
+        TABLE2ASN_EMAIL = self.submission_config["table2asn_email"]
         try:
             msg = MIMEMultipart('multipart')
             msg['Subject'] = self.sample.sample_id + " table2asn submission"
@@ -964,9 +965,10 @@ class GenbankSubmission(XMLSubmission, Submission):
             msg.attach(part)
             s = smtplib.SMTP('localhost')
             s.sendmail(from_email, to_email, msg.as_string())
+            print(f"Email sent for {self.sample.sample_id}")
         except Exception as e:
             print("Error: Unable to send mail automatically. If unable to email, submission can be made manually using the sqn file.", file=sys.stderr)
-            print("sqn_file:" + os.path.join(self.output_dor, f"{self.sample.sample_id}.sqn"), file=sys.stderr)
+            print("sqn_file:" + os.path.join(self.output_dir, f"{self.sample.sample_id}.sqn"), file=sys.stderr)
             print(e, file=sys.stderr)
     # Functions to ftp upload files
     def submit(self):
