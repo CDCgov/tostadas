@@ -218,12 +218,13 @@ class MetadataParser:
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_biosample_metadata(self):
-		columns = ['bs_package','strain','isolate','host_disease','host','collected_by','lat_lon','geo_location','organism','sample_type','collection_date']  # BioSample specific columns
+		columns = ['bs_package','strain','isolate','host_disease','host','collected_by','lat_lon','geo_location','organism','sample_type','collection_date','isolation_source','age','sex','ethnicity']  # BioSample specific columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_sra_metadata(self):
 		columns = ['illumina_sequencing_instrument','illumina_library_protocol','illumina_library_layout','illumina_library_selection',
-				   'illumina_library_source','illumina_library_strategy']  # SRA specific columns
+				   'illumina_library_source','illumina_library_strategy','nanopore_library_layout','nanopore_library_protocol','nanopore_library_selection',
+				   'nanopore_library_source','nanopore_library_strategy','nanopore_sequencing_instrument']  # SRA specific columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_genbank_metadata(self):
@@ -544,6 +545,9 @@ class SRASubmission(XMLSubmission, Submission):
 		file1 = ET.SubElement(add_files, "File", file_path=self.sample.fastq1)
 		data_type1 = ET.SubElement(file1, "DataType")
 		data_type1.text = "generic-data"
+		file2 = ET.SubElement(add_files, "File", file_path=self.sample.fastq2)
+		data_type2 = ET.SubElement(file2, "DataType")
+		data_type2.text = "generic-data"
 
 	def add_attributes_block(self, submission):
 		add_files = submission.find(".//AddFiles")
