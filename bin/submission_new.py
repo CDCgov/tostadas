@@ -89,6 +89,7 @@ def submission_main():
         sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/sra",
                                        parameters['submission_mode'], submission_dir, 'sra')
     if parameters['genbank']:
+        # Generates an XML if ftp_upload is True
         genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/genbank",
                                                parameters['submission_mode'], submission_dir, 'genbank')
 
@@ -100,12 +101,14 @@ def submission_main():
         if parameters['sra']:
             sra_submission.submit()
         if parameters['genbank']:
+            # If user is submitting via FTP
             if sample.ftp_upload:
-                genbank_submission.run_table2asn()
+                genbank_submission.prepare_files_ftp_submission() # Prep files and run table2asn
                 genbank_submission.submit()
             else:
-                genbank_submission.prepare_files()
-                genbank_submission.run_table2asn()
+                # Otherwise, prepare manual submission
+                genbank_submission.prepare_files_manual_submission() # Prep files and run table2asn
+                # Send email if the user requests it
                 if parameters['send_email']:
                     genbank_submission.sendemail()
 
@@ -414,7 +417,7 @@ class FTPClient:
         print(f"Downloaded file from {remote_path} to {local_path}")
     def upload_file(self, file_path, destination_path):
         try:
-            if file_path.endswith(('.fasta', '.fastq', '.fna', '.fsa', '.gff', '.gff3', '.gz', 'xml', '.sqn')):  
+            if file_path.endswith(('.fasta', '.fastq', '.fna', '.fsa', '.gff', '.gff3', '.gz', 'xml', '.sqn', '.sbt', '.cmt')):  
                 with open(file_path, 'rb') as file:
                     print(f"Uploading binary file: {file_path}")
                     self.ftp.storbinary(f'STOR {destination_path}', file)
@@ -454,14 +457,14 @@ class XMLSubmission(ABC):
             release_date_value = self.submission_config["Specified_Release_Date"]
             if release_date_value and release_date_value != "Not Provided":
                 release_date = etree.SubElement(description, "Hold", release_date=release_date_value)
-        title = ET.SubElement(description, 'Title')
-        title.text = self.safe_text(self.top_metadata['title'])
+        #title = ET.SubElement(description, 'Title')
+        #title.text = self.safe_text(self.top_metadata['title'])
         comment = ET.SubElement(description, 'Comment')
         comment.text = self.safe_text(self.top_metadata['description'])
         # Organization block (common across all submissions)
         organization_el = ET.SubElement(description, 'Organization', {
-            'type': self.submission_config['Type'],
             'role': self.submission_config['Role'],
+            'type': self.submission_config['Type'],
             'org_id': self.submission_config['Org_ID']
         })
         name = ET.SubElement(organization_el, 'Name')
@@ -509,17 +512,23 @@ class BiosampleSubmission(XMLSubmission, Submission):
     def add_action_block(self, submission):
         action = ET.SubElement(submission, 'Action')
         add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
-        data = ET.SubElement(add_data, 'Data', {'content_type': 'xml'})
+        data = ET.SubElement(add_data, 'Data', {'content_type': 'XML'})
         xml_content = ET.SubElement(data, 'XmlContent')
         spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
         identifier = ET.SubElement(add_data, 'Identifier')
-        identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': spuid_namespace_value})
+        identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}_BS"})
         identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
         # BioSample-specific XML elements
         biosample = ET.SubElement(xml_content, 'BioSample', {'schema_version': '2.0'})
         sample_id = ET.SubElement(biosample, 'SampleId')
         spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}_BS"})
         spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+        descriptor = ET.SubElement(biosample, 'Descriptor')
+        title = ET.SubElement(descriptor, 'Title')
+        title.text = self.safe_text(self.top_metadata['title'])
+        # BioSample XSD will not accept a description here, even though the example submission.xml has one
+        #description = ET.SubElement(descriptor, 'Description')
+        #description.text = self.safe_text(self.top_metadata['description'])
         organism = ET.SubElement(biosample, 'Organism')
         organismName = ET.SubElement(organism, 'OrganismName')
         organismName.text = self.safe_text(self.biosample_metadata['organism'])
@@ -563,8 +572,10 @@ class SRASubmission(XMLSubmission, Submission):
     def add_action_block(self, submission):
         action = ET.SubElement(submission, "Action")
         add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
-        fastq1 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R1.fq.gz")
-        fastq2 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R2.fq.gz")
+        #fastq1 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R1.fq.gz")
+        #fastq2 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R2.fq.gz")
+        fastq1 = f"{self.sample.sample_id}_R1.fq.gz"
+        fastq2 = f"{self.sample.sample_id}_R2.fq.gz"
         file1 = ET.SubElement(add_files, "File", file_path=fastq1)
         data_type1 = ET.SubElement(file1, "DataType")
         data_type1.text = "generic-data"
@@ -645,79 +656,61 @@ class GenbankSubmission(XMLSubmission, Submission):
         primary_id = ET.SubElement(ref_id, "PrimaryId", db="BioProject")
         primary_id.text = self.safe_text(self.top_metadata["ncbi-bioproject"])
         # BioSample SPUID Reference
-        # spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+        spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
         biosample_ref = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
         refid_biosample = ET.SubElement(biosample_ref, "RefId")
         spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}_BS"})
         spuid_biosample.text = self.safe_text(self.top_metadata["ncbi-spuid"])
-    def add_attributes_block(self, submission):
-        add_files = submission.find("./Description")   
-        # Meta and Genome information
-        meta_el = ET.SubElement(add_files, "Meta", content_type="XML")
-        xml_content = ET.SubElement(meta_el, "XmlContent")
-        genome = ET.SubElement(xml_content, "Genome")
-        description = ET.SubElement(genome, "Description")
-        assembly_metadata_choice = ET.SubElement(description, "GenomeAssemblyMetadataChoice")
-        assembly_metadata = ET.SubElement(assembly_metadata_choice, "GenomeAssemblyMetadata")
-        sequencing_technologies = ET.SubElement(assembly_metadata, "SequencingTechnologies", {"coverage": str(self.genbank_metadata['mean_coverage'])})
-        technology = ET.SubElement(sequencing_technologies, "Technology")
-        technology.text = self.safe_text(self.genbank_metadata['assembly_protocol'])
-        assembly = ET.SubElement(assembly_metadata, "Assembly")
-        method = ET.SubElement(assembly, "Method")
-        method.text = self.safe_text(self.genbank_metadata['assembly_method'])
-        genome_representation = ET.SubElement(description, "GenomeRepresentation")
-        genome_representation.text = "Full"
-        # Authors
-        authors = self.genbank_metadata.get('authors')
-        if authors and authors not in ["Not Provided", "NaN", ""]:
-            sequence_authors = ET.SubElement(description, "SequenceAuthors")
-            authors_list = authors.split('; ')
-            
-            for author in authors_list:
-                author_el = ET.SubElement(sequence_authors, "Author")
-                name_el = ET.SubElement(author_el, "Name")
-                
-                # Split the author's name into components
-                name_parts = author.split()
-                first_name = name_parts[0]
-                last_name = name_parts[-1]
-                middle_name = ' '.join(name_parts[1:-1]) if len(name_parts) > 2 else None
-                
-                # Add First element
-                first_el = ET.SubElement(name_el, "First")
-                first_el.text = first_name
-                
-                # Add Last element
-                last_el = ET.SubElement(name_el, "Last")
-                last_el.text = last_name
-                
-                # Add Middle element if there is one
-                if middle_name:
-                    middle_el = ET.SubElement(name_el, "Middle")
-                    middle_el.text = middle_name
-        # Publication
-        #todo: db_type?
-        publication = ET.SubElement(description, "Publication", status=self.safe_text(self.genbank_metadata['publication_status']), 
-                                                                id=self.safe_text(self.genbank_metadata['publication_title']))
-        db_type = ET.SubElement(publication, "DbType")
-        db_type.text = "ePubmed"
-        # Additional attributes
-        ET.SubElement(description, "ExpectedFinalVersion").text = "Yes"
-        ET.SubElement(description, "AnnotateWithPGAP").text = "No"
-        # BioProject and BioSample references
-        spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
-        attribute_ref1 = ET.SubElement(add_files, "AttributeRefId")
-        ref_id1 = ET.SubElement(attribute_ref1, "RefId")
-        primary_id1 = ET.SubElement(ref_id1, "PrimaryId", db="BioProject")
-        primary_id1.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
 
-        attribute_ref_id_biosample = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
-        refid_biosample = ET.SubElement(attribute_ref_id_biosample, "RefId")
-        spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}_BS"})
-        spuid_biosample.text = self.safe_text(self.top_metadata['ncbi-spuid'])
-        #identifier = ET.SubElement(add_files, 'Identifier')
-        #identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}_SRA"})
-        #identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+        # Add SPUID Identifier for BioSample
+        identifier = ET.SubElement(add_files, "Identifier")
+        spuid = ET.SubElement(identifier, "SPUID", spuid_namespace={'spuid_namespace': f"{spuid_namespace_value}_GB"})
+        spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
+
+    def add_attributes_block(self, submission):
+        # Adding a second action for the BioSample details
+        action = ET.SubElement(submission, "Action")
+        add_data = ET.SubElement(action, "AddData", target_db="BioSample")
+        
+        # XML content for BioSample details
+        data = ET.SubElement(add_data, "Data", content_type="XML")
+        xml_content = ET.SubElement(data, "XmlContent")
+        biosample = ET.SubElement(xml_content, "BioSample", schema_version="2.0")
+        
+        spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+        sample_id = ET.SubElement(biosample, "SampleId")
+        spuid = ET.SubElement(sample_id, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}_BS"})
+        spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
+
+        # Descriptor section
+        descriptor = ET.SubElement(biosample, "Descriptor")
+        ET.SubElement(descriptor, "Title").text = self.safe_text(self.top_metadata["title"])
+        #external_link = ET.SubElement(descriptor, "ExternalLink", label="Link label")
+        #ET.SubElement(external_link, "URL").text = "http://url.org/sample123"
+        
+        # Organism information
+        organism = ET.SubElement(biosample, "Organism")
+        ET.SubElement(organism, "OrganismName").text = self.safe_text(self.biosample_metadata['organism'])
+
+        # BioProject reference within BioSample
+        bio_project = ET.SubElement(biosample, "BioProject")
+        primary_id = ET.SubElement(bio_project, "PrimaryId", db="BioProject")
+        primary_id.text = self.safe_text(self.top_metadata["ncbi-bioproject"])
+
+        # Package and Attributes
+        ET.SubElement(biosample, "Package").text = "Microbe.1.0"
+        attributes = ET.SubElement(biosample, "Attributes")
+        ET.SubElement(attributes, "Attribute", attribute_name="strain").text = self.safe_text(self.biosample_metadata['strain'])
+        ET.SubElement(attributes, "Attribute", attribute_name="collection_date").text = self.safe_text(self.biosample_metadata['collection_date'])
+        ET.SubElement(attributes, "Attribute", attribute_name="geo_loc_name").text = self.safe_text(self.biosample_metadata['geo_location'])
+        ET.SubElement(attributes, "Attribute", attribute_name="host").text = self.safe_text(self.biosample_metadata['host'])
+        ET.SubElement(attributes, "Attribute", attribute_name="isolation_source").text = self.safe_text(self.biosample_metadata['isolation_source'])
+        ET.SubElement(attributes, "Attribute", attribute_name="sample_type").text = self.safe_text(self.biosample_metadata['sample_type'])
+        
+        # Add SPUID Identifier for BioSample
+        identifier = ET.SubElement(add_data, "Identifier")
+        spuid = ET.SubElement(identifier, "SPUID", spuid_namespace={'spuid_namespace': f"{spuid_namespace_value}_BS"})
+        spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
 
 
     # Functions for manually preparing files for table2asn + manual submission (where ftp upload not supported)
@@ -888,8 +881,9 @@ class GenbankSubmission(XMLSubmission, Submission):
             f.write("    }\n")
             f.write("  }\n")
             f.write("}\n")
-    def prepare_files(self):
-        """ Prepare files for manual upload to GenBank because FTP support not available """
+    def prepare_files_manual_submission(self):
+        """ Prepare files for manual upload to GenBank because FTP support not available 
+            These files will be emailed to user and/or GenBank, and also zipped to output dir """
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         # Create the source df
@@ -900,15 +894,37 @@ class GenbankSubmission(XMLSubmission, Submission):
         # Create authorset file
         self.create_authorset_file()
         print(f"Genbank files prepared for {self.sample.sample_id}")
-        # Zip the files for email submission
+        # Rename and move the fasta for table2asn call
         renamed_fasta = os.path.join(f"{self.output_dir}/sequence.fsa")
         if not os.path.exists(renamed_fasta):
             shutil.move(self.sample.fasta_file, renamed_fasta)
+        # Run table2asn 
+        self.run_table2asn()
+        # Zip the files
         with ZipFile(os.path.join(self.output_dir, self.sample.sample_id + ".zip"), 'w') as zip:
-            zip.write(os.path.join(self.output_dir, "authorset.sbt"), "authorset.sbt")
-            zip.write(os.path.join(self.output_dir, "sequence.fsa"), "sequence.fsa")
-            zip.write(os.path.join(self.output_dir, "source.src"), "source.src")
-            zip.write(os.path.join(self.output_dir, "comment.cmt"), "comment.cmt")
+            filelist = [f"{self.sample.sample_id}.sqn","authorset.sbt","sequence.fsa","source.src","comment.cmt"]
+            for file in filelist:
+                filepath = os.path.join(self.output_dir, file)
+                if os.path.exists(filepath):
+                    zip.write(filepath, file)
+                # add f"{self.sample.sample_id}.sqn" to zip files? 
+    
+    def prepare_files_ftp_submission(self):
+        """ Prepare some files needed for table2asn for GenBank FTP submission
+            These files will be uploaded along with submission.xml and <sample_name>.sqn files """
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        # Create Structured Comment file
+        self.create_comment_file()
+        # Create authorset file
+        self.create_authorset_file()
+        print(f"Genbank files prepared for {self.sample.sample_id}")
+        # Rename and move the fasta for table2asn call
+        renamed_fasta = os.path.join(f"{self.output_dir}/sequence.fsa")
+        if not os.path.exists(renamed_fasta):
+            shutil.move(self.sample.fasta_file, renamed_fasta)
+        # Run table2asn
+        self.run_table2asn() 
 
     # Functions for running table2asn
     def get_gff_locus_tag(self):
@@ -954,10 +970,6 @@ class GenbankSubmission(XMLSubmission, Submission):
         # Check if a GFF file is supplied and extract the locus tag
         # todo: the locus tag needs to be fetched (?) after BioSample is assigned (it appears under Manage Data for the BioProject)
         locus_tag = self.get_gff_locus_tag()
-        # If prepare_files() not run, move the fasta file to the genbank submission folder and rename it sequence.fsa
-        renamed_fasta = os.path.join(f"{self.output_dir}/sequence.fsa")
-        if not os.path.exists(renamed_fasta):
-            shutil.move(self.sample.fasta_file, renamed_fasta)
         shutil.move(self.sample.annotation_file, self.output_dir)
         # Construct the table2asn command
         if self.sample.ftp_upload:
@@ -965,8 +977,7 @@ class GenbankSubmission(XMLSubmission, Submission):
                 "table2asn",
                 "-i", f"{self.output_dir}/sequence.fsa",
                 "-o", f"{self.output_dir}/{self.sample.sample_id}.sqn",
-                #"-indir", self.output_dir,
-                #"-outdir", self.output_dir
+                "-t", f"{self.output_dir}/authorset.sbt"
             ]
         else:
             cmd = [
@@ -975,11 +986,11 @@ class GenbankSubmission(XMLSubmission, Submission):
                 "-src-file", f"{self.output_dir}/source.src",
                 "-o", f"{self.output_dir}/{self.sample.sample_id}.sqn",
                 "-t", f"{self.output_dir}/authorset.sbt",
-                "-f", f"{self.output_dir}/{self.sample.annotation_file}"
+                "-f", f"{self.output_dir}/{os.path.basename(self.sample.annotation_file)}"
             ]
         if locus_tag:
             cmd.extend(["-locus-tag-prefix", locus_tag])
-        if self.is_multicontig_fasta(renamed_fasta):
+        if self.is_multicontig_fasta(f"{self.output_dir}/sequence.fsa"):
             cmd.append("-M")
             cmd.append("n")
             cmd.append("-Z")
@@ -1033,7 +1044,8 @@ class GenbankSubmission(XMLSubmission, Submission):
         with open(submit_ready_file, 'w') as fp:
             pass 
         # Submit files
-        files_to_submit = [submit_ready_file, self.xml_output_path, f"{self.output_dir}/{self.sample.sample_id}.sqn", f"{self.output_dir}/sequence.fsa"]
+        files_to_submit = [submit_ready_file, self.xml_output_path, f"{self.output_dir}/{self.sample.sample_id}.sqn", 
+                           f"{self.output_dir}/authorset.sbt", f"{self.output_dir}/comment.cmt"]
         self.submit_files(files_to_submit, 'genbank')
         print(f"Submitted sample {self.sample.sample_id} to Genbank")
     # Trigger report fetching
