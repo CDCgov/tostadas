@@ -186,7 +186,7 @@ class GetMetaAsDf:
 	def populate_fields(self):
 		""" Replacing the NaN values in certain columns with "Not Provided" or ""
 		"""
-		terms_2_replace = ["collected_by", "sample_type", "lat_lon", "age", "host_disease", "sex", "isolation_source", "purpose_of_sampling"]
+		terms_2_replace = ["collected_by", "sample_type", "lat_lon", "host_age", "host_disease", "host_sex", "isolation_source", "purpose_of_sampling"]
 		# remove any nans
 		field_value_mapping = {term: "Not Provided" for term in terms_2_replace}
 		replaced_df = self.df.replace(to_replace={term: ["", None] for term in terms_2_replace}, value=field_value_mapping)
@@ -865,8 +865,8 @@ class HandleDfInserts:
 		self.insert_additional_columns()
 		self.change_illumina_paths()
 		try:
-			assert 'geo_location' in self.filled_df.columns.values
-			assert True not in [math.isnan(x) for x in self.filled_df['geo_location'].tolist() if isinstance(x, str) is False]
+			assert 'geo_loc_name' in self.filled_df.columns.values
+			assert True not in [math.isnan(x) for x in self.filled_df['geo_loc_name'].tolist() if isinstance(x, str) is False]
 			assert 'structuredcomment' in self.filled_df.columns.values
 			assert True not in [math.isnan(x) for x in self.filled_df['structuredcomment'].tolist() if
 								isinstance(x, str) is False]
@@ -882,7 +882,7 @@ class HandleDfInserts:
 			else:
 				self.new_combination_list.append(str(self.list_of_country[i]))
 
-		self.filled_df['geo_location'] = self.new_combination_list
+		self.filled_df['geo_loc_name'] = self.new_combination_list
 
 	def insert_additional_columns(self):
 		""" Inserts additional columns into the metadata dataframe

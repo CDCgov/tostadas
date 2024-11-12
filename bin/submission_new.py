@@ -9,10 +9,10 @@ import yaml
 from lxml import etree
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom  # Import minidom for pretty-printing
-import os
 import math  # Required for isnan check
 import csv
 import time
+import shlex
 import subprocess
 import pandas as pd
 from abc import ABC, abstractmethod
@@ -20,6 +20,9 @@ from abc import ABC, abstractmethod
 import ftplib
 from nameparser import HumanName
 from zipfile import ZipFile
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 
 def fetch_and_parse_report(submission_object, client, submission_id, submission_dir, output_dir, type):
     # Connect to the FTP/SFTP client
@@ -238,7 +241,8 @@ class MetadataParser:
         available_columns = [col for col in columns if col in self.metadata_df.columns]
         return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
     def extract_biosample_metadata(self):
-        columns = ['bs_package','strain','isolate','host_disease','host','collected_by','lat_lon','geo_location','organism','sample_type','collection_date','isolation_source','age','sex', 'race','ethnicity']  # BioSample specific columns
+        columns = ['bs_package','strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','organism',
+                   'sample_type','collection_date','isolation_source','host_age','host_sex', 'race','ethnicity']  # BioSample specific columns
         available_columns = [col for col in columns if col in self.metadata_df.columns]
         return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
     def extract_sra_metadata(self):
@@ -572,8 +576,6 @@ class SRASubmission(XMLSubmission, Submission):
     def add_action_block(self, submission):
         action = ET.SubElement(submission, "Action")
         add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
-        #fastq1 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R1.fq.gz")
-        #fastq2 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R2.fq.gz")
         fastq1 = f"{self.sample.sample_id}_R1.fq.gz"
         fastq2 = f"{self.sample.sample_id}_R2.fq.gz"
         file1 = ET.SubElement(add_files, "File", file_path=fastq1)
@@ -645,11 +647,11 @@ class GenbankSubmission(XMLSubmission, Submission):
         xml_content = ET.SubElement(meta, "XmlContent")
         genome = ET.SubElement(xml_content, "Genome")
         description = ET.SubElement(genome, "Description")
-        assembly_metadata_choice = ET.SubElement(description, "GenomeAssemblyMetadataChoice")
+        # todo: adding these using the comment.cmt file but would rather put them here
+        #assembly_metadata_choice = ET.SubElement(description, "GenomeAssemblyMetadataChoice")
         # Add StructuredComment tag within GenomeAssemblyMetadataChoice
-        ET.SubElement(assembly_metadata_choice, "StructuredComment")
-        ET.SubElement(description, "GenomeRepresentation").text = "Full"
-        ET.SubElement(description, "ExpectedFinalVersion").text = "Yes"
+        #ET.SubElement(assembly_metadata_choice, "StructuredComment")
+        #ET.SubElement(description, "GenomeRepresentation").text = "Full"
         # Add AttributeRefId and BioProject Reference
         attribute_ref = ET.SubElement(add_files, "AttributeRefId")
         ref_id = ET.SubElement(attribute_ref, "RefId")
@@ -685,8 +687,6 @@ class GenbankSubmission(XMLSubmission, Submission):
         # Descriptor section
         descriptor = ET.SubElement(biosample, "Descriptor")
         ET.SubElement(descriptor, "Title").text = self.safe_text(self.top_metadata["title"])
-        #external_link = ET.SubElement(descriptor, "ExternalLink", label="Link label")
-        #ET.SubElement(external_link, "URL").text = "http://url.org/sample123"
         
         # Organism information
         organism = ET.SubElement(biosample, "Organism")
@@ -702,7 +702,7 @@ class GenbankSubmission(XMLSubmission, Submission):
         attributes = ET.SubElement(biosample, "Attributes")
         ET.SubElement(attributes, "Attribute", attribute_name="strain").text = self.safe_text(self.biosample_metadata['strain'])
         ET.SubElement(attributes, "Attribute", attribute_name="collection_date").text = self.safe_text(self.biosample_metadata['collection_date'])
-        ET.SubElement(attributes, "Attribute", attribute_name="geo_loc_name").text = self.safe_text(self.biosample_metadata['geo_location'])
+        ET.SubElement(attributes, "Attribute", attribute_name="geo_loc_name").text = self.safe_text(self.biosample_metadata['geo_loc_name'])
         ET.SubElement(attributes, "Attribute", attribute_name="host").text = self.safe_text(self.biosample_metadata['host'])
         ET.SubElement(attributes, "Attribute", attribute_name="isolation_source").text = self.safe_text(self.biosample_metadata['isolation_source'])
         ET.SubElement(attributes, "Attribute", attribute_name="sample_type").text = self.safe_text(self.biosample_metadata['sample_type'])
@@ -721,7 +721,7 @@ class GenbankSubmission(XMLSubmission, Submission):
             "BioProject": self.top_metadata.get("ncbi-bioproject"),
             "organism": self.biosample_metadata.get("organism"),
             "Collection_date": self.biosample_metadata.get("collection_date"),
-            "country": self.biosample_metadata.get("geo_location"),
+            "country": self.biosample_metadata.get("geo_loc_name"),
             "isolate": self.biosample_metadata.get("isolate"),
             "host": self.biosample_metadata.get("host"),
             "isolation_source": self.biosample_metadata.get("isolation_source")
@@ -736,8 +736,8 @@ class GenbankSubmission(XMLSubmission, Submission):
             "collection_date": self.biosample_metadata.get("collection_date"),
             "Assembly-Method": self.genbank_metadata.get("assembly_method"),
             "Coverage": self.genbank_metadata.get("mean_coverage"),
-            "HOST_AGE": self.biosample_metadata.get("age"),
-            "HOST_GENDER": self.biosample_metadata.get("sex"),
+            "host_age": self.biosample_metadata.get("host_age"),
+            "host_gender": self.biosample_metadata.get("host_sex"),
             "StructuredCommentSuffix": "Assembly-Data"
         }
         comment_df = pd.DataFrame([comment_data])
@@ -972,33 +972,28 @@ class GenbankSubmission(XMLSubmission, Submission):
         locus_tag = self.get_gff_locus_tag()
         shutil.move(self.sample.annotation_file, self.output_dir)
         # Construct the table2asn command
-        if self.sample.ftp_upload:
-            cmd = [
-                "table2asn",
-                "-i", f"{self.output_dir}/sequence.fsa",
-                "-o", f"{self.output_dir}/{self.sample.sample_id}.sqn",
-                "-t", f"{self.output_dir}/authorset.sbt"
-            ]
-        else:
-            cmd = [
-                "table2asn",
-                "-i", f"{self.output_dir}/sequence.fsa",
-                "-src-file", f"{self.output_dir}/source.src",
-                "-o", f"{self.output_dir}/{self.sample.sample_id}.sqn",
-                "-t", f"{self.output_dir}/authorset.sbt",
-                "-f", f"{self.output_dir}/{os.path.basename(self.sample.annotation_file)}"
-            ]
+        cmd = [
+            "table2asn",
+            "-i", f"{self.output_dir}/sequence.fsa",
+            "-o", f"{self.output_dir}/{self.sample.sample_id}.sqn",
+            "-t", f"{self.output_dir}/authorset.sbt",
+            "-f", f"{self.output_dir}/{os.path.basename(self.sample.annotation_file)}"
+        ]
         if locus_tag:
             cmd.extend(["-locus-tag-prefix", locus_tag])
         if self.is_multicontig_fasta(f"{self.output_dir}/sequence.fsa"):
             cmd.append("-M")
             cmd.append("n")
             cmd.append("-Z")
-        if os.path.isfile("comment.cmt"):
+        if os.path.isfile(f"{self.output_dir}/comment.cmt"):
             cmd.append("-w")
             cmd.append("comment.cmt")
+        # if not using submission.xml file, need the source.src file
+        if not self.sample.ftp_upload:
+            cmd.append("-src-file")
+            cmd.append(f"{self.output_dir}/source.src")
         # Run the command and capture errors
-        print(cmd)
+        print(f'table2asn command: {shlex.join(cmd)}')
         try:
             result = subprocess.run(cmd, check=True, capture_output=True, text=True)
             print(f"table2asn output: {result.stdout}")
