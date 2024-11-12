@@ -485,7 +485,6 @@ class XMLSubmission(ABC):
         self.add_attributes_block(submission)
         # Save the XML to file
         xml_output_path = os.path.join(output_dir, "submission.xml")
-        os.makedirs(os.path.dirname(xml_output_path), exist_ok=True)
         rough_string = ET.tostring(submission, encoding='utf-8')
         reparsed = minidom.parseString(rough_string)
         pretty_xml = reparsed.toprettyxml(indent="  ")
@@ -511,6 +510,7 @@ class BiosampleSubmission(XMLSubmission, Submission):
         parser = MetadataParser(metadata_df)
         self.top_metadata = parser.extract_top_metadata()
         self.biosample_metadata = parser.extract_biosample_metadata()
+        os.makedirs(self.output_dir, exist_ok=True)
         # Generate the BioSample XML upon initialization
         self.xml_output_path = self.create_xml(output_dir) 
     def add_action_block(self, submission):
@@ -571,6 +571,7 @@ class SRASubmission(XMLSubmission, Submission):
         parser = MetadataParser(metadata_df)
         self.top_metadata = parser.extract_top_metadata()
         self.sra_metadata = parser.extract_sra_metadata()
+        os.makedirs(self.output_dir, exist_ok=True)
         # Generate the BioSample XML upon initialization
         self.xml_output_path = self.create_xml(output_dir) 
     def add_action_block(self, submission):
@@ -632,6 +633,7 @@ class GenbankSubmission(XMLSubmission, Submission):
         self.top_metadata = parser.extract_top_metadata()
         self.genbank_metadata = parser.extract_genbank_metadata()
         self.biosample_metadata = parser.extract_biosample_metadata()
+        os.makedirs(self.output_dir, exist_ok=True)
         # Generate the GenBank XML upon initialization only if sample.ftp_upload is True
         if self.sample.ftp_upload:
             self.xml_output_path = self.create_xml(output_dir)
@@ -884,8 +886,6 @@ class GenbankSubmission(XMLSubmission, Submission):
     def prepare_files_manual_submission(self):
         """ Prepare files for manual upload to GenBank because FTP support not available 
             These files will be emailed to user and/or GenBank, and also zipped to output dir """
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
         # Create the source df
         # todo: that seq_id needs to be the genbank sequence id
         self.create_source_file()
