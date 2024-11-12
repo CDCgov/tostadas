@@ -930,23 +930,24 @@ class GenbankSubmission(XMLSubmission, Submission):
     def get_gff_locus_tag(self):
         """ Read the locus lag from the GFF3 file for use in table2asn command"""
         locus_tag = None
-        with open(self.sample.annotation_file, 'r') as file:
-            for line in file:
-                if line.startswith('##FASTA'):
-                    break  # Stop reading if FASTA section starts
-                elif line.startswith('#'):
-                    continue  # Skip comment lines
-                else:
-                    columns = line.strip().split('\t')
-                    if columns[2] == 'CDS':
-                        attributes = columns[8].split(';')
-                        for attribute in attributes:
-                            key, value = attribute.split('=')
-                            if key == 'locus_tag':
-                                locus_tag = value.split('_')[0]
+        if not self.sample.annotation_file.endswith('.tbl'):
+            with open(self.sample.annotation_file, 'r') as file:
+                for line in file:
+                    if line.startswith('##FASTA'):
+                        break  # Stop reading if FASTA section starts
+                    elif line.startswith('#'):
+                        continue  # Skip comment lines
+                    else:
+                        columns = line.strip().split('\t')
+                        if columns[2] == 'CDS':
+                            attributes = columns[8].split(';')
+                            for attribute in attributes:
+                                key, value = attribute.split('=')
+                                if key == 'locus_tag':
+                                    locus_tag = value.split('_')[0]
+                                    break  # Found locus tag, stop searching
+                            if locus_tag:
                                 break  # Found locus tag, stop searching
-                        if locus_tag:
-                            break  # Found locus tag, stop searching
         return locus_tag
     #  Detect multiple contig fasta for Table2asn submission
     def is_multicontig_fasta(self, fasta_file):
