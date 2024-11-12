@@ -102,7 +102,7 @@ workflow TOSTADAS {
 				submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, tbl
 			}
 		}
-		else if (params.species == 'bacteria' || params.species == 'Cdiphtheriae') {
+		else if (params.species == 'bacteria') {
 		// run bakta annotation process
 			if ( params.bakta ) {
 				RUN_BAKTA(
