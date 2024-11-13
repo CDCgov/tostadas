@@ -1012,7 +1012,7 @@ class GenbankSubmission(XMLSubmission, Submission):
             from_email = self.submission_config["Submitter"]["@email"]
             to_email = []
             cc_email = []
-            if test == True:
+            if self.parameters.test == True:
                 to_email.append(self.submission_config["Submitter"]["@email"])
             else:
                 to_email.append(TABLE2ASN_EMAIL)
