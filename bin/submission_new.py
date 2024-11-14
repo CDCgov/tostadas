@@ -6,7 +6,6 @@ import shutil
 from datetime import datetime
 import argparse
 import yaml
-from lxml import etree
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom  # Import minidom for pretty-printing
 import math  # Required for isnan check
@@ -460,9 +459,8 @@ class XMLSubmission(ABC):
         if "Specified_Release_Date" in self.submission_config:
             release_date_value = self.submission_config["Specified_Release_Date"]
             if release_date_value and release_date_value != "Not Provided":
-                release_date = etree.SubElement(description, "Hold", release_date=release_date_value)
-        #title = ET.SubElement(description, 'Title')
-        #title.text = self.safe_text(self.top_metadata['title'])
+                release_date = ET.SubElement(description, "Hold")
+                release_date.set("release_date", release_date_value)
         comment = ET.SubElement(description, 'Comment')
         comment.text = self.safe_text(self.top_metadata['description'])
         # Organization block (common across all submissions)
