@@ -134,7 +134,7 @@ process VALIDATE_PARAMS {
             "output_dir": params.output_dir,    
         ]
         expected_strings.each { key, value ->
-            if ( expected_strings[key] instanceof String == false ) {
+            if (!(value instanceof String || value instanceof org.codehaus.groovy.runtime.GStringImpl)) {
                 throw new Exception("Value must be of string type: $value used for $key parameter")
             }
         }

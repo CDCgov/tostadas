@@ -5,9 +5,7 @@
 */
 process UPDATE_SUBMISSION {
 
-    // label 'main'
-
-    publishDir "$params.output_dir/$params.submission_output_dir/", mode: 'copy', overwrite: true
+    publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     conda (params.enable_conda ? params.env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -15,20 +13,36 @@ process UPDATE_SUBMISSION {
 
     input:
     val wait_time
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path)
     path submission_config
-    path submission_output
-    path submission_log
-    
-    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
-    script:
-    """
-    submission.py check_submission_status \
-        --organism $params.organism \
-        --submission_dir .  \
-        --submission_name $submission_output $test_flag
-    """
 
+    // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
+    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+    def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
+    def biosample = params.biosample == true ? '--biosample' : ''
+    def sra = params.sra == true ? '--sra' : ''
+    def genbank = params.genbank == true ? '--genbank' : ''
+
+    script:
+    """     
+    submission_new.py \
+        --update \
+        --submission_name $meta.id \
+        --config_file $submission_config  \
+        --metadata_file $validated_meta_path \
+        --species $params.species \
+        --output_dir  . \
+        --fasta_file $fasta_path \
+        --annotation_file $annotations_path \
+        --fastq1 $fastq_1 \
+        --fastq2 $fastq_2 \
+        --submission_mode $params.submission_mode \
+        $test_flag \
+        $send_submission_email \
+        $genbank $sra $biosample 
+
+    """
     output:
-    path "$submission_output", emit: submission_files
-    path "${submission_output}_submission_log.csv", emit: submission_log
-} 
+    path "${validated_meta_path.getBaseName()}", emit: submission_files
+    path "*.csv", emit: submission_log
+}

@@ -1,0 +1,30 @@
+---
+NCBI_username: username 
+NCBI_password: password
+NCBI_ftp_host: 'ftp-private.ncbi.nlm.nih.gov'
+NCBI_sftp_host: 'sftp-private.ncbi.nlm.nih.gov'
+NCBI_API_URL: 'https://submit.ncbi.nlm.nih.gov/api/2.0/files/FILE_ID/?format=attachment'
+table2asn_email: 'gb-admin@ncbi.nlm.nih.gov'
+BioSample_package: "Pathogen.cl.1.0"
+Role: owner
+Type: institute
+Org_ID: 30206
+Submitting_Org: CDC
+Submitting_Org_Dept: DHCPP-PRB
+Street: 1600 Clifton Rd
+City: Atlanta
+State: GA
+Postal_code: 30329
+Country: USA
+Email: test@cdc.gov
+Phone: ""
+Specified_Release_Date: ""
+Submitter:
+  '@email': test9@cdc.gov
+  '@alt_email': test@cdc.gov
+  Name:
+    First: John
+    Last: Doe
+GISAID_client-id: TEST-EA76875B00C3
+GISAID_username: username
+GISAID_password: password

@@ -13,6 +13,7 @@ include { VADR_POST_CLEANUP                                 } from "../../module
 workflow RUN_VADR {
     take:
         fasta // meta, metadata, fasta_path, fastq1, fastq2
+
     main:
         // run vadr processes
         VADR_TRIM (

@@ -1,9 +1,10 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    RUNNING SUBMISSION
+                            RUNNING SUBMISSION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process SUBMISSION_FULL {
+
+process SUBMISSION {
 
     publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
@@ -17,29 +18,31 @@ process SUBMISSION_FULL {
 
     // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
-    def send_email_flag = params.send_submission_email == 'true' ? '--send_submission_email' : ''
+    def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
+    def biosample = params.biosample == true ? '--biosample' : ''
+    def sra = params.sra == true ? '--sra' : ''
+    def genbank = params.genbank == true ? '--genbank' : ''
 
     script:
     """     
-    mkdir -p $meta.id $meta.id/raw_reads
-    mv $fastq_1 $meta.id/raw_reads/
-    mv $fastq_2 $meta.id/raw_reads/
-
-    submission.py submit \
-        --genbank --sra --biosample \
-        --organism $params.organism \
-        --submission_dir .  \
-        --submission_name ${validated_meta_path.getBaseName()} \
-        --config $submission_config  \
+    submission_new.py \
+        --submit \
+        --submission_name $meta.id \
+        --config_file $submission_config  \
         --metadata_file $validated_meta_path \
+        --species $params.species \
+        --output_dir  . \
         --fasta_file $fasta_path \
         --annotation_file $annotations_path \
-        --table2asn $test_flag $send_email_flag
+        --fastq1 $fastq_1 \
+        --fastq2 $fastq_2 \
+        --submission_mode $params.submission_mode \
+        $test_flag \
+        $send_submission_email \
+        $genbank $sra $biosample 
 
-    rm table2asn
     """
-
     output:
     path "${validated_meta_path.getBaseName()}", emit: submission_files
-    path "*.csv", emit: submission_log
+    //path "*.csv", emit: submission_log
 }
