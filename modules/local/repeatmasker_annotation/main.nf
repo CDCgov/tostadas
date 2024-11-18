@@ -6,7 +6,7 @@
 
 process REPEATMASKER {
     
-    conda (params.enable_conda ? "bioconda::repeatmasker=4.1.5" : null)
+    conda ('./modules/local/repeatmasker_annotation/repeatmasker_env.yaml')
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/repeatmasker:4.1.5--pl5321hdfd78af_1' :
         'quay.io/biocontainers/repeatmasker:4.1.5--pl5321hdfd78af_0'}"
