@@ -567,8 +567,9 @@ class BiosampleSubmission(XMLSubmission, Submission):
         biosample = submission.find(".//BioSample")
         attributes = ET.SubElement(biosample, 'Attributes')
         for attr_name, attr_value in self.biosample_metadata.items():
-            # organism already added to XML in add_action_block
-            if attr_name != 'organism':
+            # organism already added to XML in add_action_block, also ignore the test fields in the custom metadata JSON
+            ignored_fields = ['organism', 'test_field_1', 'test_field_2', 'test_field_3']
+            if attr_name not in ignored_fields:
                 attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
                 attribute.text = self.safe_text(attr_value)
     def submit(self):
