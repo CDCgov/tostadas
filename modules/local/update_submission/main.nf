@@ -36,6 +36,7 @@ process UPDATE_SUBMISSION {
         --annotation_file $annotations_path \
         --fastq1 $fastq_1 \
         --fastq2 $fastq_2 \
+        --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
         $test_flag \
         $send_submission_email \

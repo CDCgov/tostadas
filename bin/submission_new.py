@@ -6,6 +6,7 @@ import shutil
 from datetime import datetime
 import argparse
 import yaml
+import json
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom  # Import minidom for pretty-printing
 import math  # Required for isnan check
@@ -171,6 +172,7 @@ class GetParams:
         parser.add_argument("--annotation_file", help="An annotation file to add to a Genbank submission", required=False)
         parser.add_argument("--fastq1", help="Fastq R1 file to be submitted", required=False)	
         parser.add_argument("--fastq2", help="Fastq R2 file to be submitted", required=False)
+        parser.add_argument("--custom_metadata_file", help="JSON file defining custom metadata columns", required=False)
         parser.add_argument("--submission_mode", help="Whether to upload via ftp or sftp", required=False, default='ftp')
         parser.add_argument("--send_email", help="Whether to send the ASN.1 file after running table2asn", required=False,action="store_const",  default=False, const=True)
         parser.add_argument("--genbank", help="Optional flag to run Genbank submission", action="store_const", default=False, const=True)
@@ -232,17 +234,39 @@ class Sample:
             print(f"All required files for sample {self.sample_id} are present.")
 
 class MetadataParser:
-    def __init__(self, metadata_df):
+    def __init__(self, metadata_df, parameters):
         self.metadata_df = metadata_df
+        self.parameters = parameters
+        self.custom_columns = self.load_custom_columns()
+    def load_custom_columns(self):
+        """
+        Load custom metadata columns from the JSON file (for custom BS packages)
+        """
+        json_file_path = self.parameters.get('custom_metadata_file')
+        if not json_file_path:
+            return []
+        try:
+            with open(json_file_path, 'r') as f:
+                custom_metadata = json.load(f)
+            custom_columns = [
+                value.get('new_field_name', key).strip() or key.strip() # fall back to JSON key if new_field_name empty
+                for key, value in custom_metadata.items()
+            ]
+            return custom_columns
+        except Exception as e:
+            print(f"Error loading custom metadata file: {e}")
+            return []
+
     # todo: will need to adjust these to handle custom metadata for whatever biosample pkg
     def extract_top_metadata(self):
         columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Main columns
         available_columns = [col for col in columns if col in self.metadata_df.columns]
         return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
     def extract_biosample_metadata(self):
-        columns = ['bs_package','strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','organism',
+        columns = ['strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','organism',
                    'sample_type','collection_date','isolation_source','host_age','host_sex', 'race','ethnicity']  # BioSample specific columns
-        available_columns = [col for col in columns if col in self.metadata_df.columns]
+        all_columns = columns + self.custom_columns # add custom columns to BioSample specific cols
+        available_columns = [col for col in all_columns if col in self.metadata_df.columns]
         return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
     def extract_sra_metadata(self):
         columns = ['illumina_sequencing_instrument','illumina_library_protocol','illumina_library_layout','illumina_library_selection',
@@ -441,11 +465,11 @@ class FTPClient:
         print("FTP connection closed.")
 
 class XMLSubmission(ABC):
-    def __init__(self, sample, submission_config, metadata_df, output_dir):
+    def __init__(self, sample, submission_config, metadata_df, output_dir, parameters):
         self.sample = sample
         self.submission_config = submission_config
         self.output_dir = output_dir
-        parser = MetadataParser(metadata_df)
+        parser = MetadataParser(metadata_df, parameters)
         self.top_metadata = parser.extract_top_metadata()
     def safe_text(self, value):
         if value is None or (isinstance(value, float) and math.isnan(value)):
@@ -502,10 +526,10 @@ class XMLSubmission(ABC):
 class BiosampleSubmission(XMLSubmission, Submission):
     def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
         # Properly initialize the base classes 
-        XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
+        XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir, parameters) 
         Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type) 
         # Use the MetadataParser to extract metadata
-        parser = MetadataParser(metadata_df)
+        parser = MetadataParser(metadata_df, parameters)
         self.top_metadata = parser.extract_top_metadata()
         self.biosample_metadata = parser.extract_biosample_metadata()
         os.makedirs(self.output_dir, exist_ok=True)
@@ -563,10 +587,10 @@ class BiosampleSubmission(XMLSubmission, Submission):
 class SRASubmission(XMLSubmission, Submission):
     def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
         # Properly initialize the base classes 
-        XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
+        XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir, parameters) 
         Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type) 
         # Use the MetadataParser to extract metadata
-        parser = MetadataParser(metadata_df)
+        parser = MetadataParser(metadata_df, parameters)
         self.top_metadata = parser.extract_top_metadata()
         self.sra_metadata = parser.extract_sra_metadata()
         os.makedirs(self.output_dir, exist_ok=True)
@@ -625,10 +649,10 @@ class SRASubmission(XMLSubmission, Submission):
 class GenbankSubmission(XMLSubmission, Submission):
     def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
         # Properly initialize the base classes 
-        XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir) 
+        XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir, parameters) 
         Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type)
         # Use the MetadataParser to extract metadata needed for GB submission
-        parser = MetadataParser(metadata_df)
+        parser = MetadataParser(metadata_df, parameters)
         self.top_metadata = parser.extract_top_metadata()
         self.genbank_metadata = parser.extract_genbank_metadata()
         self.biosample_metadata = parser.extract_biosample_metadata()
