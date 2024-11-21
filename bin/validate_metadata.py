@@ -956,22 +956,16 @@ class CustomFieldsFuncs:
 				# check that the field name exists and if not then create it
 				if field_name not in sample_info.keys():
 					sample_info[field_name] = None
-
 				# check that the field name is not empty for sample
-				if sample_info[field_name]:
-			
+				if sample_info[field_name] is not None:
 					# look at the type
-					val_type = self.custom_fields_dict[field_name]['type']
-
+					val_type = self.custom_fields_dict[field_name]['type'].lower()
 					# check the different types if it is not just 'present'
 					if val_type != 'present':
-
 						# get the value from sample / custom field 
 						samp_custom_field_val = list(sample_info[field_name].values())[0]
-
 						# initialize type error 
 						type_error = ""
-
 						# check and try to convert to bool
 						if val_type == 'bool':
 							if not isinstance(samp_custom_field_val, bool):
@@ -983,7 +977,6 @@ class CustomFieldsFuncs:
 									type_error += f"\n\tUnable to convert {field_name} to a bool."
 							else:
 								type_error += f"\n\t{field_name} value was a bool. No need to convert"
-						
 						# check and try to convert to string
 						elif val_type == 'string':
 							if not isinstance(samp_custom_field_val, str):
@@ -995,7 +988,6 @@ class CustomFieldsFuncs:
 									type_error += f"\n\tUnable to convert {field_name} to a string."
 							else:
 								type_error += f"\n\t{field_name} value was a string. No need to convert"
-
 						# check and try to convert to integer
 						elif val_type == 'integer':
 							if not isinstance(samp_custom_field_val, int):
@@ -1022,11 +1014,12 @@ class CustomFieldsFuncs:
 
 						# write the final type error
 						error_file.write(type_error)
-
+				elif sample_info[field_name] is None:	
+					# means that the value is not present
+					error = f"\n\t{field_name} is None. "
 				else:
 					# means that the value is not present
 					error = f"\n\t{field_name} not populated. "
-
 					# check if you need to replace empty with anything
 					if self.custom_fields_dict[field_name]['replace_empty_with']:
 						# replace the value with specified default
@@ -1036,7 +1029,7 @@ class CustomFieldsFuncs:
 
 				# check if you need to replace the field name 
 				new_field_name = self.custom_fields_dict[field_name]['new_field_name']
-				if new_field_name:
+				if new_field_name and new_field_name != field_name:
 					# add to the cols that have been renamed 
 					cols_renamed[field_name] = new_field_name
 					# replace the field name to something new
