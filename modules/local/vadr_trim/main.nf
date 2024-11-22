@@ -5,7 +5,7 @@
 */
 process VADR_TRIM {
 
-    conda (params.enable_conda ? params.env_yml : null)
+    conda (params.enable_conda ? params.vadr_env_yml : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'staphb/vadr:latest' : 'staphb/vadr:latest' }"
 
