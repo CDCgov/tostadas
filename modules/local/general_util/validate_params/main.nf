@@ -6,6 +6,42 @@
 
 process VALIDATE_PARAMS {
     exec:
+        def validateParam = { paramName, expectedType ->
+            if (params.containsKey(paramName)) {
+                // User provided a value (paramValue)
+                def paramValue = params[paramName]
+                
+                // Validate the provided value based on the expected type
+                if (expectedType == 'file') {
+                    if (!new File(paramValue).exists()) {
+                        throw new Exception("Provided ${paramName} does not exist: ${paramValue}")
+                    }
+                } else if (expectedType == 'string') {
+                    if (!(paramValue instanceof String || paramValue instanceof org.codehaus.groovy.runtime.GStringImpl)) {
+                        throw new Exception("Value must be of string type: ${paramValue} used for ${paramName} parameter")
+                    }
+                } else if (expectedType == 'integer') {
+                    if (!(paramValue instanceof Integer)) {
+                        throw new Exception("Value must be of integer type: ${paramValue} used for ${paramName} parameter")
+                    }
+                } else if (expectedType == 'float') {
+                    if (!(paramValue instanceof Float || paramValue instanceof Double)) {
+                        throw new Exception("Value must be of float type: ${paramValue} used for ${paramName} parameter")
+                    }
+                } else if (expectedType == 'boolean') {
+                    if (!(paramValue == true || paramValue == false)) {
+                        throw new Exception("Value must be of boolean type: ${paramValue} used for ${paramName} parameter")
+                    }
+                } else {
+                    throw new Exception("Unknown expected type: ${expectedType}")
+                }
+            } else {
+                // User did not provide a value, use defaultValue
+                def defaultValue = params[paramName]
+                assert defaultValue
+            }
+        }
+
         // check the different ways to run params
         def check = [params.run_docker, params.run_conda, params.run_singularity].count(true)
         if ( check != 1 && check != 0 ) {
@@ -15,7 +51,8 @@ process VALIDATE_PARAMS {
         }
 
         // check that that metadata file is provided
-        assert params.meta_path
+        // Check that the metadata file is provided
+        validateParam('meta_path', 'file')
 
         // check annotation paths
         if ( params.annotation ) {
