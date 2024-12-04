@@ -181,6 +181,7 @@ class GetMetaAsDf:
 		""" Loads the metadata file in as a dataframe from an Excel file (.xlsx)
 		"""
 		df = pd.read_excel(self.parameters['meta_path'], header=[1], dtype = str, engine = "openpyxl", index_col=None, na_filter=False)
+		df = df.loc[:, ~df.columns.str.contains('^Unnamed')] # Remove "Unnamed" col that sometimes gets imported due to trailing commas
 		return df
 
 	def populate_fields(self):
