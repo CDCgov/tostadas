@@ -187,24 +187,28 @@ class GetMetaAsDf:
 		""" Replacing the NaN values in certain columns with "Not Provided" or ""
 		"""
 		terms_2_replace = ["collected_by", "sample_type", "lat_lon", "host_age", "host_disease", "host_sex", "isolation_source", "purpose_of_sampling"]
-		# remove any nans
-		field_value_mapping = {term: "Not Provided" for term in terms_2_replace}
-		replaced_df = self.df.replace(to_replace={term: ["", None] for term in terms_2_replace}, value=field_value_mapping)
+		# Filter terms to include only those present in the dataframe
+		existing_terms = [term for term in terms_2_replace if term in self.df.columns]
+		# Remove any NaNs
+		field_value_mapping = {term: "Not Provided" for term in existing_terms}
+		replaced_df = self.df.replace(to_replace={term: ["", None] for term in existing_terms}, value=field_value_mapping)
 		final_df = replaced_df.fillna("")
-		# remove any N/A or na or N/a or n/A
-		for col in terms_2_replace:
-			for unwanted_val in ['N/A', 'N/a', 'na', 'n/A', 'NA']:
-				for x in range(len(final_df[col].tolist())):
-					if final_df[col].tolist()[x] == unwanted_val:
-						final_df[col][x] = 'Not Provided'
+		# Remove any N/A or na or N/a or n/A
+		unwanted_vals = ['N/A', 'N/a', 'na', 'n/A', 'NA']
+		for col in existing_terms:
+			final_df[col] = final_df[col].apply(
+				lambda x: "Not Provided" if str(x) in unwanted_vals else x
+			)
+		# Validate populated fields
 		try:
-			assert True not in [final_df[field].isnull().values.any() for field in terms_2_replace]
-			for field in terms_2_replace:
-				assert [value == "" or value == "Not Provided" for value in final_df[field].values]
+			 # Ensure no null values in specified columns
+			assert not any(final_df[field].isnull().any() for field in existing_terms)
+			# Ensure all values are either empty or "Not Provided"
+			for field in existing_terms:
+				assert all(value == "" or value == "Not Provided" for value in final_df[field].values)
 		except AssertionError:
 			raise AssertionError(f'Populating certain fields in the metadata df with "" or "Not Provided" was unsuccessful')
 		return final_df
-
 
 class ValidateChecks:
 	""" Class constructor for performing a variety of checks on metadata
@@ -240,7 +244,7 @@ class ValidateChecks:
 		self.required_core = ["sample_name", "ncbi-spuid", "authors", "isolate", "organism",
 							  "collection_date", "country"]
 		self.optional_core = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
-		self.case_fields = ["sex", "age", "race", "ethnicity"]
+		self.case_fields = ["host_sex", "host_age", "race", "ethnicity"]
 		
 		# instantiate CustomFields class
 		self.custom_fields_funcs = CustomFieldsFuncs(
@@ -258,14 +262,12 @@ class ValidateChecks:
 	def validate_main(self):
 		""" Main validation function for the metadata
 		"""
-
 		# check if user would like to validate custom fields
 		metadata_samp_names = self.metadata_df['sample_name'].tolist()
 		if self.parameters['validate_custom_fields'] is True:
-
 			# read the JSON file in 
 			self.custom_fields_funcs.read_custom_fields_file()
-
+			self.custom_fields_checks.update_custom_fields_dict(self.custom_fields_funcs.custom_fields_dict)
 			# check the JSON file passed in to make sure valid values were given
 			self.custom_fields_checks.clean_lists(
 				samp_names=metadata_samp_names
@@ -283,25 +285,25 @@ class ValidateChecks:
 		for name in metadata_samp_names:
 			self.sample_error_msg = f"\n\t{str(name)}:"
 			sample_info = self.metadata_df.loc[self.metadata_df['sample_name'] == name]
+			sample_info.columns = sample_info.columns.str.lower() # normalize cols to lowercase
 
 			# first check the custom fields
 			if self.parameters['validate_custom_fields'] is True and self.custom_fields_checks.proceed_with_custom_checks is True:
-				sample_info, cols_renamed = self.custom_fields_funcs.validate_custom_fields(
-					sample_info=sample_info.to_dict(),
+				sample_info, cols_renamed = self.custom_fields_funcs.add_custom_fields(
+					sample_info=sample_info,
 					error_file=self.custom_fields_checks.error_file
 				)
-				# set new sample info to the metadata df 
-				index = self.metadata_df[self.metadata_df['sample_name'] == sample_info['sample_name'].values[0]].index
-				# get columns not in self.metadata_df to add
+				# Ensure columns in sample_info are added to metadata_df
 				columns_to_add = [col for col in sample_info.columns if col not in self.metadata_df.columns]
-				# Add new columns to the DataFrame
 				self.metadata_df = pd.concat([self.metadata_df, pd.DataFrame(columns=columns_to_add)], axis=1)
-				# track the final list of columns by removing the renamed column 
-				if len(cols_renamed.keys()) != 0:
-					# get new column set
-					self.final_cols = [x for x in self.metadata_df.columns if x not in cols_renamed.keys()]
-				# add the sample information
-				self.metadata_df.loc[index] = sample_info.values[0]
+				# Verify index matches exactly one row
+				index = self.metadata_df[self.metadata_df['sample_name'] == sample_info['sample_name'].iloc[0]].index
+				if len(index) != 1:
+					raise ValueError(f"Expected exactly one match for sample_name, but found {len(index)}")
+				# Align sample_info with metadata_df columns
+				sample_info = sample_info[self.metadata_df.columns.intersection(sample_info.columns)]
+				# Set the row safely
+				self.metadata_df.loc[index[0], sample_info.columns] = sample_info.iloc[0]
 
 			# check the meta code for the sample line
 			self.check_meta_core(sample_info)
@@ -405,7 +407,6 @@ class ValidateChecks:
 			metadata_df = self.metadata_df, list_of_sample_errors = self.list_of_sample_errors, repeated = self.repeated,
 			did_validation_work = self.did_validation_work,
 		)
-
 
 	def check_for_repeats_in_meta(self):
 		""" Check if the metadata files has repeat samples
@@ -908,147 +909,90 @@ class HandleDfInserts:
 	# todo: handle multiple tsvs for illumina vs. nanopore - another class?
 
 class CustomFieldsFuncs:
-	""" Class constructor containing attributes/methods for handling custom fields processes
-	"""
-	def __init__(self, parameters):
-		# parameters
-		self.parameters = parameters
-		# the dictionary containing the actual contents from JSON file
-		self.custom_fields_dict = {}
-
-	def read_custom_fields_file(self):
-		""" Reads the JSON file to get the information from it
-		"""
-		# get the encoding of the JSON file 
-		"""
-		with open(self.parameters['custom_fields_file'], 'rb') as custom_file_encoding:
-			result = chardet.detect(custom_file_encoding.read())
-			encoding = result['encoding']
-		"""
-
-		# read the JSON file in
-		with open(self.parameters['custom_fields_file'], 'r') as custom_file:
-			data = json.load(custom_file)
-
-		# save contents to dictionary
-		for field_name, field_data in data.items():
-			self.custom_fields_dict[field_name] = {
-				'type': field_data['type'],
-				'samples': field_data['samples'],
-				'replace_empty_with': field_data['replace_empty_with'], 
-				'new_field_name': field_data['new_field_name']
-			}
+	"""Handles processing and validation of custom metadata fields."""
 	
-	def validate_custom_fields(self, sample_info, error_file):
-		""" Carries out the desired validation for custom field 
+	def __init__(self, parameters):
+		self.parameters = parameters
+		self.custom_fields_dict = {}
+		
+	def read_custom_fields_file(self):
+		"""Reads the JSON file and loads custom field configurations."""
+		with open(self.parameters['custom_fields_file'], 'r') as custom_file:
+			self.custom_fields_dict = json.load(custom_file)
+		print("Custom Fields Dict:", self.custom_fields_dict) #debugging
+	
+	def add_custom_fields(self, sample_info, error_file):
+		"""
+		Adds custom fields to the metadata DataFrame based on JSON definitions.
+		- Validates field types.
+		- Replaces empty values with defaults.
+		- Renames fields if `new_field_name` is provided.
 		"""
 		# write the sample name to error file
-		error_file.write(f"\n\n{list(sample_info['sample_name'].values())[0]}:")
-
-		# loop through the custom fields to check for sample 
+		error_file.write(f"\n\n{sample_info['sample_name'].iloc[0]}:")
 		error = ""
 		cols_renamed = {}
-		for field_name in self.custom_fields_dict.keys():
-
-			# check that the sample name is in the samples listed within custom fields
-			if list(sample_info['sample_name'].values())[0] in self.custom_fields_dict[field_name]['samples']:
-
-				# check that the field name exists and if not then create it
-				if field_name not in sample_info.keys():
-					sample_info[field_name] = None
-				# check that the field name is not empty for sample
-				if sample_info[field_name] is not None:
-					# look at the type
-					val_type = self.custom_fields_dict[field_name]['type'].lower()
-					# check the different types if it is not just 'present'
-					if val_type != 'present':
-						# get the value from sample / custom field 
-						samp_custom_field_val = list(sample_info[field_name].values())[0]
-						# initialize type error 
-						type_error = ""
-						# check and try to convert to bool
-						if val_type == 'bool':
-							if not isinstance(samp_custom_field_val, bool):
-								type_error += f"\n\t{field_name} value was not bool. Converting to bool"
-								try:
-									sample_info[field_name][0] = bool(samp_custom_field_val)
-									type_error += f"\n\tSuccessfully converted {field_name} to a bool"
-								except:
-									type_error += f"\n\tUnable to convert {field_name} to a bool."
-							else:
-								type_error += f"\n\t{field_name} value was a bool. No need to convert"
-						# check and try to convert to string
-						elif val_type == 'string':
-							if not isinstance(samp_custom_field_val, str):
-								type_error += f"\n\t{field_name} value was not string. Converting to string"
-								try:
-									sample_info[field_name][0] = str(samp_custom_field_val)
-									type_error += f"\n\tSuccessfully converted {field_name} to a string"
-								except:
-									type_error += f"\n\tUnable to convert {field_name} to a string."
-							else:
-								type_error += f"\n\t{field_name} value was a string. No need to convert"
-						# check and try to convert to integer
-						elif val_type == 'integer':
-							if not isinstance(samp_custom_field_val, int):
-								type_error += f"\n\t{field_name} value was not int. Converting to int"
-								try:
-									sample_info[field_name] = int(samp_custom_field_val)
-									type_error += f"\n\tSuccessfully converted {field_name} to an int"
-								except:
-									type_error += f"\n\tUnable to convert {field_name} to an int."
-							else:
-								type_error += f"\n\t{field_name} value was an int. No need to convert"
-						
-						# check and try to convert to float
-						elif val_type == 'float':
-							if not isinstance(samp_custom_field_val, float):
-								type_error += f"\n\t{field_name} value was not float. Converting to float"
-								try:
-									sample_info[field_name] = float(int(samp_custom_field_val))
-									type_error += f"\n\tSuccessfully converted {field_name} to a float"
-								except:
-									type_error += f"\n\tUnable to convert {field_name} to a float."
-							else:
-								type_error += f"\n\t{field_name} value was a float. No need to convert"
-
-						# write the final type error
-						error_file.write(type_error)
-				elif sample_info[field_name] is None:	
-					# means that the value is not present
-					error = f"\n\t{field_name} is None. "
-				else:
-					# means that the value is not present
-					error = f"\n\t{field_name} not populated. "
-					# check if you need to replace empty with anything
-					if self.custom_fields_dict[field_name]['replace_empty_with']:
-						# replace the value with specified default
-						default_val = self.custom_fields_dict[field_name]['replace_empty_with']
-						sample_info[field_name] = default_val
-						error += f"\n\tReplaced empty with {default_val}"
-
-				# check if you need to replace the field name 
-				new_field_name = self.custom_fields_dict[field_name]['new_field_name']
-				if new_field_name and new_field_name != field_name:
-					# add to the cols that have been renamed 
-					cols_renamed[field_name] = new_field_name
-					# replace the field name to something new
-					sample_info[new_field_name] = sample_info[field_name]
-					# print this out to error message 
-					error += f"\n\tReplaced field name ({field_name}) with {new_field_name}" 
-
-		# write the error for the field name / sample
-		if error:
-			error_file.write(error)
-		else:
-			error_file.write(f"\n\tAll custom field checks passed")
-
-		# convert back to pandas dataframe 
-		sample_info = pd.DataFrame(sample_info)
-
+		
+		for field_name, field_config in self.custom_fields_dict.items():
+			# Extract field parameters
+			field_type = field_config.get('type', '').lower()
+			replace_empty_with = field_config.get('replace_empty_with', None)
+			new_field_name = field_config.get('new_field_name', field_name)
+			target_samples = field_config.get('samples', [])
+			# Determine target rows for the field
+			if "All" in target_samples:
+				target_rows = sample_info.index
+			else:
+				target_rows = sample_info.index[sample_info['sample_name'].isin(target_samples)]
+			# Add the field to the DataFrame if it doesn't exist
+			if field_name not in sample_info.columns:
+				sample_info[field_name] = None
+			# Validate and update the field values for target rows
+			for idx in target_rows:
+				try:
+					value = sample_info.at[idx, field_name]
+					if pd.isna(value) or value == '':
+						# Replace empty values with the default
+						sample_info.at[idx, field_name] = replace_empty_with
+					else:
+						# Validate and convert field types
+						sample_info.at[idx, field_name] = self._validate_and_convert(value, field_type)
+				except (ValueError, TypeError) as e:
+					# Log the error for this sample
+					sample_name = sample_info.at[idx, 'sample_name']
+					error_file.write(f"\n\n{sample_name}:")
+					error_file.write(
+						f"\n\tType Error: Failed to convert '{value}' in field '{field_name}' "
+						f"to type '{field_type}'. Error: {str(e)}"
+					)
+			# Rename the field if a new name is specified
+			if new_field_name and new_field_name != field_name:
+				error_file.write(f"\nRenaming field '{field_name}' to '{new_field_name}'.")
+				sample_info.rename(columns={field_name: new_field_name}, inplace=True)
+				cols_renamed[field_name] = new_field_name
+				print(f"Renaming '{field_name}' to '{new_field_name}'.")
+		print("Final columns:", sample_info.columns)
 		return sample_info, cols_renamed
-
-
+	
+	@staticmethod
+	def _validate_and_convert(value, field_type):
+		"""
+		Validates and converts a value to the specified type.
+		"""
+		type_error = ""
+		try:
+			if field_type == 'string':
+				return str(value)
+			elif field_type == 'bool':
+				return bool(value)
+			elif field_type == 'integer':
+				return int(value)
+			elif field_type == 'float':
+				return float(value)
+		except ValueError as e:
+			pass  # Keep the original value if conversion fails
+			raise ValueError(f"Invalid value '{value}' for type '{field_type}': {str(e)}")
+		return value
 
 class CustomFieldsChecks():
 	""" Subclass containing checks for custom fields 
@@ -1067,15 +1011,27 @@ class CustomFieldsChecks():
 		self.possible_type_name_str = ['str', 'string', 'strin', 's', 'word']
 		self.possible_type_name_int = ['int', 'integer', 'intege', 'i', 'number']
 		self.possible_type_name_bool = ['bool', 'boolean', 'boolea', 'boo', 'b', 'true/false']
+		
 		self.possible_type_name_float = ['float', 'decimal', 'fraction']
+
+	def update_custom_fields_dict(self, custom_fields_dict):
+		"""Updates the custom fields dictionary if needed."""
+		if self.parameters['validate_custom_fields']:
+			self.custom_fields_dict = custom_fields_dict
 
 	def clean_lists(self, samp_names):
 		""" Goes through the custom field names specified 
 		"""
 		# go through the field names within the JSON
 		custom_fields = self.custom_fields_dict.copy()
+		print("Initial Custom Fields:", self.custom_fields_dict) # debugging
 		for field_name in self.custom_fields_dict.keys():
-
+			# debugging
+			if not field_name:
+				print(f"Skipping empty field name.")
+			else:
+				print(f"Processing field: {field_name}")
+			# end debugging
 			# check that the field name is not empty
 			if not field_name:
 				# delete key from final dictionary 
@@ -1096,7 +1052,10 @@ class CustomFieldsChecks():
 
 					# check that field is present and not empty 
 					if field in subfields.keys() and subfields[field]:
-
+						# debugging
+						if field not in subfields or not subfields[field]:
+							print(f"Field {field} missing or empty for {field_name}")
+						# end debugging
 						# assert that the field is either a string or a list of strings for samples
 						is_original_dtype_valid = True 
 						no_samp_val_string = False
@@ -1170,6 +1129,7 @@ class CustomFieldsChecks():
 			self.proceed_with_custom_checks = False
 		else:
 			self.error_file.write(f"\n\nAfter preliminary checks, valid information for custom field names have been passed in. Will now check these accordingly\n")
+		print("Processed Custom Fields:", custom_fields) # debugging
 
 	def clean_sample_names(self, field_name, samp_names):
 		""" Method for actually cleaning the sample names
