@@ -10,7 +10,7 @@
             "format": "file-path",
             "exists": true,
             "description": "Path to the metadata file.",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/metadata_template.xlsx",
+            "default": "${projectDir}/assets/metadata_template.xlsx",
             "pattern": "^\\S+\\.xlsx$"
         },
         "schema": {
@@ -23,11 +23,11 @@
         },
         "ref_fasta_path": {
             "type": "string",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/ref/ref.MPXV.NC063383.v7.fasta"
+            "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.fasta"
         },
         "ref_gff_path": {
             "type": "string",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/ref/ref.MPXV.NC063383.v7.gff"
+            "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.gff"
         },
         "val_date_format_flag": {
             "type": "string",
@@ -41,7 +41,7 @@
         },
         "custom_fields_file": {
             "type": "string",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/custom_meta_fields/example_custom_fields.json"
+            "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json"
         },
         "annotation": {
             "type": "boolean",
@@ -62,7 +62,7 @@
         },
         "repeat_library": {
             "type": "string",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/lib/MPOX_repeats_lib.fasta"
+            "default": "${projectDir}/assets/lib/MPOX_repeats_lib.fasta"
         },
         "submission": {
             "type": "boolean",
@@ -98,7 +98,7 @@
         },
         "submission_config": {
             "type": "string",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/bin/config_files/<your-ncbi-config>.yaml"
+            "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml"
         },
         "submission_prod_or_test": {
             "type": "string",
@@ -143,7 +143,7 @@
         },
         "env_yml": {
             "type": "string",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/environment.yml"
+            "default": "${projectDir}/environment.yml"
         },
         "docker_container": {
             "type": "string",
@@ -161,11 +161,11 @@
         },
         "repeatmasker_env_yml": {
             "type": "string",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/environments/repeatmasker_env.yml"
+            "default": "${projectDir}/environments/repeatmasker_env.yml"
         },
         "vadr_env_yml": {
             "type": "string",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/environments/vadr_env.yml"
+            "default": "${projectDir}/environments/vadr_env.yml"
         },
         "cleanup": {
             "type": "boolean"
@@ -240,7 +240,6 @@
             "type": "string"
         },
         "bakta_compliant": {
-            "type": "string"
         },
         "bakta_keep_contig_headers": {
             "type": "string"
@@ -289,7 +288,6 @@
             "type": "string"
         },
         "bakta_skip_plot": {
-            "type": "string"
         },
         "lift_print_version_exit": {
             "type": "boolean"
@@ -302,8 +300,6 @@
             "default": 8
         },
         "lift_delete_temp_files": {
-            "type": "boolean",
-            "default": true
         },
         "lift_coverage_threshold": {
             "type": "number",
@@ -364,7 +360,7 @@
         },
         "lift_feature_types": {
             "type": "string",
-            "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/feature_types.txt"
+            "default": "${projectDir}/assets/feature_types.txt"
         }
     }
 }
