@@ -246,7 +246,8 @@
             "type": "string"
         },
         "bakta_prodigal_tf": {
-            "type": "string"
+            "type": "string",
+            "default": ""
         },
         "bakta_replicons": {
             "type": "string"
@@ -345,14 +346,13 @@
             "default": 1
         },
         "lift_infer_transcripts": {
-            "type": "boolean",
-            "default": false
+            "type": "string"
         },
         "lift_infer_genes": {
-            "type": "boolean"
+            "type": "string"
         },
         "lift_copies": {
-            "type": "boolean"
+            "type": "string"
         },
         "lift_minimap_path": {
             "type": "string",
