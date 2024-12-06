@@ -17,6 +17,7 @@ import stat
 import glob
 import json
 import shutil
+from typing import List, Dict, Union
 
 # module level import
 from annotation_utility import MainUtility as main_util
@@ -247,15 +248,19 @@ class ValidateChecks:
 		self.optional_core = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
 		self.case_fields = ["host_sex", "host_age", "race", "ethnicity"]
 		
-		# instantiate CustomFields class
-		self.custom_fields_funcs = CustomFieldsFuncs(
-			parameters=parameters
+		## instantiate CustomFieldsProcessor class
+		self.custom_fields_processor = CustomFieldsProcessor(
+			json_file=parameters['custom_fields_file'],
+			error_file=f"{parameters['output_dir']}/errors/custom_fields_error.txt"
 		)
-		self.custom_fields_checks = CustomFieldsChecks(
-			parameters=parameters,
-			custom_fields_dict=self.custom_fields_funcs.custom_fields_dict, 
-			error_file=self.custom_fields_error_file
-		)
+		#self.custom_fields_funcs = CustomFieldsFuncs(
+		#	parameters=parameters
+		#)
+		#self.custom_fields_checks = CustomFieldsChecks(
+		#	parameters=parameters,
+		#	custom_fields_dict=self.custom_fields_funcs.custom_fields_dict, 
+		#	error_file=self.custom_fields_error_file
+		#)
 
 		# get the main utility class 
 		self.main_util = main_util()
@@ -265,14 +270,14 @@ class ValidateChecks:
 		"""
 		# check if user would like to validate custom fields
 		metadata_samp_names = self.metadata_df['sample_name'].tolist()
-		if self.parameters['validate_custom_fields'] is True:
-			# read the JSON file in 
-			self.custom_fields_funcs.read_custom_fields_file()
-			self.custom_fields_checks.update_custom_fields_dict(self.custom_fields_funcs.custom_fields_dict)
-			# check the JSON file passed in to make sure valid values were given
-			self.custom_fields_checks.clean_lists(
-				samp_names=metadata_samp_names
-			)
+		#if self.parameters['validate_custom_fields'] is True:
+		#	# read the JSON file in 
+		#	self.custom_fields_funcs.read_custom_fields_file()
+		#	self.custom_fields_checks.update_custom_fields_dict(self.custom_fields_funcs.custom_fields_dict)
+		#	# check the JSON file passed in to make sure valid values were given
+		#	self.custom_fields_checks.clean_lists(
+		#		samp_names=metadata_samp_names
+		#	)
 
 		# if there are repeat samples then check them and replace the names
 		if len(self.metadata_df['sample_name']) != len(set(self.metadata_df['sample_name'])):
@@ -282,6 +287,10 @@ class ValidateChecks:
 		if self.parameters['date_format_flag'].lower() != 'o':
 			self.check_date()
 
+		# Check custom fields
+		if self.parameters.get('validate_custom_fields', True):
+			self.metadata_df = self.custom_fields_processor.process(self.metadata_df)
+			
 		# lists through the entire set of samples and runs the different checks below
 		for name in metadata_samp_names:
 			self.sample_error_msg = f"\n\t{str(name)}:"
@@ -289,22 +298,26 @@ class ValidateChecks:
 			sample_info.columns = sample_info.columns.str.lower() # normalize cols to lowercase
 
 			# first check the custom fields
-			if self.parameters['validate_custom_fields'] is True and self.custom_fields_checks.proceed_with_custom_checks is True:
-				sample_info, cols_renamed = self.custom_fields_funcs.add_custom_fields(
-					sample_info=sample_info,
-					error_file=self.custom_fields_checks.error_file
-				)
-				# Ensure columns in sample_info are added to metadata_df
-				columns_to_add = [col for col in sample_info.columns if col not in self.metadata_df.columns]
-				self.metadata_df = pd.concat([self.metadata_df, pd.DataFrame(columns=columns_to_add)], axis=1)
-				# Verify index matches exactly one row
-				index = self.metadata_df[self.metadata_df['sample_name'] == sample_info['sample_name'].iloc[0]].index
-				if len(index) != 1:
-					raise ValueError(f"Expected exactly one match for sample_name, but found {len(index)}")
-				# Align sample_info with metadata_df columns
-				sample_info = sample_info[self.metadata_df.columns.intersection(sample_info.columns)]
-				# Set the row safely
-				self.metadata_df.loc[index[0], sample_info.columns] = sample_info.iloc[0]
+			#if self.parameters['validate_custom_fields'] is True and self.custom_fields_checks.proceed_with_custom_checks is True:
+			#	sample_info, cols_renamed = self.custom_fields_funcs.add_custom_fields(
+			#		sample_info=sample_info,
+			#		error_file=self.custom_fields_checks.error_file
+			#	)
+#			for old_col, new_col in cols_renamed.items():
+#				if old_col in metadata_df.columns:
+#					metadata_df.drop(columns=[old_col], inplace=True)
+
+			#	# Ensure columns in sample_info are added to metadata_df
+			#	columns_to_add = [col for col in sample_info.columns if col not in self.metadata_df.columns]
+			#	self.metadata_df = pd.concat([self.metadata_df, pd.DataFrame(columns=columns_to_add)], axis=1)
+			#	# Verify index matches exactly one row
+			#	index = self.metadata_df[self.metadata_df['sample_name'] == sample_info['sample_name'].iloc[0]].index
+			#	if len(index) != 1:
+			#		raise ValueError(f"Expected exactly one match for sample_name, but found {len(index)}")
+			#	# Align sample_info with metadata_df columns
+			#	sample_info = sample_info[self.metadata_df.columns.intersection(sample_info.columns)]
+			#	# Set the row safely
+			#	self.metadata_df.loc[index[0], sample_info.columns] = sample_info.iloc[0]
 
 			# check the meta code for the sample line
 			self.check_meta_core(sample_info)
@@ -909,6 +922,62 @@ class HandleDfInserts:
 		self.filled_df = self.filled_df.rename(columns={'illumina_sra_file_path_1': 'fastq_path_1', 'illumina_sra_file_path_2': 'fastq_path_2'})
 	# todo: handle multiple tsvs for illumina vs. nanopore - another class?
 
+class CustomFieldsProcessor:
+	def __init__(self, json_file: str, error_file: str):
+		self.json_file = json_file
+		self.error_file = error_file
+
+	def load_json(self) -> Dict[str, Dict[str, Union[str, int]]]:
+		"""Load JSON data from a file."""
+		try:
+			with open(self.json_file, 'r') as custom_file:
+				return json.load(custom_file)
+		except FileNotFoundError:
+			raise FileNotFoundError(f"File not found: {self.json_file}")
+		except json.JSONDecodeError as e:
+			raise ValueError(f"Error decoding JSON: {e}")
+
+	def validate_and_process_fields(
+		self, 
+		custom_fields_dict: Dict[str, Dict[str, Union[str, int]]], 
+		metadata_df: pd.DataFrame
+	) -> pd.DataFrame:
+		"""Validate custom fields and integrate with metadata."""
+		errors = []
+		for field_name, properties in custom_fields_dict.items():
+			field_errors = []
+			# Handle "replace_empty_with" key
+			if "replace_empty_with" in properties:
+				replace_value = properties["replace_empty_with"]
+				if field_name in metadata_df.columns:
+					metadata_df[field_name].fillna(replace_value, inplace=True)
+			# Handle "new_field_name" key
+			if "new_field_name" in properties and properties["new_field_name"]:
+				new_field_name = properties["new_field_name"]
+				if field_name in metadata_df.columns:
+					metadata_df.rename(columns={field_name: new_field_name}, inplace=True)
+				else:
+					field_errors.append(f"Field '{field_name}' not found in metadata for renaming.")
+			# Log errors for the current field
+			if field_errors:
+				errors.append({"field_name": field_name, "errors": field_errors})
+		# Write errors to the error file
+		if errors:
+			self.write_errors(errors)
+		return metadata_df
+
+	def write_errors(self, errors: Dict[str, Union[Dict, List]]):
+		"""Write errors to a file."""
+		with open(self.error_file, 'w') as file:
+			json.dump(errors, file, indent=4)
+
+	def process(self, metadata_df: pd.DataFrame) -> pd.DataFrame:
+		"""Main processing function."""
+		data = self.load_json()
+		return self.validate_and_process_fields(data, metadata_df)
+
+
+
 class CustomFieldsFuncs:
 	"""Handles processing and validation of custom metadata fields."""
 	
@@ -948,6 +1017,15 @@ class CustomFieldsFuncs:
 			# Add the field to the DataFrame if it doesn't exist
 			if field_name not in sample_info.columns:
 				sample_info[field_name] = None
+			#elif field_name in sample_info.columns and new_field_name != field_name:
+			#	# Rename the field if a new name is specified
+			#	sample_info.rename(columns={field_name: new_field_name}, inplace=True)
+			#	print(f"Renaming '{field_name}' to '{new_field_name}'.")
+			if new_field_name and new_field_name != field_name:
+				sample_info.rename(columns={field_name: new_field_name}, inplace=True)
+				cols_renamed[field_name] = new_field_name
+				print(f"Renaming '{field_name}' to '{new_field_name}'.")
+			
 			# Validate and update the field values for target rows
 			for idx in target_rows:
 				try:
@@ -966,12 +1044,8 @@ class CustomFieldsFuncs:
 						f"\n\tType Error: Failed to convert '{value}' in field '{field_name}' "
 						f"to type '{field_type}'. Error: {str(e)}"
 					)
-			# Rename the field if a new name is specified
-			if new_field_name and new_field_name != field_name:
-				error_file.write(f"\nRenaming field '{field_name}' to '{new_field_name}'.")
-				sample_info.rename(columns={field_name: new_field_name}, inplace=True)
-				cols_renamed[field_name] = new_field_name
-				print(f"Renaming '{field_name}' to '{new_field_name}'.")
+					# Remove the original columns that were renamed
+
 		print("Final columns:", sample_info.columns)
 		return sample_info, cols_renamed
 	
@@ -1213,4 +1287,3 @@ class CustomFieldsChecks():
 
 if __name__ == "__main__":
 	metadata_validation_main()
-
