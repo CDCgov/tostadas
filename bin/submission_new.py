@@ -520,11 +520,20 @@ class XMLSubmission(ABC):
 		comment = ET.SubElement(description, 'Comment')
 		comment.text = self.safe_text(self.top_metadata['description'])
 		# Organization block (common across all submissions)
-		organization_el = ET.SubElement(description, 'Organization', {
-			'role': self.submission_config['Role'],
-			'type': self.submission_config['Type'],
-			'org_id': self.submission_config['Org_ID']
-		})
+		organization_attributes = {
+   			'role': self.submission_config['Role'],
+			'type': self.submission_config['Type']
+		}
+		org_id = self.submission_config.get('Org_ID', '').strip()
+		if org_id:
+			organization_attributes['org_id'] = org_id
+		organization_el = ET.SubElement(description, 'Organization', organization_attributes)
+		#organization_el = ET.SubElement(description, 'Organization', {
+		#	'role': self.submission_config['Role'],
+		#	'type': self.submission_config['Type'],
+		#	'org_id': self.submission_config['Org_ID']
+		#})
+
 		name = ET.SubElement(organization_el, 'Name')
 		name.text = self.safe_text(self.submission_config['Submitting_Org'])
 		# Contact block (common across all submissions)
