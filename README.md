@@ -62,7 +62,7 @@ mamba install -c bioconda nextflow
 ### 5. Update the default submissions config file with your NCBI username and password, and run the following nextflow command to execute the scripts with default parameters and the local run environment: 
 ```
 # update this config file (you don't have to use vim)
-vim bin/config_files/default_config.yaml
+vim conf/submission_config.yaml
 # test command for virus reads
 nextflow run main.nf -profile test,<singularity|docker|conda> --virus
 ```
@@ -79,6 +79,20 @@ nextflow run main.nf -profile <docker|singularity> --species virus --submission 
 nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation  --genbank true --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>
 ```
 Refer to the wiki for more information on input parameters and use cases
+
+### 7. Custom metadata validation and custom BioSample package
+
+TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; version 1.0) NCBI BioSample package for submissions to the BioSample repository. You can submit using a different BioSample package by doing the following:
+1. Change the package name in the `conf/submission_config.yamlsubmissions`. Choose one of the available [NCBI BioSample packages](https://www.ncbi.nlm.nih.gov/biosample/docs/packages/). 
+2. Add the necessary fields for your BioSample package to your input Excel file.
+3. Add those fields as keys to the JSON file (`assets/custom_meta_fields/example_custom_fields.json`) and provide key info as needed.
+    replace_empty_with: TOSTADAS will replace any empty cells with this value (Example application: NCBI expects some value for any mandatory field, so if empty you may want to change it to "Not Provided".)
+    new_field_name: TOSTADAS will replace the field name in your metadata Excel file with this value. (Example application: you get weekly metadata Excel files and they specify 'animal_environment' but NCBI expects 'animal_env'; you can specify this once in the JSON file and it will changed on every run.)
+
+**Submit to a custom BioSample package**
+```
+nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file  <path/to/metadata_custom_fields.json>
+```
 
 ## Get in Touch
 If you need to report a bug, suggest new features, or just say “thanks”, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we’ll try to get back to you as soon as possible!
