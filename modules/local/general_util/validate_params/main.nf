@@ -17,14 +17,6 @@ log.info paramsSummaryLog(workflow)
 process VALIDATE_PARAMS {
 
     exec:
-        // check the different ways to run params
-        def check = [params.run_docker, params.run_conda, params.run_singularity].count(true)
-        if ( check != 1 && check != 0 ) {
-            throw new Exception("More than two profiles between docker, conda, and singularity were passed in. Please pass in only one")
-        } else if ( check == 0 ) {
-            throw new Exception("Either docker, conda, or singularity must be selected as profile [docker, conda, singularity]. None passed in.")
-        }
-
         // check that metadata file is provided
         assert params.meta_path
 
@@ -70,8 +62,6 @@ process VALIDATE_PARAMS {
             assert params.lift_gap_extend 
             assert params.lift_print_version_exit == true || params.lift_print_version_exit == false
             assert params.lift_print_help_exit == true || params.lift_print_help_exit == false
-            assert params.lift_infer_transcripts.toLowerCase() == "true" || params.lift_infer_transcripts.toLowerCase() == "false"
-            assert params.lift_copies.toLowerCase() == "true" || params.lift_copies.toLowerCase() == "false" 
 
             // Check data types 
             expected_liftoff_strings = [
@@ -128,7 +118,6 @@ process VALIDATE_PARAMS {
         }
 
         // check list of params with bool values
-        assert params.scicomp == true || params.scicomp == false
         assert params.clear_nextflow_log == true || params.clear_nextflow_log == false
         assert params.clear_work_dir == true || params.clear_work_dir == false
         assert params.submission == true || params.submission == false

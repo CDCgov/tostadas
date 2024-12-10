@@ -1,366 +1,348 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://example.com/nextflow_schema.json",
-    "title": "Nextflow Pipeline Parameters",
-    "description": "Nextflow_Schema.json",
-    "type": "object",
-    "properties": {
-        "meta_path": {
-            "type": "string",
-            "format": "file-path",
-            "exists": true,
-            "description": "Path to the metadata file.",
-            "default": "${projectDir}/assets/metadata_template.xlsx",
-            "pattern": "^\\S+\\.xlsx$"
-        },
-        "schema": {
-            "type": "string",
-            "default": "nextflow_schema.json"
-        },
-        "validate_params": {
-            "type": "boolean",
-            "default": true
-        },
-        "ref_fasta_path": {
-            "type": "string",
-            "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.fasta"
-        },
-        "ref_gff_path": {
-            "type": "string",
-            "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.gff"
-        },
-        "val_date_format_flag": {
-            "type": "string",
-            "default": "s"
-        },
-        "val_keep_pi": {
-            "type": "boolean"
-        },
-        "validate_custom_fields": {
-            "type": "boolean"
-        },
-        "custom_fields_file": {
-            "type": "string",
-            "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json"
-        },
-        "annotation": {
-            "type": "boolean",
-            "default": true
-        },
-        "repeatmasker_liftoff": {
-            "type": "boolean",
-            "default": true
-        },
-        "vadr": {
-            "type": "boolean"
-        },
-        "bakta": {
-            "type": "boolean"
-        },
-        "species": {
-            "type": "string"
-        },
-        "repeat_library": {
-            "type": "string",
-            "default": "${projectDir}/assets/lib/MPOX_repeats_lib.fasta"
-        },
-        "submission": {
-            "type": "boolean",
-            "default": true
-        },
-        "genbank": {
-            "type": "boolean",
-            "default": true
-        },
-        "sra": {
-            "type": "boolean",
-            "default": true
-        },
-        "gisaid": {
-            "type": "boolean"
-        },
-        "biosample": {
-            "type": "boolean",
-            "default": true
-        },
-        "submission_mode": {
-            "type": "string",
-            "default": "ftp"
-        },
-        "submission_output_dir": {
-            "type": "string",
-            "format": "directory-path",
-            "default": "submission_outputs"
-        },
-        "submission_wait_time": {
-            "type": "integer",
-            "default": 380
-        },
-        "submission_config": {
-            "type": "string",
-            "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml"
-        },
-        "submission_prod_or_test": {
-            "type": "string",
-            "default": "test"
-        },
-        "send_submission_email": {
-            "type": "boolean"
-        },
-        "update_submission": {
-            "type": "boolean"
-        },
-        "help": {
-            "type": "boolean"
-        },
-        "publish_dir_mode": {
-            "type": "string",
-            "default": "copy"
-        },
-        "output_dir": {
-            "type": "string",
-            "default": "results"
-        },
-        "bakta_output_dir": {
-            "type": "string",
-            "default": "bakta_outputs"
-        },
-        "vadr_output_dir": {
-            "type": "string",
-            "default": "vadr_outputs"
-        },
-        "final_liftoff_output_dir": {
-            "type": "string",
-            "default": "liftoff_outputs"
-        },
-        "val_output_dir": {
-            "type": "string",
-            "default": "validation_outputs"
-        },
-        "vadr_models_dir": {
-            "type": "string",
-            "default": ""
-        },
-        "env_yml": {
-            "type": "string",
-            "default": "${projectDir}/environment.yml"
-        },
-        "docker_container": {
-            "type": "string",
-            "default": "staphb/tostadas:latest"
-        },
-        "docker_container_vadr": {
-            "type": "string",
-            "default": "staphb/vadr:latest"
-        },
-        "scicomp": {
-            "type": "boolean"
-        },
-        "enable_conda": {
-            "type": "boolean"
-        },
-        "repeatmasker_env_yml": {
-            "type": "string",
-            "default": "${projectDir}/environments/repeatmasker_env.yml"
-        },
-        "vadr_env_yml": {
-            "type": "string",
-            "default": "${projectDir}/environments/vadr_env.yml"
-        },
-        "cleanup": {
-            "type": "boolean"
-        },
-        "clear_nextflow_log": {
-            "type": "boolean"
-        },
-        "clear_work_dir": {
-            "type": "boolean"
-        },
-        "clear_conda_env": {
-            "type": "boolean"
-        },
-        "clear_nf_results": {
-            "type": "boolean"
-        },
-        "overwrite_output": {
-            "type": "boolean",
-            "default": true
-        },
-        "bakta_db_type": {
-            "type": "string",
-            "default": "light"
-        },
-        "download_bakta_db": {
-            "type": "string"
-        },
-        "bakta_db_path": {
-            "type": "string"
-        },
-        "bakta_min_contig_length": {
-            "type": "integer",
-            "default": 5
-        },
-        "bakta_threads": {
-            "type": "integer",
-            "default": 2
-        },
-        "bakta_gram": {
-            "type": "string",
-            "default": "?"
-        },
-        "bakta_genus": {
-            "type": "string",
-            "default": "N/A"
-        },
-        "bakta_species": {
-            "type": "string",
-            "default": "N/A"
-        },
-        "bakta_strain": {
-            "type": "string",
-            "default": "N/A"
-        },
-        "bakta_plasmid": {
-            "type": "string",
-            "default": "unnamed"
-        },
-        "bakta_locus": {
-            "type": "string",
-            "default": "contig"
-        },
-        "bakta_locus_tag": {
-            "type": "string",
-            "default": "autogenerated"
-        },
-        "bakta_translation_table": {
-            "type": "integer",
-            "default": 11
-        },
-        "bakta_complete": {
-            "type": "string"
-        },
-        "bakta_compliant": {
-        },
-        "bakta_keep_contig_headers": {
-            "type": "string"
-        },
-        "bakta_prodigal_tf": {
-            "type": "string",
-            "default": ""
-        },
-        "bakta_replicons": {
-            "type": "string"
-        },
-        "bakta_proteins": {
-            "type": "string"
-        },
-        "bakta_skip_trna": {
-            "type": "string"
-        },
-        "bakta_skip_tmrna": {
-            "type": "string"
-        },
-        "bakta_skip_rrna": {
-            "type": "string"
-        },
-        "bakta_skip_ncrna": {
-            "type": "string"
-        },
-        "bakta_skip_ncrna_region": {
-            "type": "string"
-        },
-        "bakta_skip_crispr": {
-            "type": "string"
-        },
-        "bakta_skip_cds": {
-            "type": "string"
-        },
-        "bakta_skip_pseudo": {
-            "type": "string"
-        },
-        "bakta_skip_sorf": {
-            "type": "string"
-        },
-        "bakta_skip_gap": {
-            "type": "string"
-        },
-        "bakta_skip_ori": {
-            "type": "string"
-        },
-        "bakta_skip_plot": {
-        },
-        "lift_print_version_exit": {
-            "type": "boolean"
-        },
-        "lift_print_help_exit": {
-            "type": "boolean"
-        },
-        "lift_parallel_processes": {
-            "type": "integer",
-            "default": 8
-        },
-        "lift_delete_temp_files": {
-        },
-        "lift_coverage_threshold": {
-            "type": "number",
-            "default": 0.5
-        },
-        "lift_child_feature_align_threshold": {
-            "type": "number",
-            "default": 0.5
-        },
-        "lift_unmapped_features_file_name": {
-            "type": "string",
-            "default": "output.unmapped_features.txt"
-        },
-        "lift_copy_threshold": {
-            "type": "integer",
-            "default": 1
-        },
-        "lift_distance_scaling_factor": {
-            "type": "integer",
-            "default": 2
-        },
-        "lift_flank": {
-            "type": "integer",
-            "default": 0
-        },
-        "lift_overlap": {
-            "type": "number",
-            "default": 0.1000000000000000055511151231257827021181583404541015625
-        },
-        "lift_mismatch": {
-            "type": "integer",
-            "default": 2
-        },
-        "lift_gap_open": {
-            "type": "integer",
-            "default": 2
-        },
-        "lift_gap_extend": {
-            "type": "integer",
-            "default": 1
-        },
-        "lift_infer_transcripts": {
-            "type": "string"
-        },
-        "lift_infer_genes": {
-            "type": "string"
-        },
-        "lift_copies": {
-            "type": "string"
-        },
-        "lift_minimap_path": {
-            "type": "string",
-            "default": "N/A"
-        },
-        "lift_feature_database_name": {
-            "type": "string",
-            "default": "N/A"
-        },
-        "lift_feature_types": {
-            "type": "string",
-            "default": "${projectDir}/assets/feature_types.txt"
-        }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/nextflow_schema.json",
+  "title": "Nextflow Pipeline Parameters",
+  "description": "Nextflow_Schema.json",
+  "type": "object",
+  "properties": {
+    "meta_path": {
+      "type": "string",
+      "format": "file-path",
+      "exists": true,
+      "description": "Path to the metadata file.",
+      "default": "${projectDir}/assets/metadata_template.xlsx",
+      "pattern": "^\\S+\\.xlsx$"
+    },
+    "schema": {
+      "type": "string",
+      "default": "nextflow_schema.json"
+    },
+    "validate_params": {
+      "type": "boolean",
+      "default": true
+    },
+    "ref_fasta_path": {
+      "type": "string",
+      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.fasta"
+    },
+    "ref_gff_path": {
+      "type": "string",
+      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.gff"
+    },
+    "val_date_format_flag": {
+      "type": "string",
+      "default": "s"
+    },
+    "val_keep_pi": {
+      "type": "boolean"
+    },
+    "validate_custom_fields": {
+      "type": "boolean"
+    },
+    "custom_fields_file": {
+      "type": "string",
+      "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json"
+    },
+    "annotation": {
+      "type": "boolean",
+      "default": true
+    },
+    "repeatmasker_liftoff": {
+      "type": "boolean",
+      "default": true
+    },
+    "vadr": {
+      "type": "boolean"
+    },
+    "bakta": {
+      "type": "boolean"
+    },
+    "species": {
+      "type": "string"
+    },
+    "repeat_library": {
+      "type": "string",
+      "default": "${projectDir}/assets/lib/MPOX_repeats_lib.fasta"
+    },
+    "submission": {
+      "type": "boolean",
+      "default": true
+    },
+    "genbank": {
+      "type": "boolean",
+      "default": true
+    },
+    "sra": {
+      "type": "boolean",
+      "default": true
+    },
+    "gisaid": {
+      "type": "boolean"
+    },
+    "biosample": {
+      "type": "boolean",
+      "default": true
+    },
+    "submission_mode": {
+      "type": "string",
+      "default": "ftp"
+    },
+    "submission_output_dir": {
+      "type": "string",
+      "format": "directory-path",
+      "default": "submission_outputs"
+    },
+    "submission_wait_time": {
+      "type": "integer",
+      "default": 380
+    },
+    "submission_config": {
+      "type": "string",
+      "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml"
+    },
+    "submission_prod_or_test": {
+      "type": "string",
+      "default": "test"
+    },
+    "send_submission_email": {
+      "type": "boolean"
+    },
+    "update_submission": {
+      "type": "boolean"
+    },
+    "help": {
+      "type": "boolean"
+    },
+    "publish_dir_mode": {
+      "type": "string",
+      "default": "copy"
+    },
+    "output_dir": {
+      "type": "string",
+      "default": "results"
+    },
+    "bakta_output_dir": {
+      "type": "string",
+      "default": "bakta_outputs"
+    },
+    "vadr_output_dir": {
+      "type": "string",
+      "default": "vadr_outputs"
+    },
+    "final_liftoff_output_dir": {
+      "type": "string",
+      "default": "liftoff_outputs"
+    },
+    "val_output_dir": {
+      "type": "string",
+      "default": "validation_outputs"
+    },
+    "vadr_models_dir": {
+      "type": "string",
+      "default": " "
+    },
+    "env_yml": {
+      "type": "string",
+      "default": "${projectDir}/environment.yml"
+    },
+    "enable_conda": {
+      "type": "boolean"
+    },
+    "repeatmasker_env_yml": {
+      "type": "string",
+      "default": "${projectDir}/environments/repeatmasker_env.yml"
+    },
+    "vadr_env_yml": {
+      "type": "string",
+      "default": "${projectDir}/environments/vadr_env.yml"
+    },
+    "cleanup": {
+      "type": "boolean"
+    },
+    "clear_nextflow_log": {
+      "type": "boolean"
+    },
+    "clear_work_dir": {
+      "type": "boolean"
+    },
+    "clear_conda_env": {
+      "type": "boolean"
+    },
+    "clear_nf_results": {
+      "type": "boolean"
+    },
+    "overwrite_output": {
+      "type": "boolean",
+      "default": true
+    },
+    "bakta_db_type": {
+      "type": "string",
+      "default": "light"
+    },
+    "download_bakta_db": {
+      "type": "string"
+    },
+    "bakta_db_path": {
+      "type": "string"
+    },
+    "bakta_min_contig_length": {
+      "type": "integer",
+      "default": 5
+    },
+    "bakta_threads": {
+      "type": "integer",
+      "default": 2
+    },
+    "bakta_gram": {
+      "type": "string",
+      "default": "?"
+    },
+    "bakta_genus": {
+      "type": "string",
+      "default": "N/A"
+    },
+    "bakta_species": {
+      "type": "string",
+      "default": "N/A"
+    },
+    "bakta_strain": {
+      "type": "string",
+      "default": "N/A"
+    },
+    "bakta_plasmid": {
+      "type": "string",
+      "default": "unnamed"
+    },
+    "bakta_locus": {
+      "type": "string",
+      "default": "contig"
+    },
+    "bakta_locus_tag": {
+      "type": "string",
+      "default": "autogenerated"
+    },
+    "bakta_translation_table": {
+      "type": "integer",
+      "default": 11
+    },
+    "bakta_complete": {
+      "type": "string"
+    },
+    "bakta_compliant": {
+      "type": "boolean",
+      "default": true
+    },
+    "bakta_keep_contig_headers": {
+      "type": "string"
+    },
+    "bakta_replicons": {
+      "type": "string"
+    },
+    "bakta_proteins": {
+      "type": "string"
+    },
+    "bakta_skip_trna": {
+      "type": "string"
+    },
+    "bakta_skip_tmrna": {
+      "type": "string"
+    },
+    "bakta_skip_rrna": {
+      "type": "string"
+    },
+    "bakta_skip_ncrna": {
+      "type": "string"
+    },
+    "bakta_skip_ncrna_region": {
+      "type": "string"
+    },
+    "bakta_skip_crispr": {
+      "type": "string"
+    },
+    "bakta_skip_cds": {
+      "type": "string"
+    },
+    "bakta_skip_pseudo": {
+      "type": "string"
+    },
+    "bakta_skip_sorf": {
+      "type": "string"
+    },
+    "bakta_skip_gap": {
+      "type": "string"
+    },
+    "bakta_skip_ori": {
+      "type": "string"
+    },
+    "bakta_skip_plot": {
+      "type": "boolean",
+      "default": true
+    },
+    "lift_print_version_exit": {
+      "type": "boolean"
+    },
+    "lift_print_help_exit": {
+      "type": "boolean"
+    },
+    "lift_parallel_processes": {
+      "type": "integer",
+      "default": 8
+    },
+    "lift_coverage_threshold": {
+      "type": "number",
+      "default": 0.5
+    },
+    "lift_child_feature_align_threshold": {
+      "type": "number",
+      "default": 0.5
+    },
+    "lift_unmapped_features_file_name": {
+      "type": "string",
+      "default": "output.unmapped_features.txt"
+    },
+    "lift_copy_threshold": {
+      "type": "integer",
+      "default": 1
+    },
+    "lift_distance_scaling_factor": {
+      "type": "integer",
+      "default": 2
+    },
+    "lift_flank": {
+      "type": "integer",
+      "default": 0
+    },
+    "lift_overlap": {
+      "type": "number",
+      "default": 0.1
+    },
+    "lift_mismatch": {
+      "type": "integer",
+      "default": 2
+    },
+    "lift_gap_open": {
+      "type": "integer",
+      "default": 2
+    },
+    "lift_gap_extend": {
+      "type": "integer",
+      "default": 1
+    },
+    "lift_minimap_path": {
+      "type": "string",
+      "default": "N/A"
+    },
+    "lift_feature_database_name": {
+      "type": "string",
+      "default": "N/A"
+    },
+    "lift_feature_types": {
+      "type": "string",
+      "default": "${projectDir}/assets/feature_types.txt"
+    },
+    "processed_samples": {
+      "type": "string",
+      "default": "${projectDir}/results/submission_outputs"
     }
+  }
 }
