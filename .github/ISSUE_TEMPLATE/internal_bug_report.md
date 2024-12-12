@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**Description.**&nbsp;  
+**Description.**
 
 **Run environment (container, cloud service, HPC, platform, etc.)**
 
