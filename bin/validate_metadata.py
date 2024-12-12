@@ -187,24 +187,29 @@ class GetMetaAsDf:
 		""" Replacing the NaN values in certain columns with "Not Provided" or ""
 		"""
 		terms_2_replace = ["collected_by", "sample_type", "lat_lon", "host_age", "host_disease", "host_sex", "isolation_source", "purpose_of_sampling"]
-		# remove any nans
-		field_value_mapping = {term: "Not Provided" for term in terms_2_replace}
-		replaced_df = self.df.replace(to_replace={term: ["", None] for term in terms_2_replace}, value=field_value_mapping)
-		final_df = replaced_df.fillna("")
-		# remove any N/A or na or N/a or n/A
-		for col in terms_2_replace:
-			for unwanted_val in ['N/A', 'N/a', 'na', 'n/A', 'NA']:
-				for x in range(len(final_df[col].tolist())):
-					if final_df[col].tolist()[x] == unwanted_val:
-						final_df[col][x] = 'Not Provided'
-		try:
-			assert True not in [final_df[field].isnull().values.any() for field in terms_2_replace]
-			for field in terms_2_replace:
-				assert [value == "" or value == "Not Provided" for value in final_df[field].values]
-		except AssertionError:
-			raise AssertionError(f'Populating certain fields in the metadata df with "" or "Not Provided" was unsuccessful')
-		return final_df
 
+		# Filter terms_2_replace to only include columns that exist in the dataframe
+		existing_terms = [term for term in terms_2_replace if term in self.df.columns]
+		# Remove any nans
+		field_value_mapping = {term: "Not Provided" for term in existing_terms}
+		replaced_df = self.df.replace(to_replace={term: ["", None] for term in existing_terms}, value=field_value_mapping)
+		final_df = replaced_df.fillna("")
+		
+		# Remove any N/A or similar unwanted values
+		unwanted_values = ['N/A', 'N/a', 'na', 'n/A', 'NA']
+		for col in existing_terms:
+			final_df[col] = final_df[col].apply(lambda x: "Not Provided" if x in unwanted_values else x)
+		
+		# Validation checks
+		try:
+			assert all(not final_df[field].isnull().values.any() for field in existing_terms)
+			for field in existing_terms:
+				assert all(value == "" or value == "Not Provided" for value in final_df[field].values)
+		except AssertionError:
+			raise AssertionError(
+				f'Populating certain fields in the metadata df with "" or "Not Provided" was unsuccessful'
+			)		
+		return final_df
 
 class ValidateChecks:
 	""" Class constructor for performing a variety of checks on metadata
