@@ -15,7 +15,8 @@ include { GET_WAIT_TIME                                     } from "../modules/l
 
 // get metadata validation processes
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
-include { EXTRACT_INPUTS                                    } from '../modules/local/extract_inputs/main'
+include { EXTRACT_INPUTS                                    } from "../modules/local/extract_inputs/main"
+include { METADATA_VALIDATION_LLM                           } from "../modules/local/metadata_validation_llm/main"
 
 // get viral annotation process/subworkflows
 // include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
@@ -47,21 +48,27 @@ workflow TOSTADAS {
 
 	// validate params
 	VALIDATE_PARAMS()
-	
-	// run metadata validation process
-	METADATA_VALIDATION ( 
-		params.meta_path
-	)
-	metadata_ch = METADATA_VALIDATION.out.tsv_Files
-		.flatten()
-		.map { 
-			meta = [id:it.getSimpleName()] 
-			[ meta, it ] 
-		}
+
+	if (params.use_llm) {
+        // Use LLM validation
+        METADATA_VALIDATION_LLM ( params.api_key, params.meta_path )
+        validation_output_ch = METADATA_VALIDATION_LLM.out.tsv_Files
+    } else {
+        // Use standard validation
+        METADATA_VALIDATION ( params.meta_path )
+        validation_output_ch = METADATA_VALIDATION.out.tsv_Files
+    }
+
+    metadata_ch = validation_output_ch
+        .flatten()
+        .map { 
+            meta = [id: it.getSimpleName()] 
+            [ meta, it ] 
+        }
 
 	// Generate the fasta and fastq paths
 	reads_ch = 
-		METADATA_VALIDATION.out.tsv_Files
+		validation_output_ch
 		.flatten()
 		.splitCsv(header: true, sep: "\t")
 		.map { row ->
@@ -124,7 +131,7 @@ workflow TOSTADAS {
 	if ( params.submission ) {
 		// pre submission process + get wait time (parallel)
 		GET_WAIT_TIME (
-			METADATA_VALIDATION.out.tsv_Files.collect() 
+			validation_output_ch.tsv_Files.collect() 
 		)
 
 		INITIAL_SUBMISSION (
