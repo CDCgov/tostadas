@@ -897,12 +897,27 @@ class CustomFieldsProcessor:
 			raise FileNotFoundError(f"File not found: {self.json_file}")
 		except json.JSONDecodeError as e:
 			raise ValueError(f"Error decoding JSON: {e}")
-
+		
+	def validate_metadata_fields(self, metadata_df: pd.DataFrame):
+		"""
+		Flag fields in the metadata dataframe that are not present in the JSON custom fields.
+		"""
+		custom_fields_dict = self.load_json()
+		json_keys = set(custom_fields_dict.keys())
+		# Find metadata fields that are not in the JSON keys
+		metadata_columns = set(metadata_df.columns)
+		unexpected_fields = metadata_columns - json_keys
+		if unexpected_fields:
+			print(f"The following fields in the metadata dataframe are not in the JSON custom fields: {unexpected_fields}")
+		else:
+			print("All metadata fields are accounted for in the JSON custom fields.")
+		return unexpected_fields
+	
 	def validate_and_process_fields(
 		self, 
 		custom_fields_dict: Dict[str, Dict[str, Union[str, int]]], 
-		metadata_df: pd.DataFrame
-	) -> pd.DataFrame:
+		metadata_df: pd.DataFrame,
+		unexpected_fields: set ) -> pd.DataFrame:
 		"""Validate custom fields and integrate with metadata."""
 		errors = []
 		for field_name, properties in custom_fields_dict.items():
@@ -926,6 +941,9 @@ class CustomFieldsProcessor:
 			# Log errors for the current field
 			if field_errors:
 				errors.append({"field_name": field_name, "errors": field_errors})
+		# Include unexpected fields as-is with a warning
+		if unexpected_fields:
+			print(f"WARNING: {unexpected_fields} were not found in the custom fields JSON and were not validated. They are included as-is.")
 		# Write errors to the error file
 		if errors:
 			self.write_errors(errors)
@@ -937,8 +955,10 @@ class CustomFieldsProcessor:
 
 	def process(self, metadata_df: pd.DataFrame) -> pd.DataFrame:
 		"""Main processing function."""
+		# Flag unexpected fields in the metadata file
+		unexpected_fields = self.validate_metadata_fields(metadata_df)
 		data = self.load_json()
-		return self.validate_and_process_fields(data, metadata_df)
+		return self.validate_and_process_fields(data, metadata_df, unexpected_fields)
 
 if __name__ == "__main__":
 	metadata_validation_main()
