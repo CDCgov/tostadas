@@ -1,0 +1,6 @@
+name: vadr_env
+channels: 
+- bioconda
+- conda-forge
+dependencies: 
+- vadr

@@ -1,0 +1,435 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/nextflow_schema.json",
+  "title": "Nextflow Pipeline Parameters",
+  "description": "Nextflow_Schema.json",
+  "type": "object",
+  "properties": {
+    "meta_path": {
+      "type": "string",
+      "format": "file-path",
+      "description": "Meta-data file path for samples",
+      "default": "${projectDir}/assets/metadata_template.xlsx",
+      "pattern": "^\\S+\\.xlsx$"
+    },
+    "ref_fasta_path": {
+      "type": "string",
+      "format": "file-path",
+      "description": "Reference Sequence file path",
+      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.fasta"
+    },
+    "ref_gff_path": {
+      "type": "string",
+      "format": "file-path",
+      "description": "Reference gff file path for annotation",
+      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.gff"
+    },
+    "output_dir": {
+      "type": "string",
+      "format": "directory-path",
+      "description": "File path to submit outputs from pipeline",
+      "default": "results"
+    },
+    "overwrite_output": {
+      "type": "boolean",
+      "description": "Toggle to overwriting output files in directory",
+      "default": true
+    },
+    "val_output_dir": {
+      "type": "string",
+      "format": "directory-path",
+      "description": "File path for outputs specific to validate sub-workflow",
+      "default": "validation_outputs"
+    },
+    "val_date_format_flag": {
+      "type": "string",
+      "description": "Flag to change date output",
+      "default": "s"
+    },
+    "val_keep_pi": {
+      "type": "boolean",
+      "description": "Flag to keep personal identifying info, if provided otherwise it will return an error"
+    },
+    "validate_custom_fields": {
+      "type": "boolean",
+      "description": "Toggle checks/transformations for custom metadata fields on/off"
+    },
+    "custom_fields_file": {
+      "type": "string",
+      "description": "Path to the JSON file containing custom metadata fields and their information",
+      "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json"
+    },
+    "final_liftoff_output_dir": {
+      "type": "string",
+      "format": "directory-path",
+      "description": "File path to liftoff specific sub-workflow outputs",
+      "default": "liftoff_outputs"
+    },
+    "lift_print_version_exit": {
+      "type": "boolean",
+      "description": "Print version and exit the program"
+    },
+    "lift_print_help_exit": {
+      "type": "boolean",
+      "description": "Print help and exit the program"
+    },
+    "lift_parallel_processes": {
+      "type": "integer",
+      "description": "# of parallel processes to use for liftoff",
+      "default": 8
+    },
+    "lift_delete_temp_files": {
+      "type": "boolean",
+      "description": "Deletes the temporary files after finishing transfer"
+    },
+    "lift_child_feature_align_threshold": {
+      "type": "number",
+      "description": "Map only if its child features align with sequence identity > this value",
+      "default": 0.5
+    },
+    "lift_unmapped_feature_file_name": {
+      "type": "string",
+      "description": "Name of unmapped features file name",
+      "default": "output.unmapped_features.txt"
+    },
+    "lift_copy_threshold": {
+      "type": "number",
+      "description": "Minimum sequence identity in exons/CDS for which a gene is considered a copy; must be greater than -s; default is 1.0",
+      "default": 1.0
+    },
+    "lift_distance_scaling_factor": {
+      "type": "number",
+      "description": "Distance scaling factor; by default D =2.0",
+      "default": 2.0
+    },
+    "lift_flank": {
+      "type": "number",
+      "description": "Amount of flanking sequence to align as a fraction of gene length",
+      "default": 0.0
+    },
+    "lift_overlap": {
+      "type": "number",
+      "description": "Maximum fraction of overlap allowed by 2 features",
+      "default": 0.1
+    },
+    "lift_mismatch": {
+      "type": "integer",
+      "description": "Mismatch penalty in exons when finding best mapping; by default M=2",
+      "default": 2
+    },
+    "lift_gap_open": {
+      "type": "integer",
+      "description": "Gap open penalty in exons when finding best mapping; by default GO=2",
+      "default": 2
+    },
+    "lift_gap_extend": {
+      "type": "integer",
+      "description": "Gap extend penalty in exons when finding best mapping; by default GE=1",
+      "default": 1
+    },
+    "lift_infer_transcripts": {
+      "type": "boolean",
+      "description": "Use if annotation file only includes exon/CDS features and does not include transcripts/mRNA"
+    },
+    "lift_copies": {
+      "type": "boolean",
+      "description": "Look for extra gene copies in the target genome"
+    },
+    "lift_minimap_path": {
+      "type": "string",
+      "description": "Path to minimap if you did not use conda or pip",
+      "default": "N/A"
+    },
+    "lift_feature_database_name": {
+      "type": "string",
+      "description": "Name of the feature database, if none, then will use ref gff path to construct one",
+      "default": "N/A"
+    },
+    "vadr_output_dir": {
+      "type": "string",
+      "format": "directory-path",
+      "description": "File path to vadr specific sub-workflow outputs",
+      "default": "vadr_outputs"
+    },
+    "vadr_models_dir": {
+      "type": "string",
+      "format": "directory-path",
+      "description": "File path to models for MPXV used by VADR annotation",
+      "default": ""
+    },
+    "bakta_db_path": {
+      "type": "string",
+      "description": "Path to Bakta database if user is supplying database"
+    },
+    "download_bakta_db": {
+      "type": "boolean",
+      "description": "Option to download Bakta database"
+    },
+    "bakta_db_type": {
+      "type": "string",
+      "description": "Bakta database type (light or full)",
+      "default": "light"
+    },
+    "bakta_output_dir": {
+      "type": "string",
+      "format": "directory-path",
+      "description": "File path to bakta specific sub-workflow outputs",
+      "default": "bakta_outputs"
+    },
+    "bakta_min_contig_length": {
+      "type": "integer",
+      "description": "Minimum contig size",
+      "default": 5
+    },
+    "bakta_threads": {
+      "type": "integer",
+      "description": "Number of threads to use while running annotation",
+      "default": 2
+    },
+    "bakta_genus": {
+      "type": "string",
+      "description": "Organism genus name",
+      "default": "N/A"
+    },
+    "bakta_species": {
+      "type": "string",
+      "description": "Organism species name",
+      "default": "N/A"
+    },
+    "bakta_strain": {
+      "type": "string",
+      "description": "Organism strain name",
+      "default": "N/A"
+    },
+    "bakta_plasmid": {
+      "type": "string",
+      "description": "Name of plasmid",
+      "default": "unnamed"
+    },
+    "bakta_locus": {
+      "type": "string",
+      "description": "Locus prefix",
+      "default": "contig"
+    },
+    "bakta_locus_tag": {
+      "type": "string",
+      "description": "Locus tag prefix",
+      "default": "autogenerated"
+    },
+    "bakta_translation_table": {
+      "type": "integer",
+      "description": "Translation table",
+      "default": 11
+    },
+    "bakta_gram": {
+      "type": "string",
+      "description": "Gram type for signal peptide predictions",
+      "default": "?"
+    },
+    "bakta": {
+      "description": "Toggle for running Bakta annotation"
+    },
+    "genbank": {
+      "description": "Submit to GenBank"
+    },
+    "sra": {
+      "description": "Submit to SRA"
+    },
+    "submission_output_dir": {
+      "type": "string",
+      "format": "directory-path",
+      "description": "Either name or relative/absolute path for the outputs from submission",
+      "default": "submission_outputs"
+    },
+    "submission_prod_or_test": {
+      "type": "string",
+      "description": "Whether to submit samples for test or actual production",
+      "default": "test"
+    },
+    "submission_config": {
+      "type": "string",
+      "description": "Configuration file for submission to public repos",
+      "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml"
+    },
+    "submission_wait_time": {
+      "type": "integer",
+      "description": "Calculated based on sample number (3 * 60 secs * sample_num)",
+      "default": 380
+    },
+    "batch_name": {
+      "type": "string",
+      "description": "Name of the batch to prefix samples with during submission"
+    },
+    "send_submission_email": {
+      "type": "boolean",
+      "description": "Toggle email notification on/off"
+    },
+    "req_col_config": {
+      "type": "string",
+      "description": "Path to the required_columns.yaml file"
+    },
+    "submission": {
+      "description": "Toggle for running submission"
+    },
+    "annotation": {
+      "description": "Toggle for running annotation"
+    },
+    "cleanup": {
+      "type": "boolean",
+      "default": true
+    },
+    "clear_nextflow_log": {
+      "type": "boolean"
+    },
+    "clear_work_dir": {
+      "type": "boolean"
+    },
+    "clear_conda_env": {
+      "type": "boolean"
+    },
+    "clear_nf_results": {
+      "type": "boolean"
+    },
+    "species": {
+      "type": "string",
+      "description": "Species name for the analysis."
+    },
+    "repeat_library": {
+      "type": "string",
+      "description": "Path to the repeat library file used by RepeatMasker.",
+      "default": "${projectDir}/assets/lib/MPOX_repeats_lib.fasta"
+    },
+    "gisaid": {
+      "description": "Flag to enable or disable submission to GISAID."
+    },
+    "biosample": {
+      "description": "Flag to enable or disable submission to BioSample.",
+      "default": true
+    },
+    "submission_mode": {
+      "type": "string",
+      "description": "Mode of submission.",
+      "default": "ftp"
+    },
+    "update_submission": {
+      "type": "boolean",
+      "description": "Flag to enable or disable updating existing submissions."
+    },
+    "help": {
+      "type": "boolean",
+      "description": "Flag to display help information for the pipeline."
+    },
+    "publish_dir_mode": {
+      "type": "string",
+      "description": "Mode for publishing directory, e.g., 'copy' or 'move'.",
+      "default": "copy"
+    },
+    "bakta_complete": {
+      "type": "string"
+    },
+    "bakta_compliant": {
+      "type": "boolean",
+      "default": true
+    },
+    "bakta_keep_contig_headers": {
+      "type": "string"
+    },
+    "bakta_replicons": {
+      "type": "string"
+    },
+    "bakta_proteins": {
+      "type": "string"
+    },
+    "bakta_skip_trna": {
+      "type": "string"
+    },
+    "bakta_skip_tmrna": {
+      "type": "string"
+    },
+    "bakta_skip_rrna": {
+      "type": "string"
+    },
+    "bakta_skip_ncrna": {
+      "type": "string"
+    },
+    "bakta_skip_ncrna_region": {
+      "type": "string"
+    },
+    "bakta_skip_crispr": {
+      "type": "string"
+    },
+    "bakta_skip_cds": {
+      "type": "string"
+    },
+    "bakta_skip_pseudo": {
+      "type": "string"
+    },
+    "bakta_skip_sorf": {
+      "type": "string"
+    },
+    "bakta_skip_gap": {
+      "type": "string"
+    },
+    "bakta_skip_ori": {
+      "type": "string"
+    },
+    "bakta_skip_plot": {
+      "type": "boolean",
+      "default": true
+    },
+    "lift_coverage_threshold": {
+      "type": "number",
+      "default": 0.5
+    },
+    "lift_feature_types": {
+      "type": "string",
+      "default": "${projectDir}/assets/feature_types.txt"
+    },
+    "processed_samples": {
+      "type": "string",
+      "description": "Directory where processed samples are stored.",
+      "default": "${projectDir}/results/submission_outputs"
+    },
+    "schema": {
+      "type": "string",
+      "description": "The schema file for validating the pipeline parameters.",
+      "default": "nextflow_schema.json"
+    },
+    "validate_params": {
+      "type": "boolean",
+      "description": "Flag to enable or disable parameter validation.",
+      "default": true
+    },
+    "repeatmasker_liftoff": {
+      "type": "boolean",
+      "description": "Flag to enable or disable RepeatMasker and Liftoff steps.",
+      "default": true
+    },
+    "vadr": {
+      "type": "boolean",
+      "description": "Flag to enable or disable VADR (Viral Annotation DefineR) step."
+    },
+    "enable_conda": {
+      "type": "boolean",
+      "description": "Flag to enable or disable conda environment setup."
+    },
+    "repeatmasker_env_yml": {
+      "type": "string",
+      "description": "Path to the environment YAML file for RepeatMasker.",
+      "default": "${projectDir}/environments/repeatmasker_env.yml"
+    },
+    "vadr_env_yml": {
+      "type": "string",
+      "description": "Path to the environment YAML file for VADR.",
+      "default": "${projectDir}/environments/vadr_env.yml"
+    },
+    "env_yml": {
+      "type": "string",
+      "description": "Path to the environment YAML file for setting up the conda environment.",
+      "default": "${projectDir}/environment.yml"
+    }
+  },
+
+  "required": ["meta_path", "ref_fasta_path", "ref_gff_path", "species"]
+}
+
