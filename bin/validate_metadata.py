@@ -908,7 +908,14 @@ class CustomFieldsProcessor:
 		custom_fields_dict = self.load_json()
 		json_keys = set(custom_fields_dict.keys())
 		# Find metadata fields that are not in the JSON keys
-		metadata_columns = set(metadata_df.columns)
+		static_metadata_columns = ["sample_name","sequence_name","ncbi-spuid","ncbi-spuid_namespace","ncbi-bioproject","title","description","authors","submitting_lab",
+			"submitting_lab_division","submitting_lab_address","publication_status","publication_title","isolate", "isolation_source","host","organism","collection_date",
+			"country","state","collected_by","sample_type","lat_lon","purpose_of_sampling","host_sex","host_age","race","ethnicity","assembly_protocol","assembly_method",
+			"mean_coverage","fasta_path","gff_path","ncbi_sequence_name_sra","illumina_sequencing_instrument","illumina_library_strategy","illumina_library_source",
+			"illumina_library_selection","illumina_library_layout","illumina_library_protocol","illumina_sra_file_path_1", "illumina_sra_file_path_2","file_location",
+			"fastq_path_1","fastq_path_2","nanopore_sequencing_instrument","nanopore_library_strategy","nanopore_library_source","nanopore_library_selection",
+			"nanopore_library_layout","nanopore_library_protocol","nanopore_sra_file_path_1","nanopore_sra_file_path_2"]
+		metadata_columns = set(metadata_df.columns) - set(static_metadata_columns).intersection(metadata_df.columns) # inrtersection method ensures we only compare columns that exist in metadata_df
 		unexpected_fields = metadata_columns - json_keys
 		if unexpected_fields:
 			print(f"The following fields in the metadata dataframe are not in the JSON custom fields: {unexpected_fields}")
