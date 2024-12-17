@@ -196,14 +196,15 @@ class GetMetaAsDf:
 		final_df = replaced_df.fillna("")
 		
 		# Remove any N/A or similar unwanted values
-		unwanted_values = ['N/A', 'N/a', 'na', 'n/A', 'NA']
+		unwanted_values = ['N/A', 'NA']
 		for col in existing_terms:
-			final_df[col] = final_df[col].apply(lambda x: "Not Provided" if x in unwanted_values else x)
+			final_df[col] = final_df[col].apply(lambda x: "Not Provided" if str(x).strip().upper() in map(str.upper, unwanted_values) else x)
 		
 		# Validation checks
 		try:
 			assert all(not final_df[field].isnull().values.any() for field in existing_terms)
 			for field in existing_terms:
+				final_df[field] = final_df[field].apply(lambda x: "Not Provided" if str(x).strip().lower() == "not provided" else x)
 				assert all(value == "" or value == "Not Provided" for value in final_df[field].values)
 		except AssertionError:
 			raise AssertionError(
