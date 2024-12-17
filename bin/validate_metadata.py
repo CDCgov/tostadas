@@ -183,6 +183,8 @@ class GetMetaAsDf:
 		"""
 		df = pd.read_excel(self.parameters['meta_path'], header=[1], dtype = str, engine = "openpyxl", index_col=None, na_filter=False)
 		df = df.loc[:, ~df.columns.str.contains('^Unnamed')] # Remove "Unnamed" col that sometimes gets imported due to trailing commas
+		if df.empty:
+			raise ValueError("The metadata Excel sheet is empty. Please provide a valid file with data.")
 		return df
 
 	def populate_fields(self):
@@ -885,11 +887,12 @@ class HandleDfInserts:
 
 class CustomFieldsProcessor:
 	def __init__(self, json_file: str, error_file: str):
-		self.json_file = json_file
+		self.json_file = os.path.abspath(json_file)
 		self.error_file = error_file
 
 	def load_json(self) -> Dict[str, Dict[str, Union[str, int]]]:
 		"""Load JSON data from a file."""
+		print(f'Custom file: {self.json_file}')
 		try:
 			with open(self.json_file, 'r') as custom_file:
 				return json.load(custom_file)
