@@ -211,7 +211,9 @@ class GetMetaAsDf:
 			for field in existing_terms:
 				assert all(value == "" or value == "Not Provided" for value in final_df[field].values)
 		except AssertionError:
-			raise AssertionError(f'Populating certain fields in the metadata df with "" or "Not Provided" was unsuccessful')
+			raise AssertionError(
+				f'Populating certain fields in the metadata df with "" or "Not Provided" was unsuccessful'
+			)		
 		return final_df
 
 class ValidateChecks:

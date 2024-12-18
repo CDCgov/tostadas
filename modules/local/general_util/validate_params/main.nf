@@ -1,20 +1,23 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    VALIDATE PARAMS
+                                      VALIDATE PARAMS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-process VALIDATE_PARAMS {
-    exec:
-        // check the different ways to run params
-        def check = [params.run_docker, params.run_conda, params.run_singularity].count(true)
-        if ( check != 1 && check != 0 ) {
-            throw new Exception("More than two profiles between docker, conda, and singularity were passed in. Please pass in only one")
-        } else if ( check == 0 ) {
-             throw new Exception("Either docker, conda, or singularity must be selected as profile [docker, conda, singularity]. None passed in.")
-        }
+// Include the plugin
+include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 
-        // check that that metadata file is provided
+// Validate input parameters
+validateParameters()
+
+// Print summary of supplied parameters
+log.info paramsSummaryLog(workflow)
+
+
+process VALIDATE_PARAMS {
+
+    exec:
+        // check that metadata file is provided
         assert params.meta_path
 
         // check annotation paths
@@ -31,23 +34,23 @@ process VALIDATE_PARAMS {
             if ( params.bakta ) {
                 if ( !params.download_bakta_db ) {
                     assert params.bakta_db_path
-                    }
                 }
+            }
         }
-        
+
         // check output directories
         // assert params.output_dir
         // assert params.val_output_dir
         // assert params.submission_output_dir
-        
+
         // if ( params.liftoff == true ) {
-        //     assert params.final_liftoff_output_dir
+        //    assert params.final_liftoff_output_dir
         // }
         // if ( params.vadr == true ) {
-        //     assert params.vadr_output_dir
+        //    assert params.vadr_output_dir
         // }
         // if ( params.bakta == true ) {
-        //     assert params.bakta_output_dir
+        //    assert params.bakta_output_dir
         // }
 
         // check liftoff params with int or float values
@@ -56,16 +59,14 @@ process VALIDATE_PARAMS {
             assert params.lift_parallel_processes == 0 || params.lift_parallel_processes
             assert params.lift_mismatch
             assert params.lift_gap_open
-            assert params.lift_gap_extend  
+            assert params.lift_gap_extend 
             assert params.lift_print_version_exit == true || params.lift_print_version_exit == false
             assert params.lift_print_help_exit == true || params.lift_print_help_exit == false
-            assert params.lift_infer_transcripts.toLowerCase() == "true" || params.lift_infer_transcripts.toLowerCase() == "false"
-            assert params.lift_copies.toLowerCase() == "true" || params.lift_copies.toLowerCase() == "false"  
 
             // Check data types 
             expected_liftoff_strings = [
                 "lift_minimap_path": params.lift_minimap_path,
-                "lift_feature_database_name": params.lift_feature_database_name     
+                "lift_feature_database_name": params.lift_feature_database_name  
             ]
 
             expected_liftoff_integers = [
@@ -100,7 +101,7 @@ process VALIDATE_PARAMS {
                 if ( expected_liftoff_floats[key] instanceof Integer == true || expected_liftoff_floats[key] instanceof String == true ) {
                     throw new Exception("Value must be of float type and not integer or string: $value used for $key parameter")
                 }
-            }    
+            } 
         }
 
         // check bakta specific params 
@@ -117,7 +118,6 @@ process VALIDATE_PARAMS {
         }
 
         // check list of params with bool values
-        assert params.scicomp == true || params.scicomp == false
         assert params.clear_nextflow_log == true || params.clear_nextflow_log == false
         assert params.clear_work_dir == true || params.clear_work_dir == false
         assert params.submission == true || params.submission == false
@@ -131,7 +131,7 @@ process VALIDATE_PARAMS {
             "ref_fasta_path": params.ref_fasta_path,
             "ref_gff_path": params.ref_gff_path,
             "meta_path": params.meta_path,
-            "output_dir": params.output_dir,    
+            "output_dir": params.output_dir,   
         ]
         expected_strings.each { key, value ->
             if (!(value instanceof String || value instanceof org.codehaus.groovy.runtime.GStringImpl)) {

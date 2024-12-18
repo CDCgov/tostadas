@@ -1,8 +1,9 @@
 ---
 name: Testing Request (Maintainer/Collaborator)
-about: As a maintainer/collaborator, propose/highlight a specific testcase and/or enhancement to the existing tests for this project
+about: As a maintainer/collaborator, propose/highlight a specific testcase and/or
+  enhancement to the existing tests for this project
 title: "[Internal] [Test] **Replace This With Title**"
-labels: test
+labels: ''
 assignees: ''
 
 ---

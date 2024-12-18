@@ -1,8 +1,9 @@
 ---
 name: Testing Request (User)
-about: As a user, propose/highlight a specific testcase and/or enhancement to the existing tests for this project
+about: As a user, propose/highlight a specific testcase and/or enhancement to the
+  existing tests for this project
 title: "[External] [Test] **Replace This With Title**"
-labels: test
+labels: ''
 assignees: ''
 
 ---
