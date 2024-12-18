@@ -455,8 +455,12 @@ class FTPClient:
 			self.ftp = ftplib.FTP()
 			self.ftp.connect(self.host, self.port)
 			self.ftp.login(user=self.username, passwd=self.password)
-			print(f"Connected to FTP: {self.host}")
+			print(f"Connected to FTP: {self.host}:{self.port}")
+		except EOFError as e:
+			print("EOFError occurred during FTP connection.")
+			raise ConnectionError(f"Failed to connect to FTP: {e}")
 		except Exception as e:
+			print(f"Unexpected error during FTP connection: {e}")
 			raise ConnectionError(f"Failed to connect to FTP: {e}")
 	def change_dir(self, dir_path):
 		try:
