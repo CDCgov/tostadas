@@ -33,9 +33,10 @@ process SUBMISSION {
         --species $params.species \
         --output_dir  . \
         --fasta_file $fasta_path \
-        --annotation_file $annotations_path \
-        --fastq1 $fastq_1 \
-        --fastq2 $fastq_2 \
+        ${annotations_path ? "--annotation_file $annotations_path" : ""} \
+        ${fastq_1 ? "--fastq1 $fastq_1" : ""} \
+        ${fastq_2 ? "--fastq2 $fastq_2" : ""} \
+        --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
         $test_flag \
         $send_submission_email \

@@ -1,6 +1,6 @@
 ---
-NCBI_username: username 
-NCBI_password: password
+NCBI_username:  
+NCBI_password: 
 NCBI_ftp_host: 'ftp-private.ncbi.nlm.nih.gov'
 NCBI_sftp_host: 'sftp-private.ncbi.nlm.nih.gov'
 NCBI_API_URL: 'https://submit.ncbi.nlm.nih.gov/api/2.0/files/FILE_ID/?format=attachment'
@@ -8,9 +8,9 @@ table2asn_email: 'gb-admin@ncbi.nlm.nih.gov'
 BioSample_package: "Pathogen.cl.1.0"
 Role: owner
 Type: institute
-Org_ID: 30206
+Org_ID: 
 Submitting_Org: CDC
-Submitting_Org_Dept: DHCPP-PRB
+Submitting_Org_Dept: 
 Street: 1600 Clifton Rd
 City: Atlanta
 State: GA
