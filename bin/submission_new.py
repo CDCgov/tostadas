@@ -126,26 +126,30 @@ def submission_main():
 				if parameters['send_email']:
 					genbank_submission.sendemail()
 
-	# If update mode
 	elif parameters['update']:
 		start_time = time.time()
-		timeout = 60  # todo: change to 300 seconds (5 minutes) or make user-optional
+		timeout = 60  # time out after 60 seconds  
+		report_fetched = False  # Flag to indicate if a report has been fetched
 		
 		while time.time() - start_time < timeout:
 			if sample.ftp_upload:
-				submission_objects = { 'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission }
+				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission}
 			else:
-				submission_objects = { 'biosample': biosample_submission, 'sra': sra_submission }
-			for db in submission_objects.keys():
+				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission}
+			for db, submission_object in submission_objects.items():
 				print(f"Fetching report for {db}")
-				submission_object = submission_objects[db]
-				result = submission_object.update_report()  # Call the fetch_report function repeatedly
-				if result:  # If report fetch is successful, break the loop
-					print("Report successfully parsed")
-					break
-				time.sleep(3)  # Wait before retrying
-			else:
-				print("Timeout occurred while trying to fetch and parse the report")
+				if submission_object.fetch_report():  # Stop trying if the report is found locally
+					print(f"Report for {db} successfully fetched or already exists.")
+					report_fetched = True
+					break  # Exit the for loop
+				# If report is not fetched, continue trying
+				time.sleep(3)
+			if report_fetched:
+				print("Exiting update loop as a report has been fetched or already exists.")
+				break  # Exit the while loop
+		else:
+			# If the while loop completes without a successful fetch
+			print("Timeout occurred while trying to fetch and parse the report.")
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
@@ -391,7 +395,13 @@ class Submission:
 	def close(self):
 		self.client.close()
 	def fetch_report(self):
-			fetch_and_parse_report(self, self.client, self.sample.sample_id, self.submission_dir, self.output_dir, self.type)
+			report_path = os.path.join(self.output_dir, 'report.xml')
+			if os.path.exists(report_path):
+				return True  # Indicate that the report was found
+			else:
+				fetch_and_parse_report(self, self.client, self.sample.sample_id, self.submission_dir, self.output_dir, self.type)
+				return False  # Indicate that the report was not fetched
+
 
 class SFTPClient:
 	def __init__(self, config):
