@@ -183,6 +183,14 @@ class GetMetaAsDf:
 		"""
 		df = pd.read_excel(self.parameters['meta_path'], header=[1], dtype = str, engine = "openpyxl", index_col=None, na_filter=False)
 		df = df.loc[:, ~df.columns.str.contains('^Unnamed')] # Remove "Unnamed" col that sometimes gets imported due to trailing commas
+		# Check for duplicate columns
+		duplicate_pattern = r"\.\d+$"  # Matches column names ending with .1, .2, etc.
+		mangled_columns = [re.sub(duplicate_pattern, "", col) for col in df.columns if any(re.match(rf"^{re.escape(base)}{duplicate_pattern}$", col) for base in df.columns if base != col)]
+		duplicate_bases = list(set(mangled_columns))
+		if duplicate_bases:
+			raise ValueError(f"Duplicate columns detected in the metadata due to renaming: {duplicate_bases}.\n"
+					"Please check your metadata, remove duplicate columns, and try again.")
+		# Check for empty dataframe
 		if df.empty:
 			raise ValueError("The metadata Excel sheet is empty. Please provide a valid file with data.")
 		return df
