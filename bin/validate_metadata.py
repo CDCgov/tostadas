@@ -206,10 +206,10 @@ class GetMetaAsDf:
 		replaced_df = self.df.replace(to_replace={term: ["", None] for term in existing_terms}, value=field_value_mapping)
 		final_df = replaced_df.fillna("")
 		# Remove any N/A or na or N/a or n/A
-		unwanted_vals = ['N/A', 'N/a', 'na', 'n/A', 'NA']
+		unwanted_vals = ['N/A', 'NA']
 		for col in existing_terms:
 			final_df[col] = final_df[col].apply(
-				lambda x: "Not Provided" if str(x) in unwanted_vals else x
+				lambda x: "Not Provided" if str(x).strip().upper() in map(str.upper, unwanted_vals) else x
 			)
 		# Validate populated fields
 		try:
@@ -217,6 +217,8 @@ class GetMetaAsDf:
 			assert not any(final_df[field].isnull().any() for field in existing_terms)
 			# Ensure all values are either empty or "Not Provided"
 			for field in existing_terms:
+				final_df[field] = final_df[field].apply(
+				lambda x: "Not Provided" if str(x).strip().lower() == "not provided" else x)
 				assert all(value == "" or value == "Not Provided" for value in final_df[field].values)
 		except AssertionError:
 			raise AssertionError(
