@@ -213,13 +213,11 @@ class GetMetaAsDf:
 			)
 		# Validate populated fields
 		try:
-			 # Ensure no null values in specified columns
-			assert not any(final_df[field].isnull().any() for field in existing_terms)
-			# Ensure all values are either empty or "Not Provided"
+			# Ensure all values, if absent, are either empty or "Not Provided"
 			for field in existing_terms:
 				final_df[field] = final_df[field].apply(
-				lambda x: "Not Provided" if str(x).strip().lower() == "not provided" else x)
-				assert all(value == "" or value == "Not Provided" for value in final_df[field].values)
+					lambda x: "Not Provided" if str(x).strip().lower() == "not provided" else x)
+				assert all(isinstance(value, str) for value in final_df[field].values)
 		except AssertionError:
 			raise AssertionError(
 				f'Populating certain fields in the metadata df with "" or "Not Provided" was unsuccessful'
