@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 60bb882 (updated llm script)
 #!/usr/bin/env python3
 import argparse
 import json
@@ -172,9 +168,6 @@ You are a data cleaning assistant. You are given data from an Excel file and mus
 
 Please return the corrected data as a JSON object with the same structure as the input.
 """
-
-<<<<<<< HEAD
-<<<<<<< HEAD
 # Rules for data validation
 rules = """
 Reformat the input data to match NCBI Biosample, BioProject, or Genbank rules and expectations.
@@ -182,13 +175,37 @@ Reformat the input data to match NCBI Biosample, BioProject, or Genbank rules an
 
 if __name__ == "__main__":
     main()
-=======
-=======
-# Rules for data validation
->>>>>>> 60bb882 (updated llm script)
-rules = """
-Reformat the input data to match NCBI Biosample, BioProject, or Genbank rules and expectations.
-"""
 
-if __name__ == "__main__":
-    main()
+'''
+Other version of rules
+1. 'collection_date' is a column containing dates and should be formatted as <b>YYYY-MM-DD<b>. For example if you see the date 06/2022 it should be formatted as 2022/06. Only include data that is already present and do not assume the day, month, or year.
+2. 'host' is a column that contains the organism that hosts a virus and should using binomial nomenclature (or scientific name) rather than the common english name. If a response is not in the correct format please identify can change that. For example if you see 'human' as a value that should be corrected to 'Homo sapien.'
+3. 'authors' column contains names of individuals that contributed to a project. It is a list that should be formatted as <b>Last, First Middle, suffix <b> seperated by a semicolon ";". For example: "Baker, Howard Henry, Jr.; Powell, Earl Alexander, II.;" 
+4. 'lat_lon' column is looking for lattitude and longitude formatted as "d[d.dddd] N|S d[dd.dddd] W|E", eg, 38.98 N 77.11 W'. Please only correct values for formatting and do not alter any values that are not lattitude or longitude. Values may be left blank or have a filler value such as 'N/A'
+5. 'file_location' column there are two options that the user may enter: Either 'local' or 'cloud'. You may see mispellings or different capitalization in these but please correct that to the two previously mentioned options. eg 'Local' should be 'local'
+6. 'sra-file_name' column contains one or more unique file names. If there are multiple files, concatenate them with a comma (","), eg. "sample1_R1.fastq.gz, sample1_R2.fastq.gz"
+7. 'illumina_library_layout' column should only have two options: 'single' or 'paired.' Please check for any spelling mistakes and return any synonyms to the option that is most appropriate.
+8. 'publication_title' column may contain unique text. If it is left blank it should then use the value found in 'title' column in the same row.
+9. 'publication_status' column should only have three options: 'unpublished' or 'in-press' or 'published.' Please check for any spelling mistakes and return any synonyms to the option that is most appropriate.
+And additional notes to consider:
+In this section are some notes for how this file should be updated to accomodate the front-end development or further improvements beyond the intial POC
+
+    1. the load_file function call on line 38 currently is set to the static filepath where there excel file sits within the project rather than pointing to where the program allows the user to upload a file themselves
+    2. As prompt grows to include rules down below RAG might become necessary to build out the knowledge base, if some of the referenced databases should be brought in
+    3. Below rules can most likely be ignored - will use rules developed by Sahar to implement RAG into python script prompt
+
+    Additional column rules to be added to prompt:
+    1. Certain field we can bring in extra formatting (ie organism database: <a href="https://www.ncbi.nlm.nih.gov/taxonomy" target="_blank">NCBI Taxonomy database</a>)
+    2. bs-geoloc_name name from <a href="http://www.insdc.org/documents/country-qualifier-vocabulary" target="_blank">this list</a>
+    3. Host_disease: <a href="http://bioportal.bioontology.org/ontologies/1009" target="_blank">Human Disease Ontology</a> or <a href="http://www.ncbi.nlm.nih.gov/mesh" target="_blank">MeSH</a>
+    4. sra-library_name: 'Short unique identifier for sequencing library. <b>Each name must be unique!</b>'
+    5. sra-instrument_model: 'Type of instrument model used for sequencing. See a list of options <a href="sra_options.html#instrument_model" target="_blank">here</a>.'
+    6. sra-library_strategy: 'The sequencing technique intended for the library. See a list of options <a href="sra_options.html#library_strategy" target="_blank">here</a>.'
+    7. sra-library_source: 'The type of source material that is being sequenced. See a list of options <a href="sra_options.html#library_source" target="_blank">here</a>.'
+    8. sra-library_selection: 'The method used to select and/or enrich the material being sequenced. See a list of options <a href="sra_options.html#library_selection" target="_blank">here</a>.'
+    9. src-country: 'Geographical origin of the sample; use the appropriate name from <a href="http://www.insdc.org/documents/country-qualifier-vocabulary" target="_blank">this list</a>. Use a colon to separate the country or ocean from more detailed information about the location, eg "Canada: Vancouver" or "Germany: halfway down Zugspitze, Alps". Entering multiple localities in one attribute is not allowed.'
+    10. src-serotype: 'For Influenza A only; must be in format HxNx, Hx, Nx or mixed; where x is a numeral'
+    11. cmt-StructuredCommentPrefix: 'Structured comment keyword. For FLU use "FluData", HIV use "HIV-DataBaseData", and for COV and other organisms use "Assembly-Data".'
+    12. cmt-StructuredCommentSuffix: 'Structured comment keyword. For FLU use "FluData", HIV use "HIV-DataBaseData", and for COV and other organisms use "Assembly-Data".'
+    13. gs-subm_lab: 'Full name of laboratory submitting this record to GISAID. See a list of options <a href="gisaid_options.html#subm_lab" target="_blank">here</a>.'
+'''
