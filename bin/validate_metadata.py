@@ -269,9 +269,21 @@ class ValidateChecks:
 		# get the main utility class 
 		self.main_util = main_util()
 		
+		# normalize authors column
+		self.normalize_author_columns()
+
+	def normalize_author_columns(self):
+		""" Normalize author/authors column to always be 'authors' """
+		# Rename 'author' to 'authors' if 'authors' doesn't already exist
+		if 'author' in self.metadata_df.columns and 'authors' not in self.metadata_df.columns:
+			self.metadata_df.rename(columns={'author': 'authors'}, inplace=True)
+		elif 'authors' in self.metadata_df.columns and 'author' in self.metadata_df.columns:
+			# Merge both columns if they exist, prioritizing 'authors'
+			self.metadata_df['authors'] = self.metadata_df['authors'].fillna(self.metadata_df['author'])
+			self.metadata_df.drop(columns=['author'], inplace=True)
+		
 	def validate_main(self):
-		""" Main validation function for the metadata
-		"""
+		""" Main validation function for the metadata """
 		# check if user would like to validate custom fields
 		metadata_samp_names = self.metadata_df['sample_name'].tolist()
 
