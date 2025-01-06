@@ -32,7 +32,7 @@ process UPDATE_SUBMISSION {
         --metadata_file $validated_meta_path \
         --species $params.species \
         --output_dir  . \
-        --fasta_file $fasta_path \
+        ${fasta_path ? "--fasta_file $fasta_path" : ""} \
         ${annotations_path ? "--annotation_file $annotations_path" : ""} \
         ${fastq_1 ? "--fastq1 $fastq_1" : ""} \
         ${fastq_2 ? "--fastq2 $fastq_2" : ""} \

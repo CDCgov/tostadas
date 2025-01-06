@@ -87,7 +87,7 @@
       "description": "Map only if its child features align with sequence identity > this value",
       "default": 0.5
     },
-    "lift_unmapped_feature_file_name": {
+    "lift_unmapped_features_file_name": {
       "type": "string",
       "description": "Name of unmapped features file name",
       "default": "output.unmapped_features.txt"

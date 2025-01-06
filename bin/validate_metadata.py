@@ -213,13 +213,11 @@ class GetMetaAsDf:
 			)
 		# Validate populated fields
 		try:
-			 # Ensure no null values in specified columns
-			assert not any(final_df[field].isnull().any() for field in existing_terms)
-			# Ensure all values are either empty or "Not Provided"
+			# Ensure all values, if absent, are either empty or "Not Provided"
 			for field in existing_terms:
 				final_df[field] = final_df[field].apply(
-				lambda x: "Not Provided" if str(x).strip().lower() == "not provided" else x)
-				assert all(value == "" or value == "Not Provided" for value in final_df[field].values)
+					lambda x: "Not Provided" if str(x).strip().lower() == "not provided" else x)
+				assert all(isinstance(value, str) for value in final_df[field].values)
 		except AssertionError:
 			raise AssertionError(
 				f'Populating certain fields in the metadata df with "" or "Not Provided" was unsuccessful'
@@ -271,9 +269,21 @@ class ValidateChecks:
 		# get the main utility class 
 		self.main_util = main_util()
 		
+		# normalize authors column
+		self.normalize_author_columns()
+
+	def normalize_author_columns(self):
+		""" Normalize author/authors column to always be 'authors' """
+		# Rename 'author' to 'authors' if 'authors' doesn't already exist
+		if 'author' in self.metadata_df.columns and 'authors' not in self.metadata_df.columns:
+			self.metadata_df.rename(columns={'author': 'authors'}, inplace=True)
+		elif 'authors' in self.metadata_df.columns and 'author' in self.metadata_df.columns:
+			# Merge both columns if they exist, prioritizing 'authors'
+			self.metadata_df['authors'] = self.metadata_df['authors'].fillna(self.metadata_df['author'])
+			self.metadata_df.drop(columns=['author'], inplace=True)
+		
 	def validate_main(self):
-		""" Main validation function for the metadata
-		"""
+		""" Main validation function for the metadata """
 		# check if user would like to validate custom fields
 		metadata_samp_names = self.metadata_df['sample_name'].tolist()
 
