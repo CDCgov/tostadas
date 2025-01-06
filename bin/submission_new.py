@@ -605,11 +605,13 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}_BS"})
 		spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		descriptor = ET.SubElement(biosample, 'Descriptor')
-		title = ET.SubElement(descriptor, 'Title')
-		title.text = self.safe_text(self.top_metadata['title'])
-		# BioSample XSD will not accept a description here, even though the example submission.xml has one
-		#description = ET.SubElement(descriptor, 'Description')
-		#description.text = self.safe_text(self.top_metadata['description'])
+		if 'title' in self.top_metadata and self.top_metadata['title']:
+			title = ET.SubElement(descriptor, 'Title')
+			title.text = self.safe_text(self.top_metadata['title'])
+		# BioSample XSD will not accept a description here, although the example submission.xml has one ("white space not allowed, attribute is element-only")
+		#if 'description' in self.top_metadata and self.top_metadata['description']:
+		#	description = ET.SubElement(descriptor, 'Description')
+		#	description.text = self.safe_text(self.top_metadata['description'])
 		organism = ET.SubElement(biosample, 'Organism')
 		organismName = ET.SubElement(organism, 'OrganismName')
 		organismName.text = self.safe_text(self.biosample_metadata['organism'])
