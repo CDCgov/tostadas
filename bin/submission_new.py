@@ -132,7 +132,8 @@ def submission_main():
 		report_fetched = False  # Flag to indicate if a report has been fetched
 		
 		while time.time() - start_time < timeout:
-			if sample.ftp_upload:
+			# if user is submitting to genbank via ftp and provided the necessary files
+			if parameters['genbank'] and 'genbank' not in databases_to_skip and sample.ftp_upload:
 				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission}
 			else:
 				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission}
