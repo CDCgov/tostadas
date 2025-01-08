@@ -41,28 +41,17 @@ bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
 ```
 export PATH="$HOME/mambaforge/bin:$PATH"
 ```
-### 3. Create and activate a conda environment
-
- **3a. Create an empty conda environment**
-```
-conda create --name tostadas
-```
-This conda environment will be used to install Nextflow.
-
- **3b. Activate the environment**
-```
-conda activate tostadas
-```
-Verify which environment is active by running the following conda command: `conda env list`. The active environment will be denoted with an asterisk *
-
-### 4. Install Nextflow using mamba and the bioconda Channel
+### 3. Install Nextflow using mamba and the bioconda Channel
 ```
 mamba install -c bioconda nextflow
 ```
-### 5. Update the default submissions config file with your NCBI username and password, and run the following nextflow command to execute the scripts with default parameters and the local run environment: 
+### 4. Update the default submissions config file with your NCBI username and password 
 ```
 # update this config file (you don't have to use vim)
 vim conf/submission_config.yaml
+```
+### 5. Run the workflow with default parameters and the local run environment:
+```
 # test command for virus reads
 nextflow run main.nf -profile test,<singularity|docker|conda> --virus
 ```
