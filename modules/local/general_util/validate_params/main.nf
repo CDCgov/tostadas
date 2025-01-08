@@ -9,11 +9,11 @@ include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin
 
 
 process VALIDATE_PARAMS {
+exec: 
+    // Validate input parameters
+    validateParameters()
 
-// Validate input parameters
-validateParameters()
-
-// Print summary of supplied parameters
-log.info paramsSummaryLog(workflow)
+    // Print summary of supplied parameters
+    log.info paramsSummaryLog(workflow)
 
 }
