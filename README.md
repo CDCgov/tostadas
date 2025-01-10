@@ -7,6 +7,10 @@
 
 For the complete TOSTADAS documentation, please see the [Wiki](https://github.com/CDCgov/tostadas/wiki)
 
+## Warnings
+### Plugin Compatibility Warning
+❗ Important Note: This pipeline uses the nf-schema plugin to validate pipeline parameters. Users with Nextflow version 24 or later may encounter a warning message indicating that the plugin must be installed. To resolve this warning message, please install the plugin manually by following the instructions found in this [link](https://www.nextflow.io/docs/latest/plugins.html#offline-usage)
+
 ## Overview
 **T O S T A D A S**  
 **T**oolkit for **O**pen **S**equence **T**riage, **A**nnotation, and **DA**tabase **S**ubmission  
