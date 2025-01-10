@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import re
 from io import StringIO
 
 import pandas as pd
@@ -34,7 +35,9 @@ def load_file(file_path):
         return df
     elif file_type in [".xlsx", ".xls"]:
         # For Excel files, skip the first header row and use the second header row
-        df = pd.read_excel(file_path, keep_default_na=True, header=1)
+        # Specify date columns to parse to avoid FutureWarning
+        date_columns = ['collection_date']  # Replace with your actual date column names
+        df = pd.read_excel(file_path, keep_default_na=True, header=1, parse_dates=date_columns)
         return df
     else:
         raise ValueError(
@@ -46,12 +49,13 @@ def create_json_string(df):
     """Convert the DataFrame to a JSON string."""
     # Convert datetime columns to strings to make them JSON serializable
     datetime_columns = df.select_dtypes(include=['datetime64[ns]', 'datetimetz']).columns
-    if datetime_columns.any():
+    if len(datetime_columns) > 0:
         df[datetime_columns] = df[datetime_columns].astype(str)
 
     input_data = df.to_dict(orient="records")
     input_data_str = json.dumps(input_data)
     return input_data_str
+
 
 def create_llm_agent(api_key):
     """Create an instance of the ChatOpenAI LLM."""
@@ -76,7 +80,26 @@ def format_llm_response(response):
     """
     Parse the LLM response, which should be JSON-formatted data, into a DataFrame.
     """
-    formatted_response = json.loads(response)
+    # Print the raw response for debugging
+    print(f"Raw LLM response:\n{response}\n")
+
+    # Attempt to parse the response directly
+    try:
+        formatted_response = json.loads(response)
+    except json.JSONDecodeError as e:
+        print(f"JSONDecodeError: {e}")
+        # Attempt to extract JSON string from the response using regex
+        json_match = re.search(r'\{.*\}|\[.*\]', response, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(0)
+            try:
+                formatted_response = json.loads(json_str)
+            except json.JSONDecodeError as e2:
+                print(f"Failed to parse extracted JSON: {e2}")
+                raise ValueError("Unable to parse JSON from LLM response.")
+        else:
+            raise ValueError("JSON content not found in LLM response.")
+
     new_df = pd.DataFrame(formatted_response)
     return new_df
 
@@ -156,9 +179,9 @@ def main():
     print("Data validation successful!")
 
 
-# Prompt for the LLM
+# Modified prompt for the LLM
 prompt3 = """
-You are a data cleaning assistant. You are given data from an Excel file and must reformat or correct it according to the rules provided below. If you reformat data, report on what changes were made.
+You are a data cleaning assistant. You are given data from an Excel file and must reformat or correct it according to the rules provided below.
 
 ### Rules:
 {rules}
@@ -166,46 +189,26 @@ You are a data cleaning assistant. You are given data from an Excel file and mus
 ### Input Data:
 {input_data}
 
-Please return the corrected data as a JSON object with the same structure as the input.
+Please return the corrected data as a JSON object with the same structure as the input. Do not include any additional text or explanation.
 """
+
 # Rules for data validation
 rules = """
-Reformat the input data to match NCBI Biosample, BioProject, or Genbank rules and expectations.
+1. 'collection_date' is a column containing dates and should be formatted as YYYY-MM. For example, if you see the date 06/2022 it should be formatted as 2022-06. Only include data that is already present and do not assume the day, month, or year.
+2. 'host' is a column that contains the organism that hosts a virus and should use binomial nomenclature (scientific name) rather than the common English name.
+3. 'authors' column contains names of individuals that contributed to a project. It is a list that should be formatted as Last, First Middle, Suffix separated by a semicolon ";". For example: "Baker, Howard Henry, Jr.; Powell, Earl Alexander, II;"
+4. 'lat_lon' column is looking for latitude and longitude formatted as "d[d.dddd] N|S d[dd.dddd] W|E", e.g., "38.98 N 77.11 W". Values may be left blank or have a filler value such as "Not Provided".
+5. 'file_location' column has two options that the user may enter: "local" or "cloud". You may see misspellings or different capitalization in these but please correct them to the two previously mentioned options. E.g., "Local" should be "local".
+7. 'illumina_library_layout' column should only have two options: "single" or "paired". Please check for any spelling mistakes and return any synonyms to the option that is most appropriate.
+8. 'publication_title' column may contain unique text. If it is missing, leave it as blank.
+9. 'publication_status' column should only have three options: "unpublished", "in-press", or "published". Please check for any spelling mistakes and return any synonyms to the option that is most appropriate.
+10. 'sex' column should only contain a biological sex recognized by NCBI. Any other value can be corrected to "Not Provided".
+11. Ignore file path-related columns.
+12. 'country' column should be a valid country. Correct any spelling mistakes or synonyms to the option that is most appropriate. If no valid country is similar, correct to 'Not Provided'.
+13. 'state' column should be a valid state in the country provided in the country column. Correct any spelling mistakes or synonyms to the option that is most appropriate. If no valid state is similar, correct to 'Not Provided'.
+14. 'organism' column is the pathogen name nd should use binomial nomenclature (scientific name) rather than the common English name. Correct any spelling mistakes or synonyms to the option that is most appropriate.
+
 """
 
 if __name__ == "__main__":
     main()
-
-'''
-Other version of rules
-1. 'collection_date' is a column containing dates and should be formatted as <b>YYYY-MM-DD<b>. For example if you see the date 06/2022 it should be formatted as 2022/06. Only include data that is already present and do not assume the day, month, or year.
-2. 'host' is a column that contains the organism that hosts a virus and should using binomial nomenclature (or scientific name) rather than the common english name. If a response is not in the correct format please identify can change that. For example if you see 'human' as a value that should be corrected to 'Homo sapien.'
-3. 'authors' column contains names of individuals that contributed to a project. It is a list that should be formatted as <b>Last, First Middle, suffix <b> seperated by a semicolon ";". For example: "Baker, Howard Henry, Jr.; Powell, Earl Alexander, II.;" 
-4. 'lat_lon' column is looking for lattitude and longitude formatted as "d[d.dddd] N|S d[dd.dddd] W|E", eg, 38.98 N 77.11 W'. Please only correct values for formatting and do not alter any values that are not lattitude or longitude. Values may be left blank or have a filler value such as 'N/A'
-5. 'file_location' column there are two options that the user may enter: Either 'local' or 'cloud'. You may see mispellings or different capitalization in these but please correct that to the two previously mentioned options. eg 'Local' should be 'local'
-6. 'sra-file_name' column contains one or more unique file names. If there are multiple files, concatenate them with a comma (","), eg. "sample1_R1.fastq.gz, sample1_R2.fastq.gz"
-7. 'illumina_library_layout' column should only have two options: 'single' or 'paired.' Please check for any spelling mistakes and return any synonyms to the option that is most appropriate.
-8. 'publication_title' column may contain unique text. If it is left blank it should then use the value found in 'title' column in the same row.
-9. 'publication_status' column should only have three options: 'unpublished' or 'in-press' or 'published.' Please check for any spelling mistakes and return any synonyms to the option that is most appropriate.
-And additional notes to consider:
-In this section are some notes for how this file should be updated to accomodate the front-end development or further improvements beyond the intial POC
-
-    1. the load_file function call on line 38 currently is set to the static filepath where there excel file sits within the project rather than pointing to where the program allows the user to upload a file themselves
-    2. As prompt grows to include rules down below RAG might become necessary to build out the knowledge base, if some of the referenced databases should be brought in
-    3. Below rules can most likely be ignored - will use rules developed by Sahar to implement RAG into python script prompt
-
-    Additional column rules to be added to prompt:
-    1. Certain field we can bring in extra formatting (ie organism database: <a href="https://www.ncbi.nlm.nih.gov/taxonomy" target="_blank">NCBI Taxonomy database</a>)
-    2. bs-geoloc_name name from <a href="http://www.insdc.org/documents/country-qualifier-vocabulary" target="_blank">this list</a>
-    3. Host_disease: <a href="http://bioportal.bioontology.org/ontologies/1009" target="_blank">Human Disease Ontology</a> or <a href="http://www.ncbi.nlm.nih.gov/mesh" target="_blank">MeSH</a>
-    4. sra-library_name: 'Short unique identifier for sequencing library. <b>Each name must be unique!</b>'
-    5. sra-instrument_model: 'Type of instrument model used for sequencing. See a list of options <a href="sra_options.html#instrument_model" target="_blank">here</a>.'
-    6. sra-library_strategy: 'The sequencing technique intended for the library. See a list of options <a href="sra_options.html#library_strategy" target="_blank">here</a>.'
-    7. sra-library_source: 'The type of source material that is being sequenced. See a list of options <a href="sra_options.html#library_source" target="_blank">here</a>.'
-    8. sra-library_selection: 'The method used to select and/or enrich the material being sequenced. See a list of options <a href="sra_options.html#library_selection" target="_blank">here</a>.'
-    9. src-country: 'Geographical origin of the sample; use the appropriate name from <a href="http://www.insdc.org/documents/country-qualifier-vocabulary" target="_blank">this list</a>. Use a colon to separate the country or ocean from more detailed information about the location, eg "Canada: Vancouver" or "Germany: halfway down Zugspitze, Alps". Entering multiple localities in one attribute is not allowed.'
-    10. src-serotype: 'For Influenza A only; must be in format HxNx, Hx, Nx or mixed; where x is a numeral'
-    11. cmt-StructuredCommentPrefix: 'Structured comment keyword. For FLU use "FluData", HIV use "HIV-DataBaseData", and for COV and other organisms use "Assembly-Data".'
-    12. cmt-StructuredCommentSuffix: 'Structured comment keyword. For FLU use "FluData", HIV use "HIV-DataBaseData", and for COV and other organisms use "Assembly-Data".'
-    13. gs-subm_lab: 'Full name of laboratory submitting this record to GISAID. See a list of options <a href="gisaid_options.html#subm_lab" target="_blank">here</a>.'
-'''
