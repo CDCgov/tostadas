@@ -33,7 +33,7 @@ def metadata_validation_main():
 	parameters_class.get_parameters()
 	parameters = parameters_class.parameters
 	try:
-		assert len([x for x in parameters.keys() if x in ['fasta_path', 'meta_path', 'output_dir', 'condaEnv', 'keep_personal_info',
+		assert len([x for x in parameters.keys() if x in ['fasta_path', 'meta_path', 'output_dir', 'condaEnv', 'keep_demographic_info',
 														'date_format_flag', 'file_name', 'restricted_terms',
 														'illumina_instrument_restrictions', 'nanopore_instrument_restrictions',
 														'fasta_names', 'overwrite_output_files', 
@@ -122,14 +122,15 @@ class GetParams:
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
 							help="Output Directory for final Files, default is current directory")
 		parser.add_argument("--overwrite_output_files", type=bool, default=True, help='whether to overwrite the output dir')
-		parser.add_argument("-k", "--keep_personal_info", action="store_true", default=False,
-							help="Flag to keep personal identifying info if provided otherwise it will return an " +
-								 "error if personal information is provided.")
+		parser.add_argument("-k", "--keep_demographic_info", action="store_true", default=False,
+							help="Flag to keep potentially identifying demographic info if provided otherwise it will return an " +
+								 "error if personal information is provided." +
+								 "Applies to host_sex, host_age, race, ethnicity.")
 		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v'],
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
 		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
-		parser.add_argument("--validate_custom_fields", type=bool, help="Flag for whether or not validate custom fields ")
+		parser.add_argument("--validate_custom_fields", type=bool, default=True, help="Flag for whether or not validate custom fields ")
 		return parser
 
 	def get_restrictions(self):
@@ -248,7 +249,6 @@ class ValidateChecks:
 
 		# global variables for keeping track of sample properties
 		self.did_validation_work = True
-		self.case_data_detected = False
 		self.valid_sample_num = 0
 		self.list_of_sample_errors = []
 		self.list_of_sample_dfs = {}
@@ -318,19 +318,16 @@ class ValidateChecks:
 					self.metadata_df.loc[self.metadata_df['sample_name'] == name, 'author'] = fixed_authors
 				except:
 					self.author_valid = False
-					self.sample_error_msg = "\n\t Invalid Author Name, please list as full names seperated by ;"
+					self.sample_error_msg = "\n\t Invalid Author Name, please list as full names separated by ;"
 
-			# run the check on the PI meta information is the keep_personal_info flag is true
+			# run the check on the PI meta information if the keep_demographic_info flag is true
 			try:
-				assert self.case_data_detected is False
 				assert self.meta_case_grade is True
 			except AssertionError:
-				raise AssertionError(f'Either case_data_detected is not False or meta_case_grade is not True default values')
-			if self.parameters['keep_personal_info'] is True:
-				self.check_meta_case(sample_info)
-			if self.meta_case_grade is False:
-				# just for tracking globally that there was an irregularity with empty personal information
-				self.case_data_detected = True
+				raise AssertionError(f'meta_case_grade was not reset to True')
+			if self.parameters['keep_demographic_info'] is False:
+				self.sample_error_msg += (f"\n\t\t'keep_demographic_info' flag is False. Sample demographic data will be removed if present.")
+				self.metadata_df = self.check_meta_case(sample_info)
 
 			# check if the SRA submission is triggered, if it is, then run the class of functions for handling sra submission
 			if str(sample_info["ncbi_sequence_name_sra"]) != "" or str(sample_info["ncbi_sequence_name_sra"]) != '':
@@ -402,7 +399,7 @@ class ValidateChecks:
 		self.did_validation_work = errors_class.capture_final_error (
 			final_error_file = self.final_error_file, repeat_error = self.repeat_error,
 			matchup_error = self.matchup_error, valid_date_flag = self.valid_date_flag,
-			date_error_msg = self.date_error_msg, case_data_detected = self.case_data_detected, valid_sample_num = self.valid_sample_num,
+			date_error_msg = self.date_error_msg, valid_sample_num = self.valid_sample_num,
 			metadata_df = self.metadata_df, list_of_sample_errors = self.list_of_sample_errors, repeated = self.repeated,
 			did_validation_work = self.did_validation_work,
 		)
@@ -581,24 +578,30 @@ class ValidateChecks:
 			self.sample_error_msg += "\n\t\tMissing Required Metadata:  " + ", ".join(missing_fields)
 			if len(missing_optionals) != 0:
 				self.sample_error_msg += "\n\t\tMissing Optional Metadata:  " + ", ".join(missing_optionals)
-
+	
 	def check_meta_case(self, sample_info):
-		""" Checks the case data for metadata (sex, age, race, and ethnicity) is not empty
-		"""
+		""" Checks and removes demographics metadata for cases (sex, age, race, and ethnicity) if present. """
 		try:
 			assert self.meta_case_grade is True
 		except AssertionError:
 			raise AssertionError(f'Meta case grade was not properly reset back to True after sample round')
-
 		invalid_case_data = []
-		for field in self.case_fields:
-			if str(sample_info[field]) != "" and str(sample_info[field]) != '':
-				invalid_case_data.append(field)
-				self.meta_case_grade = False
-		# develop the following error message if the field is empty
-		if self.meta_case_grade is False:
-			self.sample_error_msg += f'\n\t\tPresent Case Data found in: {", ".join(invalid_case_data)}' + \
-					f"\n\t\tValidation will Fail. Please remove Case Data or add the Keep Data Flag -f to Conserve Case Data"
+		try:
+			for field in self.case_fields:
+				if field in sample_info.columns and str(sample_info[field].values[0]) not in ["", None, "Not Provided"]:
+					invalid_case_data.append(field)
+					# Remove the case data from the dataframe
+					sample_info.at[sample_info.index[0], field] = "Not Provided"  # Replace value with Not Provided string
+		except:
+			self.meta_case_grade = False
+		# Develop error message if case data was found and removed
+		if invalid_case_data:
+			self.sample_error_msg += (
+				f'\n\t\tPresent Case Data found in: {", ".join(invalid_case_data)}.'
+				f'\n\t\tThe case data has been removed automatically.'
+			)
+		self.metadata_df.update(sample_info)
+		return self.metadata_df
 
 class Check_Illumina_Nanopore_SRA:
 	""" Class constructor for the various checks on instruments
@@ -793,7 +796,7 @@ class HandleErrors:
 		self.write_tsv_file(sample_passed)
 
 	def capture_final_error(self, final_error_file, repeat_error, matchup_error,
-							valid_date_flag, date_error_msg, case_data_detected, valid_sample_num, metadata_df,
+							valid_date_flag, date_error_msg, valid_sample_num, metadata_df,
 							list_of_sample_errors, repeated, did_validation_work):
 		""" Handles the final error message
 		"""
@@ -810,11 +813,6 @@ class HandleErrors:
 		if valid_date_flag is False:
 			did_validation_work = False
 			final_error += f"{date_error_msg}\n"
-
-		# write the case data error message
-		if case_data_detected is True:
-			did_validation_work = False
-			final_error += f'Keep Personal Info Flag is True But Case Data is Empty!'
 
 		final_error_file.write("General Errors:\n\n")
 		if final_error != '':

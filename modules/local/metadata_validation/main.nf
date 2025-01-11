@@ -17,13 +17,17 @@ process METADATA_VALIDATION {
     input:
     path meta_path
 
+    def keep_demographic_info = params.keep_demographic_info == true ? '--keep_demographic_info' : ''
+    def validate_custom_fields = params.validate_custom_fields == true ? '--validate_custom_fields' : ''
+
     script:
     """
     validate_metadata.py \
         --meta_path $meta_path \
         --output_dir . \
         --custom_fields_file $params.custom_fields_file \
-        --validate_custom_fields $params.validate_custom_fields
+        --date_format_flag $params.date_format_flag \
+        $keep_demographic_info $validate_custom_fields
     """
 
     output:
