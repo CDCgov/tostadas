@@ -9,7 +9,7 @@ nextflow.enable.dsl=2
 // get the utility processes / subworkflows
 // include { CHECK_FILES                                       } from "../modules/local/general_util/check_files/main"
 // include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
-include { VALIDATE_PARAMS                                   } from '../modules/local/general_util/validate_params/main'
+include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 
 include { GET_WAIT_TIME                                     } from "../modules/local/general_util/get_wait_time/main"
 
@@ -45,9 +45,12 @@ workflow TOSTADAS {
 		exit 0
 	}
 
-	// validate params
-	VALIDATE_PARAMS()
-	
+	// validate input parameters
+    validateParameters()
+
+    // print summary of supplied parameters
+    log.info paramsSummaryLog(workflow)
+
 	// run metadata validation process
 	METADATA_VALIDATION ( 
 		params.meta_path
