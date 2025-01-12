@@ -54,7 +54,6 @@ def submission_main():
 	# Get all parameters from argparse
 	parameters_class = GetParams()
 	parameters = parameters_class.parameters
-
 	
 	# Get list of all databases to submit to (or update)
 	databases = [db for db in parameters if parameters[db] and db in ['biosample', 'sra', 'genbank', 'gisaid']]
@@ -65,7 +64,10 @@ def submission_main():
 	config_dict = config_parser.load_config()
 	
 	# Read in metadata file
-	metadata_df = pd.read_csv(parameters['metadata_file'], sep='\t')
+	try:
+		metadata_df = pd.read_csv(parameters['metadata_file'], sep='\t')
+	except Exception as e:
+		raise ValueError(f"Failed to load metadata file: {parameters['metadata_file']}. Error: {e}")
 	
 	# Initialize the Sample object with parameters from argparse
 	sample = Sample(
@@ -358,16 +360,21 @@ class Submission:
 			db = action.attrib.get('target_db')
 			status = action.attrib.get('status')
 			accession = action.attrib.get('accession')
-			message = action.find('Message').text if action.find('Message') is not None else ""
-			if db == 'biosample':
+			message = None
+			response = action.find('Response')
+			if response is not None:
+				message_element = response.find('Message')
+				if message_element is not None:
+					message = message_element.text
+			if db == 'BioSample':
 				report_dict['biosample_status'] = status
 				report_dict['biosample_accession'] = accession
 				report_dict['biosample_message'] = message
-			elif db == 'sra':
+			elif db == 'SRA':
 				report_dict['sra_status'] = status
 				report_dict['sra_accession'] = accession
 				report_dict['sra_message'] = message
-			elif db == 'genbank':
+			elif db == 'GenBank':
 				report_dict['genbank_status'] = status
 				if status == 'processed-ok':
 					# Handle Genbank-specific logic (AccessionReport.tsv)
@@ -378,9 +385,10 @@ class Submission:
 				report_dict['genbank_message'] = message
 		return report_dict
 	def save_report_to_csv(self, report_dict, csv_file):
+		write_header = not os.path.exists(csv_file) or os.stat(csv_file).st_size == 0
 		with open(csv_file, 'a', newline='') as f:
 			writer = csv.DictWriter(f, fieldnames=report_dict.keys())
-			if not os.path.isfile(csv_file):
+			if write_header:
 				writer.writeheader() # todo: need to use pandas to do this probably, not all keys are being written to the file 
 			writer.writerow(report_dict)
 		print(f"Submission report saved to {csv_file}")
