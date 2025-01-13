@@ -10,19 +10,20 @@
       "format": "file-path",
       "description": "Meta-data file path for samples",
       "default": "${projectDir}/assets/metadata_template.xlsx",
-      "pattern": "^\\S+\\.xlsx$"
+      "pattern": "^\\S+\\.(xlsx|xls|xlsm|xlsb|csv)$"
     },
     "ref_fasta_path": {
       "type": "string",
       "format": "file-path",
       "description": "Reference Sequence file path",
-      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.fasta"
+      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.fasta",
+      "pattern": "^\\S+\\.(fasta|fa|fna|ffn|faa|frn|fasta\\.gz|fa\\.gz|fna\\.gz|ffn\\.gz|faa\\.gz|frn\\.gz|fasta\\.zip|fa\\.zip|fna\\.zip|ffn\\.zip|faa\\.zip|frn\\.zip|fasta\\.bz2|fa\\.bz2|fna\\.bz2|ffn\\.bz2|faa\\.bz2|frn\\.bz2|fasta\\.tar\\.bz2|fa\\.tar\\.bz2|fna\\.tar\\.bz2|ffn\\.tar\\.bz2|faa\\.tar\\.bz2|frn\\.tar\\.bz2|fasta\\.tar|fa\\.tar|fna\\.tar|ffn\\.tar|faa\\.tar|frn\\.tar|fasta\\.tar\\.gz|fa\\.tar\\.gz|fna\\.tar\\.gz|ffn\\.tar\\.gz|faa\\.tar\\.gz|frn\\.tar\\.gz)$"
     },
     "ref_gff_path": {
       "type": "string",
       "format": "file-path",
-      "description": "Reference gff file path for annotation",
-      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.gff"
+      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.gff",
+      "pattern": "^\\S+\\.(gff|gff3)$"
     },
     "output_dir": {
       "type": "string",
@@ -56,8 +57,8 @@
     },
     "custom_fields_file": {
       "type": "string",
-      "description": "Path to the JSON file containing custom metadata fields and their information",
-      "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json"
+      "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json",
+      "pattern": "^\\S+\\.json$"
     },
     "final_liftoff_output_dir": {
       "type": "string",
@@ -90,7 +91,8 @@
     "lift_unmapped_features_file_name": {
       "type": "string",
       "description": "Name of unmapped features file name",
-      "default": "output.unmapped_features.txt"
+      "default": "output.unmapped_features.txt",
+      "pattern": "^\\S+\\.txt$"
     },
     "lift_copy_threshold": {
       "type": "number",
@@ -249,7 +251,8 @@
     "submission_config": {
       "type": "string",
       "description": "Configuration file for submission to public repos",
-      "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml"
+      "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml",
+      "pattern": "^\\S+\\.(yaml|yml)$"
     },
     "submission_wait_time": {
       "type": "integer",
@@ -297,7 +300,8 @@
     "repeat_library": {
       "type": "string",
       "description": "Path to the repeat library file used by RepeatMasker.",
-      "default": "${projectDir}/assets/lib/MPOX_repeats_lib.fasta"
+      "default": "${projectDir}/assets/lib/MPOX_repeats_lib.fasta",
+      "pattern": "^\\S+\\.(fasta|fa|fna|ffn|faa|frn|fasta\\.gz|fa\\.gz|fna\\.gz|ffn\\.gz|faa\\.gz|frn\\.gz|fasta\\.zip|fa\\.zip|fna\\.zip|ffn\\.zip|faa\\.zip|frn\\.zip|fasta\\.bz2|fa\\.bz2|fna\\.bz2|ffn\\.bz2|faa\\.bz2|frn\\.bz2|fasta\\.tar\\.bz2|fa\\.tar\\.bz2|fna\\.tar\\.bz2|ffn\\.tar\\.bz2|faa\\.tar\\.bz2|frn\\.tar\\.bz2|fasta\\.tar|fa\\.tar|fna\\.tar|ffn\\.tar|faa\\.tar|frn\\.tar|fasta\\.tar\\.gz|fa\\.tar\\.gz|fna\\.tar\\.gz|ffn\\.tar\\.gz|faa\\.tar\\.gz|frn\\.tar\\.gz)$"
     },
     "gisaid": {
       "description": "Flag to enable or disable submission to GISAID."
@@ -383,7 +387,8 @@
     },
     "lift_feature_types": {
       "type": "string",
-      "default": "${projectDir}/assets/feature_types.txt"
+      "default": "${projectDir}/assets/feature_types.txt",
+      "pattern": "^\\S+\\.txt$"
     },
     "processed_samples": {
       "type": "string",
@@ -429,7 +434,10 @@
       "default": "${projectDir}/environment.yml"
     }
   },
-
-  "required": ["meta_path", "ref_fasta_path", "ref_gff_path", "species"]
+  "required": [
+    "meta_path",
+    "ref_fasta_path",
+    "ref_gff_path",
+    "species"
+  ]
 }
-
