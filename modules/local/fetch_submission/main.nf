@@ -1,10 +1,9 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                            RUNNING SUBMISSION
+                                    FETCH SUBMISSION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-process SUBMISSION {
+process FETCH_SUBMISSION {
 
     publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
@@ -13,6 +12,7 @@ process SUBMISSION {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
+    val wait_time
     tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path)
     path submission_config
 
@@ -26,7 +26,7 @@ process SUBMISSION {
     script:
     """     
     submission_new.py \
-        --submit \
+        --fetch \
         --submission_name $meta.id \
         --config_file $submission_config  \
         --metadata_file $validated_meta_path \
@@ -45,5 +45,5 @@ process SUBMISSION {
     """
     output:
     path "${validated_meta_path.getBaseName()}", emit: submission_files
-    //path "*.csv", emit: submission_log
+    path "*.csv", emit: submission_log
 }
