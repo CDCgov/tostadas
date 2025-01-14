@@ -33,7 +33,7 @@ def metadata_validation_main():
 	parameters_class.get_parameters()
 	parameters = parameters_class.parameters
 	try:
-		assert len([x for x in parameters.keys() if x in ['fasta_path', 'meta_path', 'output_dir', 'condaEnv', 'keep_demographic_info',
+		assert len([x for x in parameters.keys() if x in ['fasta_path', 'meta_path', 'output_dir', 'condaEnv', 'remove_demographic_info',
 														'date_format_flag', 'file_name', 'restricted_terms',
 														'illumina_instrument_restrictions', 'nanopore_instrument_restrictions',
 														'fasta_names', 'overwrite_output_files', 
@@ -122,9 +122,8 @@ class GetParams:
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
 							help="Output Directory for final Files, default is current directory")
 		parser.add_argument("--overwrite_output_files", type=bool, default=True, help='whether to overwrite the output dir')
-		parser.add_argument("-k", "--keep_demographic_info", action="store_true", default=False,
-							help="Flag to keep potentially identifying demographic info if provided otherwise it will return an " +
-								 "error if personal information is provided." +
+		parser.add_argument("-k", "--remove_demographic_info", action="store_true", default=False,
+							help="Flag to remove potentially identifying demographic info if provided otherwise no change will be made " +
 								 "Applies to host_sex, host_age, race, ethnicity.")
 		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v'],
 							help="Flag to differ date output, s = default (YYYY-MM), " +
@@ -320,13 +319,13 @@ class ValidateChecks:
 					self.author_valid = False
 					self.sample_error_msg = "\n\t Invalid Author Name, please list as full names separated by ;"
 
-			# run the check on the PI meta information if the keep_demographic_info flag is true
+			# run the check on the PI meta information if the remove_demographic_info flag is true
 			try:
 				assert self.meta_case_grade is True
 			except AssertionError:
 				raise AssertionError(f'meta_case_grade was not reset to True')
-			if self.parameters['keep_demographic_info'] is False:
-				self.sample_error_msg += (f"\n\t\t'keep_demographic_info' flag is False. Sample demographic data will be removed if present.")
+			if self.parameters['remove_demographic_info'] is True:
+				self.sample_error_msg += (f"\n\t\t'remove_demographic_info' flag is True. Sample demographic data will be removed if present.")
 				self.metadata_df = self.check_meta_case(sample_info)
 
 			# check if the SRA submission is triggered, if it is, then run the class of functions for handling sra submission

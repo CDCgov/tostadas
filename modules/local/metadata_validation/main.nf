@@ -17,7 +17,7 @@ process METADATA_VALIDATION {
     input:
     path meta_path
 
-    def keep_demographic_info = params.keep_demographic_info == true ? '--keep_demographic_info' : ''
+    def remove_demographic_info = params.remove_demographic_info == true ? '--remove_demographic_info' : ''
     def validate_custom_fields = params.validate_custom_fields == true ? '--validate_custom_fields' : ''
 
     script:
@@ -27,7 +27,7 @@ process METADATA_VALIDATION {
         --output_dir . \
         --custom_fields_file $params.custom_fields_file \
         --date_format_flag $params.date_format_flag \
-        $keep_demographic_info $validate_custom_fields
+        $remove_demographic_info $validate_custom_fields
     """
 
     output:
