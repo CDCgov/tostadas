@@ -747,10 +747,9 @@ class SRASubmission(XMLSubmission, Submission):
 
 	def add_attributes_block(self, submission):
 		add_files = submission.find(".//AddFiles")
-		attributes = ET.SubElement(add_files, 'Attributes')
 		for attr_name, attr_value in self.sra_metadata.items():
 			if attr_value != "Not Provided":
-				attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
+				attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
 				attribute.text = self.safe_text(attr_value)
 		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
 		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
