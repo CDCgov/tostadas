@@ -48,6 +48,21 @@ def fetch_and_parse_report(submission_object, client, submission_id, submission_
 		print(f"No report found for submission {submission_id}")
 		return None
 
+def get_accessions(sample, report_df):
+	""" Returns a dict with available accessions for the input sample
+	"""
+	accessions = {
+		'biosample': None,
+		'sra': None,
+		'genbank': None
+	}
+	sample_row = report_df[report_df['submission_name'] == sample]
+	if not sample_row.empty:
+		accessions['biosample'] = sample_row['biosample_accession'].values[0] if 'biosample_accession' in sample_row else None
+		accessions['sra'] = sample_row['sra_accession'].values[0] if 'sra_accession' in sample_row else None
+		accessions['genbank'] = sample_row['genbank_accession'].values[0] if 'genbank_accession' in sample_row else None
+	return accessions
+
 def submission_main():
 	""" Main for initiating submission steps
 	"""
@@ -128,7 +143,7 @@ def submission_main():
 				if parameters['send_email']:
 					genbank_submission.sendemail()
 
-	elif parameters['update']:
+	elif parameters['fetch']:
 		start_time = time.time()
 		timeout = 60  # time out after 60 seconds  
 		report_fetched = False  # Flag to indicate if a report has been fetched
@@ -153,6 +168,44 @@ def submission_main():
 		else:
 			# If the while loop completes without a successful fetch
 			print("Timeout occurred while trying to fetch and parse the report.")
+	
+	elif parameters['update']:
+		# Call and run the update submission script
+		#update_submission.submission_main()
+		# Load the report file
+		report_file = parameters["submission_report"]
+		try:
+			report_df =  pd.read_csv(report_file)
+		except Exception as e:
+			raise ValueError(f"Failed to load CSV file: {report_file}. Error: {e}")
+		accessions_dict = get_accessions(sample.sample_id, report_df)
+
+		# Prepare all submissions with the accessions
+		if accessions_dict['biosample'] and parameters['biosample'] and	'biosample' not in databases_to_skip:
+			biosample_submission = BiosampleSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/biosample", 
+												   parameters['submission_mode'], submission_dir, 'biosample', accessions_dict['biosample'])
+		if accessions_dict['sra'] and parameters['sra'] and 'sra' not in databases_to_skip:
+			sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/sra",
+									   parameters['submission_mode'], submission_dir, 'sra', accessions_dict['sra'])
+		if accessions_dict['genbank'] and parameters['genbank'] and 'genbank' not in databases_to_skip:
+			genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/genbank",
+											   parameters['submission_mode'], submission_dir, 'genbank', accessions_dict['genbank'])
+		# Submit all prepared submissions and fetch report once
+		if parameters['biosample'] and 'biosample' not in databases_to_skip:
+			biosample_submission.submit()
+		if parameters['sra'] and 'sra' not in databases_to_skip:
+			sra_submission.submit()
+		if parameters['genbank'] and 'genbank' not in databases_to_skip:
+			# If user is submitting via FTP
+			if sample.ftp_upload:
+				genbank_submission.prepare_files_ftp_submission() # Prep files and run table2asn
+				genbank_submission.submit()
+			else:
+				# Otherwise, prepare manual submission
+				genbank_submission.prepare_files_manual_submission() # Prep files and run table2asn
+				# Send email if the user requests it
+				if parameters['send_email']:
+					genbank_submission.sendemail()
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
@@ -179,9 +232,11 @@ class GetParams:
 		parser.add_argument("--submission_name", help='Name of the submission',	required=True)	
 		parser.add_argument("--config_file", help="Name of the submission onfig file",	required=True)
 		parser.add_argument("--metadata_file", help="Name of the validated metadata tsv file", required=True)
+		parser.add_argument("--submission_report", help="Path to submission report csv file", required=False, default="submission_report.csv")
 		parser.add_argument("--species", help="Type of organism data", required=True)
 		parser.add_argument('--submit', action='store_true', help='Run the full submission process')
-		parser.add_argument('--update', action='store_true', help='Run the update process to fetch and parse report')
+		parser.add_argument('--fetch', action='store_true', help='Run the process to fetch and parse report')
+		parser.add_argument('--update', action='store_true', help='Run the update process to submit new data')
 		# optional parameters
 		parser.add_argument("-o", "--output_dir", type=str, default='submission_outputs',
 							help="Output Directory for final Files, default is current directory")
@@ -272,6 +327,9 @@ class Sample:
 			if missing_files:
 				missing_files_per_database['genbank'] = missing_files
 		return missing_files_per_database
+	# Function to add accession Ids to the sample info once assigned
+	def add_accession_id(self, accession_id):
+		self.accession_ids = accession_id
 
 class MetadataParser:
 	def __init__(self, metadata_df, parameters):
@@ -588,7 +646,7 @@ class XMLSubmission(ABC):
 		pass
 
 class BiosampleSubmission(XMLSubmission, Submission):
-	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
+	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, accession_id = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir, parameters) 
 		Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type) 
@@ -596,6 +654,7 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		parser = MetadataParser(metadata_df, parameters)
 		self.top_metadata = parser.extract_top_metadata()
 		self.biosample_metadata = parser.extract_biosample_metadata()
+		self.accession_id = accession_id
 		os.makedirs(self.output_dir, exist_ok=True)
 		# Generate the BioSample XML upon initialization
 		self.xml_output_path = self.create_xml(output_dir) 
@@ -625,10 +684,20 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		organismName = ET.SubElement(organism, 'OrganismName')
 		organismName.text = self.safe_text(self.biosample_metadata['organism'])
 		bioproject = ET.SubElement(biosample, 'BioProject')
-		primaryID = ET.SubElement(bioproject, 'PrimaryId')
-		primaryID.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
+		primary_id = ET.SubElement(bioproject, 'PrimaryId')
+		primary_id.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
 		bs_package = ET.SubElement(biosample, 'Package')
 		bs_package.text = self.safe_text(self.submission_config['BioSample_package'])
+		# Add conditional block for accession_id
+		if self.accession_id:
+			attribute_ref_id = ET.SubElement(biosample, 'AttributeRefId')
+			ref_id = ET.SubElement(attribute_ref_id, 'RefId')
+			primary_id = ET.SubElement(ref_id, 'PrimaryId', {'db': 'BioProject'})
+			primary_id.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
+			attribute_ref_id = ET.SubElement(biosample, 'AttributeRefId')
+			ref_id = ET.SubElement(attribute_ref_id, 'RefId')
+			primary_id = ET.SubElement(ref_id, 'PrimaryId', {'db': 'BioSample'})
+			primary_id.text = self.accession_id
 	def add_attributes_block(self, submission):
 		biosample = submission.find(".//BioSample")
 		attributes = ET.SubElement(biosample, 'Attributes')
@@ -652,7 +721,7 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		self.fetch_report()
 
 class SRASubmission(XMLSubmission, Submission):
-	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
+	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, accession_id = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir, parameters) 
 		Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type) 
@@ -660,6 +729,7 @@ class SRASubmission(XMLSubmission, Submission):
 		parser = MetadataParser(metadata_df, parameters)
 		self.top_metadata = parser.extract_top_metadata()
 		self.sra_metadata = parser.extract_sra_metadata()
+		self.accession_id = accession_id
 		os.makedirs(self.output_dir, exist_ok=True)
 		# Generate the BioSample XML upon initialization
 		self.xml_output_path = self.create_xml(output_dir) 
@@ -694,6 +764,7 @@ class SRASubmission(XMLSubmission, Submission):
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}_SRA"})
 		identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+		# todo: add attribute ref ID for BioSample
 
 	def submit(self):
 		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
@@ -714,7 +785,7 @@ class SRASubmission(XMLSubmission, Submission):
 		self.fetch_report()
 
 class GenbankSubmission(XMLSubmission, Submission):
-	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type):
+	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, accession_id = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir, parameters) 
 		Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type)
@@ -723,6 +794,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.top_metadata = parser.extract_top_metadata()
 		self.genbank_metadata = parser.extract_genbank_metadata()
 		self.biosample_metadata = parser.extract_biosample_metadata()
+		self.accession_id = accession_id
 		os.makedirs(self.output_dir, exist_ok=True)
 		# Generate the GenBank XML upon initialization only if sample.ftp_upload is True
 		if self.sample.ftp_upload:

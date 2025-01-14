@@ -15,6 +15,7 @@ process SUBMISSION {
     input:
     tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path)
     path submission_config
+    val submission_mode
 
     // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
@@ -26,7 +27,7 @@ process SUBMISSION {
     script:
     """     
     submission_new.py \
-        --submit \
+        --$submission_mode \
         --submission_name $meta.id \
         --config_file $submission_config  \
         --metadata_file $validated_meta_path \
