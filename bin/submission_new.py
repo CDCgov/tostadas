@@ -158,10 +158,10 @@ def submission_main():
 		report_csv_file = f"{parameters['output_dir']}/{parameters['submission_name']}/submission_report.csv"
 		if os.path.exists(report_csv_file):
 			# If file exists, append to it without writing the header
-			all_reports.to_csv(report_file, mode='a', header=False, index=False)
+			all_reports.to_csv(report_csv_file, mode='a', header=False, index=False)
 		else:
 			# If file doesn't exist, write it with the header
-			all_reports.to_csv(report_file, mode='w', header=True, index=False)
+			all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
 	
 	elif parameters['update']:
 		# Call and run the update submission script
