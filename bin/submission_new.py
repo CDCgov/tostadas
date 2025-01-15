@@ -24,30 +24,6 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
-def fetch_and_parse_report(submission_object, client, submission_id, submission_dir, output_dir, type):
-	# Connect to the FTP/SFTP client
-	client.connect()
-	client.change_dir('submit')  # Change to 'submit' directory
-	client.change_dir(submission_dir)  # Change to Test or Prod
-	client.change_dir(f"{submission_id}_{type}")  # Change to sample-specific directory
-	# Check if report.xml exists and download it
-	report_file = "report.xml"
-	if client.file_exists(report_file):
-		print(f"Report found at {report_file}")
-		report_local_path = os.path.join(output_dir, 'report.xml')
-		client.download_file(report_file, report_local_path)
-		# Parse the report.xml
-		parsed_report = submission_object.parse_report_xml(report_local_path)
-		# Save as CSV to top level sample submission folder
-		# output_dir = 'path/to/results/sample_name/database' and we want to save a report for all samples to 'path/to/results/'
-		report_filename = os.path.join(os.path.dirname(os.path.dirname(output_dir)), 'submission_report.csv')
-		print(f"save_report_to_csv inputs are: {parsed_report}, {report_filename}")
-		submission_object.save_report_to_csv(parsed_report, report_filename)
-		return parsed_report
-	else:
-		print(f"No report found for submission {submission_id}")
-		return None
-
 def get_accessions(sample, report_df):
 	""" Returns a dict with available accessions for the input sample
 	"""
@@ -154,6 +130,7 @@ def submission_main():
 				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission}
 			else:
 				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission}
+			# Try fetching the report
 			for db, submission_object in submission_objects.items():
 				print(f"Fetching report for {db}")
 				if submission_object.fetch_report():  # Stop trying if the report is found locally
@@ -168,6 +145,23 @@ def submission_main():
 		else:
 			# If the while loop completes without a successful fetch
 			print("Timeout occurred while trying to fetch and parse the report.")
+		
+		# Loop over submission dbs to parse the report.xmls
+		# todo: add error-handling
+		all_reports = pd.DataFrame()
+		for db, submission in submission_objects.items():
+			report_xml_file = f"{parameters['output_dir']}/{parameters['submission_name']}/{db}/report.xml"
+			print(f"report path {report_xml_file}")
+			df = submission.parse_report_to_df(report_xml_file)
+			all_reports = pd.concat([all_reports, df], ignore_index=True)
+		# output_dir = submission_outputs/submission_name/<database> and we want to save a report for all samples to submission_outputs/submission_name/
+		report_csv_file = f"{parameters['output_dir']}/{parameters['submission_name']}/submission_report.csv"
+		if os.path.exists(report_csv_file):
+			# If file exists, append to it without writing the header
+			all_reports.to_csv(report_file, mode='a', header=False, index=False)
+		else:
+			# If file doesn't exist, write it with the header
+			all_reports.to_csv(report_file, mode='w', header=True, index=False)
 	
 	elif parameters['update']:
 		# Call and run the update submission script
@@ -395,14 +389,34 @@ class Submission:
 			return FTPClient(self.submission_config)
 		else:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
-	def parse_report_xml(self, report_path):
-		# Parse the XML file and extract required information
-		tree = ET.parse(report_path)
-		root = tree.getroot()
-		report_dict = {
+	def fetch_report(self):
+		""" Fetches report.xml from the host site folder submit/<Test|Prod>/sample_database/"""
+		self.client.connect()
+		self.client.change_dir('submit')  # Change to 'submit' directory
+		self.client.change_dir(self.submission_dir)  # Change to Test or Prod
+		self.client.change_dir(f"{self.sample.sample_id}_{self.type}")  # Change to sample-specific directory
+		# Check if report.xml exists and download it
+		report_file = os.path.join(self.output_dir, 'report.xml')
+		if os.path.exists(report_file):
+				return True  # Indicate that the report already exists
+		if self.client.file_exists(report_file):
+			print(f"Report found at {report_file}")
+			report_local_path = os.path.join(self.output_dir, 'report.xml')
+			self.client.download_file(report_file, report_local_path)
+			return report_local_path
+		else:
+			print(f"No report found for submission {self.sample.sample_id}")
+			return False
+	def parse_report_to_df(self, report_path):
+		"""
+		Parses report.xml file and consolidates all database entries into a single row
+		Returns a DataFrame with one row per submission_name.
+		"""
+		# Initialize a dictionary to store consolidated data
+		consolidated_report = {
 			'submission_name': self.sample.sample_id,
-			'submission_type': self.type,
 			'submission_status': None,
+			'submission_id': None,
 			'biosample_status': None,
 			'biosample_accession': None,
 			'biosample_message': None,
@@ -413,44 +427,39 @@ class Submission:
 			'genbank_accession': None,
 			'genbank_message': None,
 			'genbank_release_date': None,
+			'tracking_location': None,
 		}
-		for action in root.findall('Action'):
-			db = action.attrib.get('target_db')
-			status = action.attrib.get('status')
-			accession = action.attrib.get('accession')
-			message = None
-			response = action.find('Response')
-			if response is not None:
-				message_element = response.find('Message')
-				if message_element is not None:
-					message = message_element.text
-			if db == 'BioSample':
-				report_dict['biosample_status'] = status
-				report_dict['biosample_accession'] = accession
-				report_dict['biosample_message'] = message
-			elif db == 'SRA':
-				report_dict['sra_status'] = status
-				report_dict['sra_accession'] = accession
-				report_dict['sra_message'] = message
-			elif db == 'GenBank':
-				report_dict['genbank_status'] = status
-				if status == 'processed-ok':
-					# Handle Genbank-specific logic (AccessionReport.tsv)
-					accession_report = action.find('AccessionReport')
-					if accession_report is not None:
-						report_dict['genbank_accession'] = accession_report.find('Accession').text
-						report_dict['genbank_release_date'] = accession_report.find('ReleaseDate').text
-				report_dict['genbank_message'] = message
-		return report_dict
-	def save_report_to_csv(self, report_dict, csv_file):
-		write_header = not os.path.exists(csv_file) or os.stat(csv_file).st_size == 0
-		with open(csv_file, 'a', newline='') as f:
-			writer = csv.DictWriter(f, fieldnames=report_dict.keys())
-			if write_header:
-				writer.writeheader() # todo: need to use pandas to do this probably, not all keys are being written to the file 
-			writer.writerow(report_dict)
-		print(f"Submission report saved to {csv_file}")
+		try:
+			# Parse the XML file
+			tree = ET.parse(report_path)
+			root = tree.getroot()
+			# Extract submission-wide attributes
+			consolidated_report['submission_status'] = root.get("status", None)
+			consolidated_report['submission_id'] = root.get("submission_id", None)
+			# Iterate over each <Action> element to extract database-specific data
+			for action in root.findall("Action"):
+				db = action.get("target_db", "").lower()
+				if db == "biosample":
+					consolidated_report['biosample_status'] = action.get("status", None)
+					consolidated_report['biosample_message'] = action.findtext("Response")
+				elif db == "sra":
+					consolidated_report['sra_status'] = action.get("status", None)
+					consolidated_report['sra_message'] = action.findtext("Response")
+				elif db == "genbank":
+					consolidated_report['genbank_status'] = action.get("status", None)
+					consolidated_report['genbank_message'] = action.findtext("Response")
+					consolidated_report['genbank_release_date'] = action.get("release_date", None)
+			# Add tracking location if available
+			tracking_location = root.find("Tracking/SubmissionLocation")
+			if tracking_location is not None:
+				consolidated_report['tracking_location'] = tracking_location.text
+		except FileNotFoundError:
+			print(f"Report not found: {report_path}")
+		except ET.ParseError:
+			print(f"Error parsing XML report: {report_path}")
+		return consolidated_report
 	def submit_files(self, files, type):
+		""" Uploads a set of files to a host site at submit/<Test|Prod>/sample_database/<files> """
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
 		self.client.change_dir('submit')  # Change to 'submit' directory
@@ -461,13 +470,6 @@ class Submission:
 		print(f"Submitted files for sample {self.sample.sample_id}")
 	def close(self):
 		self.client.close()
-	def fetch_report(self):
-			report_path = os.path.join(self.output_dir, 'report.xml')
-			if os.path.exists(report_path):
-				return True  # Indicate that the report was found
-			else:
-				fetch_and_parse_report(self, self.client, self.sample.sample_id, self.submission_dir, self.output_dir, self.type)
-				return False  # Indicate that the report was not fetched
 
 
 class SFTPClient:
@@ -716,9 +718,6 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		files_to_submit = [submit_ready_file, self.xml_output_path]
 		self.submit_files(files_to_submit, 'biosample')
 		print(f"Submitted sample {self.sample.sample_id} to BioSample")
-	# Trigger report fetching
-	def update_report(self):
-		self.fetch_report()
 
 class SRASubmission(XMLSubmission, Submission):
 	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, accession_id = None):
@@ -779,9 +778,6 @@ class SRASubmission(XMLSubmission, Submission):
 		files_to_submit = [submit_ready_file, self.xml_output_path, fastq1, fastq2]
 		self.submit_files(files_to_submit, 'sra')
 		print(f"Submitted sample {self.sample.sample_id} to SRA")
-	# Trigger report fetching
-	def update_report(self):
-		self.fetch_report()
 
 class GenbankSubmission(XMLSubmission, Submission):
 	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, accession_id = None):
@@ -1205,10 +1201,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 						   f"{self.output_dir}/authorset.sbt", f"{self.output_dir}/comment.cmt"]
 		self.submit_files(files_to_submit, 'genbank')
 		print(f"Submitted sample {self.sample.sample_id} to Genbank")
-	# Trigger report fetching
-	def update_report(self):
-		self.fetch_report()
-
 
 if __name__ == "__main__":
 	submission_main()
