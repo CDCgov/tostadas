@@ -413,7 +413,7 @@ class Submission:
 		Returns a DataFrame with one row per submission_name.
 		"""
 		# Initialize a dictionary to store consolidated data
-		consolidated_report = {
+		report = {
 			'submission_name': self.sample.sample_id,
 			'submission_status': None,
 			'submission_id': None,
@@ -434,30 +434,30 @@ class Submission:
 			tree = ET.parse(report_path)
 			root = tree.getroot()
 			# Extract submission-wide attributes
-			consolidated_report['submission_status'] = root.get("status", None)
-			consolidated_report['submission_id'] = root.get("submission_id", None)
+			report['submission_status'] = root.get("status", None)
+			report['submission_id'] = root.get("submission_id", None)
 			# Iterate over each <Action> element to extract database-specific data
 			for action in root.findall("Action"):
 				db = action.get("target_db", "").lower()
 				if db == "biosample":
-					consolidated_report['biosample_status'] = action.get("status", None)
-					consolidated_report['biosample_message'] = action.findtext("Response")
+					report['biosample_status'] = action.get("status", None)
+					report['biosample_message'] = action.findtext("Response")
 				elif db == "sra":
-					consolidated_report['sra_status'] = action.get("status", None)
-					consolidated_report['sra_message'] = action.findtext("Response")
+					report['sra_status'] = action.get("status", None)
+					report['sra_message'] = action.findtext("Response")
 				elif db == "genbank":
-					consolidated_report['genbank_status'] = action.get("status", None)
-					consolidated_report['genbank_message'] = action.findtext("Response")
-					consolidated_report['genbank_release_date'] = action.get("release_date", None)
+					report['genbank_status'] = action.get("status", None)
+					report['genbank_message'] = action.findtext("Response")
+					report['genbank_release_date'] = action.get("release_date", None)
 			# Add tracking location if available
 			tracking_location = root.find("Tracking/SubmissionLocation")
 			if tracking_location is not None:
-				consolidated_report['tracking_location'] = tracking_location.text
+				report['tracking_location'] = tracking_location.text
 		except FileNotFoundError:
 			print(f"Report not found: {report_path}")
 		except ET.ParseError:
 			print(f"Error parsing XML report: {report_path}")
-		return pd.DataFrame([consolidated_report])
+		return pd.DataFrame([report])
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Prod>/sample_database/<files> """
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
