@@ -457,7 +457,7 @@ class Submission:
 			print(f"Report not found: {report_path}")
 		except ET.ParseError:
 			print(f"Error parsing XML report: {report_path}")
-		return consolidated_report
+		return pd.DataFrame([consolidated_report])
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Prod>/sample_database/<files> """
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
