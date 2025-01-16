@@ -151,7 +151,6 @@ def submission_main():
 		all_reports = pd.DataFrame()
 		for db, submission in submission_objects.items():
 			report_xml_file = f"{parameters['output_dir']}/{parameters['submission_name']}/{db}/report.xml"
-			print(f"report path {report_xml_file}")
 			df = submission.parse_report_to_df(report_xml_file)
 			all_reports = pd.concat([all_reports, df], ignore_index=True)
 		# output_dir = submission_outputs/submission_name/<database> and we want to save a report for all samples to submission_outputs/submission_name/
@@ -396,17 +395,17 @@ class Submission:
 		self.client.change_dir(self.submission_dir)  # Change to Test or Prod
 		self.client.change_dir(f"{self.sample.sample_id}_{self.type}")  # Change to sample-specific directory
 		# Check if report.xml exists and download it
-		report_file = os.path.join(self.output_dir, 'report.xml')
-		if os.path.exists(report_file):
-				return True  # Indicate that the report already exists
-		if self.client.file_exists(report_file):
-			print(f"Report found at {report_file}")
-			report_local_path = os.path.join(self.output_dir, 'report.xml')
-			self.client.download_file(report_file, report_local_path)
-			return report_local_path
+		report_ftp_path = f"{self.sample.sample_id}_{self.type}/report.xml"
+		report_local_path = os.path.join(self.output_dir, 'report.xml')
+		if os.path.exists(report_local_path):
+				return True  # Report already exists, don't fetch
+		if self.client.file_exists('report.xml'):
+			print(f"Report found at {report_ftp_path}")
+			self.client.download_file('report.xml', report_local_path)
+			return report_local_path # Report fetched, return its path
 		else:
 			print(f"No report found for submission {self.sample.sample_id}")
-			return False
+			return False # Report not found, need to try again
 	def parse_report_to_df(self, report_path):
 		"""
 		Parses report.xml file and consolidates all database entries into a single row
@@ -502,12 +501,12 @@ class SFTPClient:
 			return True
 		except IOError:
 			return False
-	def download_file(self, remote_path, local_path):
+	def download_file(self, remote_file, local_path):
 		try:
-			self.sftp.get(remote_path, local_path)
-			print(f"Downloaded file from {remote_path} to {local_path}")
+			self.sftp.get(remote_file, local_path)
+			print(f"Downloaded {remote_file} to {local_path}")
 		except Exception as e:
-			raise IOError(f"Failed to download {remote_path}: {e}")
+			raise IOError(f"Failed to download {remote_file}: {e}")
 	def upload_file(self, file_path, destination_path):
 		try:
 			self.sftp.put(file_path, destination_path)
@@ -553,10 +552,10 @@ class FTPClient:
 			return True
 		else:
 			return False
-	def download_file(self, remote_path, local_path):
+	def download_file(self, remote_file, local_path):
 		with open(local_path, 'wb') as f:
-			self.ftp.retrbinary(f'RETR {remote_path}', f.write)
-		print(f"Downloaded file from {remote_path} to {local_path}")
+			self.ftp.retrbinary(f'RETR {remote_file}', f.write)
+		print(f"Downloaded file from {remote_file} to {local_path}")
 	def upload_file(self, file_path, destination_path):
 		try:
 			if file_path.endswith(('.fasta', '.fastq', '.fna', '.fsa', '.gff', '.gff3', '.gz', 'xml', '.sqn', '.sbt', '.cmt')):  
