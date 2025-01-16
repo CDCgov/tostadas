@@ -34,7 +34,8 @@ workflow INITIAL_SUBMISSION {
 
         // if params.update_submission is true, update an existing submission
         else if ( params.update_submission == true ) {
-             // process for updating the submitted samples
+            // process for updating the submitted samples
+            // todo: update to take the csv output from FETCH_SUBMISSION
             UPDATE_SUBMISSION ( submission_ch, submission_config )
 
             // try to fetch & parse the report.xml
