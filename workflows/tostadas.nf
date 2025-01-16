@@ -55,12 +55,18 @@ workflow TOSTADAS {
 	METADATA_VALIDATION ( 
 		params.meta_path
 	)
-	metadata_ch = METADATA_VALIDATION.out.tsv_Files
-		.flatten()
-		.map { 
-			meta = [id:it.getSimpleName()] 
-			[ meta, it ] 
-		}
+    metadata_ch = METADATA_VALIDATION.out.tsv_Files
+        .flatten()
+        .map { 
+            def fileName = it.getBaseName()
+            def baseName = fileName
+            if (fileName.endsWith('.fastq.gz')) {
+                baseName = fileName - '.fastq.gz'
+            }
+            def meta = [id: baseName]
+            [meta, it]
+        }
+
 
 	// Generate the fasta and fastq paths
 	reads_ch = 
