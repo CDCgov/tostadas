@@ -444,17 +444,27 @@ class Submission:
 			# Iterate over each <Action> element to extract database-specific data
 			for action in root.findall("Action"):
 				db = action.get("target_db", "").lower()
+				response = action.find("Response")
+				response_message = None
+				if response is not None:
+					# Extract message from <Message> tag if present
+					message_tag = response.find("Message")
+					if message_tag is not None:
+						response_message = message_tag.text.strip()
+					else:
+						# Fallback to Response's own text or attributes
+						response_message = response.get("status", "").strip() or response.text.strip()
 				if db == "biosample":
 					report['biosample_status'] = action.get("status", None)
-					report['biosample_message'] = action.findtext("Response")
+					report['biosample_message'] = response_message
 				elif db == "sra":
 					report['sra_status'] = action.get("status", None)
-					report['sra_message'] = action.findtext("Response")
+					report['sra_message'] = response_message
 				elif db == "genbank":
 					report['genbank_status'] = action.get("status", None)
-					report['genbank_message'] = action.findtext("Response")
+					report['genbank_message'] = response_message
 					report['genbank_release_date'] = action.get("release_date", None)
-			# Add tracking location if available
+			# Add server location if available
 			tracking_location = root.find("Tracking/SubmissionLocation")
 			if tracking_location is not None:
 				report['tracking_location'] = tracking_location.text
