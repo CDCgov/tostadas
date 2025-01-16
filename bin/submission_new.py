@@ -122,7 +122,7 @@ def submission_main():
 	elif parameters['fetch']:
 		start_time = time.time()
 		timeout = 60  # time out after 60 seconds  
-		report_fetched = False  # Flag to indicate if a report has been fetched
+		report_fetched = {db: False for db in ['biosample', 'sra', 'genbank']}  # Track fetched status for each db
 		
 		while time.time() - start_time < timeout:
 			# if user is submitting to genbank via ftp and provided the necessary files
@@ -130,41 +130,48 @@ def submission_main():
 				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission}
 			else:
 				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission}
-			# Try fetching the report
+			# Try fetching reports for all databases
 			for db, submission_object in submission_objects.items():
-				print(f"Fetching report for {db}")
-				if submission_object.fetch_report():  # Stop trying if the report is found locally
-					print(f"Report for {db} successfully fetched or already exists.")
-					report_fetched = True
-					break  # Exit the for loop
-				# If report is not fetched, continue trying
-				time.sleep(3)
-			if report_fetched:
-				print("Exiting update loop as a report has been fetched or already exists.")
-				break  # Exit the while loop
+				if not report_fetched[db]:  # Only attempt fetching if the report has not been fetched
+					print(f"Fetching report for {db}")
+					fetched_path = submission_object.fetch_report()
+					if fetched_path:
+						print(f"Report for {db} successfully fetched or already exists.")
+						report_fetched[db] = True
+					else:
+						print(f"Failed to fetch report for {db}, retrying...")
+					time.sleep(3)  # Prevent spamming the server
+
+			# Exit the loop if all reports have been fetched
+			if all(report_fetched.values()):
+				print("All reports successfully fetched.")
+				break
 		else:
-			# If the while loop completes without a successful fetch
-			print("Timeout occurred while trying to fetch and parse the report.")
+			# If the while loop completes without fetching all reports
+			print("Timeout occurred while trying to fetch all reports.")
 		
 		# Loop over submission dbs to parse the report.xmls
 		# todo: add error-handling
 		all_reports = pd.DataFrame()
 		for db, submission in submission_objects.items():
 			report_xml_file = f"{parameters['output_dir']}/{parameters['submission_name']}/{db}/report.xml"
+			print(report_xml_file) # debug
 			df = submission.parse_report_to_df(report_xml_file)
+			print(df)
 			all_reports = pd.concat([all_reports, df], ignore_index=True)
 		# output_dir = submission_outputs/submission_name/<database> and we want to save a report for all samples to submission_outputs/submission_name/
 		report_csv_file = f"{parameters['output_dir']}/{parameters['submission_name']}/submission_report.csv"
-		if os.path.exists(report_csv_file):
-			# If file exists, append to it without writing the header
-			all_reports.to_csv(report_csv_file, mode='a', header=False, index=False)
-		else:
-			# If file doesn't exist, write it with the header
-			all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
-	
+		print(report_csv_file)
+		try:
+			if os.path.exists(report_csv_file):
+				all_reports.to_csv(report_csv_file, mode='a', header=False, index=False)
+			else:
+				all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
+			print(f"Report table updated at: {report_csv_file}")
+		except Exception as e:
+			raise ValueError(f"Failed to save CSV file: {report_csv_file}. Error: {e}")
+
 	elif parameters['update']:
-		# Call and run the update submission script
-		#update_submission.submission_main()
 		# Load the report file
 		report_file = parameters["submission_report"]
 		try:
@@ -391,16 +398,15 @@ class Submission:
 	def fetch_report(self):
 		""" Fetches report.xml from the host site folder submit/<Test|Prod>/sample_database/"""
 		self.client.connect()
-		self.client.change_dir('submit')  # Change to 'submit' directory
-		self.client.change_dir(self.submission_dir)  # Change to Test or Prod
-		self.client.change_dir(f"{self.sample.sample_id}_{self.type}")  # Change to sample-specific directory
+		# Navigate to submit/<Test|Prod>/<submission_db> folder
+		self.client.change_dir(f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}")
 		# Check if report.xml exists and download it
-		report_ftp_path = f"{self.sample.sample_id}_{self.type}/report.xml"
 		report_local_path = os.path.join(self.output_dir, 'report.xml')
 		if os.path.exists(report_local_path):
-				return True  # Report already exists, don't fetch
-		if self.client.file_exists('report.xml'):
-			print(f"Report found at {report_ftp_path}")
+			print(f"Report already exists locally: {report_local_path}")
+			return report_local_path
+		elif self.client.file_exists('report.xml'):
+			print(f"Report found on server. Downloading to: {report_local_path}.")
 			self.client.download_file('report.xml', report_local_path)
 			return report_local_path # Report fetched, return its path
 		else:
@@ -461,9 +467,8 @@ class Submission:
 		""" Uploads a set of files to a host site at submit/<Test|Prod>/sample_database/<files> """
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
-		self.client.change_dir('submit')  # Change to 'submit' directory
-		self.client.change_dir(self.submission_dir) # Change to Test or Prod
-		self.client.change_dir(sample_subtype_dir) # Change to unique dir for sample_destination
+		# Navigate to submit/<Test|Prod>/<submission_db> folder
+		self.client.change_dir(f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}")
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
 		print(f"Submitted files for sample {self.sample.sample_id}")
