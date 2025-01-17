@@ -22,7 +22,7 @@ workflow RUN_VADR {
 
         VADR_ANNOTATION (
             VADR_TRIM.out.trimmed_fasta,
-            params.vadr_models_dir
+            file(params.vadr_models_dir)
         )
 
         cleanup_ch = fasta.map { meta, tsv, fa, fq1, fq2 ->
