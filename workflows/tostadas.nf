@@ -53,7 +53,8 @@ workflow TOSTADAS {
 
 	// run metadata validation process
 	METADATA_VALIDATION ( 
-		params.meta_path
+
+		file(params.meta_path)
 	)
 	metadata_ch = METADATA_VALIDATION.out.tsv_Files
 		.flatten()

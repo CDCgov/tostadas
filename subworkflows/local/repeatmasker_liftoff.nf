@@ -24,8 +24,8 @@ workflow REPEATMASKER_LIFTOFF {
         // run liftoff annotation on files
         LIFTOFF_CLI ( 
             fasta,
-            params.ref_fasta_path, 
-            params.ref_gff_path 
+            file(params.ref_fasta_path), 
+            file(params.ref_gff_path) 
         )
 
         repeatmasker_gff_ch = REPEATMASKER.out.gff.collect().flatten()
