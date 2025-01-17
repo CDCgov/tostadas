@@ -15,7 +15,7 @@ process WAIT {
     
 
     input:
-        val submission_signal
+        //val submission_signal
         val wait_time
 
     script:
