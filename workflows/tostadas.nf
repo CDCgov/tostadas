@@ -55,10 +55,10 @@ workflow TOSTADAS {
 	METADATA_VALIDATION ( 
 		params.meta_path
 	)
-	metadata_ch = METADATA_VALIDATION.out.tsv_Files
-		.flatten()
+    metadata_ch = METADATA_VALIDATION.out.tsv_Files
+        .flatten()
 		.map { 
-			meta = [id:it.getSimpleName()] 
+			meta = [id:it.getBaseName()] 
 			[ meta, it ] 
 		}
 
