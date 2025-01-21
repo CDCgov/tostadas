@@ -12,20 +12,23 @@ include { WAIT                                          } from '../../modules/lo
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
 
 workflow INITIAL_SUBMISSION {
+    submission_config_file = file(submission_config)
+
     take:
         submission_ch // meta.id, tsv, fasta, fastq1, fastq2, gff
         submission_config
         wait_time
     
     main:
+        
         // submit the files to database of choice (after fixing config and getting wait time) 
-        SUBMISSION ( submission_ch, submission_config )
+        SUBMISSION ( submission_ch, submission_config_file )
             
         // actual process to initiate wait 
         WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
 
         // process for updating the submitted samples
-        UPDATE_SUBMISSION ( WAIT.out, submission_ch, submission_config )
+        UPDATE_SUBMISSION ( WAIT.out, submission_ch, submission_config_file )
 
     emit:
         submission_files = UPDATE_SUBMISSION.out.submission_files

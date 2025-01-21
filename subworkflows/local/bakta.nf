@@ -24,7 +24,7 @@ workflow RUN_BAKTA {
             }
         else {
             BAKTA (
-            params.bakta_db_path,
+            file(params.bakta_db_path),
             fasta_ch
             )
         }
