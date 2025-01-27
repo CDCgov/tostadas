@@ -21,13 +21,17 @@ process UPDATE_SUBMISSION {
     def biosample = params.biosample == true ? '--biosample' : ''
     def sra = params.sra == true ? '--sra' : ''
     def genbank = params.genbank == true ? '--genbank' : ''
+    // get absolute path if relative dir passed
+    def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
+
 
     script:
     """     
     submission_new.py \
         --update \
         --submission_name $meta.id \
-        --config_file $submission_config  \
+        --submission_report ${resolved_output_dir}/${params.submission_output_dir}/${meta.id}/submission_report.csv \
+        --config_file $submission_config \
         --metadata_file $validated_meta_path \
         --species $params.species \
         --output_dir  . \
