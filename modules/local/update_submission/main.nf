@@ -47,6 +47,6 @@ process UPDATE_SUBMISSION {
 
     """
     output:
-    path "${validated_meta_path.getBaseName()}", emit: submission_files
+    tuple val(meta), path("${validated_meta_path.getBaseName()}"), emit: submission_files
     //path ""${validated_meta_path.getBaseName()}/*.csv", emit: submission_report
 }

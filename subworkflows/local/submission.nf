@@ -27,30 +27,52 @@ workflow INITIAL_SUBMISSION {
         //WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
         WAIT ( wait_time )
 
+        def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
+        //def submission_folder = file("${resolved_output_dir}/${params.submission_output_dir}/${meta.id}")
+        
         if ( params.fetch_reports_only == true ) {
             // Check if submission folder exists and run report fetching module
-            submission_ch
-                    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path -> 
-                        def folder_path = file("${params.output_dir}/${params.submission_output_dir}/${meta.id}")
-                        if (!folder_path.exists()) {
-                            throw new IllegalStateException("Submission folder does not exist for ID: ${meta.id}")
-                        }
-                        // Return the tuple unchanged if the folder exists
-                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path)
+            submission_ch = submission_ch
+                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path -> 
+                    def submission_folder = file("${resolved_output_dir}/${params.submission_output_dir}/${meta.id}")
+                    if (!submission_folder.exists()) {
+                        throw new IllegalStateException("Submission folder does not exist for ID: ${meta.id}")
                     }
-                    .set { valid_submission_ch } // Create a new validated channel
-
-            FETCH_SUBMISSION ( WAIT.out, valid_submission_ch, submission_config )
+                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
+                }
+            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config )
                 .set { fetched_reports }
         }
 
+        else if ( params.update_submission == false ) {
+            // submit the files to the database of choice
+            SUBMISSION ( submission_ch, submission_config )
+                .set { submission_files }
+
+            // Add submission_files directory to channel before passing to FETCH_SUBMISSION
+            submission_ch.join(submission_files)
+                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder -> 
+                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
+                }
+                .set { submission_with_folder }
+
+            // Fetch & parse the report.xml
+            FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config )
+                .set { fetched_reports }
+        }
         else if ( params.update_submission == false ) {
             // submit the files to database of choice
             SUBMISSION ( submission_ch, submission_config )
                 .set { submission_files }
 
-            // try to fetch & parse the report.xml
-            // todo: this maybe doesn't need to take all the inputs from submission (or maybe doesn't need to be a separate module)
+            // Add submission_files directory to channel before passing to FETCH_SUBMISSION
+            submission_ch.join(submission_files)
+                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder -> 
+                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
+                }
+                .set { submission_with_folder }
+            
+            // Try to fetch & parse the report.xml
             FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config )
                 .set { fetched_reports }
         }
@@ -61,7 +83,13 @@ workflow INITIAL_SUBMISSION {
             UPDATE_SUBMISSION ( submission_ch, submission_config )
                 .set { update_files }
 
-            // try to fetch & parse the report.xml
+            // Map submission_ch to include submission_folder (from UPDATE_SUBMISSION.out.submission_files)
+            submission_ch = submission_ch
+                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path -> 
+                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, UPDATE_SUBMISSION.out.submission_files)
+                }
+
+            // Try to fetch & parse the report.xml
             FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config )
                 .set { fetched_reports }
         }

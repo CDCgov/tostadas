@@ -87,60 +87,46 @@ def submission_main():
 		submission_dir = 'Test'
 	else:
 		submission_dir = 'Prod'
+	
+	# Initial a dictionary to hold accessions if updating
+	accessions_dict = {'biosample':None, 'sra':None, 'genbank':None}
 
-	# Prepare all submissions first (so files are generated even if submission step fails)
-	if parameters['biosample'] and 'biosample' not in databases_to_skip:
-		biosample_submission = BiosampleSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/biosample", 
-												   parameters['submission_mode'], submission_dir, 'biosample')
-	if parameters['sra'] and 'sra' not in databases_to_skip:
-		sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/sra",
-									   parameters['submission_mode'], submission_dir, 'sra')
-	if parameters['genbank'] and 'genbank' not in databases_to_skip:
-		# Generates an XML if ftp_upload is True
-		genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/genbank",
-											   parameters['submission_mode'], submission_dir, 'genbank')
+	# Get workflow
+	# todo: error messaging here should probably be part of NF not this script
+	if parameters["submit"] and parameters["update"]:
+		raise ValueError("Only one of 'submit' or 'update' can be True, not both.")
 
-	# If submission mode
-	if parameters['submit']:
-		# Submit all prepared submissions and fetch report once
-		if parameters['biosample'] and 'biosample' not in databases_to_skip:
-			biosample_submission.submit()
-		if parameters['sra'] and 'sra' not in databases_to_skip:
-			sra_submission.submit()
-		if parameters['genbank'] and 'genbank' not in databases_to_skip:
-			# If user is submitting via FTP
-			if sample.ftp_upload:
-				genbank_submission.prepare_files_ftp_submission() # Prep files and run table2asn
-				genbank_submission.submit()
-			else:
-				# Otherwise, prepare manual submission
-				genbank_submission.prepare_files_manual_submission() # Prep files and run table2asn
-				# Send email if the user requests it
-				if parameters['send_email']:
-					genbank_submission.sendemail()
+	if parameters["submit"]:
+		workflow = "submit"
+	elif parameters["update"]:
+		workflow = "update"
+	elif parameters["fetch"]:
+		workflow = "fetch"
+	else:
+		raise ValueError("Please specify a workflow (submit, update, or fetch) to proceed.")
+	print(f"Workflow requested: {workflow}")
 
-	elif parameters['fetch']:
+	# Beginning of fetch workflow
+	if workflow == 'fetch':
+		# Fetch the reports from NCBI's ftp/sftp site
 		start_time = time.time()
 		timeout = 60  # time out after 60 seconds  
 		report_fetched = {db: False for db in ['biosample', 'sra', 'genbank']}  # Track fetched status for each db
-		
+		databases_to_fetch = [db for db in databases if db not in databases_to_skip] # List of databases to fetch reports for
 		while time.time() - start_time < timeout:
-			# if user is submitting to genbank via ftp and provided the necessary files
-			if parameters['genbank'] and 'genbank' not in databases_to_skip and sample.ftp_upload:
-				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission, 'genbank': genbank_submission}
-			else:
-				submission_objects = {'biosample': biosample_submission, 'sra': sra_submission}
-			# Try fetching reports for all databases
-			for db, submission_object in submission_objects.items():
+			# Try fetching reports for all applicable databases
+			for db in databases_to_fetch:
 				if not report_fetched[db]:  # Only attempt fetching if the report has not been fetched
 					print(f"Fetching report for {db}")
-					fetched_path = submission_object.fetch_report()
+					# Instantiate a Submission object for this database type
+					submission = Submission(sample, parameters, config_dict, f"{parameters['output_dir']}/{parameters['submission_name']}/{db}", parameters['submission_mode'], submission_dir, db)
+					fetched_path = submission.fetch_report()
 					if fetched_path:
 						print(f"Report for {db} successfully fetched or already exists.")
 						report_fetched[db] = True
 					else:
 						print(f"Failed to fetch report for {db}, retrying...")
-					time.sleep(3)  # Prevent spamming the server
+					time.sleep(3)  # Because spamming servers isn't nice
 
 			# Exit the loop if all reports have been fetched
 			if all(report_fetched.values()):
@@ -153,11 +139,9 @@ def submission_main():
 		# Loop over submission dbs to parse the report.xmls
 		# todo: add error-handling
 		all_reports = pd.DataFrame()
-		for db, submission in submission_objects.items():
+		for  db in databases_to_fetch:
 			report_xml_file = f"{parameters['output_dir']}/{parameters['submission_name']}/{db}/report.xml"
-			print(report_xml_file) # debug
 			df = submission.parse_report_to_df(report_xml_file)
-			print(df)
 			all_reports = pd.concat([all_reports, df], ignore_index=True)
 		# output_dir = submission_outputs/submission_name/<database> and we want to save a report for all samples to submission_outputs/submission_name/
 		report_csv_file = f"{parameters['output_dir']}/{parameters['submission_name']}/submission_report.csv"
@@ -170,26 +154,41 @@ def submission_main():
 			print(f"Report table updated at: {report_csv_file}")
 		except Exception as e:
 			raise ValueError(f"Failed to save CSV file: {report_csv_file}. Error: {e}")
+		# End of the fetch workflow
 
-	elif parameters['update']:
-		# Load the report file
-		report_file = parameters["submission_report"]
-		try:
-			report_df =  pd.read_csv(report_file)
-		except Exception as e:
-			raise ValueError(f"Failed to load CSV file: {report_file}. Error: {e}")
-		accessions_dict = get_accessions(sample.sample_id, report_df)
+	# Beginning of submit and update workflows	
+	else:
+		# Load the report file to get the accession IDs if user is updating a submission
+		if workflow == 'update':
+			report_file = parameters["submission_report"]
+			try:
+				report_df =  pd.read_csv(report_file)
+			except Exception as e:
+				raise ValueError(f"Failed to load CSV file: {report_file}. Error: {e}")
+			accessions_dict = get_accessions(sample.sample_id, report_df)
+			# Exit gracefully if accession IDs not found (cannot push update to NCBI without an accession ID)
+			databases_to_update = [db for db in databases if db not in databases_to_skip]
+			print(f"Updated requested for databases {', '.join(databases_to_update)}")
+			if any(accessions_dict.get(db) is None for db in databases_to_update):
+				print(f"Error: Missing accession for one of more of {', '.join(databases_to_update)}. Exiting update workflow.")
+				sys.exit(1) 
+			else:
+				print(f"Accessions found for {', '.join(accessions_dict.keys())}")
+				print(f"Accessions: {', '.join(f'{k}: {v}' for k, v in accessions_dict.items())}")
+				# Todo: this code requires the user to specify the exact database(s) they want to update
 
-		# Prepare all submissions with the accessions
-		if accessions_dict['biosample'] and parameters['biosample'] and	'biosample' not in databases_to_skip:
+		# Run rest of the submission steps: Prep the files, submit, and fetch the report once
+		if parameters['biosample'] and 'biosample' not in databases_to_skip:
 			biosample_submission = BiosampleSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/biosample", 
-												   parameters['submission_mode'], submission_dir, 'biosample', accessions_dict['biosample'])
-		if accessions_dict['sra'] and parameters['sra'] and 'sra' not in databases_to_skip:
+													parameters['submission_mode'], submission_dir, 'biosample', accessions_dict['biosample'])
+		if parameters['sra'] and 'sra' not in databases_to_skip:
 			sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/sra",
-									   parameters['submission_mode'], submission_dir, 'sra', accessions_dict['sra'])
-		if accessions_dict['genbank'] and parameters['genbank'] and 'genbank' not in databases_to_skip:
+										parameters['submission_mode'], submission_dir, 'sra', accessions_dict['sra'])
+		if parameters['genbank'] and 'genbank' not in databases_to_skip:
+			# Generates an XML if ftp_upload is True
 			genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/genbank",
-											   parameters['submission_mode'], submission_dir, 'genbank', accessions_dict['genbank'])
+												parameters['submission_mode'], submission_dir, 'genbank', accessions_dict['genbank'])
+
 		# Submit all prepared submissions and fetch report once
 		if parameters['biosample'] and 'biosample' not in databases_to_skip:
 			biosample_submission.submit()
@@ -206,7 +205,7 @@ def submission_main():
 				# Send email if the user requests it
 				if parameters['send_email']:
 					genbank_submission.sendemail()
-
+	# End of submit and update workflows
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
 	"""
@@ -472,7 +471,10 @@ class Submission:
 			print(f"Report not found: {report_path}")
 		except ET.ParseError:
 			print(f"Error parsing XML report: {report_path}")
-		return pd.DataFrame([report])
+		report = pd.DataFrame([report])
+		report = report.where(pd.notna(report), None)
+		return report
+		#return pd.DataFrame([report])
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Prod>/sample_database/<files> """
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)

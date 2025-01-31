@@ -13,7 +13,7 @@ process FETCH_SUBMISSION {
 
     input:
     val wait_time
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path)
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path), path(submission_folder)
     path submission_config
 
     // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
@@ -24,7 +24,9 @@ process FETCH_SUBMISSION {
     def genbank = params.genbank == true ? '--genbank' : ''
 
     script:
-    """     
+    """
+    echo "Using submission folder: $submission_folder"
+    ls -lh $submission_folder      
     submission_new.py \
         --fetch \
         --submission_name $meta.id \
