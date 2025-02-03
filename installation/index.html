@@ -317,19 +317,11 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#3-create-and-activate-a-conda-environment" class="md-nav__link">
-    <span class="md-ellipsis">
-      (3) Create and activate a conda environment
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#4-install-nextflow-using-mamba-and-the-bioconda-channel" class="md-nav__link">
     <span class="md-ellipsis">
-      (4) Install Nextflow using mamba and the bioconda Channel
+      (3) Install Nextflow using mamba and the bioconda Channel
     </span>
   </a>
   
@@ -545,82 +537,68 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+
+<li class="md-nav__item">
   <a href="#1-clone-the-repository-to-your-local-machine" class="md-nav__link">
     <span class="md-ellipsis">
       (1) Clone the repository to your local machine:
     </span>
   </a>
-  
 </li>
-        
-          <li class="md-nav__item">
+
+<li class="md-nav__item">
   <a href="#2-install-mamba-and-add-it-to-your-path" class="md-nav__link">
     <span class="md-ellipsis">
       (2) Install mamba and add it to your PATH
     </span>
   </a>
-  
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#3-create-and-activate-a-conda-environment" class="md-nav__link">
+
+<li class="md-nav__item">
+  <a href="#3-install-nextflow-using-mamba-and-the-bioconda-channel" class="md-nav__link">
     <span class="md-ellipsis">
-      (3) Create and activate a conda environment
+      (3) Install Nextflow using mamba and the bioconda Channel
     </span>
   </a>
-  
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#4-install-nextflow-using-mamba-and-the-bioconda-channel" class="md-nav__link">
+
+<li class="md-nav__item">
+  <a href="#4-update-the-default-submissions-config-file-with-your-ncbi-username-and-password" class="md-nav__link">
     <span class="md-ellipsis">
-      (4) Install Nextflow using mamba and the bioconda Channel
+      (4) Update the default submissions config file with your NCBI username and password
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="(4) Install Nextflow using mamba and the bioconda Channel">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#install-nextflow" class="md-nav__link">
+</li>
+
+<li class="md-nav__item">
+  <a href="#5-run-the-workflow-with-default-parameters-and-the-local-run-environment" class="md-nav__link">
     <span class="md-ellipsis">
-      Install Nextflow
+      (5) Run the workflow with default parameters and the local run environment
     </span>
   </a>
-  
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#ensure-installation-was-successful-by-running-nextflow-with-the-v-or-version-flag" class="md-nav__link">
+
+<li class="md-nav__item">
+  <a href="#6-start-running-your-own-analysis" class="md-nav__link">
     <span class="md-ellipsis">
-      Ensure installation was successful by running nextflow with the -v or -version flag
+      (6) Start running your own analysis
     </span>
   </a>
-  
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-update-the-default-submissions-config-file-with-your-ncbi-username-and-password-and-run-the-following-nextflow-command-to-execute-the-scripts-with-default-parameters-and-the-local-run-environment" class="md-nav__link">
+
+<li class="md-nav__item">
+  <a href="#7-custom-metadata-validation-and-custom-biosample-package" class="md-nav__link">
     <span class="md-ellipsis">
-      (5) Update the default submissions config file with your NCBI username and password, and run the following nextflow command to execute the scripts with default parameters and the local run environment:
+      (7) Custom metadata validation and custom BioSample package
     </span>
   </a>
-  
 </li>
-        
-      </ul>
-    </nav>
-  
+
+</ul>
+</nav>
 </li>
-      
-    </ul>
+</ul>
+
   
 </nav>
                   </div>
@@ -638,48 +616,80 @@
   
 
 
-<h1 id="installation">Installation</h1>
-<h2 id="environment-setup">Environment Setup</h2>
-<h3 id="dependencies">Dependencies:</h3>
-<ul>
-<li>Nextflow v. 21.01.03 or newer</li>
-<li>Compute environment (docker, singularity or conda)</li>
-</ul>
-<p>❗ Note: If you are a CDC user, please follow the set-up instructions found on this page: <a href="https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide">CDC User Guide</a></p>
-<h3 id="1-clone-the-repository-to-your-local-machine">(1) Clone the repository to your local machine:</h3>
-<ul>
-<li><code>git clone https://github.com/CDCgov/tostadas.git</code></li>
-</ul>
-<p>❗ Note: If you have mamba or nextflow installed in your local environment, you may skip steps 2, 3 (mamba installation) and 6 (nextflow installation) accordingly.</p>
-<h3 id="2-install-mamba-and-add-it-to-your-path">(2) Install mamba and add it to your PATH</h3>
-<p>2a. Install mamba</p>
-<p>❗ Note: If you have mamba installed in your local environment, skip ahead to step 3 (Create and activate a conda environment)</p>
-<p><code>curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download</code>
-<code>Mambaforge-$(uname)-$(uname -m).sh</code>
-<code>bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge</code></p>
-<p>2b. Add mamba to PATH:</p>
-<p><code>export PATH="$HOME/mambaforge/bin:$PATH"</code></p>
-<h3 id="3-create-and-activate-a-conda-environment">(3) Create and activate a conda environment</h3>
-<p>3a. Create an empty conda environment to install Nextflow into</p>
-<p><code>conda create --name tostadas</code></p>
-<p>3b. Activate the environment</p>
-<p><code>conda activate tostadas</code></p>
-<p>Verify which environment is active by running the following conda command: <code>conda env list</code>. The active environment will be denoted with an asterisk <code>*</code></p>
-<h3 id="4-install-nextflow-using-mamba-and-the-bioconda-channel">(4) Install Nextflow using mamba and the bioconda Channel</h3>
-<h4 id="install-nextflow">Install Nextflow</h4>
-<p><code>mamba install -c bioconda nextflow</code></p>
-<h4 id="ensure-installation-was-successful-by-running-nextflow-with-the-v-or-version-flag">Ensure installation was successful by running nextflow with the <code>-v</code> or <code>-version</code> flag</h4>
-<p><code>nextflow -v</code></p>
-<p>Expected output:</p>
-<p><code>nextflow version &lt;CURRENT VERSION&gt;</code></p>
-<p>The exact version of Nextflow returned will differ from installation to installation. It is important that the command executes successfully, and a version number is returned.</p>
-<h3 id="5-update-the-default-submissions-config-file-with-your-ncbi-username-and-password-and-run-the-following-nextflow-command-to-execute-the-scripts-with-default-parameters-and-the-local-run-environment">(5) Update the default submissions config file with your NCBI username and password, and run the following nextflow command to execute the scripts with default parameters and the local run environment:</h3>
-<p><code># update this config file (you don't have to use vim)</code>
-<code>vim bin/config_files/default_config.yaml</code>
-<code># for virus reads</code>
-<code>nextflow run main.nf -profile test,&lt;singularity|docker|conda&gt; --virus</code></p>
-<p>❗ Note: If you do not update the default_config.yaml file with your NCBI credentials, you will see the following command error: <code>Error:530 Login incorrect</code>.</p>
-<p>The outputs of the pipeline will appear in the test_output folder within the project directory. You can specify an output directory in the config file or by supplying a path to the <code>--output_dir</code> flag in your <code>nextflow run</code> command.</p>
+                <h1 id="installation">Installation</h1>
+
+                <h2 id="environment-setup">Environment Setup</h2>
+                
+                <h3 id="dependencies">Dependencies:</h3>
+                
+                <ul>
+                  <li>Nextflow v. 21.10.3 or newer</li>
+                  <li>Compute environment (docker, singularity or conda)</li>
+                </ul>
+                
+                <p>❗ Note: If you are a CDC user, please follow the set-up instructions found on this page: <a href="https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide">CDC User Guide</a></p>
+                
+                <h3 id="1-clone-the-repository-to-your-local-machine">(1) Clone the repository to your local machine:</h3>
+                
+                <ul>
+                  <li><code>git clone https://github.com/CDCgov/tostadas.git</code></li>
+                </ul>
+                
+                <p>❗ Note: If you already have Nextflow installed in your local environment, skip ahead to step 5.</p>
+                
+                <h3 id="2-install-mamba-and-add-it-to-your-path">(2) Install mamba and add it to your PATH</h3>
+                
+                <p>2a. Install mamba</p>
+                
+                <p>❗ Note: If you have mamba installed in your local environment, skip ahead to step 3 (<a href="#3-create-and-activate-a-conda-environment">Create and activate a conda environment</a>)</p>
+                
+                <p><code>curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh</code></p>
+                <p><code>bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge</code></p>
+                
+                <p>2b. Add mamba to PATH:</p>
+                
+                <p><code>export PATH="$HOME/mambaforge/bin:$PATH"</code></p>
+                
+                <h3 id="3-install-nextflow-using-mamba-and-the-bioconda-channel">(3) Install Nextflow using mamba and the bioconda Channel</h3>
+                
+                <p><code>mamba install -c bioconda nextflow</code></p>
+                
+                <h3 id="4-update-the-default-submissions-config-file-with-your-ncbi-username-and-password">(4) Update the default submissions config file with your NCBI username and password</h3>
+                
+                <p><code># update this config file (you don't have to use vim)</code></p>
+                <p><code>vim conf/submission_config.yaml</code></p>
+                
+                <h3 id="5-run-the-workflow-with-default-parameters-and-the-local-run-environment">(5) Run the workflow with default parameters and the local run environment</h3>
+                
+                <p><code># test command for virus reads</code></p>
+                <p><code>nextflow run main.nf -profile test,&lt;singularity|docker|conda&gt; --virus</code></p>
+                
+                <p>The pipeline outputs appear in <code>tostadas/test_output</code></p>
+                
+                <h3 id="6-start-running-your-own-analysis">(6) Start running your own analysis</h3>
+                
+                <p><strong>Annotate and submit viral reads</strong></p>
+                <p><code>nextflow run main.nf -profile &lt;docker|singularity&gt; --species virus --submission --annotation --genbank true --sra true --biosample true --output_dir &lt;path/to/output/dir/&gt; --meta_path &lt;path/to/metadata_file.xlsx&gt; --submission_config &lt;path/to/submission_config.yaml&gt;</code></p>
+                
+                <p><strong>Annotate and submit bacterial reads</strong></p>
+                <p><code>nextflow run main.nf -profile &lt;docker|singularity&gt; --species bacteria --submission --annotation --genbank true --sra true --biosample true --meta_path &lt;path/to/metadata_file.xlsx&gt; --submission_config &lt;path/to/submission_config.yaml&gt; --download_bakta_db --bakta_db_type &lt;light|full&gt; --output_dir &lt;path/to/output/dir/&gt;</code></p>
+                
+                <p>Refer to the wiki for more information on input parameters and use cases</p>
+                
+                <h3 id="7-custom-metadata-validation-and-custom-biosample-package">(7) Custom metadata validation and custom BioSample package</h3>
+                
+                <p>TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; version 1.0) NCBI BioSample package for submissions to the BioSample repository. You can submit using a different BioSample package by doing the following:</p>
+                <ol>
+                  <li>Change the package name in the <code>conf/submission_config.yaml</code>. Choose one of the available <a href="https://www.ncbi.nlm.nih.gov/biosample/docs/packages/">NCBI BioSample packages</a>.</li>
+                  <li>Add the necessary fields for your BioSample package to your input Excel file.</li>
+                  <li>Add those fields as keys to the JSON file (<code>assets/custom_meta_fields/example_custom_fields.json</code>) and provide key info as needed.</li>
+                </ol>
+                <p>replace_empty_with: TOSTADAS will replace any empty cells with this value (Example application: NCBI expects some value for any mandatory field, so if empty you may want to change it to "Not Provided".)</p>
+                <p>new_field_name: TOSTADAS will replace the field name in your metadata Excel file with this value. (Example application: you get weekly metadata Excel files and they specify 'animal_environment' but NCBI expects 'animal_env'; you can specify this once in the JSON file and it will be changed on every run.)</p>
+                
+                <p><strong>Submit to a custom BioSample package</strong></p>
+                <p><code>nextflow run main.nf -profile &lt;docker|singularity&gt; --species virus --submission --annotation --genbank true --sra true --biosample true --output_dir &lt;path/to/output/dir/&gt; --meta_path &lt;path/to/metadata_file.xlsx&gt; --submission_config &lt;path/to/submission_config.yaml&gt; --custom_fields_file &lt;path/to/metadata_custom_fields.json&gt;</code></p>
+                
 
 
 
