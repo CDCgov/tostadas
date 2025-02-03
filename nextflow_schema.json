@@ -370,11 +370,6 @@
       "default": "${projectDir}/assets/feature_types.txt",
       "pattern": "^\\S+\\.txt$"
     },
-    "processed_samples": {
-      "type": "string",
-      "description": "Directory where processed samples are stored.",
-      "default": "${projectDir}/results/submission_outputs"
-    },
     "schema": {
       "type": "string",
       "description": "The schema file for validating the pipeline parameters.",
@@ -393,10 +388,6 @@
     "vadr": {
       "type": "boolean",
       "description": "Flag to enable or disable VADR (Viral Annotation DefineR) step."
-    },
-    "enable_conda": {
-      "type": "boolean",
-      "description": "Flag to enable or disable conda environment setup."
     },
     "repeatmasker_env_yml": {
       "type": "string",
