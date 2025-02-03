@@ -47,7 +47,7 @@
       "description": "Flag to change date output",
       "default": "s"
     },
-    "keep_demographic_info": {
+    "remove_demographic_info": {
       "type": "boolean",
       "description": "Flag that, if false, will remove any potentially identifying demographic data"
     },
@@ -78,10 +78,6 @@
       "type": "integer",
       "description": "# of parallel processes to use for liftoff",
       "default": 8
-    },
-    "lift_delete_temp_files": {
-      "type": "boolean",
-      "description": "Deletes the temporary files after finishing transfer"
     },
     "lift_child_feature_align_threshold": {
       "type": "number",
@@ -128,14 +124,6 @@
       "type": "integer",
       "description": "Gap extend penalty in exons when finding best mapping; by default GE=1",
       "default": 1
-    },
-    "lift_infer_transcripts": {
-      "type": "boolean",
-      "description": "Use if annotation file only includes exon/CDS features and does not include transcripts/mRNA"
-    },
-    "lift_copies": {
-      "type": "boolean",
-      "description": "Look for extra gene copies in the target genome"
     },
     "lift_minimap_path": {
       "type": "string",
@@ -259,17 +247,9 @@
       "description": "Calculated based on sample number (3 * 60 secs * sample_num)",
       "default": 380
     },
-    "batch_name": {
-      "type": "string",
-      "description": "Name of the batch to prefix samples with during submission"
-    },
     "send_submission_email": {
       "type": "boolean",
       "description": "Toggle email notification on/off"
-    },
-    "req_col_config": {
-      "type": "string",
-      "description": "Path to the required_columns.yaml file"
     },
     "submission": {
       "description": "Toggle for running submission"
@@ -432,7 +412,16 @@
       "type": "string",
       "description": "Path to the environment YAML file for setting up the conda environment.",
       "default": "${projectDir}/environment.yml"
-    }
+    }, 
+      "date_format_flag": {
+      "type": "string",
+      "description": "Flag to specify the date format used in the metadata file.",
+      "default": "-s"
+    }, 
+      "fetch_reports_only": {
+      "type": "boolean",
+      "description": "Toggle for only fetching submission reports.",
+    }, 
   },
   "required": [
     "meta_path",
