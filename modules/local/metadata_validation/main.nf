@@ -17,17 +17,24 @@ process METADATA_VALIDATION {
     input:
     path meta_path
 
+    // get absolute path if relative dir passed
+    def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
+
     script:
-    """
-    validate_metadata.py \
-        --meta_path $meta_path \
-        --output_dir . \
-        --custom_fields_file $params.custom_fields_file \
-        --validate_custom_fields $params.validate_custom_fields
-    """
+        """
+        validate_metadata.py \
+            --meta_path $meta_path \
+            --output_dir . \
+            --custom_fields_file $params.custom_fields_file \
+            --validate_custom_fields $params.validate_custom_fields \
+            ${params.fetch_reports_only ? "--find_paths" : ""} \
+            ${params.fetch_reports_only ? "--path_to_existing_tsvs ${resolved_output_dir}/${params.val_output_dir}" : ""} \ 
+            
+        """
 
     output:
     path "*/tsv_per_sample/*.tsv", emit: tsv_Files
     // path "*/tsv_per_sample", emit: tsv_dir
     path "*/errors", emit: errors
+    val sample_count, emit: sample_count // Directly emit sample count as a value
 }
