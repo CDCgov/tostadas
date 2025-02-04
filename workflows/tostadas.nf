@@ -80,6 +80,11 @@ workflow TOSTADAS {
 	// Create initial submission channel
 	submission_ch = metadata_ch.join(reads_ch)
 
+	// If fetch_reports_only is true, force annotation to be false
+	if (params.fetch_reports_only) {
+		params.annotation = false
+	}
+
 	// check if the user wants to skip annotation or not
 	if ( params.annotation ) {
 		// Remove user-provided gff, if present, from annotation input channel before performing annotation
@@ -124,7 +129,7 @@ workflow TOSTADAS {
 	}
 
 	// run submission for the annotated samples 
-	if ( params.submission ) {
+	if ( params.submission || params.fetch_reports_only ) {
 		// pre submission process + get wait time (parallel)
 		GET_WAIT_TIME (
 			METADATA_VALIDATION.out.tsv_Files.collect() 
