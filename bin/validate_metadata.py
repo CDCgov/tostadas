@@ -77,16 +77,7 @@ def metadata_validation_main():
 			print("\nERROR: The following expected TSV files are missing:\n", file=sys.stderr)
 			for missing in missing_tsvs:
 				print(f"  - {missing}", file=sys.stderr)
-			sys.exit(1)
-		# also need to copy the errors folder 
-		errors_dir = f'{parameters["path_to_existing_tsvs"]}/{parameters["file_name"]}/errors'
-		dest_dir = f'{parameters["output_dir"]}/{parameters["file_name"]}/errors'
-		try:
-			shutil.copytree(errors_dir, dest_dir)
-		except FileNotFoundError:
-			raise FileNotFoundError(
-				f'Could not copy {errors_dir} to workDir'
-			)				
+			sys.exit(1)		
 	else:
 		# if fetch_reports_only is false, we run validation steps
 		# now call the main function for validating the metadata

@@ -35,5 +35,4 @@ process METADATA_VALIDATION {
     path "*/tsv_per_sample/*.tsv", emit: tsv_Files
     // path "*/tsv_per_sample", emit: tsv_dir
     path "*/errors", emit: errors
-    val sample_count, emit: sample_count // Directly emit sample count as a value
 }
