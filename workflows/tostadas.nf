@@ -80,51 +80,48 @@ workflow TOSTADAS {
 	// Create initial submission channel
 	submission_ch = metadata_ch.join(reads_ch)
 
-	// If fetch_reports_only is true, force annotation to be false
-	if (params.fetch_reports_only) {
-		params.annotation = false
-	}
+	if ( params.fetch_reports_only == false) {
+		// check if the user wants to skip annotation or not
+		if ( params.annotation ) {
+			// Remove user-provided gff, if present, from annotation input channel before performing annotation
+			submission_ch = submission_ch.map { elements ->
+				elements.take(5)  // Remove the last element (gff)
+				}
 
-	// check if the user wants to skip annotation or not
-	if ( params.annotation ) {
-		// Remove user-provided gff, if present, from annotation input channel before performing annotation
-		submission_ch = submission_ch.map { elements ->
-			elements.take(5)  // Remove the last element (gff)
+			if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
+				// run liftoff annotation process + repeatmasker 
+				if ( params.repeatmasker_liftoff && !params.vadr ) {
+					// run repeatmasker annotation on files
+					REPEATMASKER_LIFTOFF (
+						submission_ch
+					)
+					submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+				}
+				// run vadr processes
+				// issue: VADR fails when species == virus because it uses that flag to call the vadr_models files
+				if ( params.vadr ) {
+					RUN_VADR (
+						submission_ch
+					)
+					submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, tbl
+				}
 			}
-
-		if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
-			// run liftoff annotation process + repeatmasker 
-			if ( params.repeatmasker_liftoff && !params.vadr ) {
-				// run repeatmasker annotation on files
-				REPEATMASKER_LIFTOFF (
-					submission_ch
-				)
-				submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+			else if (params.species == 'bacteria') {
+			// run bakta annotation process
+				if ( params.bakta ) {
+					RUN_BAKTA(
+						submission_ch
+					)
+					// set up submission channels
+					submission_ch = submission_ch
+					| join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, gff
+					| map { meta, tsv, _, fq1, fq2, gff -> 
+						[meta, tsv, fq1, fq2, gff] } // drop original fasta
+					| join(RUN_BAKTA.out.fna) // join annotated fasta
+					| map { meta, tsv, fq1, fq2, gff, fasta -> 
+						[meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
+				}   
 			}
-			// run vadr processes
-			// issue: VADR fails when species == virus because it uses that flag to call the vadr_models files
-			if ( params.vadr ) {
-				RUN_VADR (
-					submission_ch
-				)
-				submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, tbl
-			}
-		}
-		else if (params.species == 'bacteria') {
-		// run bakta annotation process
-			if ( params.bakta ) {
-				RUN_BAKTA(
-					submission_ch
-				)
-				// set up submission channels
-				submission_ch = submission_ch
-				| join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, gff
-				| map { meta, tsv, _, fq1, fq2, gff -> 
-					[meta, tsv, fq1, fq2, gff] } // drop original fasta
-				| join(RUN_BAKTA.out.fna) // join annotated fasta
-				| map { meta, tsv, fq1, fq2, gff, fasta -> 
-					[meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
-			}   
 		}
 	}
 
