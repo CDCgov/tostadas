@@ -66,8 +66,11 @@ def metadata_validation_main():
 		missing_tsvs = []
 		for sample in sample_dfs.keys():
 			tsv_file = f'{parameters["path_to_existing_tsvs"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
-			if not os.path.exists(tsv_file):
-				missing_tsvs.append(tsv_file)
+			dest_tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
+			if os.path.exists(tsv_file):
+				shutil.copy(tsv_file, dest_tsv_file) # copy to local directory
+			else:
+				missing_tsvs.append(tsv_file) # add to missing tsvs list if not found
 		if not missing_tsvs:
 			print(f'\nPaths to existing sample metadata tsvs were found!\n')
 		else:
@@ -75,7 +78,15 @@ def metadata_validation_main():
 			for missing in missing_tsvs:
 				print(f"  - {missing}", file=sys.stderr)
 			sys.exit(1)
-			
+		# also need to copy the errors folder 
+		errors_dir = f'{parameters["path_to_existing_tsvs"]}/{parameters["file_name"]}/errors'
+		dest_dir = f'{parameters["output_dir"]}/{parameters["file_name"]}/errors'
+		try:
+			shutil.copytree(errors_dir, dest_dir)
+		except FileNotFoundError:
+			raise FileNotFoundError(
+				f'Could not copy {errors_dir} to workDir'
+			)				
 	else:
 		# if fetch_reports_only is false, we run validation steps
 		# now call the main function for validating the metadata
