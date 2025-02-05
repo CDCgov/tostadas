@@ -403,16 +403,16 @@
       "type": "string",
       "description": "Path to the environment YAML file for setting up the conda environment.",
       "default": "${projectDir}/environment.yml"
-    }, 
-      "date_format_flag": {
-      "type": "string",
-      "description": "Flag to specify the date format used in the metadata file.",
-      "default": "-s"
-    }, 
+    },
       "fetch_reports_only": {
       "type": "boolean",
-      "description": "Toggle for only fetching submission reports.",
-    }, 
+      "description": "Toggle for only fetching submission reports."
+    },
+    "processed_samples": {
+      "type": "string",
+      "description": "Directory where processed samples are stored.",
+      "default": "${projectDir}/results/submission_outputs"
+    }
   },
   "required": [
     "meta_path",
