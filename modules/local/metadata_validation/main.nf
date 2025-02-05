@@ -29,7 +29,6 @@ process METADATA_VALIDATION {
             --validate_custom_fields $params.validate_custom_fields \
             ${params.fetch_reports_only ? "--find_paths" : ""} \
             ${params.fetch_reports_only ? "--path_to_existing_tsvs ${resolved_output_dir}/${params.val_output_dir}" : ""} \ 
-            
         """
 
     output:
