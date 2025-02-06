@@ -30,7 +30,7 @@ process UPDATE_SUBMISSION {
     submission_new.py \
         --update \
         --submission_name $meta.id \
-        --submission_report ${resolved_output_dir}/${params.submission_output_dir}/${meta.id}/submission_report.csv \
+        --submission_report ${resolved_output_dir}/${params.submission_output_dir}/submission_report.csv \
         --config_file $submission_config \
         --metadata_file $validated_meta_path \
         --species $params.species \
