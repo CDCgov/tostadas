@@ -143,8 +143,8 @@ def submission_main():
 			report_xml_file = f"{parameters['output_dir']}/{parameters['submission_name']}/{db}/report.xml"
 			df = submission.parse_report_to_df(report_xml_file)
 			all_reports = pd.concat([all_reports, df], ignore_index=True)
-		# output_dir = submission_outputs/submission_name/<database> and we want to save a report for all samples to submission_outputs/submission_name/
-		report_csv_file = f"{parameters['output_dir']}/{parameters['submission_name']}/submission_report.csv"
+		#  each submission_name has its own subdir with db files in it; we want to save a report for all samples to output_dir (submission_outputs/) not submission_outputs/submission_name/
+		report_csv_file = f"{parameters['output_dir']}/submission_report.csv"
 		print(report_csv_file)
 		try:
 			if os.path.exists(report_csv_file):
