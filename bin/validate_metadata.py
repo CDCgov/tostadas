@@ -32,21 +32,6 @@ def metadata_validation_main():
 	parameters_class = GetParams()
 	parameters_class.get_parameters()
 	parameters = parameters_class.parameters
-	'''
-	try:
-		assert len([x for x in parameters.keys() if x in ['fasta_path', 'meta_path', 'output_dir', 'condaEnv', 'keep_personal_info',
-														'date_format_flag', 'file_name', 'restricted_terms',
-														'illumina_instrument_restrictions', 'nanopore_instrument_restrictions',
-														'fasta_names', 'overwrite_output_files', 
-														'custom_fields_file', 'validate_custom_fields']]) == len(parameters.keys())
-	except AssertionError:
-		raise AssertionError(f'Expected keys in parameters dictionary are absent:')
-	for param in parameters.keys():
-		try:
-			assert parameters[param] != '' or parameters[param] != "" or parameters[param] is not None
-		except AssertionError:
-			raise AssertionError(f'One or more parameters are empty')
-	'''
 
 	# call the constructor class for converting meta to df
 	meta_to_df = GetMetaAsDf(parameters)
