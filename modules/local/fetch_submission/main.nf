@@ -1,9 +1,9 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    UPDATE SUBMISSION
+                                    FETCH SUBMISSION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process UPDATE_SUBMISSION {
+process FETCH_SUBMISSION {
 
     publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
@@ -12,7 +12,8 @@ process UPDATE_SUBMISSION {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path)
+    val wait_time
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path), path(submission_folder)
     path submission_config
 
     // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
@@ -21,17 +22,15 @@ process UPDATE_SUBMISSION {
     def biosample = params.biosample == true ? '--biosample' : ''
     def sra = params.sra == true ? '--sra' : ''
     def genbank = params.genbank == true ? '--genbank' : ''
-    // get absolute path if relative dir passed
-    def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
-
 
     script:
-    """     
+    """
+    echo "Using submission folder: $submission_folder"
+    ls -lh $submission_folder      
     submission_new.py \
-        --update \
+        --fetch \
         --submission_name $meta.id \
-        --submission_report ${resolved_output_dir}/${params.submission_output_dir}/submission_report.csv \
-        --config_file $submission_config \
+        --config_file $submission_config  \
         --metadata_file $validated_meta_path \
         --species $params.species \
         --output_dir  . \
@@ -47,6 +46,6 @@ process UPDATE_SUBMISSION {
 
     """
     output:
-    tuple val(meta), path("${validated_meta_path.getBaseName()}"), emit: submission_files
-    //path ""${validated_meta_path.getBaseName()}/*.csv", emit: submission_report
+    //path "${validated_meta_path.getBaseName()}", emit: submission_files
+    path "*.csv", emit: submission_report
 }

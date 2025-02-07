@@ -32,19 +32,6 @@ def metadata_validation_main():
 	parameters_class = GetParams()
 	parameters_class.get_parameters()
 	parameters = parameters_class.parameters
-	try:
-		assert len([x for x in parameters.keys() if x in ['fasta_path', 'meta_path', 'output_dir', 'condaEnv', 'remove_demographic_info',
-														'date_format_flag', 'file_name', 'restricted_terms',
-														'illumina_instrument_restrictions', 'nanopore_instrument_restrictions',
-														'fasta_names', 'overwrite_output_files', 
-														'custom_fields_file', 'validate_custom_fields']]) == len(parameters.keys())
-	except AssertionError:
-		raise AssertionError(f'Expected keys in parameters dictionary are absent:')
-	for param in parameters.keys():
-		try:
-			assert parameters[param] != '' or parameters[param] != "" or parameters[param] is not None
-		except AssertionError:
-			raise AssertionError(f'One or more parameters are empty')
 
 	# call the constructor class for converting meta to df
 	meta_to_df = GetMetaAsDf(parameters)
@@ -53,34 +40,59 @@ def metadata_validation_main():
 	meta_to_df.run_get_meta_df()
 	filled_df = meta_to_df.final_df
 
-	# now call the main function for validating the metadata
-	validate_checks = ValidateChecks(filled_df, parameters)
-	validate_checks.validate_main()
-
-	# insert necessary columns in metadata dataframe
-	insert = HandleDfInserts(parameters=parameters, filled_df=validate_checks.metadata_df)
-	insert.handle_df_inserts()
-
-	if validate_checks.did_validation_work:
-		# now split the modified and checked dataframe into individual samples
+	# handle case where we're only fetching reports
+	if parameters['find_paths']:
 		sample_dfs = {}
-		final_df = insert.filled_df
-		# todo: this rename is temporary - will be added in the class/fx to handle multiple tsvs (see lines 76 & 955)
-		final_df = final_df.rename(columns={'sample_name': 'sequence_name'}) # seqsender expects sequence_name
-		for row in range(len(final_df)):
-			sample_df = final_df.iloc[row].to_frame().transpose()
-			sample_df = sample_df.set_index('sequence_name')
-			sample_dfs[final_df.iloc[row]['sequence_name']] = sample_df
-		# now export the .xlsx file as a .tsv 
+		col_name = "sequence_name" if "sequence_name" in filled_df.columns else "sample_name" # allow flexibility in col name
+		for row in range(len(filled_df)):
+			sample_df = filled_df.iloc[row].to_frame().transpose()
+			sample_df = sample_df.set_index(col_name)
+			sample_dfs[filled_df.iloc[row][col_name]] = sample_df
+		missing_tsvs = []
 		for sample in sample_dfs.keys():
-			tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
-			sample_dfs[sample].to_csv(tsv_file, sep="\t")
-			print(f'\nMetadata Validation was Successful!!!\n')
+			tsv_file = f'{parameters["path_to_existing_tsvs"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
+			dest_tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
+			if os.path.exists(tsv_file):
+				shutil.copy(tsv_file, dest_tsv_file) # copy to local directory
+			else:
+				missing_tsvs.append(tsv_file) # add to missing tsvs list if not found
+		if not missing_tsvs:
+			print(f'\nPaths to existing sample metadata tsvs were found!\n')
+		else:
+			print("\nERROR: The following expected TSV files are missing:\n", file=sys.stderr)
+			for missing in missing_tsvs:
+				print(f"  - {missing}", file=sys.stderr)
+			sys.exit(1)		
 	else:
-		print(f'\nMetadata Validation Failed Please Consult : {parameters["output_dir"]}/{parameters["file_name"]}/errors/full_error.txt for a Detailed List\n')
-		sys.exit(1)
+		# if fetch_reports_only is false, we run validation steps
+		# now call the main function for validating the metadata
+		validate_checks = ValidateChecks(filled_df, parameters)
+		validate_checks.validate_main()
 
-	# todo: handle multiple tsvs for illumina vs. nanopore
+		# insert necessary columns in metadata dataframe
+		insert = HandleDfInserts(parameters=parameters, filled_df=validate_checks.metadata_df)
+		insert.handle_df_inserts()
+
+		if validate_checks.did_validation_work:
+			# now split the modified and checked dataframe into individual samples
+			sample_dfs = {}
+			final_df = insert.filled_df
+			# todo: this rename is temporary - will be added in the class/fx to handle multiple tsvs (see lines 76 & 955)
+			final_df = final_df.rename(columns={'sample_name': 'sequence_name'}) # seqsender expects sequence_name
+			for row in range(len(final_df)):
+				sample_df = final_df.iloc[row].to_frame().transpose()
+				sample_df = sample_df.set_index('sequence_name')
+				sample_dfs[final_df.iloc[row]['sequence_name']] = sample_df
+			# now export the .xlsx file as a .tsv 
+			for sample in sample_dfs.keys():
+				tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
+				sample_dfs[sample].to_csv(tsv_file, sep="\t")
+				print(f'\nMetadata Validation was Successful!!!\n')
+		else:
+			print(f'\nMetadata Validation Failed Please Consult : {parameters["output_dir"]}/{parameters["file_name"]}/errors/full_error.txt for a Detailed List\n')
+			sys.exit(1)
+
+		# todo: handle multiple tsvs for illumina vs. nanopore
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
@@ -129,7 +141,9 @@ class GetParams:
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
 		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
-		parser.add_argument("--validate_custom_fields", type=bool, default=True, help="Flag for whether or not validate custom fields ")
+		parser.add_argument("--validate_custom_fields", type=bool, help="Flag for whether or not validate custom fields ")
+		parser.add_argument("--find_paths", action="store_true", help="Only check for existing TSV file paths ((for use with fetch_reports_only))")
+		parser.add_argument("--path_to_existing_tsvs", type=str, required=False, help="Path to existing per-sample TSVs (for use with fetch_reports_only)")
 		return parser
 
 	def get_restrictions(self):
