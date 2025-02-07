@@ -134,9 +134,9 @@ class GetParams:
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
 							help="Output Directory for final Files, default is current directory")
 		parser.add_argument("--overwrite_output_files", type=bool, default=True, help='whether to overwrite the output dir')
-		parser.add_argument("-k", "--keep_personal_info", action="store_true", default=False,
-							help="Flag to keep personal identifying info if provided otherwise it will return an " +
-								 "error if personal information is provided.")
+		parser.add_argument("-k", "--remove_demographic_info", action="store_true", default=False,
+							help="Flag to remove potentially identifying demographic info if provided otherwise no change will be made " +
+								 "Applies to host_sex, host_age, race, ethnicity.")
 		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v'],
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
@@ -262,7 +262,6 @@ class ValidateChecks:
 
 		# global variables for keeping track of sample properties
 		self.did_validation_work = True
-		self.case_data_detected = False
 		self.valid_sample_num = 0
 		self.list_of_sample_errors = []
 		self.list_of_sample_dfs = {}
@@ -332,19 +331,16 @@ class ValidateChecks:
 					self.metadata_df.loc[self.metadata_df['sample_name'] == name, 'author'] = fixed_authors
 				except:
 					self.author_valid = False
-					self.sample_error_msg = "\n\t Invalid Author Name, please list as full names seperated by ;"
+					self.sample_error_msg = "\n\t Invalid Author Name, please list as full names separated by ;"
 
-			# run the check on the PI meta information is the keep_personal_info flag is true
+			# run the check on the PI meta information if the remove_demographic_info flag is true
 			try:
-				assert self.case_data_detected is False
 				assert self.meta_case_grade is True
 			except AssertionError:
-				raise AssertionError(f'Either case_data_detected is not False or meta_case_grade is not True default values')
-			if self.parameters['keep_personal_info'] is True:
-				self.check_meta_case(sample_info)
-			if self.meta_case_grade is False:
-				# just for tracking globally that there was an irregularity with empty personal information
-				self.case_data_detected = True
+				raise AssertionError(f'meta_case_grade was not reset to True')
+			if self.parameters['remove_demographic_info'] is True:
+				self.sample_error_msg += (f"\n\t\t'remove_demographic_info' flag is True. Sample demographic data will be removed if present.")
+				self.metadata_df = self.check_meta_case(sample_info)
 
 			# check if the SRA submission is triggered, if it is, then run the class of functions for handling sra submission
 			if str(sample_info["ncbi_sequence_name_sra"]) != "" or str(sample_info["ncbi_sequence_name_sra"]) != '':
@@ -416,7 +412,7 @@ class ValidateChecks:
 		self.did_validation_work = errors_class.capture_final_error (
 			final_error_file = self.final_error_file, repeat_error = self.repeat_error,
 			matchup_error = self.matchup_error, valid_date_flag = self.valid_date_flag,
-			date_error_msg = self.date_error_msg, case_data_detected = self.case_data_detected, valid_sample_num = self.valid_sample_num,
+			date_error_msg = self.date_error_msg, valid_sample_num = self.valid_sample_num,
 			metadata_df = self.metadata_df, list_of_sample_errors = self.list_of_sample_errors, repeated = self.repeated,
 			did_validation_work = self.did_validation_work,
 		)
@@ -469,73 +465,115 @@ class ValidateChecks:
 
 	def check_date(self):
 		"""
-		Reformats the date ... expects YYYY or YYYY-MM-DD or YYYY-MM... if dates are empty then outputs error in txt file.
-		Otherwise it throws and assertion error and stops the program to tell user to check date formats and input flag
+		Reformats the date based on the input flag. Accepts date formats as YYYY, YYYY-MM, YYYY-MM-DD, MMDDYYYY, MMYYYY.
+		Flags dates with two-digit years (YY) as invalid.
+		Outputs error details in a text file for missing or invalid dates and raises an error if the flag is not valid.
 		"""
 		try:
 			assert self.valid_date_flag is True
 		except AssertionError:
-			raise AssertionError(f'Valid date flag is not proper default value of True')
+			raise AssertionError(f"Valid date flag is not properly set to the default value of True")
 
 		dates_list = self.metadata_df["collection_date"].tolist()
 		samples_list = self.metadata_df["sample_name"].tolist()
 		dates_holder = {'missing_dates': [], 'invalid_dates': []}
+		
+		# Updated regex patterns for different formats
+		date_patterns = [
+			# Matches different date forms, all patterns accept '-' or '/' separator, and all have optional time
+			r"^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?(?:\s(\d{2}):(\d{2}):(\d{2}))?$",  # YYYY, YYYY/MM, YYYY/MM/DD, YYYY/M, YYYY/M/DD
+			r"^(\d{1,2})(?:[-/](\d{1,2}))?(?:[-/](\d{4}))?(?:\s(\d{2}):(\d{2}):(\d{2}))?$",  # M/D/YYYY, MM/DD/YYYY
+			r"^(\d{1,2})(?:[-/](\d{4}))?(?:\s(\d{2}):(\d{2}):(\d{2}))?$",                  # M/YYYY, MM/YYYY
+			r"^(\d{1,2})(?:[-/](\d{1,2}))[-/](\d{2})(?:\s(\d{2}):(\d{2}):(\d{2}))?$"      # M/D/YY, MM/DD/YY
+		]
 
-		# based on input flag reformats the date
-		for i in range(len(dates_list)):
-			if dates_list[i] == "" or dates_list[i] == '' or dates_list[i] == None or dates_list[i] == []:
-				dates_holder['missing_dates'].append(samples_list[i])
+		print(f"flag: {self.parameters['date_format_flag']}")
+		for i, date_value in enumerate(dates_list):
+			sample_name = samples_list[i]
+
+			# Handle missing or empty dates
+			if not date_value:
+				dates_holder['missing_dates'].append(sample_name)
 				self.valid_date_flag = False
+				continue
 
-			# checks if the date is in y-m format and converts to y-m-d format (puts 00 at end?)
-			elif self.parameters['date_format_flag'].lower() == 'v' and str(dates_list[i]).count('-') == 1:
-				try:
-					dates_list[i] = f'{dates_list[i]}-00'
-				except:
-					dates_holder['invalid_dates'].append(samples_list[i])
-					self.valid_date_flag = False
-
-			# checks if the date is in y-m-d format and needs to be converted to y-m format (without day)
-			elif self.parameters['date_format_flag'].lower() == 's' and str(dates_list[i]).count('-') == 2:
-				try:
-					dates_list[i] = '-'.join(dates_list[i].split('-')[:1])
-				except:
-					dates_holder['invalid_dates'].append(samples_list[i])
-					self.valid_date_flag = False
-
-			elif str(dates_list[i]).count('-') == 0:
-				if self.parameters['date_format_flag'].lower() == 's':
-					try:
-						dates_list[i] = f'{dates_list[i]}-00'
-					except:
-						dates_holder['invalid_dates'].append(samples_list[i])
-						self.valid_date_flag = False
-				elif self.parameters['date_format_flag'].lower() == 'v':
-					try:
-						dates_list[i] = f'{dates_list[i]}-00-00'
-					except:
-						dates_holder['invalid_dates'].append(samples_list[i])
-						self.valid_date_flag = False
-
-		# output error messages collected
-		if self.valid_date_flag is False:
 			try:
-				assert True in [len(dates_holder['missing_dates']) != 0, len(dates_holder['invalid_dates']) != 0]
-			except AssertionError:
-				raise AssertionError(f'Valid date flag was set as false, but recorded missing or invalid dates was empty')
-			self.date_error_msg = f'\nDate Errors:\n'
-			if dates_holder['missing_dates']:
-				try:
-					assert len(dates_holder['missing_dates']) != 0
-				except AssertionError:
-					raise AssertionError(f'Recorded missing dates as empty but still passed conditional')
-				self.date_error_msg += f'Missing Dates: {", ".join(dates_holder["missing_dates"])}. '
-			if dates_holder['invalid_dates']:
-				raise ValueError(f'Unable to convert date format according to passed in {self.parameters["date_format_flag"]} '
-								 f'value for date_format_flag. Please confirm date is in right format and this flag was intended')
+				date_value_str = str(date_value)
 
-		# place the modified date list into the dataframe
-		self.metadata_df['collection_date'] = dates_list
+				# Try matching against each pattern
+				match = None
+				for pattern in date_patterns:
+					match = re.match(pattern, date_value_str)
+					if match:
+						break
+				'''
+				if match:
+					print(f"1: {self.valid_date_flag}")
+					# Extract date components
+					if len(match.groups()) == 3:  # Match for MMDDYYYY or MM-DD-YYYY
+						month = match.group(1)
+						day = match.group(2) if len(match.groups()) > 2 else "00"
+						year = match.group(3)
+					elif len(match.groups()) == 2:  # Match for MMYYYY, MM-YYYY, MM/YYYY
+						month = match.group(1)
+						year = match.group(2)
+					else:  # Match for YYYY, YYYY-MM, YYYY-MM-DD
+						year = match.group(1)
+						month = match.group(2) if match.group(2) else "00"
+						day = match.group(3) if match.group(3) else "00"
+					print(f"2: {self.valid_date_flag}")
+				'''
+				if match:
+					# Extract date components
+					year, month, day, *_ = match.groups()
+					if not month:
+						month = "00"
+					if not day:
+						day = "00"
+
+					# Check if the year is only two digits
+					if len(year) == 2:
+						raise ValueError("Two-digit year detected. Use a four-digit year for clarity.")
+
+					# Normalize month and day to two digits
+					month = month.zfill(2)
+					day = day.zfill(2)
+
+					# Handle 'v' flag for YYYY-MM-DD format
+					if self.parameters['date_format_flag'].lower() == 'v':
+						# Ensure date is in YYYY-MM-DD format
+						dates_list[i] = f"{year}-{month}-{day}"
+
+					# Handle 's' flag for YYYY-MM format
+					elif self.parameters['date_format_flag'].lower() == 's':
+						# Ensure date is in YYYY-MM format
+						dates_list[i] = f"{year}-{month}"
+
+					else:
+						print(f"3: {self.valid_date_flag}")
+						raise ValueError(f"Unknown date_format_flag {self.parameters['date_format_flag']}")
+				else:
+					print(f"4: {self.valid_date_flag}")
+					raise ValueError(f"Invalid date format {date_value_str}")
+
+			except Exception as e:
+				dates_holder['invalid_dates'].append(sample_name)
+				self.valid_date_flag = False
+				print(f"5: {self.valid_date_flag}")
+
+		# Handle output or logging for missing and invalid dates
+		with open("date_errors.txt", "w") as error_file:
+			if dates_holder['missing_dates']:
+				error_file.write(f"Missing dates for samples: {dates_holder['missing_dates']}\n")
+			if dates_holder['invalid_dates']:
+				error_file.write(f"Invalid dates for samples: {dates_holder['invalid_dates']}\n")
+
+		if not self.valid_date_flag:
+			print(f"6: {self.valid_date_flag}")
+			raise ValueError("Date validation failed. Check 'date_errors.txt' for details.")
+
+		# Update the dataframe with formatted dates
+		self.metadata_df["collection_date"] = dates_list
 
 	@staticmethod
 	def check_authors(authors):
@@ -595,24 +633,30 @@ class ValidateChecks:
 			self.sample_error_msg += "\n\t\tMissing Required Metadata:  " + ", ".join(missing_fields)
 			if len(missing_optionals) != 0:
 				self.sample_error_msg += "\n\t\tMissing Optional Metadata:  " + ", ".join(missing_optionals)
-
+	
 	def check_meta_case(self, sample_info):
-		""" Checks the case data for metadata (sex, age, race, and ethnicity) is not empty
-		"""
+		""" Checks and removes demographics metadata for cases (sex, age, race, and ethnicity) if present. """
 		try:
 			assert self.meta_case_grade is True
 		except AssertionError:
 			raise AssertionError(f'Meta case grade was not properly reset back to True after sample round')
-
 		invalid_case_data = []
-		for field in self.case_fields:
-			if str(sample_info[field]) != "" and str(sample_info[field]) != '':
-				invalid_case_data.append(field)
-				self.meta_case_grade = False
-		# develop the following error message if the field is empty
-		if self.meta_case_grade is False:
-			self.sample_error_msg += f'\n\t\tPresent Case Data found in: {", ".join(invalid_case_data)}' + \
-					f"\n\t\tValidation will Fail. Please remove Case Data or add the Keep Data Flag -f to Conserve Case Data"
+		try:
+			for field in self.case_fields:
+				if field in sample_info.columns and str(sample_info[field].values[0]) not in ["", None, "Not Provided"]:
+					invalid_case_data.append(field)
+					# Remove the case data from the dataframe
+					sample_info.at[sample_info.index[0], field] = "Not Provided"  # Replace value with Not Provided string
+		except:
+			self.meta_case_grade = False
+		# Develop error message if case data was found and removed
+		if invalid_case_data:
+			self.sample_error_msg += (
+				f'\n\t\tPresent Case Data found in: {", ".join(invalid_case_data)}.'
+				f'\n\t\tThe case data has been removed automatically.'
+			)
+		self.metadata_df.update(sample_info)
+		return self.metadata_df
 
 class Check_Illumina_Nanopore_SRA:
 	""" Class constructor for the various checks on instruments
@@ -807,7 +851,7 @@ class HandleErrors:
 		self.write_tsv_file(sample_passed)
 
 	def capture_final_error(self, final_error_file, repeat_error, matchup_error,
-							valid_date_flag, date_error_msg, case_data_detected, valid_sample_num, metadata_df,
+							valid_date_flag, date_error_msg, valid_sample_num, metadata_df,
 							list_of_sample_errors, repeated, did_validation_work):
 		""" Handles the final error message
 		"""
@@ -824,11 +868,6 @@ class HandleErrors:
 		if valid_date_flag is False:
 			did_validation_work = False
 			final_error += f"{date_error_msg}\n"
-
-		# write the case data error message
-		if case_data_detected is True:
-			did_validation_work = False
-			final_error += f'Keep Personal Info Flag is True But Case Data is Empty!'
 
 		final_error_file.write("General Errors:\n\n")
 		if final_error != '':

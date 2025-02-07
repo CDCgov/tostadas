@@ -42,14 +42,14 @@
       "description": "File path for outputs specific to validate sub-workflow",
       "default": "validation_outputs"
     },
-    "val_date_format_flag": {
+    "date_format_flag": {
       "type": "string",
       "description": "Flag to change date output",
       "default": "s"
     },
-    "val_keep_pi": {
+    "keep_demographic_info": {
       "type": "boolean",
-      "description": "Flag to keep personal identifying info, if provided otherwise it will return an error"
+      "description": "Flag that, if false, will remove any potentially identifying demographic data"
     },
     "validate_custom_fields": {
       "type": "boolean",

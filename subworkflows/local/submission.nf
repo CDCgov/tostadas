@@ -13,6 +13,8 @@ include { WAIT                                          } from '../../modules/lo
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
 
 workflow INITIAL_SUBMISSION {
+    submission_config_file = file(submission_config)
+
     take:
         submission_ch // meta.id, tsv, fasta, fastq1, fastq2, gff
         submission_config
@@ -22,7 +24,7 @@ workflow INITIAL_SUBMISSION {
         // Declare channels to dynamically handle conditional process outputs
         Channel.empty().set { submission_files }    // Default for SUBMISSION output
         Channel.empty().set { update_files }        // Default for UPDATE_SUBMISSION output
-        Channel.empty().set { fetched_reports }     // Default for FETCH_SUBMISSION output
+       
         // actual process to initiate wait 
         //WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
         WAIT ( wait_time )
