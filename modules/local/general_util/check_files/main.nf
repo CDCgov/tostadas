@@ -5,17 +5,9 @@
 */
 process CHECK_FILES {
 
-<<<<<<< HEAD
-    // label 'main'
-    conda (params.enable_conda ? params.env_yml : null)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' :
-        'staphb/tostadas:latest' }"
-=======
-    conda (params.enable_conda ? params.env_yml : null)
+    conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
->>>>>>> 883756c... cleaned up containers and publish dirs
 
     input:
         val signal

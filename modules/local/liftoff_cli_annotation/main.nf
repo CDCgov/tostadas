@@ -7,7 +7,7 @@
 
 process LIFTOFF_CLI {
 	
-    conda (params.enable_conda ? params.env_yml : null)
+    conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/liftoff:1.6.3--pyhdfd78af_0' :
         'quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_0'}"
