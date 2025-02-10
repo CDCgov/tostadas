@@ -86,6 +86,19 @@ TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; ver
 ```
 nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file  <path/to/metadata_custom_fields.json>
 ```
+### Workflow Parameters Overview
+
+This section outlines the primary parameters available for configuring and running the TOSTADAS pipeline effectively, allowing users to tailor the workflow for their needs:
+
+| Parameter               | Description                                                                                       | Input Required           |
+|-------------------------|---------------------------------------------------------------------------------------------------|--------------------------|
+| `--validate_params`     | Flag to enable or disable parameter validation                                                    | No (true/false as bool)  |
+| `--annotation`          | Toggle for running annotation                                                                     | Yes (true/false as bool) |
+| `--submission`          | Toggle for running submission                                                                     | Yes (true/false as bool) |
+| `--update_submission`   | Toggle to update data for existing BioSample or SRA records                                       | Yes (true/false as bool) |
+| `--fetch_reports_only`  | Toggle for only fetching submission reports                                                       | Yes (true/false as bool) |
+
+For more detailed information on each parameter and additional configurations, please refer to the [TOSTADAS documentation](https://github.com/CDCgov/tostadas/wiki).
 
 ## Get in Touch
 If you need to report a bug, suggest new features, or just say “thanks”, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we’ll try to get back to you as soon as possible!
