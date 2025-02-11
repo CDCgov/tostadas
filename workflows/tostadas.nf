@@ -7,7 +7,7 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // get the utility processes / subworkflows
-// include { CHECK_FILES                                       } from "../modules/local/general_util/check_files/main"
+
 // include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
 include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 
