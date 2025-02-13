@@ -7,14 +7,11 @@
 import os
 import pandas as pd
 import warnings
-import tempfile
-import time
 import re
 import argparse
 import sys
 import math
-import stat
-import glob
+import yaml
 import json
 import shutil
 from typing import List, Dict, Union
@@ -66,7 +63,7 @@ def metadata_validation_main():
 	else:
 		# if fetch_reports_only is false, we run validation steps
 		# now call the main function for validating the metadata
-		validate_checks = ValidateChecks(filled_df, parameters)
+		validate_checks = ValidateChecks(filled_df, parameters, parameters_class)
 		validate_checks.validate_main()
 
 		# insert necessary columns in metadata dataframe
@@ -122,6 +119,21 @@ class GetParams:
 		parameters = vars(args)
 		return parameters
 
+	# debug (check for the key, if no key default to Pathogen.cl.1.0)
+	def load_config(self):
+		""" Parse config file and return BioSample package
+		"""
+		with open(self.parameters["config_file"], "r") as f:
+			config_dict = yaml.load(f, Loader=yaml.BaseLoader) # Load yaml as str only
+			return config_dict.get("BioSample_package", "Pathogen.cl.1.0")
+	
+	# debug: load the dict of required BioSample params (not from Excel)
+	def load_required_fields(self, file_path):
+		"""Load required fields from a YAML file."""
+		with open(file_path, "r") as f:
+			data = yaml.safe_load(f)
+		return data or {}
+
 	@staticmethod
 	def get_args():
 		""" Expected args from user and default values associated with them
@@ -142,8 +154,10 @@ class GetParams:
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
 		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
 		parser.add_argument("--validate_custom_fields", type=bool, help="Flag for whether or not validate custom fields ")
-		parser.add_argument("--find_paths", action="store_true", help="Only check for existing TSV file paths ((for use with fetch_reports_only))")
+		parser.add_argument("--find_paths", action="store_true", help="Only check for existing TSV file paths (for use with fetch_reports_only)")
 		parser.add_argument("--path_to_existing_tsvs", type=str, required=False, help="Path to existing per-sample TSVs (for use with fetch_reports_only)")
+		parser.add_argument("--config_file", type=str, help="Path to submission config file with a valid BioSample_package key")
+		parser.add_argument("--biosample_fields_key", type=str, help="Path to file with BioSample required fields information")
 		return parser
 
 	def get_restrictions(self):
@@ -241,7 +255,7 @@ class GetMetaAsDf:
 class ValidateChecks:
 	""" Class constructor for performing a variety of checks on metadata
 	"""
-	def __init__(self, filled_df, parameters):
+	def __init__(self, filled_df, parameters, get_params):
 		# passed into class constructor
 		self.metadata_df = filled_df
 		self.parameters = parameters
@@ -267,10 +281,21 @@ class ValidateChecks:
 		self.list_of_sample_dfs = {}
 		self.final_cols = []
 
+		# Get the correct BioSample package
+		# debug - check this
+		self.biosample_package = get_params.load_config()
+
+		# Set required and "at least one" fields dynamically
+		self.required_fields_dict = get_params.load_required_fields(parameters['biosample_fields_key'])
+		self.at_least_one_required_fields_dict = self.required_fields_dict.get("At_least_one_required", {})
+		self.required_core = self.required_fields_dict.get(self.biosample_package, [])
+		self.optional_core = self.at_least_one_required_fields_dict.get(self.biosample_package, [])
+
 		# field requirements
-		self.required_core = ["sample_name", "ncbi-spuid", "authors", "isolate", "organism",
-							  "collection_date", "country"]
-		self.optional_core = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
+		# debug - remove old code here
+		#self.required_core = ["sample_name", "ncbi-spuid", "authors", "isolate", "organism",
+		#					  "collection_date", "country"]
+		#self.optional_core = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
 		self.case_fields = ["host_sex", "host_age", "race", "ethnicity"]
 		
 		## instantiate CustomFieldsProcessor class
@@ -506,23 +531,7 @@ class ValidateChecks:
 					match = re.match(pattern, date_value_str)
 					if match:
 						break
-				'''
-				if match:
-					print(f"1: {self.valid_date_flag}")
-					# Extract date components
-					if len(match.groups()) == 3:  # Match for MMDDYYYY or MM-DD-YYYY
-						month = match.group(1)
-						day = match.group(2) if len(match.groups()) > 2 else "00"
-						year = match.group(3)
-					elif len(match.groups()) == 2:  # Match for MMYYYY, MM-YYYY, MM/YYYY
-						month = match.group(1)
-						year = match.group(2)
-					else:  # Match for YYYY, YYYY-MM, YYYY-MM-DD
-						year = match.group(1)
-						month = match.group(2) if match.group(2) else "00"
-						day = match.group(3) if match.group(3) else "00"
-					print(f"2: {self.valid_date_flag}")
-				'''
+
 				if match:
 					# Extract date components
 					year, month, day, *_ = match.groups()
@@ -621,9 +630,12 @@ class ValidateChecks:
 				self.meta_core_grade = False
 
 		# check the optional fields
-		for field in self.optional_core:
-			if str(sample_line[field].values[0]) == "" or str(sample_line[field].values[0]) == '':
-				missing_optionals.append(field)
+		if self.optional_core:
+			for group in self.optional_core:
+				if not any(str(sample_line[field].values[0]).strip() for field in group if field in sample_line):
+					self.meta_core_grade = False  # Validation fails if no values exist in this group
+					missing_optionals.append(group)
+					break  # No need to check further if one group fails
 
 		if self.meta_core_grade is False:
 			try:
@@ -632,7 +644,7 @@ class ValidateChecks:
 				raise AssertionError(f'Meta core grade is false but did not record any missing fields')
 			self.sample_error_msg += "\n\t\tMissing Required Metadata:  " + ", ".join(missing_fields)
 			if len(missing_optionals) != 0:
-				self.sample_error_msg += "\n\t\tMissing Optional Metadata:  " + ", ".join(missing_optionals)
+				self.sample_error_msg += "\n\t\tMissing 'At Least One Required' Metadata:  " + ", ".join(missing_optionals)
 	
 	def check_meta_case(self, sample_info):
 		""" Checks and removes demographics metadata for cases (sex, age, race, and ethnicity) if present. """
