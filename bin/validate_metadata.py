@@ -128,11 +128,10 @@ class GetParams:
 			return config_dict.get("BioSample_package", "Pathogen.cl.1.0")
 	
 	# debug: load the dict of required BioSample params (not from Excel)
-	def load_required_fields(self, file_path):
-		"""Load required fields from a YAML file."""
-		with open(file_path, "r") as f:
-			data = yaml.safe_load(f)
-		return data or {}
+	def load_required_fields(self, yaml_path):
+		with open(yaml_path, "r") as f:
+			fields_dict = yaml.load(f, Loader=yaml.SafeLoader)
+		return fields_dict.get("BioSample_packages", {})  # Return the nested dictionary
 
 	@staticmethod
 	def get_args():
@@ -281,21 +280,12 @@ class ValidateChecks:
 		self.list_of_sample_dfs = {}
 		self.final_cols = []
 
-		# Get the correct BioSample package
-		# debug - check this
-		self.biosample_package = get_params.load_config()
-
 		# Set required and "at least one" fields dynamically
+		self.biosample_package = get_params.load_config() # get the correct BioSample package
 		self.required_fields_dict = get_params.load_required_fields(parameters['biosample_fields_key'])
 		self.at_least_one_required_fields_dict = self.required_fields_dict.get("At_least_one_required", {})
-		self.required_core = self.required_fields_dict.get(self.biosample_package, [])
-		self.optional_core = self.at_least_one_required_fields_dict.get(self.biosample_package, [])
-
-		# field requirements
-		# debug - remove old code here
-		#self.required_core = ["sample_name", "ncbi-spuid", "authors", "isolate", "organism",
-		#					  "collection_date", "country"]
-		#self.optional_core = ["collected_by", "sample_type", "lat_lon", "purpose_of_sampling"]
+		self.required_core = self.required_fields_dict.get(self.biosample_package, {}).get("required", [])
+		self.optional_core = self.required_fields_dict.get(self.biosample_package, {}).get("at_least_one_required", [])
 		self.case_fields = ["host_sex", "host_age", "race", "ethnicity"]
 		
 		## instantiate CustomFieldsProcessor class
@@ -614,6 +604,8 @@ class ValidateChecks:
 		return '; '.join(fixed_authors)
 
 
+
+
 	def check_meta_core(self, sample_line):
 		""" Checks that the necessary metadata is present for the sample line
 		"""
@@ -625,8 +617,12 @@ class ValidateChecks:
 		missing_fields, missing_optionals = [], []
 		# check the required fields
 		for field in self.required_core:
-			if str(sample_line[field].values[0]) == "" or str(sample_line[field].values[0]) == '':
-				missing_fields.append(field)
+			if field in sample_line:
+				if str(sample_line[field].values[0]) == "" or str(sample_line[field].values[0]) == '':
+					missing_fields.append(field)
+					self.meta_core_grade = False
+			else:
+				missing_fields.append(field)  # Treat missing columns as missing fields
 				self.meta_core_grade = False
 
 		# check the optional fields

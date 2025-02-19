@@ -16,6 +16,7 @@ import json
 import shutil
 from collections import Counter
 from typing import List, Dict, Union
+import logging
 
 # main function
 def metadata_validation_main():
@@ -118,12 +119,10 @@ class GetParams:
 			config_dict = yaml.load(f, Loader=yaml.BaseLoader) # Load yaml as str only
 			return config_dict.get("BioSample_package", "Pathogen.cl.1.0")
 	
-	# debug: load the dict of required BioSample params (not from Excel)
-	def load_required_fields(self, file_path):
-		"""Load required fields from a YAML file."""
-		with open(file_path, "r") as f:
-			data = yaml.safe_load(f)
-		return data or {}
+	def load_required_fields(self, yaml_path):
+		with open(yaml_path, "r") as f:
+			fields_dict = yaml.load(f, Loader=yaml.SafeLoader)
+		return fields_dict.get("BioSample_packages", {})  # Return the nested dictionary
 
 	@staticmethod
 	def get_args():
@@ -188,12 +187,10 @@ class GetMetaAsDf:
 	"""Loads and formats metadata into a DataFrame before validation."""
 	def __init__(self, parameters):
 		self.parameters = parameters
-
 	def get_meta_df(self):
 		"""Loads metadata and returns the formatted DataFrame."""
 		df = self.load_meta()
 		return self.populate_fields(df)
-
 	def load_meta(self):
 		"""Loads metadata from an Excel file into a DataFrame and checks for issues."""
 		df = pd.read_excel(
@@ -215,7 +212,6 @@ class GetMetaAsDf:
 		if df.empty:
 			raise ValueError("The metadata Excel sheet is empty. Please provide a valid file with data.")
 		return df
-
 	def populate_fields(self, df):
 		"""Replace NaN values in certain columns with 'Not Provided' or an empty string."""
 		
@@ -236,13 +232,8 @@ class ValidateChecks:
 	""" Class constructor for performing a variety of checks on metadata
 	"""
 	def __init__(self, filled_df, parameters, get_params):
-		# passed into class constructor
 		self.metadata_df = filled_df
 		self.parameters = parameters
-		self.did_validation_work = True
-
-		# Get the correct BioSample package
-		self.biosample_package = get_params.load_config()
 
 		# set flags for error reporting
 		self.nanopore_grades = {''}
@@ -251,6 +242,7 @@ class ValidateChecks:
 		self.repeated = False
 		
 		# error messages
+		self.errors = {}
 		self.error_tsv = pd.DataFrame(index=self.metadata_df['sample_name'].tolist())
 		[self.sample_error_msg, self.repeat_error, self.sra_msg, self.date_error_msg, self.matchup_error,
 		 				self.illumina_error_msg, self.nanopore_error_msg] = [''] * 7
@@ -265,13 +257,12 @@ class ValidateChecks:
 		self.list_of_sample_errors = []
 		self.final_cols = []
 
-
 		# Set required and "at least one" fields dynamically
 		self.biosample_package = get_params.load_config() # get the correct BioSample package
 		self.required_fields_dict = get_params.load_required_fields(parameters['biosample_fields_key'])
 		self.at_least_one_required_fields_dict = self.required_fields_dict.get("At_least_one_required", {})
-		self.required_core = self.required_fields_dict.get(self.biosample_package, [])
-		self.optional_core = self.at_least_one_required_fields_dict.get(self.biosample_package, [])
+		self.required_core = self.required_fields_dict.get(self.biosample_package, {}).get("required", [])
+		self.optional_core = self.required_fields_dict.get(self.biosample_package, {}).get("at_least_one_required", [])
 		self.case_fields = ["host_sex", "host_age", "race", "ethnicity"]
 		
 		## Instantiate CustomFieldsProcessor class
@@ -499,16 +490,37 @@ class ValidateChecks:
 
 	def check_meta_core(self, sample_info):
 		"""Checks that the necessary metadata is present for the sample."""
-		missing_fields = [field for field in self.required_core if sample_info.get(field, [""])[0] == ""]
-		missing_optionals = next((group for group in self.optional_core if not any(sample_info.get(field, [""])[0] for field in group)), [])
+		missing_fields = []
+		missing_optionals = []
 
+		# Check required fields
+		for field in self.required_core:
+			value = sample_info.get(field, pd.Series([""])).iloc[0]  # Fix the indexing issue
+			if not str(value).strip():  # Check for empty values
+				missing_fields.append(field)
+
+		# Check "at least one required" groups
+		for group in self.optional_core:
+			if not any(str(sample_info.get(field, [""])[0]).strip() for field in group if field in sample_info):
+				missing_optionals.append(group)  # Track missing groups
+				print(f"Checking optional group: {group} -> Values: {group_values}") # debug
+
+		# Log errors for required fields
 		if missing_fields:
 			self.meta_core_grade = False
-			self.log_error(sample_info["sample_name"].values[0], f"Missing Required Metadata: {', '.join(missing_fields)}")
+			self.log_error(
+				sample_info["sample_name"].values[0],
+				f"Missing Required Metadata: {', '.join(missing_fields)}"
+			)
 
+		# Log errors for missing optional groups
 		if missing_optionals:
 			self.meta_core_grade = False
-			self.log_error(sample_info["sample_name"].values[0], f"Missing 'At Least One Required' Metadata: {', '.join(missing_optionals)}")
+			missing_optional_str = "; ".join([" | ".join(group) for group in missing_optionals])
+			self.log_error(
+				sample_info["sample_name"].values[0],
+				f"Missing 'At Least One Required' Metadata: {missing_optional_str}"
+			)
 
 	def check_meta_case(self, sample_info):
 		"""Checks and removes demographic metadata if 'remove_demographic_info' is enabled."""
