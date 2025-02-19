@@ -603,9 +603,6 @@ class ValidateChecks:
 			raise AssertionError(f'# of fixed authors does not match the original number of authors')
 		return '; '.join(fixed_authors)
 
-
-
-
 	def check_meta_core(self, sample_line):
 		""" Checks that the necessary metadata is present for the sample line
 		"""
@@ -823,17 +820,13 @@ class HandleErrors:
 	def capture_errors_per_sample(self):
 		""" Handles the errors at the sample level
 		"""
-
 		# getting flags to check for whether sample passed
 		sample_passed = True
-
 		# check whether instruments passed
 		if str(self.sample_info["ncbi_sequence_name_sra"]) != "" or str(self.sample_info["ncbi_sequence_name_sra"]) != '':
 			self.sample_error_msg += self.sra_msg
-		
 		# add errors in front of sample 
 		self.sample_error_msg += f"\n\t\tErrors:"
-
 		if self.meta_illumina_grade is True and self.meta_nanopore_grade is True:
 			self.sample_error_msg += f"\n\t\t\tPassed all sample checks!"
 		else:
@@ -843,7 +836,10 @@ class HandleErrors:
 			if self.meta_nanopore_grade is False:
 				self.sample_error_msg += self.nanopore_error_msg
 				sample_passed = False
-
+		# check the core metadata validation
+		if self.meta_core_grade is False:
+			self.sample_error_msg += f"\n\t\t\tCore metadata validation failed!"
+			sample_passed = False
 		# check the personal information
 		if self.meta_case_grade is False:
 			sample_passed = False
@@ -855,7 +851,6 @@ class HandleErrors:
 			self.valid_sample_num += 1
 
 		self.list_of_sample_errors.append(self.sample_error_msg)
-
 		self.write_tsv_file(sample_passed)
 
 	def capture_final_error(self, final_error_file, repeat_error, matchup_error,
@@ -876,6 +871,10 @@ class HandleErrors:
 		if valid_date_flag is False:
 			did_validation_work = False
 			final_error += f"{date_error_msg}\n"
+
+		# Check if any sample validation failed
+		if valid_sample_num < len(metadata_df["sample_name"]):
+			did_validation_work = False
 
 		final_error_file.write("General Errors:\n\n")
 		if final_error != '':

@@ -503,8 +503,7 @@ class ValidateChecks:
 		for group in self.optional_core:
 			if not any(str(sample_info.get(field, [""])[0]).strip() for field in group if field in sample_info):
 				missing_optionals.append(group)  # Track missing groups
-				print(f"Checking optional group: {group} -> Values: {group_values}") # debug
-
+	
 		# Log errors for required fields
 		if missing_fields:
 			self.meta_core_grade = False
