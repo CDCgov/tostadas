@@ -42,13 +42,13 @@ workflow INITIAL_SUBMISSION {
                     }
                     return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
                 }
-            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config )
+            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config_file )
                 .set { fetched_reports }
         }
 
         else if ( params.update_submission == false ) {
             // submit the files to the database of choice
-            SUBMISSION ( submission_ch, submission_config )
+            SUBMISSION ( submission_ch, submission_config_file )
                 .set { submission_files }
 
             // Add submission_files directory to channel before passing to FETCH_SUBMISSION
@@ -59,12 +59,12 @@ workflow INITIAL_SUBMISSION {
                 .set { submission_with_folder }
 
             // Fetch & parse the report.xml
-            FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config )
+            FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config_file )
                 .set { fetched_reports }
         }
         else if ( params.update_submission == false ) {
             // submit the files to database of choice
-            SUBMISSION ( submission_ch, submission_config )
+            SUBMISSION ( submission_ch, submission_config_file )
                 .set { submission_files }
 
             // Add submission_files directory to channel before passing to FETCH_SUBMISSION
@@ -75,14 +75,14 @@ workflow INITIAL_SUBMISSION {
                 .set { submission_with_folder }
             
             // Try to fetch & parse the report.xml
-            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config )
+            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config_file )
                 .set { fetched_reports }
         }
 
         // if params.update_submission is true, update an existing submission
         else if ( params.update_submission == true ) {
             // process for updating the submitted samples
-            UPDATE_SUBMISSION ( submission_ch, submission_config )
+            UPDATE_SUBMISSION ( submission_ch, submission_config_file )
                 .set { update_files }
 
             // Map submission_ch to include submission_folder (from UPDATE_SUBMISSION.out.submission_files)
@@ -92,7 +92,7 @@ workflow INITIAL_SUBMISSION {
                 }
 
             // Try to fetch & parse the report.xml
-            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config )
+            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config_file )
                 .set { fetched_reports }
         }
         
