@@ -526,9 +526,9 @@ class ValidateChecks:
 					# Extract date components
 					year, month, day, *_ = match.groups()
 					if not month:
-						month = "00"
+						month = "01"
 					if not day:
-						day = "00"
+						day = "01"
 
 					# Check if the year is only two digits
 					if len(year) == 2:
