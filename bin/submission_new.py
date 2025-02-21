@@ -16,11 +16,14 @@ import shlex
 import subprocess
 import pandas as pd
 from abc import ABC, abstractmethod
-#import paramiko
+import paramiko
 import ftplib
 from nameparser import HumanName
 from zipfile import ZipFile
 import smtplib
+import boto3
+from google.cloud import storage
+from urllib.parse import urlparse
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
@@ -63,7 +66,7 @@ def submission_main():
 	# Initialize the Sample object with parameters from argparse
 	sample = Sample(
 		sample_id=parameters['submission_name'],
-		metadata_file=parameters['metadata_file'],
+		metadata_df=metadata_df,
 		fastq1=parameters.get('fastq1'),
 		fastq2=parameters.get('fastq2'),
 		species = parameters['species'],
@@ -282,9 +285,9 @@ class SubmissionConfigParser:
 		return config_dict
 
 class Sample:
-	def __init__(self, sample_id, metadata_file, fastq1, fastq2, species, databases, fasta_file=None, annotation_file=None):
+	def __init__(self, sample_id, metadata_df, fastq1, fastq2, species, databases, fasta_file=None, annotation_file=None):
 		self.sample_id = sample_id
-		self.metadata_file = metadata_file
+		self.metadata_df = metadata_df
 		self.fastq1 = fastq1
 		self.fastq2 = fastq2
 		self.species = species
@@ -293,23 +296,51 @@ class Sample:
 		self.annotation_file = annotation_file
 		# ftp_upload is true if GenBank FTP submission is supported for that species, otherwise false
 		self.ftp_upload = species in {"flu", "sars", "bacteria"} # flu, sars, bacteria currently support ftp upload to GenBank
-	# todo: add (or ignore) validation for cloud files 
+	# todo: add (or ignore) validation for cloud files
+	def check_s3_file_exists(s3_url):
+		"""Checks if a file exists on S3."""
+		parsed = urlparse(s3_url)
+		bucket_name = parsed.netloc
+		key = parsed.path.lstrip('/')
+		s3 = boto3.client('s3')
+		try:
+			s3.head_object(Bucket=bucket_name, Key=key)
+			return True
+		except Exception:
+			return False
+
+	def check_gcs_file_exists(gcs_url):
+		"""Checks if a file exists on Google Cloud Storage."""
+		parsed = urlparse(gcs_url)
+		bucket_name = parsed.netloc
+		blob_name = parsed.path.lstrip('/')
+		client = storage.Client()
+		bucket = client.bucket(bucket_name)
+		blob = bucket.blob(blob_name)
+		return blob.exists()
+	
 	def validate_files(self):
+		file_location = self.metadata_df.get('file_location', 'local').iloc[0]  # Default to 'local'
 		missing_files_per_database = {}
-		# Check common files
-		if not os.path.exists(self.metadata_file):
-			missing_files_per_database['biosample'] = [self.metadata_file]
 		# Check SRA files
 		if 'sra' in self.databases:
 			missing_files = []
-			if not self.fastq1:
-				missing_files.append("fastq1 (file not provided)")
-			elif not os.path.exists(self.fastq1):
-				missing_files.append(self.fastq1)
-			if not self.fastq2:
-				missing_files.append("fastq2 (file not provided)")
-			elif not os.path.exists(self.fastq2):
-				missing_files.append(self.fastq2)
+			for fastq, label in [(self.fastq1, "fastq1"), (self.fastq2, "fastq2")]:
+				if not fastq:
+					missing_files.append(f"{label} (file not provided)")
+				else:
+					if file_location == 'cloud':
+						if fastq.startswith("s3://"):
+							if not self.check_s3_file_exists(fastq):
+								missing_files.append(f"{label} (missing from S3: {fastq})")
+						elif fastq.startswith("gs://"):
+							if not self.check_gcs_file_exists(fastq):
+								missing_files.append(f"{label} (missing from GCP: {fastq})")
+						else:
+							missing_files.append(f"{label} (unsupported cloud path: {fastq})")
+					else:
+						if not os.path.exists(fastq):
+							missing_files.append(f"{label} (missing locally: {fastq})")
 			if missing_files:
 				missing_files_per_database['sra'] = missing_files
 		# Check GenBank files
