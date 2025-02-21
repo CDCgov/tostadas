@@ -112,11 +112,11 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 **Solution:** Locate the container (e.g., `$HOME/.singularity/staphb-tostadas-latest.img`) and delete it. This will force Nextflow to pull the latest version.
 
-#### 2. "ModuleNotFoundError" when running with Conda on Scicomp
+#### 2. Pipeline hangs indefinitley when running table2asn 
 
-**Issue:** Possibly using the wrong version of Conda on Scicomp.
+**Issue:** This may be caused by duplicate sample IDs in the FASTA file.
 
-**Solution:** Use `miniconda3` on Scicomp servers.
+**Solution:** Review the sequence headers in the sample FASTA files and ensure that each header is unique.
 
 ## Get in Touch
 If you need to report a bug, suggest new features, or just say “thanks”, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we’ll try to get back to you as soon as possible!
