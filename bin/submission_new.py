@@ -23,6 +23,7 @@ from zipfile import ZipFile
 import smtplib
 import boto3
 from google.cloud import storage
+from azure.storage.blob import BlobServiceClient
 from urllib.parse import urlparse
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
@@ -298,7 +299,7 @@ class Sample:
 		self.ftp_upload = species in {"flu", "sars", "bacteria"} # flu, sars, bacteria currently support ftp upload to GenBank
 	# todo: add (or ignore) validation for cloud files
 	def check_s3_file_exists(s3_url):
-		"""Checks if a file exists on S3."""
+		"""Checks if a file exists on AWS S3."""
 		parsed = urlparse(s3_url)
 		bucket_name = parsed.netloc
 		key = parsed.path.lstrip('/')
@@ -319,6 +320,20 @@ class Sample:
 		blob = bucket.blob(blob_name)
 		return blob.exists()
 	
+	def check_azure_file_exists(az_url):
+		"""Checks if a file exists on Azure Blob Storage."""
+		parsed = urlparse(az_url)
+		container_name = parsed.netloc
+		blob_name = parsed.path.lstrip('/')
+
+		try:
+			connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')  # Azure connection string from environment
+			blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+			container_client = blob_service_client.get_container_client(container_name)
+			return container_client.get_blob_client(blob_name).exists()
+		except Exception:
+			return False
+
 	def validate_files(self):
 		file_location = self.metadata_df.get('file_location', 'local').iloc[0]  # Default to 'local'
 		missing_files_per_database = {}
@@ -333,10 +348,13 @@ class Sample:
 					if file_location == 'cloud':
 						if fastq.startswith("s3://"):
 							if not self.check_s3_file_exists(fastq):
-								missing_files.append(f"{label} (missing from S3: {fastq})")
+								missing_files.append(f"{label} (missing from S3 and not found locally: {fastq})")
 						elif fastq.startswith("gs://"):
 							if not self.check_gcs_file_exists(fastq):
-								missing_files.append(f"{label} (missing from GCP: {fastq})")
+								missing_files.append(f"{label} (missing from GCP and not found locally: {fastq})")
+						elif fastq.startswith("az://"):
+							if not self.check_azure_file_exists(fastq) and not os.path.exists(filename):
+								missing_files.append(f"{label} (missing from Azure and not found locally: {fastq})")
 						else:
 							if not os.path.exists(filename):  # Check if file is in current directory before flagging
 								missing_files.append(f"{label} (unsupported cloud path: {fastq})")
