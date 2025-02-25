@@ -70,8 +70,8 @@ workflow TOSTADAS {
 		.splitCsv(header: true, sep: "\t")
 		.map { row ->
 			fasta_path = row.fasta_path ? file(row.fasta_path) : []
-			fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : []
-			fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : []
+			fastq1 = row.fastq_path_1 ? file(row.fastq_path_1)  : []
+			fastq2 = row.fastq_path_2 ? file(row.fastq_path_2)  : []
 			meta = [id:row.sequence_name]
 			gff = row.gff_path ? file(row.gff_path) : []
 			// Return a list with 5 elements
@@ -80,6 +80,9 @@ workflow TOSTADAS {
 
 	// Create initial submission channel
 	submission_ch = metadata_ch.join(reads_ch)
+	
+
+	submission_ch.view()
 
 	if ( params.fetch_reports_only == false) {
 		// check if the user wants to skip annotation or not

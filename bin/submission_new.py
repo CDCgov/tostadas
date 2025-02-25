@@ -329,6 +329,7 @@ class Sample:
 				if not fastq:
 					missing_files.append(f"{label} (file not provided)")
 				else:
+					filename = os.path.basename(fastq)
 					if file_location == 'cloud':
 						if fastq.startswith("s3://"):
 							if not self.check_s3_file_exists(fastq):
@@ -337,7 +338,8 @@ class Sample:
 							if not self.check_gcs_file_exists(fastq):
 								missing_files.append(f"{label} (missing from GCP: {fastq})")
 						else:
-							missing_files.append(f"{label} (unsupported cloud path: {fastq})")
+							if not os.path.exists(filename):  # Check if file is in current directory before flagging
+								missing_files.append(f"{label} (unsupported cloud path: {fastq})")
 					else:
 						if not os.path.exists(fastq):
 							missing_files.append(f"{label} (missing locally: {fastq})")
