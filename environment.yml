@@ -7,7 +7,6 @@ dependencies:
   - pip
   - boto3==1.36.25
   - google-cloud-storage==3.0.0
-  - jmespath==1.0.1
   - libgcc-ng=12.1.0=h8d9b700_16
   - libstdcxx-ng=12.1.0=ha89aaad_16
   - liftoff=1.6.3=pyhdfd78af_0
