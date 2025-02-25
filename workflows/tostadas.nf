@@ -80,9 +80,6 @@ workflow TOSTADAS {
 
 	// Create initial submission channel
 	submission_ch = metadata_ch.join(reads_ch)
-	
-
-	submission_ch.view()
 
 	if ( params.fetch_reports_only == false) {
 		// check if the user wants to skip annotation or not
