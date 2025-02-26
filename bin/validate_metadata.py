@@ -59,9 +59,10 @@ def metadata_validation_main():
 			print("\nERROR: The following expected TSV files are missing:\n", file=sys.stderr)
 			for missing in missing_tsvs:
 				print(f"  - {missing}", file=sys.stderr)
-			sys.exit(1)		
+			sys.exit(1)	
+		
+	# if fetch_reports_only is false, we run validation steps
 	else:
-		# if fetch_reports_only is false, we run validation steps
 		# now call the main function for validating the metadata
 		validate_checks = ValidateChecks(filled_df, parameters, parameters_class)
 		validate_checks.validate_main()
@@ -615,21 +616,30 @@ class ValidateChecks:
 		# check the required fields
 		for field in self.required_core:
 			if field in sample_line:
-				if str(sample_line[field].values[0]) == "" or str(sample_line[field].values[0]) == '':
-					missing_fields.append(field)
+				value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().all() else ""
+				if value == "":
 					self.meta_core_grade = False
+					sample_line.at[sample_line.index[0], field] = "Not Provided"  # Replace missing value
+					self.sample_error_msg += f"WARNING: {field} is missing for sample {sample_line['sample_name'].values[0]}, setting to 'Not Provided'"  # Log warning
 			else:
-				missing_fields.append(field)  # Treat missing columns as missing fields
+				missing_fields.append(field)  # Report as missing column
 				self.meta_core_grade = False
-
-		# check the optional fields
+		# Check the optional fields (at least one required from each group)
 		if self.optional_core:
 			for group in self.optional_core:
-				if not any(str(sample_line[field].values[0]).strip() for field in group if field in sample_line):
-					self.meta_core_grade = False  # Validation fails if no values exist in this group
+				missing_group = True  # Assume the group is missing until proven otherwise
+				for field in group:
+					if field in sample_line:
+						value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().all() else ""
+						if value != "":
+							missing_group = False  # At least one valid field found
+						else:
+							sample_line.at[sample_line.index[0], field] = "Not Provided"  # Replace missing optional value
+							self.sample_error_msg += f"WARNING: {field} in optional group is missing for sample {sample_line['sample_name'].values[0]}, setting to 'Not Provided'"  # Log warning
+				if missing_group:  # If none of the fields in the group had values
+					self.meta_core_grade = False
 					missing_optionals.append(group)
-					break  # No need to check further if one group fails
-
+					break  # Stop checking once we find a failed group
 		if self.meta_core_grade is False:
 			try:
 				assert len(missing_fields) != 0
@@ -999,10 +1009,6 @@ class CustomFieldsProcessor:
 			"nanopore_library_layout","nanopore_library_protocol","nanopore_sra_file_path_1","nanopore_sra_file_path_2"]
 		metadata_columns = set(metadata_df.columns) - set(static_metadata_columns).intersection(metadata_df.columns) # inrtersection method ensures we only compare columns that exist in metadata_df
 		unexpected_fields = metadata_columns - json_keys
-		if unexpected_fields:
-			print(f"The following fields in the metadata dataframe are not in the JSON custom fields: {unexpected_fields}")
-		else:
-			print("All metadata fields are accounted for in the JSON custom fields.")
 		return unexpected_fields
 	
 	def validate_and_process_fields(

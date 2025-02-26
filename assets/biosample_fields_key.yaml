@@ -4,7 +4,6 @@ BioSample_packages:
     - sample_name
     - organism
     - collection_date
-    - geo_loc_name
     - isolate
     - collected_by
     - host
@@ -15,7 +14,6 @@ BioSample_packages:
     - sample_name
     - organism
     - collection_date
-    - geo_loc_name
     - isolation_source
     - ww_population
     - ww_sample_duration
@@ -26,7 +24,6 @@ BioSample_packages:
     - sample_name
     - organism
     - collection_date
-    - geo_loc_name
     - sample_type
     at_least_one_required:
     - - host
@@ -38,7 +35,6 @@ BioSample_packages:
     - sample_name
     - organism
     - collection_date
-    - geo_loc_name
     - isolate
     - age
     - biomaterial_provider
@@ -50,7 +46,6 @@ BioSample_packages:
     - sample_name
     - organism
     - collection_date
-    - geo_loc_name
     - lat_lon
     at_least_one_required:
     - - host
@@ -65,7 +60,6 @@ BioSample_packages:
     - sample_name
     - organism
     - collection_date
-    - geo_loc_name
     - isolation_source
     - isolate
     at_least_one_required:
@@ -76,7 +70,6 @@ BioSample_packages:
     - sample_name
     - organism
     - collection_date
-    - geo_loc_name
     - beta_lactamase_family
     - carbapenemase
     - edta_inhibitor_tested
@@ -88,7 +81,6 @@ BioSample_packages:
     - sample_name
     - organism
     - collection_date
-    - geo_loc_name
     - isolation_source
     - collected_by
     - lat_lon
@@ -102,7 +94,6 @@ BioSample_packages:
     - sample_name
     - organism
     - collection_date
-    - geo_loc_name
     - isolation_source
     - collected_by
     - lat_lon
