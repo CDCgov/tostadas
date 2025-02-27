@@ -9,20 +9,20 @@
       "type": "string",
       "format": "file-path",
       "description": "Meta-data file path for samples",
-      "default": "${projectDir}/assets/metadata_template.xlsx",
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/metadata_template.xlsx",
       "pattern": "^\\S+\\.(xlsx|xls|xlsm|xlsb|csv)$"
     },
     "ref_fasta_path": {
       "type": "string",
       "format": "file-path",
       "description": "Reference Sequence file path",
-      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.fasta",
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/ref/ref.MPXV.NC063383.v7.fasta",
       "pattern": "^\\S+\\.(fasta|fa|fna|ffn|faa|frn|fasta\\.gz|fa\\.gz|fna\\.gz|ffn\\.gz|faa\\.gz|frn\\.gz|fasta\\.zip|fa\\.zip|fna\\.zip|ffn\\.zip|faa\\.zip|frn\\.zip|fasta\\.bz2|fa\\.bz2|fna\\.bz2|ffn\\.bz2|faa\\.bz2|frn\\.bz2|fasta\\.tar\\.bz2|fa\\.tar\\.bz2|fna\\.tar\\.bz2|ffn\\.tar\\.bz2|faa\\.tar\\.bz2|frn\\.tar\\.bz2|fasta\\.tar|fa\\.tar|fna\\.tar|ffn\\.tar|faa\\.tar|frn\\.tar|fasta\\.tar\\.gz|fa\\.tar\\.gz|fna\\.tar\\.gz|ffn\\.tar\\.gz|faa\\.tar\\.gz|frn\\.tar\\.gz)$"
     },
     "ref_gff_path": {
       "type": "string",
       "format": "file-path",
-      "default": "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.gff",
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/ref/ref.MPXV.NC063383.v7.gff",
       "pattern": "^\\S+\\.(gff|gff3)$"
     },
     "output_dir": {
@@ -47,17 +47,13 @@
       "description": "Flag to change date output",
       "default": "s"
     },
-    "keep_demographic_info": {
-      "type": "boolean",
-      "description": "Flag that, if false, will remove any potentially identifying demographic data"
-    },
     "validate_custom_fields": {
       "type": "boolean",
       "description": "Toggle checks/transformations for custom metadata fields on/off"
     },
     "custom_fields_file": {
       "type": "string",
-      "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json",
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/custom_meta_fields/example_custom_fields.json",
       "pattern": "^\\S+\\.json$"
     },
     "final_liftoff_output_dir": {
@@ -79,10 +75,6 @@
       "description": "# of parallel processes to use for liftoff",
       "default": 8
     },
-    "lift_delete_temp_files": {
-      "type": "boolean",
-      "description": "Deletes the temporary files after finishing transfer"
-    },
     "lift_child_feature_align_threshold": {
       "type": "number",
       "description": "Map only if its child features align with sequence identity > this value",
@@ -97,17 +89,17 @@
     "lift_copy_threshold": {
       "type": "number",
       "description": "Minimum sequence identity in exons/CDS for which a gene is considered a copy; must be greater than -s; default is 1.0",
-      "default": 1.0
+      "default": 1
     },
     "lift_distance_scaling_factor": {
       "type": "number",
       "description": "Distance scaling factor; by default D =2.0",
-      "default": 2.0
+      "default": 2
     },
     "lift_flank": {
       "type": "number",
       "description": "Amount of flanking sequence to align as a fraction of gene length",
-      "default": 0.0
+      "default": 0
     },
     "lift_overlap": {
       "type": "number",
@@ -129,14 +121,6 @@
       "description": "Gap extend penalty in exons when finding best mapping; by default GE=1",
       "default": 1
     },
-    "lift_infer_transcripts": {
-      "type": "boolean",
-      "description": "Use if annotation file only includes exon/CDS features and does not include transcripts/mRNA"
-    },
-    "lift_copies": {
-      "type": "boolean",
-      "description": "Look for extra gene copies in the target genome"
-    },
     "lift_minimap_path": {
       "type": "string",
       "description": "Path to minimap if you did not use conda or pip",
@@ -157,14 +141,14 @@
       "type": "string",
       "format": "directory-path",
       "description": "File path to models for MPXV used by VADR annotation",
-      "default": ""
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/vadr_files/rsv-models"
     },
     "bakta_db_path": {
       "type": "string",
       "description": "Path to Bakta database if user is supplying database"
     },
     "download_bakta_db": {
-      "type": "boolean",
+      "type": "string",
       "description": "Option to download Bakta database"
     },
     "bakta_db_type": {
@@ -229,13 +213,18 @@
       "default": "?"
     },
     "bakta": {
-      "description": "Toggle for running Bakta annotation"
+      "description": "Toggle for running Bakta annotation",
+      "type": "boolean"
     },
     "genbank": {
-      "description": "Submit to GenBank"
+      "description": "Submit to GenBank",
+      "type": "boolean",
+      "default": true
     },
     "sra": {
-      "description": "Submit to SRA"
+      "description": "Submit to SRA",
+      "type": "boolean",
+      "default": true
     },
     "submission_output_dir": {
       "type": "string",
@@ -251,7 +240,7 @@
     "submission_config": {
       "type": "string",
       "description": "Configuration file for submission to public repos",
-      "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml",
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/bin/config_files/<your-ncbi-config>.yaml",
       "pattern": "^\\S+\\.(yaml|yml)$"
     },
     "submission_wait_time": {
@@ -259,27 +248,22 @@
       "description": "Calculated based on sample number (3 * 60 secs * sample_num)",
       "default": 380
     },
-    "batch_name": {
-      "type": "string",
-      "description": "Name of the batch to prefix samples with during submission"
-    },
     "send_submission_email": {
       "type": "boolean",
       "description": "Toggle email notification on/off"
     },
-    "req_col_config": {
-      "type": "string",
-      "description": "Path to the required_columns.yaml file"
-    },
     "submission": {
-      "description": "Toggle for running submission"
-    },
-    "annotation": {
-      "description": "Toggle for running annotation"
-    },
-    "cleanup": {
+      "description": "Toggle for running submission",
       "type": "boolean",
       "default": true
+    },
+    "annotation": {
+      "description": "Toggle for running annotation",
+      "type": "boolean",
+      "default": true
+    },
+    "cleanup": {
+      "type": "boolean"
     },
     "clear_nextflow_log": {
       "type": "boolean"
@@ -300,14 +284,16 @@
     "repeat_library": {
       "type": "string",
       "description": "Path to the repeat library file used by RepeatMasker.",
-      "default": "${projectDir}/assets/lib/MPOX_repeats_lib.fasta",
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/lib/MPOX_repeats_lib.fasta",
       "pattern": "^\\S+\\.(fasta|fa|fna|ffn|faa|frn|fasta\\.gz|fa\\.gz|fna\\.gz|ffn\\.gz|faa\\.gz|frn\\.gz|fasta\\.zip|fa\\.zip|fna\\.zip|ffn\\.zip|faa\\.zip|frn\\.zip|fasta\\.bz2|fa\\.bz2|fna\\.bz2|ffn\\.bz2|faa\\.bz2|frn\\.bz2|fasta\\.tar\\.bz2|fa\\.tar\\.bz2|fna\\.tar\\.bz2|ffn\\.tar\\.bz2|faa\\.tar\\.bz2|frn\\.tar\\.bz2|fasta\\.tar|fa\\.tar|fna\\.tar|ffn\\.tar|faa\\.tar|frn\\.tar|fasta\\.tar\\.gz|fa\\.tar\\.gz|fna\\.tar\\.gz|ffn\\.tar\\.gz|faa\\.tar\\.gz|frn\\.tar\\.gz)$"
     },
     "gisaid": {
-      "description": "Flag to enable or disable submission to GISAID."
+      "description": "Flag to enable or disable submission to GISAID.",
+      "type": "boolean"
     },
     "biosample": {
       "description": "Flag to enable or disable submission to BioSample.",
+      "type": "boolean",
       "default": true
     },
     "submission_mode": {
@@ -387,13 +373,13 @@
     },
     "lift_feature_types": {
       "type": "string",
-      "default": "${projectDir}/assets/feature_types.txt",
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/feature_types.txt",
       "pattern": "^\\S+\\.txt$"
     },
     "processed_samples": {
       "type": "string",
       "description": "Directory where processed samples are stored.",
-      "default": "${projectDir}/results/submission_outputs"
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/results/submission_outputs"
     },
     "schema": {
       "type": "string",
@@ -421,23 +407,21 @@
     "repeatmasker_env_yml": {
       "type": "string",
       "description": "Path to the environment YAML file for RepeatMasker.",
-      "default": "${projectDir}/environments/repeatmasker_env.yml"
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/environments/repeatmasker_env.yml"
     },
     "vadr_env_yml": {
       "type": "string",
       "description": "Path to the environment YAML file for VADR.",
-      "default": "${projectDir}/environments/vadr_env.yml"
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/environments/vadr_env.yml"
     },
     "env_yml": {
       "type": "string",
       "description": "Path to the environment YAML file for setting up the conda environment.",
-      "default": "${projectDir}/environment.yml"
+      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/environment.yml"
+    },
+    "remove_demographic_info": {
+      "type": "boolean"
     }
   },
-  "required": [
-    "meta_path",
-    "ref_fasta_path",
-    "ref_gff_path",
-    "species"
-  ]
+  "required": ["meta_path", "ref_fasta_path", "ref_gff_path", "species"]
 }
