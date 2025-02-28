@@ -82,17 +82,14 @@ def metadata_validation_main():
 		insert = HandleDfInserts(parameters=parameters, filled_df=validate_checks.metadata_df)
 		insert.handle_df_inserts()
 
-		# now split the modified and checked dataframe into individual samples
-		sample_dfs = {}
-		final_df = insert.filled_df
-
 		if validate_checks.did_validation_work:
-			# todo: this rename is temporary - will be added in the class/fx to handle multiple tsvs (see lines 76 & 955)
-			final_df = final_df.rename(columns={'sample_name': 'sequence_name'}) # seqsender expects sequence_name
+			# now split the modified and checked dataframe into individual samples
+			sample_dfs = {}
+			final_df = insert.filled_df
 			for row in range(len(final_df)):
 				sample_df = final_df.iloc[row].to_frame().transpose()
-				sample_df = sample_df.set_index('sequence_name')
-				sample_dfs[final_df.iloc[row]['sequence_name']] = sample_df
+				sample_df = sample_df.set_index('sample_name')
+				sample_dfs[final_df.iloc[row]['sample_name']] = sample_df
 			# now export the .xlsx file as a .tsv 
 			for sample in sample_dfs.keys():
 				tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
