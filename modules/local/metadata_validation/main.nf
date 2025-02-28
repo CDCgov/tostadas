@@ -26,6 +26,7 @@ process METADATA_VALIDATION {
         """
         validate_metadata.py \
             --meta_path $meta_path \
+            --project_dir $projectDir \
             --output_dir . \
             --custom_fields_file $params.custom_fields_file \
             --validate_custom_fields $params.validate_custom_fields \
