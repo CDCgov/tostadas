@@ -398,8 +398,6 @@ class ValidateChecks:
 			errors_class.capture_errors_per_sample()
 			self.list_of_sample_errors = errors_class.list_of_sample_errors
 			self.valid_sample_num = errors_class.valid_sample_num
-			#print(f"[DEBUG] After updating: {name} list of sample errors = {self.list_of_sample_errors}")
-			#print(f"[DEBUG] After updating: {name} valid sample num = {self.valid_sample_num}")
 
 			# reset all checks back to true (for each sample)
 			[self.meta_case_grade, self.meta_illumina_grade, self.meta_nanopore_grade,
@@ -691,8 +689,11 @@ class Check_Illumina_Nanopore_SRA:
 	# A function to detect if SRA filepaths are relative (test data in tostadas/assets) or absolute
 	def resolve_path(self, path):
 		""" Resolve file paths based on projectDir. Only modify relative paths. """
+		if not path or path.strip() == "": 
+			return ""  # Handle empty paths
 		if not os.path.isabs(path):
-			return os.path.join(self.project_dir, path)
+			resolved = os.path.join(self.project_dir, path)
+			return resolved
 		return path  # Return as is if absolute
 
 	def handle_sra_submission_check(self):
@@ -702,10 +703,6 @@ class Check_Illumina_Nanopore_SRA:
 		illum_file_path1 = self.resolve_path(self.sample_info["illumina_sra_file_path_1"].tolist()[0])
 		illum_file_path2 = self.resolve_path(self.sample_info["illumina_sra_file_path_2"].tolist()[0])
 		nano_file_path1 = self.resolve_path(self.sample_info["nanopore_sra_file_path_1"].tolist()[0])
-		print(f'[DEBUG] Newly resolved illumina path 1: {illum_file_path1}')
-		# Debug file existence checks
-		print(f"[DEBUG] Checking file: {illum_file_path1}, Exists: {os.path.isfile(illum_file_path1)}")
-
 
 		# check if the illumina file path for illumina is not empty
 		if illum_file_path1 and illum_file_path2 and illum_file_path1 != "" and illum_file_path1 != "" and illum_file_path2 != "" and illum_file_path2 != '':
@@ -775,9 +772,7 @@ class Check_Illumina_Nanopore_SRA:
 			else:
 				paths = [file_path1]
 			for path in paths:
-				print(f"[DEBUG] absolute: {os.path.abspath(path)}, relative: {path}")
 				if not (os.path.isfile(path)):
-					print(f"[DEBUG] Checking file: {os.path.abspath(path)}, Exists: {os.path.isfile(path)}")
 					self.illumina_error_msg += f'\n\t\t{path} does not exist or there are permission problems'
 					path_failed = True
 					self.meta_illumina_grade = False
