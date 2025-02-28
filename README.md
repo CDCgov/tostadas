@@ -106,15 +106,15 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 ### Common Issues and Solutions
 
-#### 1. Errors with 'table2asn not on PATH' or a Python library missing
+#### 1. Errors with 'table2asn not on PATH' or a Python library missing when using the `conda` profile
 
-**Issue:** Nextflow is using an outdated cached container.
+**Issue:** Nextflow is using an outdated cached image.
 
-**Solution:** Locate the container (e.g., `$HOME/.singularity/staphb-tostadas-latest.img`) and delete it. This will force Nextflow to pull the latest version.
+**Solution:** Locate the image (e.g., `$HOME/.singularity/staphb-tostadas-latest.img`) and delete it. This will force Nextflow to pull the latest version.
 
-#### 2. Pipeline hangs indefinitley when running table2asn 
+#### 2. Pipeline hangs indefinitely during the submission step, or you get a "duplicate BioSeq ID error"  
 
-**Issue:** This may be caused by duplicate sample IDs in the FASTA file.
+**Issue:** This may be caused by duplicate sample IDs in the FASTA file (e.g., a multicontig FASTA). This is only a problem for submissions to Genbank using `table2asn`.
 
 **Solution:** Review the sequence headers in the sample FASTA files and ensure that each header is unique.
 
