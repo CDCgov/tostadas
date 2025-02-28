@@ -106,7 +106,7 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 ### Common Issues and Solutions
 
-#### 1. Errors with 'table2asn not on PATH' or a Python library missing when using the `conda` profile
+#### 1. Errors with 'table2asn not on PATH' or a Python library missing when using the `singularity` or `docker` profiles
 
 **Issue:** Nextflow is using an outdated cached image.
 
