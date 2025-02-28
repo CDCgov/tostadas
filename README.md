@@ -118,6 +118,12 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 **Solution:** Review the sequence headers in the sample FASTA files and ensure that each header is unique.
 
+#### 3. Pipeline hangs while setting up the Conda environment
+
+**Issue:** Nextflow hangs while setting up the Conda environment.
+
+**Solution:** Try using `-profile mamba` instead of `-profile conda`. Make sure Micromamba is available on your system.
+
 ## Get in Touch
 If you need to report a bug, suggest new features, or just say “thanks”, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we’ll try to get back to you as soon as possible!
 
