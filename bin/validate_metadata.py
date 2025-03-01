@@ -765,6 +765,8 @@ class Check_Illumina_Nanopore_SRA:
 				self.meta_illumina_grade = False
 
 		# check if the SRA file exists for the first file path
+		# todo: I don't think we need to check for valid file paths until we're submitting?  Or check here instead of during submission?
+		'''
 		path_failed = False
 		if instrument_type == 'illumina':
 			if self.sample_info["illumina_library_layout"].tolist()[0] == 'paired':
@@ -781,6 +783,7 @@ class Check_Illumina_Nanopore_SRA:
 				self.nanopore_error_msg += f'\n\t\t{file_path} does not exist or there are permission problems'
 				path_failed = True
 				self.meta_nanopore_grade = False
+		'''
 
 		if instrument_type == 'nanopore' and self.meta_nanopore_grade is False:
 			try:
