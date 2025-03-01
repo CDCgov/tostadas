@@ -297,7 +297,7 @@ class Sample:
 		self.annotation_file = annotation_file
 		# ftp_upload is true if GenBank FTP submission is supported for that species, otherwise false
 		self.ftp_upload = species in {"flu", "sars", "bacteria"} # flu, sars, bacteria currently support ftp upload to GenBank
-	# todo: add (or ignore) validation for cloud files
+
 	def check_s3_file_exists(s3_url):
 		"""Checks if a file exists on AWS S3."""
 		parsed = urlparse(s3_url)
