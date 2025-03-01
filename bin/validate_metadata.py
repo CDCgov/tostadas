@@ -38,6 +38,15 @@ def metadata_validation_main():
 
 	# call the load_meta function passing in the path to the metadata file
 	meta_to_df.run_get_meta_df()
+
+	# print error message if ValueError is raised when GetMetaAsDf is run
+	try:
+		meta_to_df.run_get_meta_df()
+		print("Metadata loaded and validated successfully.")
+	except ValueError as e:
+		print(f"Error: {e}")
+		sys.exit(1)
+	
 	filled_df = meta_to_df.final_df
 
 	# handle case where we're only fetching reports
@@ -77,12 +86,10 @@ def metadata_validation_main():
 			# now split the modified and checked dataframe into individual samples
 			sample_dfs = {}
 			final_df = insert.filled_df
-			# todo: this rename is temporary - will be added in the class/fx to handle multiple tsvs (see lines 76 & 955)
-			final_df = final_df.rename(columns={'sample_name': 'sequence_name'}) # seqsender expects sequence_name
 			for row in range(len(final_df)):
 				sample_df = final_df.iloc[row].to_frame().transpose()
-				sample_df = sample_df.set_index('sequence_name')
-				sample_dfs[final_df.iloc[row]['sequence_name']] = sample_df
+				sample_df = sample_df.set_index('sample_name')
+				sample_dfs[final_df.iloc[row]['sample_name']] = sample_df
 			# now export the .xlsx file as a .tsv 
 			for sample in sample_dfs.keys():
 				tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
@@ -207,6 +214,21 @@ class GetMetaAsDf:
 		# Check for empty dataframe
 		if df.empty:
 			raise ValueError("The metadata Excel sheet is empty. Please provide a valid file with data.")
+		
+		# Check if 'sample_name' column exists
+		if 'sample_name' not in df.columns:
+			error_message = "Error: The metadata file is missing the 'sample_name' column. Please provide a valid file with the 'sample_name' column."
+			print(error_message, file=sys.stderr)  # Print the error message to stderr
+			sys.stderr.flush()  # Ensure the error message is flushed to stderr
+			sys.exit(1)
+		
+		# Check for missing sample_name values
+		if df['sample_name'].isnull().any() or (df['sample_name'].str.strip() == "").any():
+			missing_indices = df[df['sample_name'].isnull() | (df['sample_name'].str.strip() == "")].index.tolist()
+			error_message = f"Error: The metadata file contains missing values in the 'sample_name' column at rows: {missing_indices}. Please provide valid sample names."
+			print(error_message, file=sys.stderr)  # Print the error message to stderr
+			sys.exit(1)
+		
 		return df
 
 	def populate_fields(self):
