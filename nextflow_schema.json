@@ -4,50 +4,94 @@
   "title": "Nextflow Pipeline Parameters",
   "description": "Nextflow_Schema.json",
   "type": "object",
-  "properties": {
-    "help": {
-      "type": "boolean",
-      "description": "Flag to display help information for the pipeline."
+  "$defs": {
+    "Required Parameters": {
+      "properties": {
+        "species": {
+          "type": "string",
+          "description": "Species name for the analysis."
+        },
+        "meta_path": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Meta-data file path for samples",
+          "default": "/tostadas/assets/metadata_template.xlsx",
+          "pattern": "^\\S+\\.(xlsx|xls|xlsm|xlsb|csv)$"
+        },
+        "ref_fasta_path": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Reference Sequence file path",
+          "default": "${projectDir}/tostadas/assets/ref/ref.MPXV.NC063383.v7.fasta",
+          "pattern": "^\\S+\\.(fasta|fa|fna|ffn|faa|frn|fasta\\.gz|fa\\.gz|fna\\.gz|ffn\\.gz|faa\\.gz|frn\\.gz|fasta\\.zip|fa\\.zip|fna\\.zip|ffn\\.zip|faa\\.zip|frn\\.zip|fasta\\.bz2|fa\\.bz2|fna\\.bz2|ffn\\.bz2|faa\\.bz2|frn\\.bz2|fasta\\.tar\\.bz2|fa\\.tar\\.bz2|fna\\.tar\\.bz2|ffn\\.tar\\.bz2|faa\\.tar\\.bz2|frn\\.tar\\.bz2|fasta\\.tar|fa\\.tar|fna\\.tar|ffn\\.tar|faa\\.tar|frn\\.tar|fasta\\.tar\\.gz|fa\\.tar\\.gz|fna\\.tar\\.gz|ffn\\.tar\\.gz|faa\\.tar\\.gz|frn\\.tar\\.gz)$"
+        },
+        "ref_gff_path": {
+          "type": "string",
+          "format": "file-path",
+          "default": "${projectDir}/tostadas/assets/ref/ref.MPXV.NC063383.v7.gff",
+          "pattern": "^\\S+\\.(gff|gff3)$"
+        },
+        "output_dir": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "File path to submit outputs from pipeline",
+          "default": "results"
+        }
+      }
     },
-    "schema": {
-      "type": "string",
-      "description": "The schema file for validating the pipeline parameters.",
-      "default": "nextflow_schema.json"
+    "Pipeline Configuration Modes": {
+      "properties": {
+        "validate_params": {
+          "type": "boolean",
+          "description": "Flag to enable or disable parameter validation.",
+          "default": true
+        },
+        "annotation": {
+          "description": "Toggle for running annotation",
+          "type": "boolean",
+          "default": true
+        },
+        "submission": {
+          "type": "boolean",
+          "description": "Toggle for running submission"
+        },
+        "fetch_reports_only": {
+          "type": "boolean",
+          "description": "Toggle for only fetching submission reports."
+        },
+        "update_submission": {
+          "type": "boolean",
+          "description": "Flag to enable or disable updating existing submissions."
+        }
+      }
     },
-    "species": {
-      "type": "string",
-      "description": "Species name for the analysis."
+    "Annotation Parameters": {
+      "properties": {
+        "vadr": {
+          "type": "boolean",
+          "description": "Flag to enable or disable VADR (Viral Annotation DefineR) step.",
+          "default": "${projectDir}/environments/vadr_env.yml"
+        },
+        "repeatmasker_liftoff": {
+          "type": "boolean",
+          "description": "Flag to enable or disable RepeatMasker and Liftoff steps.",
+          "default": "true"
+        },
+        "bakta": {
+          "type": "boolean",
+          "description": "Toggle for running Bakta annotation"
+        },
+        "bakta_db_path": {
+          "type": "string",
+          "description": "Path to Bakta database if user is supplying database"
+        },
+        "download_bakta_db": {
+          "type": "boolean",
+          "description": "Option to download Bakta database"
+        }
+      }
     },
-    "meta_path": {
-      "type": "string",
-      "format": "file-path",
-      "description": "Meta-data file path for samples",
-      "default": "/tostadas/assets/metadata_template.xlsx",
-      "pattern": "^\\S+\\.(xlsx|xls|xlsm|xlsb|csv)$"
-    },
-    "ref_fasta_path": {
-      "type": "string",
-      "format": "file-path",
-      "description": "Reference Sequence file path",
-      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/ref/ref.MPXV.NC063383.v7.fasta",
-      "pattern": "^\\S+\\.(fasta|fa|fna|ffn|faa|frn|fasta\\.gz|fa\\.gz|fna\\.gz|ffn\\.gz|faa\\.gz|frn\\.gz|fasta\\.zip|fa\\.zip|fna\\.zip|ffn\\.zip|faa\\.zip|frn\\.zip|fasta\\.bz2|fa\\.bz2|fna\\.bz2|ffn\\.bz2|faa\\.bz2|frn\\.bz2|fasta\\.tar\\.bz2|fa\\.tar\\.bz2|fna\\.tar\\.bz2|ffn\\.tar\\.bz2|faa\\.tar\\.bz2|frn\\.tar\\.bz2|fasta\\.tar|fa\\.tar|fna\\.tar|ffn\\.tar|faa\\.tar|frn\\.tar|fasta\\.tar\\.gz|fa\\.tar\\.gz|fna\\.tar\\.gz|ffn\\.tar\\.gz|faa\\.tar\\.gz|frn\\.tar\\.gz)$"
-    },
-    "ref_gff_path": {
-      "type": "string",
-      "format": "file-path",
-      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/ref/ref.MPXV.NC063383.v7.gff",
-      "pattern": "^\\S+\\.(gff|gff3)$"
-    },
-    "output_dir": {
-      "type": "string",
-      "format": "directory-path",
-      "description": "File path to submit outputs from pipeline",
-      "default": "results"
-    },
-    "submission": {
-      "description": "Toggle for running submission",
-      "type": "boolean",
-      "default": true,
+    "Submission Parameters": {
       "properties": {
         "submission_output_dir": {
           "type": "string",
@@ -86,47 +130,25 @@
         }
       }
     },
-    "annotation": {
-      "description": "Toggle for running annotation",
-      "type": "boolean",
-      "default": true
-    },
-    "validate_params": {
-      "type": "boolean",
-      "description": "Flag to enable or disable parameter validation.",
-      "default": true
-    },
-    "fetch_reports_only": {
-      "type": "boolean",
-      "description": "Toggle for only fetching submission reports."
-    },
-    "genbank": {
-      "type": "boolean",
-      "description": "Submit to GenBank"
-    },
-    "sra": {
-      "type": "boolean",
-      "description": "Submit to SRA"
-    },
-    "gisaid": {
-      "type": "boolean",
-      "description": "Flag to enable or disable submission to GISAID."
-    },
-    "biosample": {
-      "type": "boolean",
-      "description": "Flag to enable or disable submission to BioSample.",
-      "default": true
-    },
-    "repeatmasker_liftoff": {
-      "type": "boolean",
-      "description": "Flag to enable or disable RepeatMasker and Liftoff steps.",
-      "default": true,
+    "Submission Database Options": {
       "properties": {
-        "repeatmasker_env_yml": {
-          "type": "string",
-          "description": "Path to the environment YAML file for RepeatMasker.",
-          "default": "${projectDir}/environments/repeatmasker_env.yml"
+        "genbank": {
+          "type": "boolean",
+          "description": "Submit to GenBank"
         },
+        "sra": {
+          "type": "boolean",
+          "description": "Submit to SRA"
+        },
+        "biosample": {
+          "type": "boolean",
+          "description": "Flag to enable or disable submission to BioSample.",
+          "default": true
+        }
+      }
+    },
+    "RepeatMasker Liftoff Parameters": {
+      "properties": {
         "final_liftoff_output_dir": {
           "type": "string",
           "format": "directory-path",
@@ -219,23 +241,8 @@
         }
       }
     },
-    "env_yml": {
-      "type": "string",
-      "description": "Path to the environment YAML file for setting up the conda environment.",
-      "default": "${projectDir}/environment.yml"
-    },
-    "bakta": {
-      "type": "boolean",
-      "description": "Toggle for running Bakta annotation",
+    "BAKTA Parameters": {
       "properties": {
-        "bakta_db_path": {
-          "type": "string",
-          "description": "Path to Bakta database if user is supplying database"
-        },
-        "download_bakta_db": {
-          "type": "boolean",
-          "description": "Option to download Bakta database"
-        },
         "bakta_db_type": {
           "type": "string",
           "description": "Bakta database type (light or full)",
@@ -352,14 +359,33 @@
         }
       }
     },
-    "vadr": {
-      "type": "boolean",
-      "description": "Flag to enable or disable VADR (Viral Annotation DefineR) step.",
+    "General Pipeline Configuration": {
       "properties": {
+        "schema": {
+          "type": "string",
+          "description": "The schema file for validating the pipeline parameters.",
+          "default": "nextflow_schema.json"
+        },
+        "env_yml": {
+          "type": "string",
+          "description": "Path to the environment YAML file for setting up the conda environment.",
+          "default": "${projectDir}/environment.yml"
+        },
+        "repeatmasker_env_yml": {
+          "type": "string",
+          "description": "Path to the environment YAML file for RepeatMasker.",
+          "default": "${projectDir}/environments/repeatmasker_env.yml"
+        },
         "vadr_env_yml": {
           "type": "string",
           "description": "Path to the environment YAML file for VADR.",
           "default": "${projectDir}/environments/vadr_env.yml"
+        },
+        "submission_output_dir": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "Either name or relative/absolute path for the outputs from submission",
+          "default": "submission_outputs"
         },
         "vadr_output_dir": {
           "type": "string",
@@ -372,28 +398,12 @@
           "format": "directory-path",
           "description": "File path to models for MPXV used by VADR annotation",
           "default": ""
-        }
-      }
-    },
-    "general_options": {
-      "title": "General options",
-      "type": "object",
-      "description": "Additional general configurations of the pipeline",
-      "properties": {
-        "overwrite_output": {
-          "type": "boolean",
-          "description": "Toggle to overwriting output files in directory",
-          "default": true
         },
-        "publish_dir_mode": {
+        "val_output_dir": {
           "type": "string",
-          "description": "Mode for publishing directory, e.g., 'copy' or 'move'.",
-          "default": "copy"
-        },
-        "processed_samples": {
-          "type": "string",
-          "description": "Directory where processed samples are stored.",
-          "default": "${projectDir}/results/submission_outputs"
+          "format": "directory-path",
+          "description": "File path for outputs specific to validate sub-workflow",
+          "default": "validation_outputs"
         },
         "cleanup": {
           "type": "boolean",
@@ -420,6 +430,21 @@
           "type": "boolean",
           "description": "Flag that, if false, will remove any potentially identifying demographic data"
         },
+        "overwrite_output": {
+          "type": "boolean",
+          "description": "Toggle to overwriting output files in directory",
+          "default": true
+        },
+        "publish_dir_mode": {
+          "type": "string",
+          "description": "Mode for publishing directory, e.g., 'copy' or 'move'.",
+          "default": "copy"
+        },
+        "processed_samples": {
+          "type": "string",
+          "description": "Directory where processed samples are stored.",
+          "default": "${projectDir}/results/submission_outputs"
+        },
         "validate_custom_fields": {
           "type": "boolean",
           "description": "Toggle checks/transformations for custom metadata fields on/off"
@@ -428,12 +453,6 @@
           "type": "string",
           "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json",
           "pattern": "^\\S+\\.json$"
-        },
-        "val_output_dir": {
-          "type": "string",
-          "format": "directory-path",
-          "description": "File path for outputs specific to validate sub-workflow",
-          "default": "validation_outputs"
         }
       }
     }
