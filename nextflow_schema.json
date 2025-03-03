@@ -22,7 +22,7 @@
       "type": "string",
       "format": "file-path",
       "description": "Meta-data file path for samples",
-      "default": "/home/ramsivakumar/tostadas-workdir/tostadas/assets/metadata_template.xlsx",
+      "default": "/tostadas/assets/metadata_template.xlsx",
       "pattern": "^\\S+\\.(xlsx|xls|xlsm|xlsb|csv)$"
     },
     "ref_fasta_path": {
@@ -47,44 +47,43 @@
     "submission": {
       "description": "Toggle for running submission",
       "type": "boolean",
-      "default": true, 
+      "default": true,
       "properties": {
         "submission_output_dir": {
-      "type": "string",
-      "format": "directory-path",
-      "description": "Either name or relative/absolute path for the outputs from submission",
-      "default": "submission_outputs"
-    },
-    "submission_prod_or_test": {
-      "type": "string",
-      "description": "Whether to submit samples for test or actual production",
-      "default": "test"
-    },
-    "submission_config": {
-      "type": "string",
-      "description": "Configuration file for submission to public repos",
-      "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml",
-      "pattern": "^\\S+\\.(yaml|yml)$"
-    },
-    "submission_wait_time": {
-      "type": "integer",
-      "description": "Calculated based on sample number (3 * 60 secs * sample_num)",
-      "default": 380
-    },
-    "send_submission_email": {
-      "type": "boolean",
-      "description": "Toggle email notification on/off"
-    },
-    "submission_mode": {
-      "type": "string",
-      "description": "Mode of submission.",
-      "default": "ftp"
-    },
-    "update_submission": {
-      "type": "boolean",
-      "description": "Flag to enable or disable updating existing submissions."
-    }
-
+          "type": "string",
+          "format": "directory-path",
+          "description": "Either name or relative/absolute path for the outputs from submission",
+          "default": "submission_outputs"
+        },
+        "submission_prod_or_test": {
+          "type": "string",
+          "description": "Whether to submit samples for test or actual production",
+          "default": "test"
+        },
+        "submission_config": {
+          "type": "string",
+          "description": "Configuration file for submission to public repos",
+          "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml",
+          "pattern": "^\\S+\\.(yaml|yml)$"
+        },
+        "submission_wait_time": {
+          "type": "integer",
+          "description": "Calculated based on sample number (3 * 60 secs * sample_num)",
+          "default": 380
+        },
+        "send_submission_email": {
+          "type": "boolean",
+          "description": "Toggle email notification on/off"
+        },
+        "submission_mode": {
+          "type": "string",
+          "description": "Mode of submission.",
+          "default": "ftp"
+        },
+        "update_submission": {
+          "type": "boolean",
+          "description": "Flag to enable or disable updating existing submissions."
+        }
       }
     },
     "annotation": {
@@ -121,8 +120,8 @@
     "repeatmasker_liftoff": {
       "type": "boolean",
       "description": "Flag to enable or disable RepeatMasker and Liftoff steps.",
-      "default": true, 
-      "properties":{
+      "default": true,
+      "properties": {
         "repeatmasker_env_yml": {
           "type": "string",
           "description": "Path to the environment YAML file for RepeatMasker.",
@@ -356,8 +355,7 @@
     "vadr": {
       "type": "boolean",
       "description": "Flag to enable or disable VADR (Viral Annotation DefineR) step.",
-      "properties":
-      {
+      "properties": {
         "vadr_env_yml": {
           "type": "string",
           "description": "Path to the environment YAML file for VADR.",
@@ -377,10 +375,16 @@
         }
       }
     },
-    "general_params": {
+    "general_options": {
+      "title": "General options",
       "type": "object",
-      "properties":
-      {
+      "description": "Additional general configurations of the pipeline",
+      "properties": {
+        "overwrite_output": {
+          "type": "boolean",
+          "description": "Toggle to overwriting output files in directory",
+          "default": true
+        },
         "publish_dir_mode": {
           "type": "string",
           "description": "Mode for publishing directory, e.g., 'copy' or 'move'.",
@@ -406,39 +410,34 @@
         },
         "clear_nf_results": {
           "type": "boolean"
-      },
-      "date_format_flag": {
-        "type": "string",
-        "description": "Flag to change date output",
-        "default": "s"
-      },
-      "remove_demographic_info": {
-        "type": "boolean",
-        "description": "Flag that, if false, will remove any potentially identifying demographic data"
-      },
-      "validate_custom_fields": {
-        "type": "boolean",
-        "description": "Toggle checks/transformations for custom metadata fields on/off"
-      },
-      "custom_fields_file": {
-        "type": "string",
-        "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json",
-        "pattern": "^\\S+\\.json$"
-      },
-      "val_output_dir": {
-        "type": "string",
-        "format": "directory-path",
-        "description": "File path for outputs specific to validate sub-workflow",
-        "default": "validation_outputs"
-      },
-      "overwrite_output": {
-        "type": "boolean",
-        "description": "Toggle to overwriting output files in directory",
-        "default": true
-      }
+        },
+        "date_format_flag": {
+          "type": "string",
+          "description": "Flag to change date output",
+          "default": "s"
+        },
+        "remove_demographic_info": {
+          "type": "boolean",
+          "description": "Flag that, if false, will remove any potentially identifying demographic data"
+        },
+        "validate_custom_fields": {
+          "type": "boolean",
+          "description": "Toggle checks/transformations for custom metadata fields on/off"
+        },
+        "custom_fields_file": {
+          "type": "string",
+          "default": "${projectDir}/assets/custom_meta_fields/example_custom_fields.json",
+          "pattern": "^\\S+\\.json$"
+        },
+        "val_output_dir": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "File path for outputs specific to validate sub-workflow",
+          "default": "validation_outputs"
+        }
       }
     }
-},
+  },
   "required": [
     "meta_path",
     "ref_fasta_path",
