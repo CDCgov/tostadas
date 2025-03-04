@@ -28,6 +28,7 @@
         "ref_gff_path": {
           "type": "string",
           "format": "file-path",
+          "description": "Reference GFF3 file to use for the liftoff_submission branch of the pipeline",
           "default": "${projectDir}/tostadas/assets/ref/ref.MPXV.NC063383.v7.gff",
           "pattern": "^\\S+\\.(gff|gff3)$"
         },
