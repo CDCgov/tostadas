@@ -26,13 +26,16 @@ process METADATA_VALIDATION {
         """
         validate_metadata.py \
             --meta_path $meta_path \
+            --project_dir $projectDir \
             --output_dir . \
             --custom_fields_file $params.custom_fields_file \
             --validate_custom_fields $params.validate_custom_fields \
             --date_format_flag $params.date_format_flag \
             $remove_demographic_info $validate_custom_fields \
             ${params.fetch_reports_only ? "--find_paths" : ""} \
-            ${params.fetch_reports_only ? "--path_to_existing_tsvs ${resolved_output_dir}/${params.val_output_dir}" : ""} 
+            ${params.fetch_reports_only ? "--path_to_existing_tsvs ${resolved_output_dir}/${params.val_output_dir}" : ""} \
+            --config_file $params.submission_config \
+            --biosample_fields_key $params.biosample_fields_key
         """
         
     output:
