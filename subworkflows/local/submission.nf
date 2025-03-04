@@ -84,8 +84,4 @@ workflow INITIAL_SUBMISSION {
         submission_files = submission_files
         update_files = update_files
         fetched_reports = fetched_reports
-        //submission_files = SUBMISSION.out.submission_files
-        //submission_log = SUBMISSION.out.submission_log
-
-        //to do: add GISAID module
 }
