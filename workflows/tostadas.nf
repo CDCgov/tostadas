@@ -72,7 +72,7 @@ workflow TOSTADAS {
 			fasta_path = row.fasta_path ? file(row.fasta_path) : []
 			fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : []
 			fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : []
-			meta = [id:row.sequence_name]
+			meta = [id:row.sample_name]
 			gff = row.gff_path ? file(row.gff_path) : []
 			// Return a list with 5 elements
 			[meta, fasta_path, fastq1, fastq2, gff]
