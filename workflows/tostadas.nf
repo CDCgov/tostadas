@@ -99,7 +99,7 @@ workflow TOSTADAS {
 					submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
 				}
 				// run vadr processes
-				// issue: VADR fails when species == virus because it uses that flag to call the vadr_models files
+				// todo: VADR fails when species == virus because it uses that flag to call the vadr_models files
 				if ( params.vadr ) {
 					RUN_VADR (
 						submission_ch

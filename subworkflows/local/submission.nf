@@ -62,22 +62,6 @@ workflow INITIAL_SUBMISSION {
             FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config_file )
                 .set { fetched_reports }
         }
-        else if ( params.update_submission == false ) {
-            // submit the files to database of choice
-            SUBMISSION ( submission_ch, submission_config_file )
-                .set { submission_files }
-
-            // Add submission_files directory to channel before passing to FETCH_SUBMISSION
-            submission_ch.join(submission_files)
-                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder -> 
-                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
-                }
-                .set { submission_with_folder }
-            
-            // Try to fetch & parse the report.xml
-            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config_file )
-                .set { fetched_reports }
-        }
 
         // if params.update_submission is true, update an existing submission
         else if ( params.update_submission == true ) {
