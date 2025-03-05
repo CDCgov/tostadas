@@ -75,6 +75,7 @@ def submission_main():
 		fasta_file=parameters.get('fasta_file'),
 		annotation_file=parameters.get('annotation_file')
 	)
+	'''
 	# Perform file validation
 	missing_files_per_database = sample.validate_files()
 	if missing_files_per_database:
@@ -85,6 +86,7 @@ def submission_main():
 	else:
 		databases_to_skip = set()
 		print(f"All required files found")
+	'''
 
 	# Set the submission directory (test or prod)
 	if parameters['test']:
@@ -298,6 +300,7 @@ class Sample:
 		# ftp_upload is true if GenBank FTP submission is supported for that species, otherwise false
 		self.ftp_upload = species in {"flu", "sars", "bacteria"} # flu, sars, bacteria currently support ftp upload to GenBank
 
+	'''
 	def check_s3_file_exists(s3_url):
 		"""Checks if a file exists on AWS S3."""
 		parsed = urlparse(s3_url)
@@ -380,7 +383,7 @@ class Sample:
 	# Function to add accession Ids to the sample info once assigned
 	def add_accession_id(self, accession_id):
 		self.accession_ids = accession_id
-
+	'''
 class MetadataParser:
 	def __init__(self, metadata_df, parameters):
 		self.metadata_df = metadata_df
