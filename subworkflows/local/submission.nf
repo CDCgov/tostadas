@@ -79,21 +79,15 @@ workflow INITIAL_SUBMISSION {
                 }
 
             if (params.update_submission == false) {
-                submission_ch
-                    .filter { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases -> 
-                        "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
-                    }
-                    .set { filtered_submission_ch }
-                //filtered_submission_ch.view { "submission.nf filtered_submission_ch -> ${it}" }
-                filtered_submission_ch.view { entry ->
+                submission_ch.view() 
+                submission_ch.view { entry ->
                     println "DEBUG: filtered_submission_ch structure -> ${entry}"
                 }
 
-
-                SUBMISSION (filtered_submission_ch, submission_config_file)
+                SUBMISSION (submission_ch, submission_config_file)
                     .set { submission_files }
 
-                filtered_submission_ch.join(submission_files)
+                submission_ch.join(submission_files)
                     .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder -> 
                         return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder)
                     }
@@ -104,13 +98,8 @@ workflow INITIAL_SUBMISSION {
             }
 
             if (params.update_submission == true) {
-                submission_ch
-                    .filter { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases -> 
-                        "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
-                    }
-                    .set { filtered_submission_ch }
 
-                UPDATE_SUBMISSION (filtered_submission_ch, submission_config_file)
+                UPDATE_SUBMISSION (submission_ch, submission_config_file)
                     .set { update_files }
 
                 // Map submission_ch to include submission_folder (from UPDATE_SUBMISSION.out.submission_files)
@@ -119,7 +108,7 @@ workflow INITIAL_SUBMISSION {
                 //        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, UPDATE_SUBMISSION.out.submission_files)
                 //    }
 
-                filtered_submission_ch.join(update_files)
+                submission_ch.join(update_files)
                     .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder -> 
                         return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder)
                     }

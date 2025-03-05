@@ -21,21 +21,20 @@ process SUBMISSION {
         println "DEBUG: Checking when condition - enabledDatabases=${enabledDatabases}"
         return enabledDatabases && ("sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases)
     }()
-    //"sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
 
     // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
     def biosample = params.biosample == true ? '--biosample' : ''
-    def sra = (params.sra == true && "sra" in enabledDatabases) ? '--sra' : ''
-    def genbank = (params.genbank == true && "genbank" in enabledDatabases) ? '--genbank' : ''
+    def sra = "sra" in enabledDatabases ? '--sra' : ''
+    def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
 
     script:
     """   
     echo "DEBUG: mainf.nf: enabledDatabases=${enabledDatabases}"
     echo "DEBUG: mainf.nf: Params -> sra: $params.sra, genbank: $params.genbank, biosample: $params.biosample"
     echo "DEBUG: mainf.nf: Submission Running for $meta.id"
-    echo "DEBUG: mainf.nf: Selected Databases: $enabledDatabases"
+    echo "DEBUG: mainf.nf: Selected Databases: ${enabledDatabases[0]}"
     submission_new.py \
         --submit \
         --submission_name $meta.id \
