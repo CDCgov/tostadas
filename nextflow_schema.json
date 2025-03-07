@@ -336,10 +336,6 @@
           "type": "string",
           "description": "Mode of submission.",
           "default": "ftp"
-        },
-        "update_submission": {
-          "type": "boolean",
-          "description": "Flag to enable or disable updating existing submissions."
         }
       }
     },
