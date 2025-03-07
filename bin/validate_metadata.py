@@ -158,7 +158,7 @@ class GetParams:
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
 		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
-		parser.add_argument("--validate_custom_fields", type=bool, help="Flag for whether or not validate custom fields ")
+		parser.add_argument("--validate_custom_fields", type=lambda x: str(x).lower() == "true", default=True, help="Flag for whether or not validate custom fields ")
 		parser.add_argument("--find_paths", action="store_true", help="Only check for existing TSV file paths (for use with fetch_reports_only)")
 		parser.add_argument("--path_to_existing_tsvs", type=str, required=False, help="Path to existing per-sample TSVs (for use with fetch_reports_only)")
 		parser.add_argument("--config_file", type=str, help="Path to submission config file with a valid BioSample_package key")
@@ -345,7 +345,7 @@ class ValidateChecks:
 			self.check_date()
 
 		# Check custom fields
-		if self.parameters.get('validate_custom_fields', True):
+		if self.parameters.get('validate_custom_fields') is True:
 			self.metadata_df = self.custom_fields_processor.process(self.metadata_df)
 			
 		# lists through the entire set of samples and runs the different checks below
@@ -806,6 +806,7 @@ class Check_Illumina_Nanopore_SRA:
 				path_failed = True
 				self.meta_nanopore_grade = False
 
+		print(f"Invalid data: {invalid_data}")
 		if instrument_type == 'nanopore' and self.meta_nanopore_grade is False:
 			try:
 				assert True in [len(missing_data) != 0, len(invalid_data) != 0, path_failed]
