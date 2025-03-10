@@ -771,6 +771,8 @@ class Check_Illumina_Nanopore_SRA:
 			restricted_terms = self.parameters['illumina_instrument_restrictions']
 
 		missing_data, invalid_data = [], []
+		print(f"Available keys in sample_info: {self.sample_info.keys().tolist()}")
+
 		# check if required fields are populated
 		for field in required:
 			if field not in self.sample_info.keys().tolist():
@@ -779,10 +781,11 @@ class Check_Illumina_Nanopore_SRA:
 					self.meta_nanopore_grade = False
 				elif instrument_type == 'illumina':
 					self.meta_illumina_grade = False
+			elif self.sample_info[field].isnull().all() or (self.sample_info[field] == "").all():
+				missing_data.append(field)  # Record missing values
 
 		# check if instrument is in the restricted fields
-		if instrument not in restricted_terms: 
-			invalid_data.append(instrument)
+		if not instrument or instrument not in restricted_terms:  # Ensure instrument is not empty or invalid
 			if instrument_type == 'nanopore':
 				self.meta_nanopore_grade = False
 			elif instrument_type == 'illumina':
@@ -806,7 +809,6 @@ class Check_Illumina_Nanopore_SRA:
 				path_failed = True
 				self.meta_nanopore_grade = False
 
-		print(f"Invalid data: {invalid_data}")
 		if instrument_type == 'nanopore' and self.meta_nanopore_grade is False:
 			try:
 				assert True in [len(missing_data) != 0, len(invalid_data) != 0, path_failed]
