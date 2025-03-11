@@ -63,20 +63,24 @@ workflow TOSTADAS {
 			[ meta, it ] 
 		}
 
-	// Generate the fasta and fastq paths
+	// Generate the fasta annd fastq paths
 	reads_ch = 
 		METADATA_VALIDATION.out.tsv_Files
 		.flatten()
 		.splitCsv(header: true, sep: "\t")
 		.map { row ->
-			fasta_path = row.fasta_path ? file(row.fasta_path) : []
-			fastq1 = row.fastq_path_1 ? file(row.fastq_path_1)  : []
-			fastq2 = row.fastq_path_2 ? file(row.fastq_path_2)  : []
-			meta = [id:row.sample_name]
-			gff = row.gff_path ? file(row.gff_path) : []
-			// Return a list with 5 elements
-			[meta, fasta_path, fastq1, fastq2, gff]
+			def trimFile = { path -> path && path.trim() ? file(path.trim()) : [] }
+
+			def meta = [id: row.sample_name?.trim()]
+			def fasta_path = trimFile(row.fasta_path)
+			def fastq1 = trimFile(row.fastq_path_1)
+			def fastq2 = trimFile(row.fastq_path_2)
+			def nanopore = trimFile(row.nanopore_sra_file_path_1)
+			def gff = trimFile(row.gff_path)
+
+			return [meta, fasta_path, fastq1, fastq2, gff]
 			}
+	reads_ch.view()
 
 	// Create initial submission channel
 	submission_ch = metadata_ch.join(reads_ch)
