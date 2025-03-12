@@ -158,7 +158,7 @@ class GetParams:
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
 		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
-		parser.add_argument("--validate_custom_fields", type=bool, help="Flag for whether or not validate custom fields ")
+		parser.add_argument("--validate_custom_fields", type=lambda x: str(x).lower() == "true", default=True, help="Flag for whether or not validate custom fields ")
 		parser.add_argument("--find_paths", action="store_true", help="Only check for existing TSV file paths (for use with fetch_reports_only)")
 		parser.add_argument("--path_to_existing_tsvs", type=str, required=False, help="Path to existing per-sample TSVs (for use with fetch_reports_only)")
 		parser.add_argument("--config_file", type=str, help="Path to submission config file with a valid BioSample_package key")
@@ -345,7 +345,7 @@ class ValidateChecks:
 			self.check_date()
 
 		# Check custom fields
-		if self.parameters.get('validate_custom_fields', True):
+		if self.parameters.get('validate_custom_fields') is True:
 			self.metadata_df = self.custom_fields_processor.process(self.metadata_df)
 			
 		# lists through the entire set of samples and runs the different checks below
@@ -771,6 +771,8 @@ class Check_Illumina_Nanopore_SRA:
 			restricted_terms = self.parameters['illumina_instrument_restrictions']
 
 		missing_data, invalid_data = [], []
+		print(f"Available keys in sample_info: {self.sample_info.keys().tolist()}")
+
 		# check if required fields are populated
 		for field in required:
 			if field not in self.sample_info.keys().tolist():
@@ -779,10 +781,11 @@ class Check_Illumina_Nanopore_SRA:
 					self.meta_nanopore_grade = False
 				elif instrument_type == 'illumina':
 					self.meta_illumina_grade = False
+			elif self.sample_info[field].isnull().all() or (self.sample_info[field] == "").all():
+				missing_data.append(field)  # Record missing values
 
 		# check if instrument is in the restricted fields
-		if instrument not in restricted_terms: 
-			invalid_data.append(instrument)
+		if not instrument or instrument not in restricted_terms:  # Ensure instrument is not empty or invalid
 			if instrument_type == 'nanopore':
 				self.meta_nanopore_grade = False
 			elif instrument_type == 'illumina':
