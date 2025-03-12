@@ -1,6 +1,5 @@
 {
     "strain": {
-        "type": "String ",
         "replace_empty_with": "Not Provided",
         "new_field_name": "strain"
     },

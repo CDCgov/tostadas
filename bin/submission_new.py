@@ -252,7 +252,6 @@ class SubmissionConfigParser:
 		# Load submission configuration
 		self.parameters = parameters
 	def load_config(self):
-		# Parse the config file (could be JSON, YAML, etc.)
 		# Example: returns a dictionary with SFTP credentials, paths, etc.
 		with open(self.parameters['config_file'], "r") as f:
 			config_dict = yaml.load(f, Loader=yaml.BaseLoader) # Load yaml as str only
