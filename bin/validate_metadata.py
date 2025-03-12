@@ -636,21 +636,21 @@ class ValidateChecks:
 		# check the required fields
 		for field in self.required_core:
 			if field in sample_line:
-				value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().all() else ""
+				value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().any() else ""
 				if value == "":
-					self.meta_core_grade = False
 					sample_line.at[sample_line.index[0], field] = "Not Provided"  # Replace missing value
 					self.sample_error_msg += f"WARNING: {field} is missing for sample {sample_line['sample_name'].values[0]}, setting to 'Not Provided'"  # Log warning
 			else:
 				missing_fields.append(field)  # Report as missing column
 				self.meta_core_grade = False
+
 		# Check the optional fields (at least one required from each group)
 		if self.optional_core:
 			for group in self.optional_core:
 				missing_group = True  # Assume the group is missing until proven otherwise
 				for field in group:
 					if field in sample_line:
-						value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().all() else ""
+						value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().any() else ""
 						if value != "":
 							missing_group = False  # At least one valid field found
 						else:
@@ -660,6 +660,7 @@ class ValidateChecks:
 					self.meta_core_grade = False
 					missing_optionals.append(group)
 					break  # Stop checking once we find a failed group
+
 		if self.meta_core_grade is False:
 			try:
 				assert len(missing_fields) != 0
