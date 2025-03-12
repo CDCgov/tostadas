@@ -21,10 +21,6 @@ import ftplib
 from nameparser import HumanName
 from zipfile import ZipFile
 import smtplib
-import boto3
-from google.cloud import storage
-from azure.storage.blob import BlobServiceClient
-from urllib.parse import urlparse
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
@@ -285,90 +281,6 @@ class Sample:
 		# ftp_upload is true if GenBank FTP submission is supported for that species, otherwise false
 		self.ftp_upload = species in {"flu", "sars", "bacteria"} # flu, sars, bacteria currently support ftp upload to GenBank
 
-	'''
-	def check_s3_file_exists(s3_url):
-		"""Checks if a file exists on AWS S3."""
-		parsed = urlparse(s3_url)
-		bucket_name = parsed.netloc
-		key = parsed.path.lstrip('/')
-		s3 = boto3.client('s3')
-		try:
-			s3.head_object(Bucket=bucket_name, Key=key)
-			return True
-		except Exception:
-			return False
-
-	def check_gcs_file_exists(gcs_url):
-		"""Checks if a file exists on Google Cloud Storage."""
-		parsed = urlparse(gcs_url)
-		bucket_name = parsed.netloc
-		blob_name = parsed.path.lstrip('/')
-		client = storage.Client()
-		bucket = client.bucket(bucket_name)
-		blob = bucket.blob(blob_name)
-		return blob.exists()
-	
-	def check_azure_file_exists(az_url):
-		"""Checks if a file exists on Azure Blob Storage."""
-		parsed = urlparse(az_url)
-		container_name = parsed.netloc
-		blob_name = parsed.path.lstrip('/')
-
-		try:
-			connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')  # Azure connection string from environment
-			blob_service_client = BlobServiceClient.from_connection_string(connect_str)
-			container_client = blob_service_client.get_container_client(container_name)
-			return container_client.get_blob_client(blob_name).exists()
-		except Exception:
-			return False
-
-	def validate_files(self):
-		file_location = self.metadata_df.get('file_location', 'local').iloc[0]  # Default to 'local'
-		missing_files_per_database = {}
-		# Check SRA files
-		if 'sra' in self.databases:
-			missing_files = []
-			for fastq, label in [(self.fastq1, "fastq1"), (self.fastq2, "fastq2")]:
-				if not fastq:
-					missing_files.append(f"{label} (file not provided)")
-				else:
-					filename = os.path.basename(fastq)
-					if file_location == 'cloud':
-						if fastq.startswith("s3://"):
-							if not self.check_s3_file_exists(fastq):
-								missing_files.append(f"{label} (missing from S3 and not found locally: {fastq})")
-						elif fastq.startswith("gs://"):
-							if not self.check_gcs_file_exists(fastq):
-								missing_files.append(f"{label} (missing from GCP and not found locally: {fastq})")
-						elif fastq.startswith("az://"):
-							if not self.check_azure_file_exists(fastq) and not os.path.exists(filename):
-								missing_files.append(f"{label} (missing from Azure and not found locally: {fastq})")
-						else:
-							if not os.path.exists(filename):  # Check if file is in current directory before flagging
-								missing_files.append(f"{label} (unsupported cloud path: {fastq})")
-					else:
-						if not os.path.exists(fastq):
-							missing_files.append(f"{label} (missing locally: {fastq})")
-			if missing_files:
-				missing_files_per_database['sra'] = missing_files
-		# Check GenBank files
-		if 'genbank' in self.databases:
-			missing_files = []
-			if not self.fasta_file:
-				missing_files.append("fasta_file (file not provided)")
-			elif not os.path.exists(self.fasta_file):
-				missing_files.append(self.fasta_file)
-			if not self.annotation_file:
-				missing_files.append("annotation_file (file not provided)")
-			elif not os.path.exists(self.annotation_file):
-				missing_files.append(self.annotation_file)
-			if missing_files:
-				missing_files_per_database['genbank'] = missing_files
-		return missing_files_per_database
-	# Function to add accession Ids to the sample info once assigned
-	def add_accession_id(self, accession_id):
-		self.accession_ids = accession_id
-	'''
 class MetadataParser:
 	def __init__(self, metadata_df, parameters):
 		self.metadata_df = metadata_df
