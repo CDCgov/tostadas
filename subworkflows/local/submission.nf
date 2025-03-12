@@ -65,13 +65,10 @@ workflow INITIAL_SUBMISSION {
                         if (!annotations_path || !file(annotations_path).exists()) missingFiles << "annotation"
                         if (!missingFiles) enabledDatabases << "genbank"
                     }
-
                     // BioSample does not require additional files
                     if (params.biosample) {
                         enabledDatabases << "biosample"
                     }
-
-                    log.info "DEBUG: enabledDatabases for ${meta.id} -> ${enabledDatabases}"
                     if (missingFiles) {
                         log.warn "Skipping databases due to missing files for sample ${meta.id}: ${missingFiles.join(', ')}"
                     }
