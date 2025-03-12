@@ -66,6 +66,7 @@ def submission_main():
 		metadata_file=parameters['metadata_file'],
 		fastq1=parameters.get('fastq1'),
 		fastq2=parameters.get('fastq2'),
+		fastq_nanopore=parameters.get('fastq_nanopore'),
 		species = parameters['species'],
 		databases = databases,
 		fasta_file=parameters.get('fasta_file'),
@@ -244,6 +245,7 @@ class GetParams:
 		parser.add_argument("--annotation_file", help="An annotation file to add to a Genbank submission", required=False)
 		parser.add_argument("--fastq1", help="Fastq R1 file to be submitted", required=False)	
 		parser.add_argument("--fastq2", help="Fastq R2 file to be submitted", required=False)
+		parser.add_argument("--nanopore", help="Nanopre fastq file to be submitted", required=False)
 		parser.add_argument("--custom_metadata_file", help="JSON file defining custom metadata columns", required=False)
 		parser.add_argument("--submission_mode", help="Whether to upload via ftp or sftp", required=False, default='ftp')
 		parser.add_argument("--send_email", help="Whether to send the ASN.1 file after running table2asn", required=False,action="store_const",  default=False, const=True)
@@ -281,11 +283,12 @@ class SubmissionConfigParser:
 		return config_dict
 
 class Sample:
-	def __init__(self, sample_id, metadata_file, fastq1, fastq2, species, databases, fasta_file=None, annotation_file=None):
+	def __init__(self, sample_id, metadata_file, fastq1, fastq2, fastq_nanopore, species, databases, fasta_file=None, annotation_file=None):
 		self.sample_id = sample_id
 		self.metadata_file = metadata_file
 		self.fastq1 = fastq1
 		self.fastq2 = fastq2
+		self.fastq_nanopore = fastq_nanopore
 		self.species = species
 		self.databases = databases
 		self.fasta_file = fasta_file
@@ -309,6 +312,10 @@ class Sample:
 				missing_files.append("fastq2 (file not provided)")
 			elif not os.path.exists(self.fastq2):
 				missing_files.append(self.fastq2)
+			if not self.fastq_nanopore:
+				missing_files.append("fastq_nanopore (file not provided)")
+			elif not os.path.exists(self.fastq_nanopore):
+				missing_files.append(self.fastq_nanopore)
 			if missing_files:
 				missing_files_per_database['sra'] = missing_files
 		# Check GenBank files
@@ -752,12 +759,16 @@ class SRASubmission(XMLSubmission, Submission):
 		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
 		fastq1 = f"{self.sample.sample_id}_R1.fq.gz"
 		fastq2 = f"{self.sample.sample_id}_R2.fq.gz"
+		fastq_nanopore = f"{self.sample_id}.fq.gz"
 		file1 = ET.SubElement(add_files, "File", file_path=fastq1)
 		data_type1 = ET.SubElement(file1, "DataType")
 		data_type1.text = "generic-data"
 		file2 = ET.SubElement(add_files, "File", file_path=fastq2)
 		data_type2 = ET.SubElement(file2, "DataType")
 		data_type2.text = "generic-data"
+		file3 = ET.SubElement(add_files, "File", file_path=fastq_nanopore)
+		data_type3 = ET.SubElement(file2, "DataType")
+		data_type3.text = "generic-data"
 
 	def add_attributes_block(self, submission):
 		add_files = submission.find(".//AddFiles")
@@ -788,9 +799,11 @@ class SRASubmission(XMLSubmission, Submission):
 		# todo: this assumes the fastq files are gzipped!!
 		fastq1 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R1.fq.gz")
 		fastq2 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R2.fq.gz")
+		fastq_nanopore = os.path.join(self.output_dir, f"{self.sample.sample_id}.fq.gz")
 		shutil.move( self.sample.fastq1, fastq1)
 		shutil.move( self.sample.fastq2, fastq2)
-		files_to_submit = [submit_ready_file, self.xml_output_path, fastq1, fastq2]
+		shutil.move( self.sample.fastq_nanopore, fastq_nanopore)
+		files_to_submit = [submit_ready_file, self.xml_output_path, fastq1, fastq2, fastq_nanopore]
 		self.submit_files(files_to_submit, 'sra')
 		print(f"Submitted sample {self.sample.sample_id} to SRA")
 
