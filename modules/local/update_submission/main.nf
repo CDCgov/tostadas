@@ -12,13 +12,13 @@ process UPDATE_SUBMISSION {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path),  val(enabledDatabases)
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path), val(enabledDatabases)
     path(submission_config)
 
     when:
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
 
-    // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
+    script:
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
     def biosample = params.biosample == true ? '--biosample' : ''
@@ -27,8 +27,6 @@ process UPDATE_SUBMISSION {
     // get absolute path if relative dir passed
     def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
 
-
-    script:
     """     
     submission_new.py \
         --update \
