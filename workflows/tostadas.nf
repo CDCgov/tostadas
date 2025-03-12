@@ -62,6 +62,7 @@ workflow TOSTADAS {
 			meta = [id:it.getBaseName()] 
 			[ meta, it ] 
 		}
+		.view()
 
 	// Generate the fasta and fastq paths
 	reads_ch = 
@@ -72,22 +73,25 @@ workflow TOSTADAS {
 			fasta_path = row.fasta_path ? file(row.fasta_path) : []
 			fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : []
 			fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : []
+			fastq_nanopore = row.nanopore_sra_file_path_1 ? file(row.nanopore_sra_file_path_1) : []
 			meta = [id:row.sample_name]
 			gff = row.gff_path ? file(row.gff_path) : []
 			// Return a list with 5 elements
-			[meta, fasta_path, fastq1, fastq2, gff]
+			[meta, fasta_path, fastq1, fastq2, fastq_nanopore, gff]
 			}
+			.view()
 
 	// Create initial submission channel
-	submission_ch = metadata_ch.join(reads_ch)
+	submission_ch = metadata_ch.join(reads_ch).view()
 
 	if ( params.fetch_reports_only == false) {
 		// check if the user wants to skip annotation or not
 		if ( params.annotation ) {
 			// Remove user-provided gff, if present, from annotation input channel before performing annotation
 			submission_ch = submission_ch.map { elements ->
-				elements.take(5)  // Remove the last element (gff)
+				elements.take(5)  // Remove the last element (gff) (Does this number need to change)
 				}
+				.view()
 
 			if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
 				// run liftoff annotation process + repeatmasker 
@@ -116,10 +120,10 @@ workflow TOSTADAS {
 					// set up submission channels
 					submission_ch = submission_ch
 					| join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, gff
-					| map { meta, tsv, _, fq1, fq2, gff -> 
+					| map { meta, tsv, _, fq1, fq2, np1, gff -> 
 						[meta, tsv, fq1, fq2, gff] } // drop original fasta
 					| join(RUN_BAKTA.out.fna) // join annotated fasta
-					| map { meta, tsv, fq1, fq2, gff, fasta -> 
+					| map { meta, tsv, fq1, fq2, np1, gff, fasta -> 
 						[meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
 				}   
 			}
@@ -137,6 +141,7 @@ workflow TOSTADAS {
 			submission_ch,  // meta.id, tsv, fasta, fastq1, fastq2, gff
 			params.submission_config,  
 			GET_WAIT_TIME.out
+			.view()
 			)
 
 		}
