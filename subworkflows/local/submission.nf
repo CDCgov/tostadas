@@ -79,11 +79,6 @@ workflow INITIAL_SUBMISSION {
                 }
 
             if (params.update_submission == false) {
-                submission_ch.view() 
-                submission_ch.view { entry ->
-                    println "DEBUG: filtered_submission_ch structure -> ${entry}"
-                }
-
                 SUBMISSION (submission_ch, submission_config_file)
                     .set { submission_files }
 
@@ -98,7 +93,6 @@ workflow INITIAL_SUBMISSION {
             }
 
             if (params.update_submission == true) {
-
                 UPDATE_SUBMISSION (submission_ch, submission_config_file)
                     .set { update_files }
 

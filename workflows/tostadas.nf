@@ -80,7 +80,6 @@ workflow TOSTADAS {
 
 			return [meta, fasta_path, fastq1, fastq2, gff]
 			}
-	reads_ch.view()
 
 	// Create initial submission channel
 	submission_ch = metadata_ch.join(reads_ch)
