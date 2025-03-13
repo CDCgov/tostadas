@@ -24,7 +24,7 @@ workflow INITIAL_SUBMISSION {
         // Declare channels to dynamically handle conditional process outputs
         Channel.empty().set { submission_files }    // Default for SUBMISSION output
         Channel.empty().set { update_files }        // Default for UPDATE_SUBMISSION output
-       
+
         // actual process to initiate wait 
         //WAIT ( SUBMISSION.out.submission_files.collect(), wait_time )
         WAIT ( wait_time )
@@ -46,62 +46,72 @@ workflow INITIAL_SUBMISSION {
                 .set { fetched_reports }
         }
 
-        else if ( params.update_submission == false ) {
-            // submit the files to the database of choice
-            SUBMISSION ( submission_ch, submission_config_file )
-                .set { submission_files }
-
-            // Add submission_files directory to channel before passing to FETCH_SUBMISSION
-            submission_ch.join(submission_files)
-                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder -> 
-                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
-                }
-                .set { submission_with_folder }
-
-            // Fetch & parse the report.xml
-            FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config_file )
-                .set { fetched_reports }
-        }
-        else if ( params.update_submission == false ) {
-            // submit the files to database of choice
-            SUBMISSION ( submission_ch, submission_config_file )
-                .set { submission_files }
-
-            // Add submission_files directory to channel before passing to FETCH_SUBMISSION
-            submission_ch.join(submission_files)
-                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder -> 
-                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
-                }
-                .set { submission_with_folder }
-            
-            // Try to fetch & parse the report.xml
-            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config_file )
-                .set { fetched_reports }
-        }
-
-        // if params.update_submission is true, update an existing submission
-        else if ( params.update_submission == true ) {
-            // process for updating the submitted samples
-            UPDATE_SUBMISSION ( submission_ch, submission_config_file )
-                .set { update_files }
-
-            // Map submission_ch to include submission_folder (from UPDATE_SUBMISSION.out.submission_files)
+        else {
             submission_ch = submission_ch
-                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path -> 
-                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, UPDATE_SUBMISSION.out.submission_files)
+                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path ->
+                    def missingFiles = []
+                    def enabledDatabases = []
+
+                    // Check SRA requirements
+                    if (params.sra) {
+                        if (!fastq_1 || !file(fastq_1).exists()) missingFiles << "fastq_1"
+                        if (!fastq_2 || !file(fastq_2).exists()) missingFiles << "fastq_2"
+                        if (!missingFiles) enabledDatabases << "sra"
+                    }
+
+                    // Check GenBank requirements
+                    if (params.genbank) {
+                        if (!fasta_path || !file(fasta_path).exists()) missingFiles << "fasta"
+                        if (!annotations_path || !file(annotations_path).exists()) missingFiles << "annotation"
+                        if (!missingFiles) enabledDatabases << "genbank"
+                    }
+                    // BioSample does not require additional files
+                    if (params.biosample) {
+                        enabledDatabases << "biosample"
+                    }
+                    if (missingFiles) {
+                        log.warn "Skipping databases due to missing files for sample ${meta.id}: ${missingFiles.join(', ')}"
+                    }
+                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases)
                 }
 
-            // Try to fetch & parse the report.xml
-            FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config_file )
-                .set { fetched_reports }
+            if (params.update_submission == false) {
+                SUBMISSION (submission_ch, submission_config_file)
+                    .set { submission_files }
+
+                submission_ch.join(submission_files)
+                    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder -> 
+                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder)
+                    }
+                    .set { submission_with_folder }
+
+                FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config_file )
+                    .set { fetched_reports }
+            }
+
+            if (params.update_submission == true) {
+                UPDATE_SUBMISSION (submission_ch, submission_config_file)
+                    .set { update_files }
+
+                // Map submission_ch to include submission_folder (from UPDATE_SUBMISSION.out.submission_files)
+                //submission_ch = submission_ch
+                //    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path -> 
+                //        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, UPDATE_SUBMISSION.out.submission_files)
+                //    }
+
+                submission_ch.join(update_files)
+                    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder -> 
+                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder)
+                    }
+                    .set { submission_with_folder }
+
+                FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config_file )
+                    .set { fetched_reports }
+            }
         }
         
     emit:
         submission_files = submission_files
         update_files = update_files
         fetched_reports = fetched_reports
-        //submission_files = SUBMISSION.out.submission_files
-        //submission_log = SUBMISSION.out.submission_log
-
-        //to do: add GISAID module
 }

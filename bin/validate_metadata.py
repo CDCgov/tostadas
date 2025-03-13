@@ -636,21 +636,21 @@ class ValidateChecks:
 		# check the required fields
 		for field in self.required_core:
 			if field in sample_line:
-				value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().all() else ""
+				value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().any() else ""
 				if value == "":
-					self.meta_core_grade = False
 					sample_line.at[sample_line.index[0], field] = "Not Provided"  # Replace missing value
 					self.sample_error_msg += f"WARNING: {field} is missing for sample {sample_line['sample_name'].values[0]}, setting to 'Not Provided'"  # Log warning
 			else:
 				missing_fields.append(field)  # Report as missing column
 				self.meta_core_grade = False
+
 		# Check the optional fields (at least one required from each group)
 		if self.optional_core:
 			for group in self.optional_core:
 				missing_group = True  # Assume the group is missing until proven otherwise
 				for field in group:
 					if field in sample_line:
-						value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().all() else ""
+						value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().any() else ""
 						if value != "":
 							missing_group = False  # At least one valid field found
 						else:
@@ -660,6 +660,7 @@ class ValidateChecks:
 					self.meta_core_grade = False
 					missing_optionals.append(group)
 					break  # Stop checking once we find a failed group
+
 		if self.meta_core_grade is False:
 			try:
 				assert len(missing_fields) != 0
@@ -792,6 +793,8 @@ class Check_Illumina_Nanopore_SRA:
 				self.meta_illumina_grade = False
 
 		# check if the SRA file exists for the first file path
+		# todo: I don't think we need to check for valid file paths until we're submitting?  Or check here instead of during submission?
+		'''
 		path_failed = False
 		if instrument_type == 'illumina':
 			if self.sample_info["illumina_library_layout"].tolist()[0] == 'paired':
@@ -808,6 +811,7 @@ class Check_Illumina_Nanopore_SRA:
 				self.nanopore_error_msg += f'\n\t\t{file_path} does not exist or there are permission problems'
 				path_failed = True
 				self.meta_nanopore_grade = False
+		'''
 
 		if instrument_type == 'nanopore' and self.meta_nanopore_grade is False:
 			try:

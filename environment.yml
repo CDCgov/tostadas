@@ -5,12 +5,16 @@ channels:
   - defaults
 dependencies:
   - pip
+  - azure-storage-blob=12.23.1=pyhd8ed1ab_0
+  - boto3=1.36.25
+  - google-cloud-storage=3.0.0
   - libgcc-ng=12.1.0=h8d9b700_16
   - libstdcxx-ng=12.1.0=ha89aaad_16
   - liftoff=1.6.3=pyhdfd78af_0
   - lxml=4.9.1=py39hb9d737c_0
   - nameparser=1.0.5=py_0
   - numpy=1.22.4=py39hc58783e_0
+  - openpyxl=3.0.10
   - packaging=21.3=pyhd3eb1b0_0
   - pandas=1.4.2=py39h1832856_2
   - paramiko=3.4.0=pyhd8ed1ab_0
@@ -34,5 +38,4 @@ dependencies:
   - wheel=0.37.1=pyhd8ed1ab_0
   - xz=5.2.5=h516909a_1
   - yaml=0.2.5=h7f98852_2
-  - openpyxl=3.0.10
   - xmltodict=0.13.0=pyhd8ed1ab_0

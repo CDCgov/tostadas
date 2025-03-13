@@ -13,18 +13,24 @@ process SUBMISSION {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path)
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path), val(enabledDatabases)
     path(submission_config)
 
-    // define the command line arguments based on the value of params.submission_test_or_prod, params.send_submission_email
+    when:
+    "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
+
+    script:
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
     def biosample = params.biosample == true ? '--biosample' : ''
-    def sra = params.sra == true ? '--sra' : ''
-    def genbank = params.genbank == true ? '--genbank' : ''
+    def sra = "sra" in enabledDatabases ? '--sra' : ''
+    def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
 
-    script:
-    """     
+    """   
+    echo "DEBUG: mainf.nf: enabledDatabases=${enabledDatabases}"
+    echo "DEBUG: mainf.nf: Params -> sra: $params.sra, genbank: $params.genbank, biosample: $params.biosample"
+    echo "DEBUG: mainf.nf: Submission Running for $meta.id"
+    echo "DEBUG: mainf.nf: Selected Databases: ${enabledDatabases[0]}"
     submission_new.py \
         --submit \
         --submission_name $meta.id \
@@ -45,5 +51,4 @@ process SUBMISSION {
     """
     output:
     tuple val(meta), path("${validated_meta_path.getBaseName()}"), emit: submission_files
-    //path ""${validated_meta_path.getBaseName()}/*.csv", emit: submission_report
 }

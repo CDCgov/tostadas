@@ -63,7 +63,7 @@ def submission_main():
 	# Initialize the Sample object with parameters from argparse
 	sample = Sample(
 		sample_id=parameters['submission_name'],
-		metadata_file=parameters['metadata_file'],
+		metadata_df=metadata_df,
 		fastq1=parameters.get('fastq1'),
 		fastq2=parameters.get('fastq2'),
 		species = parameters['species'],
@@ -71,16 +71,6 @@ def submission_main():
 		fasta_file=parameters.get('fasta_file'),
 		annotation_file=parameters.get('annotation_file')
 	)
-	# Perform file validation
-	missing_files_per_database = sample.validate_files()
-	if missing_files_per_database:
-		for db, files in missing_files_per_database.items():
-			print(f"Error: Missing required files for {db}: {files}")
-		# Skip processes for missing databases
-		databases_to_skip = set(missing_files_per_database.keys())
-	else:
-		databases_to_skip = set()
-		print(f"All required files found")
 
 	# Set the submission directory (test or prod)
 	if parameters['test']:
@@ -112,10 +102,9 @@ def submission_main():
 		start_time = time.time()
 		timeout = 60  # time out after 60 seconds  
 		report_fetched = {db: False for db in ['biosample', 'sra', 'genbank']}  # Track fetched status for each db
-		databases_to_fetch = [db for db in databases if db not in databases_to_skip] # List of databases to fetch reports for
 		while time.time() - start_time < timeout:
 			# Try fetching reports for all applicable databases
-			for db in databases_to_fetch:
+			for db in databases:
 				if not report_fetched[db]:  # Only attempt fetching if the report has not been fetched
 					print(f"Fetching report for {db}")
 					# Instantiate a Submission object for this database type
@@ -139,7 +128,7 @@ def submission_main():
 		# Loop over submission dbs to parse the report.xmls
 		# todo: add error-handling
 		all_reports = pd.DataFrame()
-		for  db in databases_to_fetch:
+		for  db in databases:
 			report_xml_file = f"{parameters['output_dir']}/{parameters['submission_name']}/{db}/report.xml"
 			df = submission.parse_report_to_df(report_xml_file)
 			all_reports = pd.concat([all_reports, df], ignore_index=True)
@@ -167,10 +156,9 @@ def submission_main():
 				raise ValueError(f"Failed to load CSV file: {report_file}. Error: {e}")
 			accessions_dict = get_accessions(sample.sample_id, report_df)
 			# Exit gracefully if accession IDs not found (cannot push update to NCBI without an accession ID)
-			databases_to_update = [db for db in databases if db not in databases_to_skip]
-			print(f"Updated requested for databases {', '.join(databases_to_update)}")
-			if any(accessions_dict.get(db) is None for db in databases_to_update):
-				print(f"Error: Missing accession for one of more of {', '.join(databases_to_update)}. Exiting update workflow.")
+			print(f"Updated requested for databases {', '.join(databases)}")
+			if any(accessions_dict.get(db) is None for db in databases):
+				print(f"Error: Missing accession for one of more of {', '.join(databases)}. Exiting update workflow.")
 				sys.exit(1) 
 			else:
 				print(f"Accessions found for {', '.join(accessions_dict.keys())}")
@@ -178,23 +166,23 @@ def submission_main():
 				# Todo: this code requires the user to specify the exact database(s) they want to update
 
 		# Run rest of the submission steps: Prep the files, submit, and fetch the report once
-		if parameters['biosample'] and 'biosample' not in databases_to_skip:
+		if parameters['biosample']:
 			biosample_submission = BiosampleSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/biosample", 
 													parameters['submission_mode'], submission_dir, 'biosample', accessions_dict['biosample'])
-		if parameters['sra'] and 'sra' not in databases_to_skip:
+		if parameters['sra']:
 			sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/sra",
 										parameters['submission_mode'], submission_dir, 'sra', accessions_dict['sra'])
-		if parameters['genbank'] and 'genbank' not in databases_to_skip:
+		if parameters['genbank']:
 			# Generates an XML if ftp_upload is True
 			genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{parameters['submission_name']}/genbank",
 												parameters['submission_mode'], submission_dir, 'genbank', accessions_dict['genbank'])
 
 		# Submit all prepared submissions and fetch report once
-		if parameters['biosample'] and 'biosample' not in databases_to_skip:
+		if parameters['biosample']:
 			biosample_submission.submit()
-		if parameters['sra'] and 'sra' not in databases_to_skip:
+		if parameters['sra']:
 			sra_submission.submit()
-		if parameters['genbank'] and 'genbank' not in databases_to_skip:
+		if parameters['genbank']:
 			# If user is submitting via FTP
 			if sample.ftp_upload:
 				genbank_submission.prepare_files_ftp_submission() # Prep files and run table2asn
@@ -281,9 +269,9 @@ class SubmissionConfigParser:
 		return config_dict
 
 class Sample:
-	def __init__(self, sample_id, metadata_file, fastq1, fastq2, species, databases, fasta_file=None, annotation_file=None):
+	def __init__(self, sample_id, metadata_df, fastq1, fastq2, species, databases, fasta_file=None, annotation_file=None):
 		self.sample_id = sample_id
-		self.metadata_file = metadata_file
+		self.metadata_df = metadata_df
 		self.fastq1 = fastq1
 		self.fastq2 = fastq2
 		self.species = species
@@ -292,42 +280,6 @@ class Sample:
 		self.annotation_file = annotation_file
 		# ftp_upload is true if GenBank FTP submission is supported for that species, otherwise false
 		self.ftp_upload = species in {"flu", "sars", "bacteria"} # flu, sars, bacteria currently support ftp upload to GenBank
-	# todo: add (or ignore) validation for cloud files 
-	def validate_files(self):
-		missing_files_per_database = {}
-		# Check common files
-		if not os.path.exists(self.metadata_file):
-			missing_files_per_database['biosample'] = [self.metadata_file]
-		# Check SRA files
-		if 'sra' in self.databases:
-			missing_files = []
-			if not self.fastq1:
-				missing_files.append("fastq1 (file not provided)")
-			elif not os.path.exists(self.fastq1):
-				missing_files.append(self.fastq1)
-			if not self.fastq2:
-				missing_files.append("fastq2 (file not provided)")
-			elif not os.path.exists(self.fastq2):
-				missing_files.append(self.fastq2)
-			if missing_files:
-				missing_files_per_database['sra'] = missing_files
-		# Check GenBank files
-		if 'genbank' in self.databases:
-			missing_files = []
-			if not self.fasta_file:
-				missing_files.append("fasta_file (file not provided)")
-			elif not os.path.exists(self.fasta_file):
-				missing_files.append(self.fasta_file)
-			if not self.annotation_file:
-				missing_files.append("annotation_file (file not provided)")
-			elif not os.path.exists(self.annotation_file):
-				missing_files.append(self.annotation_file)
-			if missing_files:
-				missing_files_per_database['genbank'] = missing_files
-		return missing_files_per_database
-	# Function to add accession Ids to the sample info once assigned
-	def add_accession_id(self, accession_id):
-		self.accession_ids = accession_id
 
 class MetadataParser:
 	def __init__(self, metadata_df, parameters):
