@@ -16,9 +16,6 @@ process FETCH_SUBMISSION {
     tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path), path(submission_folder)
     path(submission_config)
 
-    when:
-    "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
-
     script:
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
