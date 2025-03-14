@@ -1,0 +1,104 @@
+# Project Information
+site_name: Tostadas
+site_author: SciComp
+site_description: >-
+  Aquascope
+# Repository
+repo_name: CDCgov/Aquascope
+repo_url: https://github.com/CDCgov/tostadas/
+edit_uri: https://github.com/CDCgov/tostadas/edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2025 CDC SciComp
+
+# Configuration
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.top
+    - navigation.indexes
+    - toc.integrate 
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      primary: red
+      accent: red
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+
+# Plugins
+plugins:
+  - search
+  - git-revision-date
+  - minify:
+      minify_html: true
+
+
+# Customization
+extra:
+  social:
+    - icon: fontawesome/solid/users
+      link: https://www.cdc.gov/amd/index.html
+    - icon: fontawesome/brands/github
+      link: https://github.com/CDCgov
+  version:
+    provider: mike
+
+
+# Extensions
+markdown_extensions:
+  - markdown.extensions.admonition
+  - markdown.extensions.attr_list
+  - markdown.extensions.md_in_html
+  - markdown.extensions.def_list
+  - markdown.extensions.footnotes
+  - markdown.extensions.meta
+  - markdown.extensions.toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: squidfunk
+      repo: mkdocs-material
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Page Tree
+nav:
+  - Background : index.md
+  - Usage: 
+    - 1. CDC Configs : user-guide/cdc_configs_access.md
+    - 2. General Submission Guide: user-guide/general_NCBI_submission_guide.md
+    - 3. Custom Metadata: user-guide/custom_metadata_guide.md
+    - 4. User Provided Annotation: user-guide/user_provided_annotation_guide.md
+    - 5. Submission Config: user-guide/submission_config_guide.md
+    - 6. Installation: user-guide/vadr_install.md
+  - FAQ:
+    - Troubleshooting: user-guide/troubleshooting.md
+    - Contributions: user-guide/contributions.md
