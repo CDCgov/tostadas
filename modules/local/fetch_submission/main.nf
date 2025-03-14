@@ -13,7 +13,7 @@ process FETCH_SUBMISSION {
 
     input:
     val wait_time
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path), val(enabledDatabases), path(submission_folder)
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path), path(submission_folder)
     path(submission_config)
 
     when:
@@ -22,11 +22,9 @@ process FETCH_SUBMISSION {
     script:
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
-    def sra = (params.sra == true && "sra" in enabledDatabases) ? '--sra' : ''
-    def genbank = (params.genbank == true && "genbank" in enabledDatabases) ? '--genbank' : ''
     def biosample = params.biosample == true ? '--biosample' : ''
-    //def sra = params.sra == true ? '--sra' : ''
-    //def genbank = params.genbank == true ? '--genbank' : ''
+    def sra = params.sra == true ? '--sra' : ''
+    def genbank = params.genbank == true ? '--genbank' : ''
 
     """
     echo "Using submission folder: $submission_folder"
