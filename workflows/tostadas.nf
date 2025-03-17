@@ -7,7 +7,7 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // get the utility processes / subworkflows
-// include { CHECK_FILES                                       } from "../modules/local/general_util/check_files/main"
+
 // include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
 include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 
@@ -63,69 +63,74 @@ workflow TOSTADAS {
 			[ meta, it ] 
 		}
 
-	// Generate the fasta and fastq paths
+	// Generate the fasta annd fastq paths
 	reads_ch = 
 		METADATA_VALIDATION.out.tsv_Files
 		.flatten()
 		.splitCsv(header: true, sep: "\t")
 		.map { row ->
-			fasta_path = row.fasta_path ? file(row.fasta_path) : []
-			fastq1 = row.fastq_path_1 ? file(row.fastq_path_1) : []
-			fastq2 = row.fastq_path_2 ? file(row.fastq_path_2) : []
-			meta = [id:row.sequence_name]
-			gff = row.gff_path ? file(row.gff_path) : []
-			// Return a list with 5 elements
-			[meta, fasta_path, fastq1, fastq2, gff]
+			def trimFile = { path -> path && path.trim() ? file(path.trim()) : [] }
+
+			def meta = [id: row.sample_name?.trim()]
+			def fasta_path = trimFile(row.fasta_path)
+			def fastq1 = trimFile(row.fastq_path_1)
+			def fastq2 = trimFile(row.fastq_path_2)
+			def nanopore = trimFile(row.nanopore_sra_file_path_1)
+			def gff = trimFile(row.gff_path)
+
+			return [meta, fasta_path, fastq1, fastq2, gff]
 			}
 
 	// Create initial submission channel
 	submission_ch = metadata_ch.join(reads_ch)
 
-	// check if the user wants to skip annotation or not
-	if ( params.annotation ) {
-		// Remove user-provided gff, if present, from annotation input channel before performing annotation
-		submission_ch = submission_ch.map { elements ->
-			elements.take(5)  // Remove the last element (gff)
-			}
+	if ( params.fetch_reports_only == false) {
+		// check if the user wants to skip annotation or not
+		if ( params.annotation ) {
+			// Remove user-provided gff, if present, from annotation input channel before performing annotation
+			submission_ch = submission_ch.map { elements ->
+				elements.take(5)  // Remove the last element (gff)
+				}
 
-		if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
-			// run liftoff annotation process + repeatmasker 
-			if ( params.repeatmasker_liftoff && !params.vadr ) {
-				// run repeatmasker annotation on files
-				REPEATMASKER_LIFTOFF (
-					submission_ch
-				)
-				submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+			if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
+				// run liftoff annotation process + repeatmasker 
+				if ( params.repeatmasker_liftoff && !params.vadr ) {
+					// run repeatmasker annotation on files
+					REPEATMASKER_LIFTOFF (
+						submission_ch
+					)
+					submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+				}
+				// run vadr processes
+				// todo: VADR fails when species == virus because it uses that flag to call the vadr_models files
+				if ( params.vadr ) {
+					RUN_VADR (
+						submission_ch
+					)
+					submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, tbl
+				}
 			}
-			// run vadr processes
-			// issue: VADR fails when species == virus because it uses that flag to call the vadr_models files
-			if ( params.vadr ) {
-				RUN_VADR (
-					submission_ch
-				)
-				submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, tbl
+			else if (params.species == 'bacteria') {
+			// run bakta annotation process
+				if ( params.bakta ) {
+					RUN_BAKTA(
+						submission_ch
+					)
+					// set up submission channels
+					submission_ch = submission_ch
+					| join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, gff
+					| map { meta, tsv, _, fq1, fq2, gff -> 
+						[meta, tsv, fq1, fq2, gff] } // drop original fasta
+					| join(RUN_BAKTA.out.fna) // join annotated fasta
+					| map { meta, tsv, fq1, fq2, gff, fasta -> 
+						[meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
+				}   
 			}
-		}
-		else if (params.species == 'bacteria') {
-		// run bakta annotation process
-			if ( params.bakta ) {
-				RUN_BAKTA(
-					submission_ch
-				)
-				// set up submission channels
-				submission_ch = submission_ch
-				| join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, gff
-				| map { meta, tsv, _, fq1, fq2, gff -> 
-					[meta, tsv, fq1, fq2, gff] } // drop original fasta
-				| join(RUN_BAKTA.out.fna) // join annotated fasta
-				| map { meta, tsv, fq1, fq2, gff, fasta -> 
-					[meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
-			}   
 		}
 	}
 
 	// run submission for the annotated samples 
-	if ( params.submission ) {
+	if ( params.submission || params.fetch_reports_only || params.update_submission ) {
 		// pre submission process + get wait time (parallel)
 		GET_WAIT_TIME (
 			METADATA_VALIDATION.out.tsv_Files.collect() 

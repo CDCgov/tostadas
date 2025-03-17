@@ -86,6 +86,37 @@ TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; ver
 ```
 nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file  <path/to/metadata_custom_fields.json>
 ```
+### Workflow Parameters Overview
+
+This section outlines the primary parameters available for configuring and running the TOSTADAS pipeline effectively, allowing users to tailor the workflow for their needs:
+
+| Parameter               | Description                                                                                       | Input Required           |
+|-------------------------|---------------------------------------------------------------------------------------------------|--------------------------|
+| `--validate_params`     | Flag to enable or disable parameter validation                                                    | No (true/false as bool)  |
+| `--annotation`          | Toggle for running annotation                                                                     | Yes (true/false as bool) |
+| `--submission`          | Toggle for running submission                                                                     | Yes (true/false as bool) |
+| `--update_submission`   | Toggle to update data for existing BioSample or SRA records                                       | Yes (true/false as bool) |
+| `--fetch_reports_only`  | Toggle for only fetching submission reports                                                       | Yes (true/false as bool) |
+
+For more detailed information on each parameter and additional configurations, please refer to the [TOSTADAS documentation](https://github.com/CDCgov/tostadas/wiki).
+
+## Troubleshooting
+
+If you encounter issues while using the TOSTADAS pipeline, refer to the following troubleshooting steps to resolve common problems:
+
+### Common Issues and Solutions
+
+#### 1. Errors with 'table2asn not on PATH' or a Python library missing when using the `singularity` or `docker` profiles
+
+**Issue:** Nextflow is using an outdated cached image.
+
+**Solution:** Locate the image (e.g., `$HOME/.singularity/staphb-tostadas-latest.img`) and delete it. This will force Nextflow to pull the latest version.
+
+#### 2. Pipeline hangs indefinitely during the submission step, or you get a "duplicate BioSeq ID error"  
+
+**Issue:** This may be caused by duplicate sample IDs in the FASTA file (e.g., a multicontig FASTA). This is only a problem for submissions to Genbank using `table2asn`.
+
+**Solution:** Review the sequence headers in the sample FASTA files and ensure that each header is unique.
 
 ## Get in Touch
 If you need to report a bug, suggest new features, or just say “thanks”, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we’ll try to get back to you as soon as possible!

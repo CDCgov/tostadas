@@ -1,0 +1,102 @@
+BioSample_packages:
+  SARS-CoV-2.cl.1.0:
+    required:
+    - sample_name
+    - organism
+    - collection_date
+    - isolate
+    - collected_by
+    - host
+    - host_disease
+    at_least_one_required: []
+  SARS-CoV-2.wwsurv.1.0:
+    required:
+    - sample_name
+    - organism
+    - collection_date
+    - isolation_source
+    - ww_population
+    - ww_sample_duration
+    - ww_sample_matrix
+    at_least_one_required: []
+  Microbe.1.0:
+    required:
+    - sample_name
+    - organism
+    - collection_date
+    - sample_type
+    at_least_one_required:
+    - - host
+      - isolation_source
+    - - strain
+      - isolate
+  Human.1.0:
+    required:
+    - sample_name
+    - organism
+    - collection_date
+    - isolate
+    - age
+    - biomaterial_provider
+    - sex
+    - tissue
+    at_least_one_required: []
+  Metagenome.environmental.1.0:
+    required:
+    - sample_name
+    - organism
+    - collection_date
+    - lat_lon
+    at_least_one_required:
+    - - host
+      - isolation_source
+  OneHealthEnteric.1.0:
+    required:
+    - sample_name
+    - strain
+    at_least_one_required: []
+  Virus.1.0:
+    required:
+    - sample_name
+    - organism
+    - collection_date
+    - isolation_source
+    - isolate
+    at_least_one_required:
+    - - host
+      - lab_host
+  Beta-lactamase.1.0:
+    required:
+    - sample_name
+    - organism
+    - collection_date
+    - beta_lactamase_family
+    - carbapenemase
+    - edta_inhibitor_tested
+    at_least_one_required:
+    - - strain
+      - isolate
+  Pathogen.cl.1.0:
+    required:
+    - sample_name
+    - organism
+    - collection_date
+    - isolation_source
+    - collected_by
+    - lat_lon
+    - host
+    - host_disease
+    at_least_one_required:
+    - - strain
+      - isolate
+  Pathogen.env.1.0:
+    required:
+    - sample_name
+    - organism
+    - collection_date
+    - isolation_source
+    - collected_by
+    - lat_lon
+    at_least_one_required:
+    - - strain
+      - isolate
