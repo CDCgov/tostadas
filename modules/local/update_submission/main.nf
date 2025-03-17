@@ -22,8 +22,8 @@ process UPDATE_SUBMISSION {
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
     def biosample = params.biosample == true ? '--biosample' : ''
-    def sra = (params.sra == true && "sra" in enabledDatabases) ? '--sra' : ''
-    def genbank = (params.genbank == true && "genbank" in enabledDatabases) ? '--genbank' : ''
+    def sra = "sra" in enabledDatabases ? '--sra' : ''
+    def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
     // get absolute path if relative dir passed
     def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
 

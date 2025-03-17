@@ -81,7 +81,7 @@ workflow INITIAL_SUBMISSION {
 
                 submission_ch.join(submission_files)
                     .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder -> 
-                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder)
+                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
                     }
                     .set { submission_with_folder }
 
@@ -101,7 +101,7 @@ workflow INITIAL_SUBMISSION {
 
                 submission_ch.join(update_files)
                     .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder -> 
-                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder)
+                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
                     }
                     .set { submission_with_folder }
 
