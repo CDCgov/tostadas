@@ -290,6 +290,10 @@
       "description": "Flag to enable or disable submission to BioSample.",
       "default": true
     },
+    "biosample_fields_key":{
+      "description":"Key defining required and optional metadata fields for various BioSample packages.", 
+      "hidden":true
+    },
     "submission_mode": {
       "type": "string",
       "description": "Mode of submission.",
