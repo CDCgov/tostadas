@@ -2,9 +2,9 @@
 site_name: Tostadas
 site_author: SciComp
 site_description: >-
-  Aquascope
+  Tostadas
 # Repository
-repo_name: CDCgov/Aquascope
+repo_name: CDCgov/Tostadas
 repo_url: https://github.com/CDCgov/tostadas/
 edit_uri: https://github.com/CDCgov/tostadas/edit/main/docs/
 
