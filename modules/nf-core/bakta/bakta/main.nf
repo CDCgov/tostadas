@@ -5,10 +5,10 @@
 */
 process BAKTA {
 
-    conda("bioconda::bakta==1.9.1")
+    conda("bioconda::bakta==1.9.4")
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bakta:1.9.1--pyhdfd78af_0' :
-        'quay.io/biocontainers/bakta:1.9.1--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/bakta:1.9.4--pyhdfd78af_0' :
+        'quay.io/biocontainers/bakta:1.9.4--pyhdfd78af_0' }"
     
     input:
     path db_path
