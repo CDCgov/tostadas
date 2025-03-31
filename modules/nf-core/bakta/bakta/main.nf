@@ -5,10 +5,10 @@
 */
 process BAKTA {
 
-    conda("bioconda::bakta==1.9.1")
+    conda("bioconda::bakta==1.9.4")
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bakta:1.9.1--pyhdfd78af_0' :
-        'quay.io/biocontainers/bakta:1.9.1--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/bakta:1.9.4--pyhdfd78af_0' :
+        'quay.io/biocontainers/bakta:1.9.4--pyhdfd78af_0' }"
     
     input:
     path db_path
@@ -45,6 +45,7 @@ process BAKTA {
     def complete = params.bakta_complete ? "--complete" : ""
     def skip_plot = params.bakta_skip_plot ? "--skip-plot" : ""
     def keep_contig_headers = params.bakta_keep_contig_headers ? "--keep-contig-headers" : ""
+    def locus_tag_param = params.bakta_locus_tag ? "--locus-tag ${params.bakta_locus_tag}" : ""
 
     """
     bakta --db $db_path  \
@@ -58,7 +59,7 @@ process BAKTA {
         --translation-table $params.bakta_translation_table \
         --gram $params.bakta_gram \
         --locus $params.bakta_locus \
-        --locus-tag $params.bakta_locus_tag \
+        ${locus_tag_param} \
         $complete $compliant $keep_contig_headers $proteins $prodigal_tf $skip_trna $skip_rrna \
         $skip_ncrna $skip_ncrna_region $skip_crispr $skip_cds $skip_sorf $skip_gap $skip_ori $skip_plot \
         $fasta_path 
