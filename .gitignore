@@ -46,7 +46,7 @@ tests/__pycache__
 /aspen_test_results
 /aspen/runs
 /aspen/latest_run
-/test
+/test*
 
 # vadr related 
 /vadr
