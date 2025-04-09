@@ -34,9 +34,6 @@ def metadata_validation_main():
 	meta_to_df = GetMetaAsDf(parameters)
 
 	# call the load_meta function passing in the path to the metadata file
-	meta_to_df.run_get_meta_df()
-
-	# print error message if ValueError is raised when GetMetaAsDf is run
 	try:
 		meta_to_df.run_get_meta_df()
 		print("Metadata loaded and validated successfully.")
