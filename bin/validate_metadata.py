@@ -642,30 +642,33 @@ class ValidateChecks:
 				self.meta_core_grade = False
 
 		# Check the optional fields (at least one required from each group)
+		# Check the optional fields (at least one field in the group must exist as a column)
 		if self.optional_core:
 			for group in self.optional_core:
-				missing_group = True  # Assume the group is missing until proven otherwise
-				for field in group:
-					if field in sample_line:
-						value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().any() else ""
-						if value != "":
-							missing_group = False  # At least one valid field found
-						else:
-							sample_line.at[sample_line.index[0], field] = "Not Provided"  # Replace missing optional value
-							self.sample_error_msg += f"WARNING: {field} in optional group is missing for sample {sample_line['sample_name'].values[0]}, setting to 'Not Provided'"  # Log warning
-				if missing_group:  # If none of the fields in the group had values
+				group_present = any(field in sample_line for field in group)
+				if not group_present:
 					self.meta_core_grade = False
 					missing_optionals.append(group)
-					break  # Stop checking once we find a failed group
-
+					break  # Stop checking once we find a completely missing group (need at least one)
+				else:
+					for field in group:
+						if field in sample_line:
+							value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().any() else ""
+							if value == "":
+								sample_line.at[sample_line.index[0], field] = "Not Provided"
+								self.sample_error_msg += (
+									f"WARNING: {field} in optional group is missing for sample "
+									f"{sample_line['sample_name'].values[0]}, setting to 'Not Provided'"
+								)
 		if self.meta_core_grade is False:
 			try:
-				assert len(missing_fields) != 0
+				assert len(missing_fields) != 0 or len(missing_optionals) != 0 # are there missing required columns?
 			except AssertionError:
 				raise AssertionError(f'Meta core grade is false but did not record any missing fields')
 			self.sample_error_msg += "\n\t\tMissing Required Metadata:  " + ", ".join(missing_fields)
 			if len(missing_optionals) != 0:
-				self.sample_error_msg += "\n\t\tMissing 'At Least One Required' Metadata:  " + ", ".join(missing_optionals)
+				optional_strs = ["[" + ", ".join(group) + "]" for group in missing_optionals]
+				self.sample_error_msg += "\n\t\tMissing 'At Least One Required' Metadata:  " + ", ".join(optional_strs)
 	
 	def check_meta_case(self, sample_info):
 		""" Checks and removes demographics metadata for cases (sex, age, race, and ethnicity) if present. """
@@ -683,7 +686,7 @@ class ValidateChecks:
 		except:
 			self.meta_case_grade = False
 		# Develop error message if case data was found and removed
-		if invalid_case_data:
+		if invalid_case_data: 
 			self.sample_error_msg += (
 				f'\n\t\tPresent Case Data found in: {", ".join(invalid_case_data)}.'
 				f'\n\t\tThe case data has been removed automatically.'
