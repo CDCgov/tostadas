@@ -3,7 +3,6 @@
 # Adapted from Perl scripts by MH Seabolt and Python scripts by J Heuser
 # Refactored and updated by J Rowell, AK Gupta, and KA O'Connell
 
-# necessary packages
 import os
 import pandas as pd
 import warnings
@@ -14,12 +13,7 @@ import math
 import yaml
 import json
 import shutil
-from typing import List, Dict, Union
 from collections import defaultdict
-
-
-# module level import
-from annotation_utility import MainUtility as main_util
 
 def metadata_validation_main():
 	""" Main for initiating metadata validation steps
@@ -45,17 +39,17 @@ def metadata_validation_main():
 	filled_df = meta_to_df.final_df
 
 	# handle case where we're only fetching reports
+	# todo: modify for bulk submissions
 	if parameters['find_paths']:
 		sample_dfs = {}
-		col_name = "sequence_name" if "sequence_name" in filled_df.columns else "sample_name" # allow flexibility in col name
 		for row in range(len(filled_df)):
 			sample_df = filled_df.iloc[row].to_frame().transpose()
 			sample_df = sample_df.set_index(col_name)
 			sample_dfs[filled_df.iloc[row][col_name]] = sample_df
 		missing_tsvs = []
 		for sample in sample_dfs.keys():
-			tsv_file = f'{parameters["path_to_existing_tsvs"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
-			dest_tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
+			tsv_file = f'{parameters["path_to_existing_tsvs"]}/{parameters["file_name"]}/tsvs_per_sample/{sample}.tsv'
+			dest_tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsvs_per_sample/{sample}.tsv'
 			if os.path.exists(tsv_file):
 				shutil.copy(tsv_file, dest_tsv_file) # copy to local directory
 			else:
@@ -76,10 +70,32 @@ def metadata_validation_main():
 
 		# insert necessary columns in metadata dataframe
 		insert = HandleDfInserts(parameters=parameters, filled_df=validate_checks.metadata_df)
-		insert.handle_df_inserts()
+		final_df = insert.handle_df_inserts() # final updated, validated dataframe
 
+		# output the batched tsv files  
+		batch_size = parameters['batch_size']
+		output_dir = os.path.join(parameters["output_dir"], parameters["file_name"], "batched_tsvs")
+		os.makedirs(output_dir, exist_ok=True)
 
+		total_rows = len(final_df)
+		num_batches = math.ceil(total_rows / batch_size)
+		batch_log = {}
+	
+		for i in range(num_batches):
+			start_idx = i * batch_size
+			end_idx = min(start_idx + batch_size, total_rows)
+			batch_df = final_df.iloc[start_idx:end_idx]
+			batch_file = os.path.join(output_dir, f'batch_{i+1}.tsv')
+			batch_df.to_csv(batch_file, sep='\t', index=False)
+			batch_log[f"batch_{i+1}.tsv"] = batch_df["sample_name"].tolist()
 
+		# Write the JSON batch-to-sample dictionary 
+		summary_path = os.path.join(output_dir, "batch_summary.json")
+		with open(summary_path, "w") as json_file:
+			json.dump(batch_log, json_file, indent=4)
+
+		print(f"\n Metadata successfully split into {num_batches} batch file(s) in {output_dir}.\n")
+		print(f"Summary written to: {summary_path}\n")
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
@@ -251,7 +267,7 @@ class ValidateChecks:
 	def validate_main(self):
 		""" Main function that performs metadata validation
 		"""
-        # checks date
+		# checks date
 		if self.parameters['date_format_flag'].lower() != 'o':
 			self.check_date()
 
@@ -584,6 +600,7 @@ class HandleDfInserts:
 								isinstance(x, str) is False]
 		except AssertionError:
 			raise AssertionError(f'Columns were not properly inserted into dataframe')
+		return self.filled_df
 
 	def insert_loc_data(self):
 		""" Inserts modified location data with the country:state into dataframe
