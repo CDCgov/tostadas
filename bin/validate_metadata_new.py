@@ -39,28 +39,8 @@ def metadata_validation_main():
 	filled_df = meta_to_df.final_df
 
 	# handle case where we're only fetching reports
-	# todo: modify for bulk submissions
 	if parameters['find_paths']:
-		sample_dfs = {}
-		for row in range(len(filled_df)):
-			sample_df = filled_df.iloc[row].to_frame().transpose()
-			sample_df = sample_df.set_index(col_name)
-			sample_dfs[filled_df.iloc[row][col_name]] = sample_df
-		missing_tsvs = []
-		for sample in sample_dfs.keys():
-			tsv_file = f'{parameters["path_to_existing_tsvs"]}/{parameters["file_name"]}/tsvs_per_sample/{sample}.tsv'
-			dest_tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsvs_per_sample/{sample}.tsv'
-			if os.path.exists(tsv_file):
-				shutil.copy(tsv_file, dest_tsv_file) # copy to local directory
-			else:
-				missing_tsvs.append(tsv_file) # add to missing tsvs list if not found
-		if not missing_tsvs:
-			print(f'\nPaths to existing sample metadata tsvs were found!\n')
-		else:
-			print("\nERROR: The following expected TSV files are missing:\n", file=sys.stderr)
-			for missing in missing_tsvs:
-				print(f"  - {missing}", file=sys.stderr)
-			sys.exit(1)	
+		retrieve_existing_batch_tsvs(filled_df, parameters)
 		
 	# if fetch_reports_only is false, we run validation steps
 	else:
@@ -96,6 +76,65 @@ def metadata_validation_main():
 
 		print(f"\n Metadata successfully split into {num_batches} batch file(s) in {output_dir}.\n")
 		print(f"Summary written to: {summary_path}\n")
+
+def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
+	"""Retrieve and verify existing batch TSVs and their associated samples."""
+	summary_path = os.path.join(
+		parameters["path_to_existing_tsvs"],
+		parameters["file_name"],
+		"batched_tsvs",
+		"batch_summary.json"
+	)
+
+	if not os.path.exists(summary_path):
+		print(f"\nERROR: batch_summary.json not found at {summary_path}\n", file=sys.stderr)
+		sys.exit(1)
+
+	with open(summary_path, "r") as f:
+		batch_summary = json.load(f)
+
+	missing_batches = []
+	all_samples_found = True
+	expected_samples = set(filled_df[col_name])
+	found_samples = set()
+
+	for batch_file, samples in batch_summary.items():
+		src_batch_path = os.path.join(
+			parameters["path_to_existing_tsvs"],
+			parameters["file_name"],
+			"batched_tsvs",
+			batch_file
+		)
+		dest_batch_path = os.path.join(
+			parameters["output_dir"],
+			parameters["file_name"],
+			"batched_tsvs",
+			batch_file
+		)
+
+		if os.path.exists(src_batch_path):
+			os.makedirs(os.path.dirname(dest_batch_path), exist_ok=True)
+			shutil.copy(src_batch_path, dest_batch_path)
+			found_samples.update(samples)
+		else:
+			missing_batches.append(batch_file)
+
+	missing_samples = expected_samples - found_samples
+
+	if not missing_batches and not missing_samples:
+		print(f'\nAll batch TSV files and expected samples were found!\n')
+	else:
+		if missing_batches:
+			print("\nERROR: The following batch TSV files are missing:\n", file=sys.stderr)
+			for missing in missing_batches:
+				print(f"  - {missing}", file=sys.stderr)
+
+		if missing_samples:
+			print("\nERROR: The following samples were not found in any batch file:\n", file=sys.stderr)
+			for sample in missing_samples:
+				print(f"  - {sample}", file=sys.stderr)
+		sys.exit(1)
+
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
