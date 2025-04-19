@@ -46,102 +46,107 @@ workflow TOSTADAS {
 	}
 
 	// validate input parameters
-    validateParameters()
+	validateParameters()
 
-    // print summary of supplied parameters
-    log.info paramsSummaryLog(workflow)
+	// print summary of supplied parameters
+	log.info paramsSummaryLog(workflow)
 
 	// run metadata validation process
 	METADATA_VALIDATION ( 
 
 		file(params.meta_path)
 	)
-    metadata_ch = METADATA_VALIDATION.out.tsv_Files
-        .flatten()
-		.map { 
-			meta = [id:it.getBaseName()] 
-			[ meta, it ] 
+
+	// generate metadata batch channel
+	metadata_batch_ch = METADATA_VALIDATION.out.tsv_Files
+		.map { batch_tsv -> 
+			meta = [batch_id: batch_tsv.getBaseName()]
+			[meta, batch_tsv]
 		}
+	//metadata_batch_ch.view { "metadata_batch_ch -> ${it}" }
 
-	// Generate the fasta annd fastq paths
-	reads_ch = 
-		METADATA_VALIDATION.out.tsv_Files
-		.flatten()
-		.splitCsv(header: true, sep: "\t")
-		.map { row ->
-			def trimFile = { path -> path && path.trim() ? file(path.trim()) : [] }
+	// Generate the (per-sample) fasta and fastq paths
+	sample_ch = metadata_batch_ch
+		.flatMap { batch_meta, batch_tsv ->
+			def rows = batch_tsv.splitCsv(header: true, sep: "\t")
+			return rows.collect { row ->
+				def sample_meta = [
+					batch_id: batch_meta.batch_id,
+					sample_id: row.sample_name?.trim()
+				]
+				def trimFile = { path -> path?.trim() ? file(path.trim()) : null }
 
-			def meta = [id: row.sample_name?.trim()]
-			def fasta_path = trimFile(row.fasta_path)
-			def fastq1 = trimFile(row.fastq_path_1)
-			def fastq2 = trimFile(row.fastq_path_2)
-			def nanopore = trimFile(row.nanopore_sra_file_path_1)
-			def gff = trimFile(row.gff_path)
+				def fasta = trimFile(row.fasta_path)
+				def fq1 = trimFile(row.fastq_path_1)
+				def fq2 = trimFile(row.fastq_path_2)
+				def gff = trimFile(row.gff_path)
 
-			return [meta, fasta_path, fastq1, fastq2, gff]
-			}
-
-	// Create initial submission channel
-	submission_ch = metadata_ch.join(reads_ch)
-
-	if ( params.fetch_reports_only == false) {
-		// check if the user wants to skip annotation or not
-		if ( params.annotation ) {
-			// Remove user-provided gff, if present, from annotation input channel before performing annotation
-			submission_ch = submission_ch.map { elements ->
-				elements.take(5)  // Remove the last element (gff)
-				}
-
-			if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
-				// run liftoff annotation process + repeatmasker 
-				if ( params.repeatmasker_liftoff && !params.vadr ) {
-					// run repeatmasker annotation on files
-					REPEATMASKER_LIFTOFF (
-						submission_ch
-					)
-					submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
-				}
-				// run vadr processes
-				// todo: VADR fails when species == virus because it uses that flag to call the vadr_models files
-				if ( params.vadr ) {
-					RUN_VADR (
-						submission_ch
-					)
-					submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, tbl
-				}
-			}
-			else if (params.species == 'bacteria') {
-			// run bakta annotation process
-				if ( params.bakta ) {
-					RUN_BAKTA(
-						submission_ch
-					)
-					// set up submission channels
-					submission_ch = submission_ch
-					| join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, gff
-					| map { meta, tsv, _, fq1, fq2, gff -> 
-						[meta, tsv, fq1, fq2, gff] } // drop original fasta
-					| join(RUN_BAKTA.out.fna) // join annotated fasta
-					| map { meta, tsv, fq1, fq2, gff, fasta -> 
-						[meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
-				}   
+				return [sample_meta, fasta, fq1, fq2, gff]
 			}
 		}
-	}
+	//sample_ch.view { "sample_ch -> ${it}" }
 
-	// run submission for the annotated samples 
-	if ( params.submission || params.fetch_reports_only || params.update_submission ) {
-		// pre submission process + get wait time (parallel)
-		GET_WAIT_TIME (
-			METADATA_VALIDATION.out.tsv_Files.collect() 
-		)
+		// perform annotation if requested
+		if ( params.fetch_reports_only == false) {
+			if (params.annotation) {
+			annotation_ch = sample_ch.map { meta, fasta, fq1, fq2, gff -> 
+				// remove user-provided gff, if present, from annotation input channel before performing annotation
+				[meta, fasta, fq1, fq2] 
+			}
+				if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
+					// perform viral annotation according to user's choice: liftoff+repeatmasker or vadr
+					if (params.repeatmasker_liftoff && !params.vadr) {
+						REPEATMASKER_LIFTOFF(annotation_ch)
+						annotation_ch = annotation_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+					}
 
-		INITIAL_SUBMISSION (
-			submission_ch,  // meta.id, tsv, fasta, fastq1, fastq2, gff
-			params.submission_config,  
-			GET_WAIT_TIME.out
+					if (params.vadr) {
+						RUN_VADR(annotation_ch)
+						annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
+					}
+				// or perform bacterial annotation using bakta
+				} else if (params.species == 'bacteria') {
+					if (params.bakta) {
+						RUN_BAKTA(annotation_ch)
+
+						annotation_ch = annotation_ch
+							| join(RUN_BAKTA.out.gff)
+							| map { meta, fasta, fq1, fq2, gff -> [meta, fq1, fq2, gff] }
+							| join(RUN_BAKTA.out.fna)
+							| map { meta, fq1, fq2, gff, fasta -> [meta, fasta, fq1, fq2, gff] }
+					}
+				}
+			}
+		}
+
+	// Assign initial submission channel based on wether annotation was performed or not
+	submission_ch = params.annotation ? annotation_ch : sample_ch
+
+	// Create batch initial submission channel
+	submission_batch_ch = submission_ch
+		.map { meta, fasta, fq1, fq2, gff ->
+			[meta.batch_id, [meta: meta, fasta: fasta, fq1: fq1, fq2: fq2, gff: gff]]
+		}
+		.groupTuple()
+		.map { batch_id, samples ->
+			def meta = [batch_id: batch_id]
+			[meta, samples]
+		}
+		submission_batch_ch.view { "submission_batch_ch -> ${it}" }
+
+		// run submission batched samples 
+		if ( params.submission || params.fetch_reports_only || params.update_submission ) {
+			// pre submission process + get wait time (parallel)
+			GET_WAIT_TIME (
+				METADATA_VALIDATION.out.tsv_Files.collect() 
 			)
 
-		}
-	}
+			INITIAL_SUBMISSION (
+				submission_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff, validated_metameta)
+				params.submission_config,  
+				GET_WAIT_TIME.out
+				)
 
+			}
+
+}
