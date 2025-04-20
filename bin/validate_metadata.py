@@ -60,6 +60,7 @@ def metadata_validation_main():
 		total_rows = len(final_df)
 		num_batches = math.ceil(total_rows / batch_size)
 		batch_log = {}
+		print(f"batch size is {parameters['batch_size']} and number of batches is {num_batches}") # debug
 	
 		for i in range(num_batches):
 			start_idx = i * batch_size
@@ -79,12 +80,7 @@ def metadata_validation_main():
 
 def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
 	"""Retrieve and verify existing batch TSVs and their associated samples."""
-	summary_path = os.path.join(
-		parameters["path_to_existing_tsvs"],
-		parameters["file_name"],
-		"batched_tsvs",
-		"batch_summary.json"
-	)
+	summary_path = os.path.join(parameters["path_to_existing_tsvs"], parameters["file_name"], "batched_tsvs", "batch_summary.json")
 
 	if not os.path.exists(summary_path):
 		print(f"\nERROR: batch_summary.json not found at {summary_path}\n", file=sys.stderr)
@@ -99,18 +95,8 @@ def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
 	found_samples = set()
 
 	for batch_file, samples in batch_summary.items():
-		src_batch_path = os.path.join(
-			parameters["path_to_existing_tsvs"],
-			parameters["file_name"],
-			"batched_tsvs",
-			batch_file
-		)
-		dest_batch_path = os.path.join(
-			parameters["output_dir"],
-			parameters["file_name"],
-			"batched_tsvs",
-			batch_file
-		)
+		src_batch_path = os.path.join(parameters["path_to_existing_tsvs"], parameters["file_name"],	"batched_tsvs",	batch_file)
+		dest_batch_path = os.path.join(parameters["output_dir"], parameters["file_name"], "batched_tsvs", batch_file)
 
 		if os.path.exists(src_batch_path):
 			os.makedirs(os.path.dirname(dest_batch_path), exist_ok=True)
@@ -151,10 +137,8 @@ class GetParams:
 		self.get_restrictions()
 
 		# create new directory for output if it does not exist and user does not pass in preference
-		if os.path.isdir(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}'):
-			os.system(f'rm -r -f {self.parameters["output_dir"]}/{self.parameters["file_name"]}')
-		os.system(f'mkdir -p -m777 {self.parameters["output_dir"]}/{self.parameters["file_name"]}/errors')
-		os.system(f'mkdir -p -m777 {self.parameters["output_dir"]}/{self.parameters["file_name"]}/tsv_per_sample')
+		if not os.path.isdir(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}'):
+			os.system(f'mkdir -p -m777 {self.parameters["output_dir"]}/{self.parameters["file_name"]}')
 
 	# read in parameters
 	def get_inputs(self):
@@ -185,7 +169,7 @@ class GetParams:
 		# required parameters (do not have default)
 		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for MetaData")
 		# optional parameters
-		parser.add_argument("--batch_size", type=str, default=1, help="Number of samples to process per batch")
+		parser.add_argument("--batch_size", type=int, default=1, help="Number of samples to process per batch")
 		parser.add_argument("--project_dir", type=str, default=None, help="Path to the tostadas project directory")
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
 							help="Output Directory for final Files, default is current directory")
@@ -324,9 +308,12 @@ class ValidateChecks:
 
 		# check custom data fields
 		self.check_custom_fields(self.parameters['custom_fields_file'])
+
+		# write error file
+		self.report_errors()
 				
 	def report_errors(self):
-		with open(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}/errors/full_error.txt', "w") as f:
+		with open(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}/error.txt', "w") as f:
 			# Write Global Errors
 			f.write("General Errors:\n\n")
 			if self.global_log:
