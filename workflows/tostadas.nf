@@ -58,12 +58,13 @@ workflow TOSTADAS {
 	)
 
 	// generate metadata batch channel
-	metadata_batch_ch = METADATA_VALIDATION.out.tsv_Files
-		.map { batch_tsv -> 
-			meta = [batch_id: batch_tsv.getBaseName()]
+	metadata_batch_ch = METADATA_VALIDATION.out.tsv_files
+		.flatten()
+		.map { batch_tsv ->
+			def meta = [batch_id: batch_tsv.getBaseName()]
 			[meta, batch_tsv]
 		}
-	//metadata_batch_ch.view { "metadata_batch_ch -> ${it}" }
+	metadata_batch_ch.view { println "metadata_batch_ch -> ${it}" }
 
 	// Generate the (per-sample) fasta and fastq paths
 	sample_ch = metadata_batch_ch
@@ -77,14 +78,14 @@ workflow TOSTADAS {
 				def trimFile = { path -> path?.trim() ? file(path.trim()) : null }
 
 				def fasta = trimFile(row.fasta_path)
-				def fq1 = trimFile(row.fastq_path_1)
-				def fq2 = trimFile(row.fastq_path_2)
+				def fq1 = trimFile(row.illumina_sra_file_path_1)
+				def fq2 = trimFile(row.illumina_sra_file_path_2)
 				def gff = trimFile(row.gff_path)
 
 				return [sample_meta, fasta, fq1, fq2, gff]
 			}
 		}
-	//sample_ch.view { "sample_ch -> ${it}" }
+	sample_ch.view { println "sample_ch -> ${it}" }
 
 		// perform annotation if requested
 		if ( params.fetch_reports_only == false) {
@@ -132,17 +133,17 @@ workflow TOSTADAS {
 			def meta = [batch_id: batch_id]
 			[meta, samples]
 		}
-		submission_batch_ch.view { "submission_batch_ch -> ${it}" }
+		submission_batch_ch.view { println "submission_batch_ch -> ${it}" }
 
 		// run submission batched samples 
 		if ( params.submission || params.fetch_reports_only || params.update_submission ) {
 			// pre submission process + get wait time (parallel)
 			GET_WAIT_TIME (
-				METADATA_VALIDATION.out.tsv_Files.collect() 
+				METADATA_VALIDATION.out.tsv_files.collect() 
 			)
 
 			INITIAL_SUBMISSION (
-				submission_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff, validated_metameta)
+				submission_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff)
 				params.submission_config,  
 				GET_WAIT_TIME.out
 				)
