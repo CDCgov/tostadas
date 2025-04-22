@@ -64,7 +64,7 @@ workflow TOSTADAS {
 			def meta = [batch_id: batch_tsv.getBaseName()]
 			[meta, batch_tsv]
 		}
-	metadata_batch_ch.view { println "metadata_batch_ch -> ${it}" }
+	//metadata_batch_ch.view { println "metadata_batch_ch -> ${it}" }
 
 	// Generate the (per-sample) fasta and fastq paths
 	sample_ch = metadata_batch_ch
@@ -85,7 +85,7 @@ workflow TOSTADAS {
 				return [sample_meta, fasta, fq1, fq2, gff]
 			}
 		}
-	sample_ch.view { println "sample_ch -> ${it}" }
+	//sample_ch.view { println "sample_ch -> ${it}" }
 
 		// perform annotation if requested
 		if ( params.fetch_reports_only == false) {
@@ -133,7 +133,7 @@ workflow TOSTADAS {
 			def meta = [batch_id: batch_id]
 			[meta, samples]
 		}
-		submission_batch_ch.view { println "submission_batch_ch -> ${it}" }
+		//submission_batch_ch.view { println "submission_batch_ch -> ${it}" }
 
 		// run submission batched samples 
 		if ( params.submission || params.fetch_reports_only || params.update_submission ) {
@@ -143,7 +143,7 @@ workflow TOSTADAS {
 			)
 
 			INITIAL_SUBMISSION (
-				submission_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff)
+				submission_batch_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff)
 				params.submission_config,  
 				GET_WAIT_TIME.out
 				)
