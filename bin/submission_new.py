@@ -76,7 +76,7 @@ def submission_main():
 	if parameters['test']:
 		submission_dir = 'Test'
 	else:
-		submission_dir = 'Prod'
+		submission_dir = 'Production'
 	
 	# Initial a dictionary to hold accessions if updating
 	accessions_dict = {'biosample':None, 'sra':None, 'genbank':None}
@@ -346,9 +346,9 @@ class Submission:
 		else:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
 	def fetch_report(self):
-		""" Fetches report.xml from the host site folder submit/<Test|Prod>/sample_database/"""
+		""" Fetches report.xml from the host site folder submit/<Test|Production>/sample_database/"""
 		self.client.connect()
-		# Navigate to submit/<Test|Prod>/<submission_db> folder
+		# Navigate to submit/<Test|Production>/<submission_db> folder
 		self.client.change_dir(f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}")
 		# Check if report.xml exists and download it
 		report_local_path = os.path.join(self.output_dir, 'report.xml')
@@ -427,10 +427,10 @@ class Submission:
 		return report
 		#return pd.DataFrame([report])
 	def submit_files(self, files, type):
-		""" Uploads a set of files to a host site at submit/<Test|Prod>/sample_database/<files> """
+		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
-		# Navigate to submit/<Test|Prod>/<submission_db> folder
+		# Navigate to submit/<Test|Production>/<submission_db> folder
 		self.client.change_dir(f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}")
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
