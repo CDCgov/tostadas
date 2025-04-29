@@ -61,18 +61,21 @@ workflow TOSTADAS {
 	metadata_batch_ch = METADATA_VALIDATION.out.tsv_files
 		.flatten()
 		.map { batch_tsv ->
-			def meta = [batch_id: batch_tsv.getBaseName()]
+			def meta = [
+				batch_id: batch_tsv.getBaseName(),
+				batch_tsv: batch_tsv
+			]
 			[meta, batch_tsv]
 		}
-	//metadata_batch_ch.view { println "metadata_batch_ch -> ${it}" }
 
 	// Generate the (per-sample) fasta and fastq paths
 	sample_ch = metadata_batch_ch
-		.flatMap { batch_meta, batch_tsv ->
-			def rows = batch_tsv.splitCsv(header: true, sep: "\t")
+		.flatMap { meta, _ ->
+			def rows = meta.batch_tsv.splitCsv(header: true, sep: "\t")
 			return rows.collect { row ->
 				def sample_meta = [
-					batch_id: batch_meta.batch_id,
+					batch_id: meta.batch_id,
+					batch_tsv: meta.batch_tsv,
 					sample_id: row.sample_name?.trim()
 				]
 				def trimFile = { path -> path?.trim() ? file(path.trim()) : null }
@@ -85,7 +88,6 @@ workflow TOSTADAS {
 				return [sample_meta, fasta, fq1, fq2, gff]
 			}
 		}
-	//sample_ch.view { println "sample_ch -> ${it}" }
 
 		// perform annotation if requested
 		if ( params.fetch_reports_only == false) {
@@ -123,17 +125,44 @@ workflow TOSTADAS {
 	// Assign initial submission channel based on wether annotation was performed or not
 	submission_ch = params.annotation ? annotation_ch : sample_ch
 
-	// Create batch initial submission channel
+	// Create batch initial submission channel, check for existence of files based on selected submission databases
 	submission_batch_ch = submission_ch
 		.map { meta, fasta, fq1, fq2, gff ->
 			[meta.batch_id, [meta: meta, fasta: fasta, fq1: fq1, fq2: fq2, gff: gff]]
 		}
 		.groupTuple()
 		.map { batch_id, samples ->
-			def meta = [batch_id: batch_id]
-			[meta, samples]
+			def enabledDatabases = [] as Set
+			def missingFiles = [] as Set
+
+			samples.each { s ->
+				def sid = s.meta.sample_id
+				if (params.sra) {
+					if (!s.fq1 || !file(s.fq1).exists()) missingFiles << "${sid}:fastq_1"
+					if (!s.fq2 || !file(s.fq2).exists()) missingFiles << "${sid}:fastq_2"
+					else enabledDatabases << "sra"
+				}
+				if (params.genbank) {
+					if (!s.fasta || !file(s.fasta).exists()) missingFiles << "${sid}:fasta"
+					if (!s.gff || !file(s.gff).exists())   missingFiles << "${sid}:gff"
+					else enabledDatabases << "genbank"
+				}
+				if (params.biosample) {
+					enabledDatabases << "biosample"
+				}
+			}
+
+			if (missingFiles) {
+				log.warn "Skipping batch ${batch_id} due to missing files: ${missingFiles.join(', ')}"
+				return null
+			}
+			def meta = [
+				batch_id: batch_id,
+				batch_tsv: samples[0].meta.batch_tsv 
+			]
+			return tuple(meta, samples, enabledDatabases as List)
 		}
-		//submission_batch_ch.view { println "submission_batch_ch -> ${it}" }
+		.filter { it != null }
 
 		// run submission batched samples 
 		if ( params.submission || params.fetch_reports_only || params.update_submission ) {

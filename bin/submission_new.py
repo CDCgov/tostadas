@@ -60,7 +60,7 @@ def submission_main():
 	config_dict = config_parser.load_config()
 	
 	# Get the batch ID 
-	batch_id = parameters['metadata_file'].split('.')[0]
+	batch_id = parameters['metadata_file'].split('.')[0].split('/')[-1]
 
 	# Read in metadata file
 	try:
@@ -88,11 +88,11 @@ def submission_main():
 		)
 		samples.append(sample)
 
-	# Set the submission directory (test or prod)
+	# Set the submission directory (test or production)
 	if parameters['test']:
 		submission_dir = 'Test'
 	else:
-		submission_dir = 'Prod'
+		submission_dir = 'Production'
 	
 	# Initial a dictionary to hold accessions if updating
 	accessions_dict = {'biosample':None, 'sra':None, 'genbank':None}
@@ -373,9 +373,9 @@ class Submission:
 		else:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
 	def fetch_report(self):
-		""" Fetches report.xml from the host site folder submit/<Test|Prod>/sample_database/"""
+		""" Fetches report.xml from the host site folder submit/<Test|Production>/sample_database/"""
 		self.client.connect()
-		# Navigate to submit/<Test|Prod>/<submission_db> folder
+		# Navigate to submit/<Test|Production>/<submission_db> folder
 		self.client.change_dir(f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}")
 		# Check if report.xml exists and download it
 		report_local_path = os.path.join(self.output_dir, 'report.xml')
@@ -454,10 +454,10 @@ class Submission:
 		return report
 		#return pd.DataFrame([report])
 	def submit_files(self, files, type):
-		""" Uploads a set of files to a host site at submit/<Test|Prod>/sample_database/<files> """
+		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
-		# Navigate to submit/<Test|Prod>/<submission_db> folder
+		# Navigate to submit/<Test|Production>/<submission_db> folder
 		self.client.change_dir(f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}")
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
@@ -709,8 +709,9 @@ class SRASubmission(XMLSubmission, Submission):
 	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples = None, accession_id = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, sample, submission_config, metadata_df, output_dir, parameters) 
-		Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type) 
+		Submission.__init__(self, sample, parameters, submission_config, output_dir, submission_mode, submission_dir, type)
 		self.accession_id = accession_id
+		os.makedirs(self.output_dir, exist_ok=True)
 		self.samples = samples or []
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, "Action")
