@@ -66,6 +66,7 @@ def submission_main():
 		metadata_df=metadata_df,
 		fastq1=parameters.get('fastq1'),
 		fastq2=parameters.get('fastq2'),
+		nanopore=parameters.get('nanopore'),
 		species = parameters['species'],
 		databases = databases,
 		fasta_file=parameters.get('fasta_file'),
@@ -232,6 +233,7 @@ class GetParams:
 		parser.add_argument("--annotation_file", help="An annotation file to add to a Genbank submission", required=False)
 		parser.add_argument("--fastq1", help="Fastq R1 file to be submitted", required=False)	
 		parser.add_argument("--fastq2", help="Fastq R2 file to be submitted", required=False)
+		parser.add_argument("--nanopore", help="Nanopore file to be submitted", required=False)
 		parser.add_argument("--custom_metadata_file", help="JSON file defining custom metadata columns", required=False)
 		parser.add_argument("--submission_mode", help="Whether to upload via ftp or sftp", required=False, default='ftp')
 		parser.add_argument("--send_email", help="Whether to send the ASN.1 file after running table2asn", required=False,action="store_const",  default=False, const=True)
@@ -269,11 +271,12 @@ class SubmissionConfigParser:
 		return config_dict
 
 class Sample:
-	def __init__(self, sample_id, metadata_df, fastq1, fastq2, species, databases, fasta_file=None, annotation_file=None):
+	def __init__(self, sample_id, metadata_df, fastq1, fastq2, nanopore, species, databases, fasta_file=None, annotation_file=None):
 		self.sample_id = sample_id
 		self.metadata_df = metadata_df
 		self.fastq1 = fastq1
 		self.fastq2 = fastq2
+		self.nanopore = nanopore
 		self.species = species
 		self.databases = databases
 		self.fasta_file = fasta_file
@@ -316,11 +319,22 @@ class MetadataParser:
 		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_sra_metadata(self):
-		columns = ['illumina_sequencing_instrument','illumina_library_protocol','illumina_library_layout','illumina_library_selection',
-				   'illumina_library_source','illumina_library_strategy','nanopore_library_layout','nanopore_library_protocol','nanopore_library_selection',
-				   'nanopore_library_source','nanopore_library_strategy','nanopore_sequencing_instrument']  # SRA specific columns
-		available_columns = [col for col in columns if col in self.metadata_df.columns]
-		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+		illumina_fields = {
+			k.replace('illumina_', ''): v
+			for k, v in self.metadata_df.iloc[0].items()
+			if k.startswith('illumina_') and pd.notna(v) and str(v).strip() not in ["", "Not Provided"]
+		}
+		nanopore_fields = {
+			k.replace('nanopore_', ''): v
+			for k, v in self.metadata_df.iloc[0].items()
+			if k.startswith('nanopore_') and pd.notna(v) and str(v).strip() not in ["", "Not Provided"]
+		}
+		platforms = []
+		if illumina_fields:
+			platforms.append(('illumina', illumina_fields))
+		if nanopore_fields:
+			platforms.append(('nanopore', nanopore_fields))
+		return platforms
 	def extract_genbank_metadata(self):
 		columns = ['submitting_lab','submitting_lab_division','submitting_lab_address','publication_status','publication_title',
 					'assembly_protocol','assembly_method','mean_coverage']  # Genbank specific columns
@@ -346,9 +360,46 @@ class Submission:
 		else:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
 	def fetch_report(self):
-		""" Fetches report.xml from the host site folder submit/<Test|Production>/sample_database/"""
+		""" Fetches report.xml from the host site folder submit/<Test|Prod>/sample_database/"""	
 		self.client.connect()
-		# Navigate to submit/<Test|Production>/<submission_db> folder
+		fetched_reports = []
+		# Try multi-platform folders first
+		platform_folders = [
+			f"{self.sample.sample_id}_{self.type}_illumina",
+			f"{self.sample.sample_id}_{self.type}_nanopore"
+		]
+		for platform in ["illumina", "nanopore"]:
+			remote_folder = f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}_{platform}"
+			local_report = os.path.join(self.output_dir, f"report_{platform}.xml")
+			try:
+				self.client.change_dir(remote_folder)
+			except Exception:
+				continue  # Skip if folder doesn't exist
+			if os.path.exists(local_report):
+				print(f"{platform.capitalize()} report already exists locally: {local_report}")
+				fetched_reports.append(local_report)
+				continue
+			if self.client.file_exists("report.xml"):
+				print(f"Found report.xml in {remote_folder}. Downloading to: {local_report}")
+				self.client.download_file("report.xml", local_report)
+				fetched_reports.append(local_report)
+		# If neither illumina nor nanopore folders found, fall back to <sample>_sra
+		if not fetched_reports:
+			fallback_folder = f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}"
+			fallback_local = os.path.join(self.output_dir, "report.xml")
+			try:
+				self.client.change_dir(fallback_folder)
+				if self.client.file_exists("report.xml"):
+					print(f"Found report.xml in {fallback_folder}. Downloading to: {fallback_local}")
+					self.client.download_file("report.xml", fallback_local)
+					fetched_reports.append(fallback_local)
+			except Exception:
+				print(f"No submission report found for sample {self.sample.sample_id}")
+		return fetched_reports if fetched_reports else False # False means report not found, need to try again
+	def fetch_report(self):
+		""" Fetches report.xml from the host site folder submit/<Test|Prod>/sample_database/"""
+		self.client.connect()
+		# Navigate to submit/<Test|Prod>/<submission_db> folder
 		self.client.change_dir(f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}")
 		# Check if report.xml exists and download it
 		report_local_path = os.path.join(self.output_dir, 'report.xml')
@@ -426,12 +477,18 @@ class Submission:
 		report = report.where(pd.notna(report), None)
 		return report
 		#return pd.DataFrame([report])
+	def _write_submit_ready(self, path):
+		""" Helper function to create submit.ready file"""
+		os.makedirs(path, exist_ok=True)
+		submit_ready_path = os.path.join(path, "submit.ready")
+		with open(submit_ready_path, "w") as f:
+			f.write("")
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
 		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
-		# Navigate to submit/<Test|Production>/<submission_db> folder
-		self.client.change_dir(f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}")
+		# Navigate to submit/<Test|Prod>/<submission_db> folder
+		self.client.change_dir(f"submit/{self.submission_dir}/{sample_subtype_dir}")
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
 		print(f"Submitted files for sample {self.sample.sample_id}")
@@ -694,26 +751,47 @@ class SRASubmission(XMLSubmission, Submission):
 		# Use the MetadataParser to extract metadata
 		parser = MetadataParser(metadata_df, parameters)
 		self.top_metadata = parser.extract_top_metadata()
-		self.sra_metadata = parser.extract_sra_metadata()
+		#self.sra_metadata = parser.extract_sra_metadata()
 		self.accession_id = accession_id
-		os.makedirs(self.output_dir, exist_ok=True)
-		# Generate the BioSample XML upon initialization
-		self.xml_output_path = self.create_xml(output_dir) 
+		self.platform_metadata = parser.extract_sra_metadata() 
+		os.makedirs(self.output_dir, exist_ok=True) 
+		# Generate XML(s) dynamically
+		if len(self.platform_metadata) == 1:
+			# Single platform — use standard output_dir and standard create_xml
+			platform, metadata = self.platform_metadata[0]
+			self.current_platform = platform
+			self.current_metadata = metadata
+			self.xml_output_path = self.create_xml(output_dir)
+		else:
+			# Both platforms — create subfolders and submission.xml per type
+			self.xml_output_paths = {}
+			for platform, metadata in self.platform_metadata:
+				platform_dir = os.path.join(output_dir, platform)
+				os.makedirs(platform_dir, exist_ok=True)
+				self.current_platform = platform
+				self.current_metadata = metadata
+				self.xml_output_paths[platform] = self.create_xml(platform_dir)
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, "Action")
 		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
-		fastq1 = f"{self.sample.sample_id}_R1.fq.gz"
-		fastq2 = f"{self.sample.sample_id}_R2.fq.gz"
-		file1 = ET.SubElement(add_files, "File", file_path=fastq1)
-		data_type1 = ET.SubElement(file1, "DataType")
-		data_type1.text = "generic-data"
-		file2 = ET.SubElement(add_files, "File", file_path=fastq2)
-		data_type2 = ET.SubElement(file2, "DataType")
-		data_type2.text = "generic-data"
-
+		if self.current_platform == 'illumina':
+			fastq1 = f"{self.sample.sample_id}_R1.fq.gz"
+			fastq2 = f"{self.sample.sample_id}_R2.fq.gz"
+			file1 = ET.SubElement(add_files, "File", file_path=fastq1)
+			data_type1 = ET.SubElement(file1, "DataType")
+			data_type1.text = "generic-data"
+			file2 = ET.SubElement(add_files, "File", file_path=fastq2)
+			data_type2 = ET.SubElement(file2, "DataType")
+			data_type2.text = "generic-data"
+		elif self.current_platform == 'nanopore':
+			fastq = f"{self.sample.sample_id}.fq.gz"
+			file = ET.SubElement(add_files, "File", file_path=fastq)
+			ET.SubElement(file, "DataType").text = "generic-data"
+		else:
+			raise ValueError(f"Unsupported platform: {self.current_platform}")
 	def add_attributes_block(self, submission):
 		add_files = submission.find(".//AddFiles")
-		for attr_name, attr_value in self.sra_metadata.items():
+		for attr_name, attr_value in self.current_metadata.items():
 			if attr_value != "Not Provided":
 				attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
 				attribute.text = self.safe_text(attr_value)
@@ -729,23 +807,53 @@ class SRASubmission(XMLSubmission, Submission):
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}_SRA"})
 		identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+	def _move_fastq_files(self, platform, target_dir):
+		if platform == 'illumina':
+			fastq1 = os.path.join(target_dir, f"{self.sample.sample_id}_R1.fq.gz")
+			fastq2 = os.path.join(target_dir, f"{self.sample.sample_id}_R2.fq.gz")
+			shutil.move(self.sample.fastq1, fastq1)
+			shutil.move(self.sample.fastq2, fastq2)
+		elif platform == 'nanopore':
+			fastq = os.path.join(target_dir, f"{self.sample.sample_id}.fq.gz")
+			shutil.move(self.sample.nanopore, fastq)
+	def _get_fastq_paths(self, platform, target_dir):
+		if platform == 'illumina':
+			return [
+				os.path.join(target_dir, f"{self.sample.sample_id}_R1.fq.gz"),
+				os.path.join(target_dir, f"{self.sample.sample_id}_R2.fq.gz"),
+			]
+		elif platform == 'nanopore':
+			return [os.path.join(target_dir, f"{self.sample.sample_id}.fq.gz")]
 		# todo: add attribute ref ID for BioSample
-
 	def submit(self):
-		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
-		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
-		with open(submit_ready_file, 'w') as fp:
-			pass 
-		# Submit files
-		# todo: this assumes the fastq files are gzipped!!
-		fastq1 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R1.fq.gz")
-		fastq2 = os.path.join(self.output_dir, f"{self.sample.sample_id}_R2.fq.gz")
-		shutil.move( self.sample.fastq1, fastq1)
-		shutil.move( self.sample.fastq2, fastq2)
-		files_to_submit = [submit_ready_file, self.xml_output_path, fastq1, fastq2]
-		self.submit_files(files_to_submit, 'sra')
-		print(f"Submitted sample {self.sample.sample_id} to SRA")
-
+		if len(self.platform_metadata) == 1:
+			# Single-platform case — use main output_dir
+			platform = self.platform_metadata[0][0]
+			self._write_submit_ready(self.output_dir)
+			# Move FASTQ files
+			self._move_fastq_files(platform, self.output_dir)
+			# Submit files
+			files_to_submit = [
+				os.path.join(self.output_dir, "submit.ready"),
+				self.xml_output_path,
+			] + self._get_fastq_paths(platform, self.output_dir)
+			self.submit_files(files_to_submit, 'sra')
+			print(f"Submitted {self.sample.sample_id} ({platform}) to SRA")
+		else:
+			# Multi-platform case — handle each platform separately
+			for platform, _ in self.platform_metadata:
+				platform_dir = os.path.join(self.output_dir, platform)
+				self._write_submit_ready(platform_dir)
+				# Move FASTQ files
+				self._move_fastq_files(platform, platform_dir)
+				# Submit files
+				submission_xml_path = self.xml_output_paths[platform]
+				files_to_submit = [
+					os.path.join(platform_dir, "submit.ready"),
+					submission_xml_path,
+				] + self._get_fastq_paths(platform, platform_dir)
+				self.submit_files(files_to_submit, f'sra_{platform}')
+				print(f"Submitted {self.sample.sample_id} ({platform}) to SRA")
 class GenbankSubmission(XMLSubmission, Submission):
 	def __init__(self, sample, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, accession_id = None):
 		# Properly initialize the base classes 
