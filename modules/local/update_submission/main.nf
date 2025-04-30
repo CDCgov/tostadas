@@ -12,7 +12,7 @@ process UPDATE_SUBMISSION {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path), val(enabledDatabases)
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(nanopore), path(annotations_path), val(enabledDatabases)
     path(submission_config)
 
     when:
@@ -40,6 +40,7 @@ process UPDATE_SUBMISSION {
         ${annotations_path ? "--annotation_file $annotations_path" : ""} \
         ${fastq_1 ? "--fastq1 $fastq_1" : ""} \
         ${fastq_2 ? "--fastq2 $fastq_2" : ""} \
+        ${nanopore ? "--nanopore $nanopore" : ""} \
         --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
         $test_flag \

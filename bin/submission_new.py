@@ -207,6 +207,7 @@ class GetParams:
 		"""
 		args = self.get_args().parse_args()
 		parameters = vars(args)
+		print("DEBUG ARGS:", parameters)
 		return parameters
 
 	@staticmethod

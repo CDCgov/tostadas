@@ -16,7 +16,7 @@ workflow INITIAL_SUBMISSION {
     submission_config_file = file(submission_config)
 
     take:
-        submission_ch // meta.id, tsv, fasta, fastq1, fastq2, gff
+        submission_ch // meta.id, tsv, fasta, fastq1, fastq2, nanopore, gff
         submission_config
         wait_time
 
@@ -35,12 +35,12 @@ workflow INITIAL_SUBMISSION {
         if ( params.fetch_reports_only == true ) {
             // Check if submission folder exists and run report fetching module
             submission_ch = submission_ch
-                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path -> 
+                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path -> 
                     def submission_folder = file("${resolved_output_dir}/${params.submission_output_dir}/${meta.id}")
                     if (!submission_folder.exists()) {
                         throw new IllegalStateException("Submission folder does not exist for ID: ${meta.id}")
                     }
-                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
+                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path, submission_folder)
                 }
             FETCH_SUBMISSION ( WAIT.out, submission_ch, submission_config_file )
                 .set { fetched_reports }
@@ -48,15 +48,37 @@ workflow INITIAL_SUBMISSION {
 
         else {
             submission_ch = submission_ch
-                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path ->
+                .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path ->
                     def missingFiles = []
                     def enabledDatabases = []
 
                     // Check SRA requirements
                     if (params.sra) {
-                        if (!fastq_1 || !file(fastq_1).exists()) missingFiles << "fastq_1"
-                        if (!fastq_2 || !file(fastq_2).exists()) missingFiles << "fastq_2"
-                        if (!missingFiles) enabledDatabases << "sra"
+                        // Definitions to auto-detect data type and check for files
+                        def illuminaSpecified = fastq_1 && fastq_2
+                        def nanoporeSpecified = nanopore && !nanopore.empty
+                        def illuminaValid = illuminaSpecified && file(fastq_1).exists() && file(fastq_2).exists()
+                        def nanoporeValid = nanoporeSpecified && file(nanopore).exists()
+
+                        // Case 1: Neither platform is specified
+                        if (!illuminaSpecified && !nanoporeSpecified) {
+                            missingFiles << "fastq_1"
+                            missingFiles << "fastq_2"
+                            missingFiles << "nanopore"
+                        }
+                        // Case 2: Illumina specified but files are missing
+                        if (illuminaSpecified) {
+                            if (!file(fastq_1).exists()) missingFiles << "fastq_1"
+                            if (!file(fastq_2).exists()) missingFiles << "fastq_2"
+                        }
+                        // Case 3: Nanopore specified but file is missing
+                        if (nanoporeSpecified && !file(nanopore).exists()) {
+                            missingFiles << "nanopore"
+                        }
+                        // Enable only if at least one platform is valid
+                        if (illuminaValid || nanoporeValid) {
+                            enabledDatabases << "sra"
+                        }
                     }
 
                     // Check GenBank requirements
@@ -72,7 +94,7 @@ workflow INITIAL_SUBMISSION {
                     if (missingFiles) {
                         log.warn "Skipping databases due to missing files for sample ${meta.id}: ${missingFiles.join(', ')}"
                     }
-                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases)
+                    return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path, enabledDatabases)
                 }
 
             if (params.update_submission == false) {
@@ -80,8 +102,8 @@ workflow INITIAL_SUBMISSION {
                     .set { submission_files }
 
                 submission_ch.join(submission_files)
-                    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder -> 
-                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
+                    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path, enabledDatabases, submission_folder -> 
+                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path, submission_folder)
                     }
                     .set { submission_with_folder }
 
@@ -95,13 +117,13 @@ workflow INITIAL_SUBMISSION {
 
                 // Map submission_ch to include submission_folder (from UPDATE_SUBMISSION.out.submission_files)
                 //submission_ch = submission_ch
-                //    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path -> 
-                //        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, UPDATE_SUBMISSION.out.submission_files)
+                //    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path -> 
+                //        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path, UPDATE_SUBMISSION.out.submission_files)
                 //    }
 
                 submission_ch.join(update_files)
-                    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, enabledDatabases, submission_folder -> 
-                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, annotations_path, submission_folder)
+                    .map { meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path, enabledDatabases, submission_folder -> 
+                        return tuple(meta, validated_meta_path, fasta_path, fastq_1, fastq_2, nanopore, annotations_path, submission_folder)
                     }
                     .set { submission_with_folder }
 
