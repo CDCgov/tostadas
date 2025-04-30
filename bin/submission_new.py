@@ -70,21 +70,18 @@ def submission_main():
 	
 	# Initialize the Sample objects 
 	samples = []
-	for _, row in metadata_df.iterrows():
-		sample_id = row['sample_name']  # Make sure this column is present in your TSV
-		sample_metadata = pd.DataFrame([row])
-		
+	for sample_str in parameters['sample']:
+		sample_dict = dict(item.split('=') for item in sample_str.split(','))
 		sample = Sample(
-			sample_id=sample_id,
-			metadata_df=sample_metadata,
+			sample_id=sample_dict['sample_id'],
 			batch_id=batch_id,
-			fastq1=row.get('illumina_sra_file_path_1'),
-			fastq2=row.get('illumina_sra_file_path_2'),
-			nanopore=row.get('nanopore_sra_file_path_1'),
+			fastq1=sample_dict.get('fq1'),
+			fastq2=sample_dict.get('fq2'),
+			nanopore=sample_dict.get('nanopore'),
 			species=parameters['species'],
 			databases=databases,
-			fasta_file=row.get('fasta_path'),
-			annotation_file=row.get('gff_path')
+			fasta_file=sample_dict.get('fasta'),
+			annotation_file=sample_dict.get('gff')
 		)
 		samples.append(sample)
 
@@ -187,7 +184,8 @@ def submission_main():
 													parameters['submission_mode'], submission_dir, 'biosample', accessions_dict['biosample'])
 			biosample_submission.init_xml_root() # Start the xml file
 			for sample in samples:
-				biosample_submission.add_sample(sample, sample.metadata_df) # Add samples data to xml file
+				sample_metadata = metadata_df[metadata_df['sample_name'] == sample.sample_id]
+				biosample_submission.add_sample(sample, sample_metadata) # Add samples data to xml file
 			biosample_submission.finalize_xml() # Write the xml file
 		
 		if parameters['sra']:
@@ -195,7 +193,8 @@ def submission_main():
 										parameters['submission_mode'], submission_dir, 'sra', samples, accessions_dict['sra'])
 			sra_submission.init_xml_root() # Start the xml file
 			for sample in samples:
-				sra_submission.add_sample(sample, sample.metadata_df) # Add samples data to xml file
+				sample_metadata = metadata_df[metadata_df['sample_name'] == sample.sample_id]
+				sra_submission.add_sample(sample, sample_metadata) # Add samples data to xml file
 			sra_submission.finalize_xml() # Write the xml file
 		
 		if parameters['genbank']:
@@ -250,6 +249,7 @@ class GetParams:
 		parser.add_argument('--submit', action='store_true', help='Run the full submission process')
 		parser.add_argument('--fetch', action='store_true', help='Run the process to fetch and parse report')
 		parser.add_argument('--update', action='store_true', help='Run the update process to submit new data')
+		parser.add_argument('--sample', action='append', help='Comma-separated sample attributes')
 		# optional parameters
 		parser.add_argument("-o", "--output_dir", type=str, default='submission_outputs',
 							help="Output Directory for final Files, default is current directory")
@@ -291,9 +291,8 @@ class SubmissionConfigParser:
 		return config_dict
 
 class Sample:
-	def __init__(self, sample_id, metadata_df, batch_id, fastq1, fastq2, species, databases, nanopore=None, fasta_file=None, annotation_file=None):
+	def __init__(self, sample_id, batch_id, species, databases, fastq1=None, fastq2=None, nanopore=None, fasta_file=None, annotation_file=None):
 		self.sample_id = sample_id
-		self.metadata_df = metadata_df
 		self.batch_id = batch_id
 		self.fastq1 = fastq1
 		self.fastq2 = fastq2
