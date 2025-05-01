@@ -320,16 +320,18 @@ class MetadataParser:
 		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_sra_metadata(self):
-		illumina_fields = {
-			k.replace('illumina_', ''): v
-			for k, v in self.metadata_df.iloc[0].items()
-			if k.startswith('illumina_') and pd.notna(v) and str(v).strip() not in ["", "Not Provided"]
+		rename_fields = {
+			'sequencing_instrument': 'instrument_model',
+			'library_protocol': 'library_construction_protocol',
 		}
-		nanopore_fields = {
-			k.replace('nanopore_', ''): v
-			for k, v in self.metadata_df.iloc[0].items()
-			if k.startswith('nanopore_') and pd.notna(v) and str(v).strip() not in ["", "Not Provided"]
-		}
+		def process_platform(prefix):
+			return {
+				rename_fields.get(k.replace(f'{prefix}_', ''), k.replace(f'{prefix}_', '')): v
+				for k, v in self.metadata_df.iloc[0].items()
+				if k.startswith(f'{prefix}_') and pd.notna(v) and str(v).strip() not in ["", "Not Provided"]
+			}
+		illumina_fields = process_platform('illumina')
+		nanopore_fields = process_platform('nanopore')
 		platforms = []
 		if illumina_fields:
 			platforms.append(('illumina', illumina_fields))
