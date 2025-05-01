@@ -13,7 +13,7 @@ process FETCH_SUBMISSION {
 
     input:
     val wait_time
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(annotations_path), path(submission_folder)
+    tuple val(meta), val(samples), val(enabledDatabases), path(submission_folder)
     path(submission_config)
 
     script:
@@ -23,28 +23,38 @@ process FETCH_SUBMISSION {
     def sra = params.sra == true ? '--sra' : ''
     def genbank = params.genbank == true ? '--genbank' : ''
 
+    // Assemble per-sample arguments, quoting paths in case of spaces
+    def sample_args_list = samples.collect { sample ->
+        def s = [
+            "sample_id=${sample.meta.sample_id}",
+            "fq1=${sample.fq1}",
+            "fq2=${sample.fq2}",
+            "nanopore=${sample.nanopore}",
+            "fasta=${sample.fasta}",
+            "gff=${sample.gff}"
+        ].findAll { it.split('=')[1] != "null" }  // remove nulls
+        .join(',')
+        return "\"${s}\""
+    }
+    def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
+    
     """
-    echo "Using submission folder: $submission_folder"
-    ls -lh $submission_folder      
     submission_new.py \
         --fetch \
-        --submission_name $meta.id \
+        --submission_name ${meta.batch_id} \
         --config_file $submission_config  \
-        --metadata_file $validated_meta_path \
+        --metadata_file ${meta.batch_tsv} \
         --species $params.species \
-        --output_dir  . \
-        ${fasta_path ? "--fasta_file $fasta_path" : ""} \
-        ${annotations_path ? "--annotation_file $annotations_path" : ""} \
-        ${fastq_1 ? "--fastq1 $fastq_1" : ""} \
-        ${fastq_2 ? "--fastq2 $fastq_2" : ""} \
+        --output_dir  ./${params.metadata_basename} \
+        ${sample_args} \
         --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
         $test_flag \
         $send_submission_email \
-        $genbank $sra $biosample 
-
+        $genbank $sra $biosample
     """
+
     output:
-    //path "${validated_meta_path.getBaseName()}", emit: submission_files
+    path("${params.metadata_basename}"), emit: submission_files
     path "*.csv", emit: submission_report
 }

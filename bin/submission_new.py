@@ -25,9 +25,15 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
-def is_gzipped(filepath):
-		with open(filepath, 'rb') as f:
-			return f.read(2) == b'\x1f\x8b'
+def get_compound_extension(filename):
+    """Return the full extension (up to 2 suffixes) of a file, like '.fastq.gz'."""
+    parts = os.path.basename(filename).split('.')
+    if len(parts) >= 3:
+        return '.' + '.'.join(parts[-2:])  # e.g., '.fastq.gz'
+    elif len(parts) == 2:
+        return '.' + parts[-1]             # e.g., '.gz' or '.fq'
+    else:
+        return ''  # No extension
 		
 def get_accessions(sample, report_df):
 	""" Returns a dict with available accessions for the input sample
@@ -122,13 +128,14 @@ def submission_main():
 					print(f"Fetching report for {db}")
 					# Instantiate a Submission object for this database type
 					submission = Submission(sample, parameters, config_dict, f"{parameters['output_dir']}/{parameters['submission_name']}/{db}", parameters['submission_mode'], submission_dir, db)
-					fetched_path = submission.fetch_report()
-					if fetched_path:
-						print(f"Report for {db} successfully fetched or already exists.")
-						report_fetched[db] = True
-					else:
-						print(f"Failed to fetch report for {db}, retrying...")
-					time.sleep(3)  # Because spamming servers isn't nice
+					for sample in samples:
+						fetched_path = submission.fetch_report()
+						if fetched_path:
+							print(f"Report for {db} successfully fetched or already exists.")
+							report_fetched[db] = True
+						else:
+							print(f"Failed to fetch report for {db}, retrying...")
+							time.sleep(3)  # Because spamming servers isn't nice
 
 			# Exit the loop if all reports have been fetched
 			if all(report_fetched.values()):
@@ -752,12 +759,10 @@ class SRASubmission(XMLSubmission, Submission):
 			files_to_submit = [submit_ready_file, self.xml_output_path] # files to submit
 			# Rename (copy) FASTQ files for each sample in batch
 			for sample in self.samples:
-				if not is_gzipped(sample.fastq1):
-					raise ValueError(f"FASTQ file {sample.fastq1} is not gzipped.")
-				if not is_gzipped(sample.fastq2):
-					raise ValueError(f"FASTQ file {sample.fastq2} is not gzipped.")
-				fastq1 = os.path.join(tmpdir, f"{sample.sample_id}_R1.fq.gz")
-				fastq2 = os.path.join(tmpdir, f"{sample.sample_id}_R2.fq.gz")
+				ext1 = get_compound_extension(sample.fastq1)
+				ext2 = get_compound_extension(sample.fastq2)
+				fastq1 = os.path.join(tmpdir, f"{sample.sample_id}_R1{ext1}")
+				fastq2 = os.path.join(tmpdir, f"{sample.sample_id}_R2{ext2}")
 				shutil.copy(sample.fastq1, fastq1)
 				shutil.copy(sample.fastq2, fastq2)
 				files_to_submit.extend([fastq1, fastq2])

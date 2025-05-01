@@ -39,7 +39,6 @@ process SUBMISSION {
         .join(',')
         return "\"${s}\""
     }
-
     def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
 
     """ 
@@ -59,5 +58,5 @@ process SUBMISSION {
     """
 
     output:
-    tuple val(meta), path("${params.metadata_basename}/${meta.batch_id}"), emit: submission_files
+    tuple val(meta), path("${params.metadata_basename}"), emit: submission_files
 }

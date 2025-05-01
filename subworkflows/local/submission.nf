@@ -30,7 +30,7 @@ workflow INITIAL_SUBMISSION {
             // Check if submission folder exists and run report fetching module
             submission_ch.map { meta, samples ->
                 def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
-                def submission_folder = file("${resolved_output_dir}/${params.submission_output_dir}/${meta.batch_id}")
+                def submission_folder = file("${resolved_output_dir}/${params.submission_output_dir}/${params.metadata_basename}/${meta.batch_id}") 
                 if (!submission_folder.exists()) {
                     throw new IllegalStateException("Submission folder does not exist for batch: ${meta.batch_id}")
                 }
@@ -41,12 +41,23 @@ workflow INITIAL_SUBMISSION {
             FETCH_SUBMISSION(WAIT.out, batch_with_folder, submission_config_file)
                 .set { fetched_reports }
         } else {
-            if (!params.update_submission) {
+            if (params.update_submission == false) {
                 SUBMISSION(submission_ch, submission_config_file)
                     .set { submission_files }
+            
+                submission_ch.join(submission_files)
+                    .map { meta, samples, enabledDatabases, submission_folder ->
+                        return tuple(meta, samples, enabledDatabases, submission_folder)
+                    }
+                    .set {submission_with_folder}
 
-            // some other processes go here (UPDATE_SUBMISSION)
-            } 
+                FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config_file )
+                        .set { fetched_reports }
+                } 
+            //if (params.update_submission == true) {
+            //    UPDATE_SUBMISSION(submission_ch, submission_config_file)  
+            //}
+
         } 
 
     emit:

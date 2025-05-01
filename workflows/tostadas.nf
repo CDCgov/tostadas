@@ -172,7 +172,7 @@ workflow TOSTADAS {
 			)
 
 			INITIAL_SUBMISSION (
-				submission_batch_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff)
+				submission_batch_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff), enabledDatabases (list)
 				params.submission_config,  
 				GET_WAIT_TIME.out
 				)
