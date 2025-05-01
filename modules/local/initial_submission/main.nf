@@ -49,7 +49,7 @@ process SUBMISSION {
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
         --species $params.species \
-        --output_dir  ./basename(${params.meta_path}) \
+        --output_dir  ./${params.metadata_basename} \
         ${sample_args} \
         --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
