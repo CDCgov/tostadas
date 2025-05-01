@@ -325,11 +325,17 @@ class MetadataParser:
 			'library_protocol': 'library_construction_protocol',
 		}
 		def process_platform(prefix):
-			return {
-				rename_fields.get(k.replace(f'{prefix}_', ''), k.replace(f'{prefix}_', '')): v
-				for k, v in self.metadata_df.iloc[0].items()
-				if k.startswith(f'{prefix}_') and pd.notna(v) and str(v).strip() not in ["", "Not Provided"]
-			}
+			result = {}
+			for k, v in self.metadata_df.iloc[0].items():
+				if not k.startswith(f"{prefix}_"):
+					continue
+				if pd.isna(v) or str(v).strip() in ["", "Not Provided"]:
+					continue
+				key = k.replace(f"{prefix}_", "")
+				key = rename_fields.get(key, key)
+				# Only set if not already set (preserves original renamed fields if both are present)
+				result.setdefault(key, v)
+			return result
 		illumina_fields = process_platform('illumina')
 		nanopore_fields = process_platform('nanopore')
 		platforms = []
