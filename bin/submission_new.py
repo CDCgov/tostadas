@@ -127,7 +127,7 @@ def submission_main():
 				if not report_fetched[db]:  # Only attempt fetching if the report has not been fetched
 					print(f"Fetching report for {db}")
 					# Instantiate a Submission object for this database type
-					submission = Submission(sample, parameters, config_dict, f"{parameters['output_dir']}/{parameters['submission_name']}/{db}", parameters['submission_mode'], submission_dir, db)
+					submission = Submission(sample, parameters, config_dict, f"{parameters['output_dir']}/{db}", parameters['submission_mode'], submission_dir, db)
 					for sample in samples:
 						fetched_path = submission.fetch_report()
 						if fetched_path:
@@ -149,11 +149,10 @@ def submission_main():
 		# todo: add error-handling
 		all_reports = pd.DataFrame()
 		for  db in databases:
-			report_xml_file = f"{parameters['output_dir']}/{parameters['submission_name']}/{db}/report.xml"
+			report_xml_file = f"{parameters['output_dir']}/{db}/report.xml"
 			df = submission.parse_report_to_df(report_xml_file)
 			all_reports = pd.concat([all_reports, df], ignore_index=True)
-		#  each submission_name has its own subdir with db files in it; we want to save a report for all samples to output_dir (submission_outputs/) not submission_outputs/submission_name/
-		report_csv_file = f"{parameters['output_dir']}/submission_report.csv"
+		report_csv_file = os.path.join(f"{os.path.dirname(os.path.normpath(parameters['output_dir']))}", "submission_report.csv")
 		print(report_csv_file)
 		try:
 			if os.path.exists(report_csv_file):
@@ -187,7 +186,7 @@ def submission_main():
 
 		# Run rest of the submission steps: Prep the files, submit, and fetch the report once
 		if parameters['biosample']:
-			biosample_submission = BiosampleSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{batch_id}/biosample", 
+			biosample_submission = BiosampleSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/biosample", 
 													parameters['submission_mode'], submission_dir, 'biosample', accessions_dict['biosample'])
 			biosample_submission.init_xml_root() # Start the xml file
 			for sample in samples:
@@ -196,7 +195,7 @@ def submission_main():
 			biosample_submission.finalize_xml() # Write the xml file
 		
 		if parameters['sra']:
-			sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{batch_id}/sra",
+			sra_submission = SRASubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/sra",
 										parameters['submission_mode'], submission_dir, 'sra', samples, accessions_dict['sra'])
 			sra_submission.init_xml_root() # Start the xml file
 			for sample in samples:
@@ -206,7 +205,7 @@ def submission_main():
 		
 		if parameters['genbank']:
 			# Generates an XML if ftp_upload is True
-			genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/{batch_id}/genbank/{parameters['submission_name']}",
+			genbank_submission = GenbankSubmission(sample, parameters, config_dict, metadata_df, f"{parameters['output_dir']}/genbank/{parameters['submission_name']}",
 												parameters['submission_mode'], submission_dir, 'genbank', accessions_dict['genbank'])
 
 		# Submit all prepared submissions and fetch report once
@@ -397,77 +396,77 @@ class Submission:
 			return False # Report not found, need to try again
 	def parse_report_to_df(self, report_path):
 		"""
-		Parses report.xml file and consolidates all database entries into a single row
-		Returns a DataFrame with one row per submission_name.
+		Parses a report.xml file containing multiple samples.
+		Returns a DataFrame with one row per action_id (i.e., per sample).
 		"""
-		# Initialize a dictionary to store consolidated data
-		report = {
-			'submission_name': self.sample.sample_id,
-			'submission_status': None,
-			'submission_id': None,
-			'biosample_status': None,
-			'biosample_accession': None,
-			'biosample_message': None,
-			'sra_status': None,
-			'sra_accession': None,
-			'sra_message': None,
-			'genbank_status': None,
-			'genbank_accession': None,
-			'genbank_message': None,
-			'genbank_release_date': None,
-			'tracking_location': None,
-		}
+		reports = []
 		try:
-			# Parse the XML file
 			tree = ET.parse(report_path)
 			root = tree.getroot()
-			# Extract submission-wide attributes
-			report['submission_status'] = root.get("status", None)
-			report['submission_id'] = root.get("submission_id", None)
-			# Iterate over each <Action> element to extract database-specific data
+			submission_status = root.get("status", None)
+			submission_id = root.get("submission_id", None)
+
+			tracking_location_tag = root.find("Tracking/SubmissionLocation")
+			tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
+
 			for action in root.findall("Action"):
-				db = action.get("target_db", "").lower()
+				action_id = action.get("action_id", None)
+				sample_id = action_id  # or strip prefix if needed
+				target_db = action.get("target_db", "").lower()
+				report = {
+					'submission_name': sample_id,
+					'submission_status': submission_status,
+					'submission_id': submission_id,
+					'biosample_status': None,
+					'biosample_accession': None,
+					'biosample_message': None,
+					'sra_status': None,
+					'sra_accession': None,
+					'sra_message': None,
+					'genbank_status': None,
+					'genbank_accession': None,
+					'genbank_message': None,
+					'genbank_release_date': None,
+					'tracking_location': tracking_location,
+				}
+				# Common fields
+				status = action.get("status", None)
 				response = action.find("Response")
 				response_message = None
 				if response is not None:
-					# Extract message from <Message> tag if present
 					message_tag = response.find("Message")
 					if message_tag is not None:
 						response_message = message_tag.text.strip()
 					else:
-						# Fallback to Response's own text or attributes
-						response_message = response.get("status", "").strip() or response.text.strip()
-				if db == "biosample":
-					report['biosample_status'] = action.get("status", None)
+						response_message = response.get("status", "").strip() or (response.text or "").strip()
+				# Fill in based on database
+				if target_db == "biosample":
+					report['biosample_status'] = status
 					report['biosample_message'] = response_message
-				elif db == "sra":
-					report['sra_status'] = action.get("status", None)
+				elif target_db == "sra":
+					report['sra_status'] = status
 					report['sra_message'] = response_message
-				elif db == "genbank":
-					report['genbank_status'] = action.get("status", None)
+				elif target_db == "genbank":
+					report['genbank_status'] = status
 					report['genbank_message'] = response_message
 					report['genbank_release_date'] = action.get("release_date", None)
-			# Add server location if available
-			tracking_location = root.find("Tracking/SubmissionLocation")
-			if tracking_location is not None:
-				report['tracking_location'] = tracking_location.text
+				reports.append(report)
 		except FileNotFoundError:
 			print(f"Report not found: {report_path}")
 		except ET.ParseError:
 			print(f"Error parsing XML report: {report_path}")
-		report = pd.DataFrame([report])
-		report = report.where(pd.notna(report), None)
-		return report
-		#return pd.DataFrame([report])
+		df = pd.DataFrame(reports)
+		df = df.where(pd.notna(df), None)
+		return df
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
-		sample_subtype_dir = f'{self.sample.sample_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
+		sample_subtype_dir = f'{self.sample.batch_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
 		# Navigate to submit/<Test|Production>/<submission_db> folder
-		self.client.change_dir(f"submit/{self.submission_dir}/{self.sample.sample_id}_{self.type}")
+		self.client.change_dir(f"submit/{self.submission_dir}/{sample_subtype_dir}")
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
-		print(f"Submitted files for sample {self.sample.sample_id}")
+		print(f"Submitted files for sample batch: {self.sample.batch_id}")
 	def close(self):
 		self.client.close()
 
@@ -1194,4 +1193,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 		print(f"Submitted sample {self.sample.sample_id} to Genbank")
 
 if __name__ == "__main__":
+	print(f"submission_new.py called with:")
+	print(" ".join(sys.argv))
 	submission_main()
