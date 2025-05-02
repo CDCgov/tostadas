@@ -5,7 +5,9 @@
 */
 process FETCH_SUBMISSION {
 
-    publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}/${meta.batch_id}", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}/${meta.batch_id}",
+            mode: 'copy',
+            overwrite: params.overwrite_output
 
     conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -45,7 +47,7 @@ process FETCH_SUBMISSION {
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
         --species $params.species \
-        --output_dir  ./${params.metadata_basename}/${meta.batch_id} \
+        --output_dir  ./  \
         ${sample_args} \
         --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
@@ -54,7 +56,8 @@ process FETCH_SUBMISSION {
         $genbank $sra $biosample
     """
 
-    output:
-    path("${params.metadata_basename}"), emit: submission_files
-    path "${params.metadata_basename}/*.csv", emit: submission_report
+output:
+tuple val(meta), path("./"), emit: submission_files
+path("${meta.batch_id}.csv"), emit: submission_report
+
 }

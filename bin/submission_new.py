@@ -68,6 +68,9 @@ def submission_main():
 	# Get the batch ID 
 	batch_id = parameters['metadata_file'].split('.')[0].split('/')[-1]
 
+	# Set output directory
+	output_dir = f"{parameters['output_dir']}/{batch_id}"
+	
 	# Read in metadata file
 	try:
 		metadata_df = pd.read_csv(parameters['metadata_file'], sep='\t')
@@ -146,19 +149,14 @@ def submission_main():
 			print("Timeout occurred while trying to fetch all reports.")
 		
 		# Loop over submission dbs to parse the report.xmls
-		# todo: add error-handling
 		all_reports = pd.DataFrame()
 		for  db in databases:
 			report_xml_file = f"{parameters['output_dir']}/{db}/report.xml"
 			df = submission.parse_report_to_df(report_xml_file)
 			all_reports = pd.concat([all_reports, df], ignore_index=True)
-		report_csv_file = os.path.join(f"{os.path.dirname(os.path.normpath(parameters['output_dir']))}", "submission_report.csv")
-		print(report_csv_file)
+		report_csv_file = os.path.join(parameters['output_dir'], f"{batch_id}.csv")
 		try:
-			if os.path.exists(report_csv_file):
-				all_reports.to_csv(report_csv_file, mode='a', header=False, index=False)
-			else:
-				all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
+			all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
 			print(f"Report table updated at: {report_csv_file}")
 		except Exception as e:
 			raise ValueError(f"Failed to save CSV file: {report_csv_file}. Error: {e}")

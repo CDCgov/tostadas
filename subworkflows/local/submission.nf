@@ -9,6 +9,7 @@
 include { SUBMISSION                                    } from '../../modules/local/initial_submission/main'
 include { FETCH_SUBMISSION                              } from '../../modules/local/fetch_submission/main'
 include { UPDATE_SUBMISSION                             } from '../../modules/local/update_submission/main'
+include { AGGREGATE_REPORTS                             } from '../../modules/local/aggregate_reports/main'
 include { WAIT                                          } from '../../modules/local/general_util/wait/main'
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
 
@@ -52,8 +53,17 @@ workflow INITIAL_SUBMISSION {
                     .set {submission_with_folder}
 
                 FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config_file )
-                        .set { fetched_reports }
+
+                // Collect all fetched per-batch CSV reports
+                FETCH_SUBMISSION.out.submission_report
+                    .collect()
+                    .set { all_report_csvs }
+
+                all_report_csvs.view { "all_report_csvs -> ${it}" }
+                // Aggregate all of them
+                AGGREGATE_REPORTS(all_report_csvs)
                 } 
+
             //if (params.update_submission == true) {
             //    UPDATE_SUBMISSION(submission_ch, submission_config_file)  
             //}

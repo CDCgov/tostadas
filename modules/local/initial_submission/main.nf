@@ -6,7 +6,9 @@
 
 process SUBMISSION {
 
-    publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}/${meta.batch_id}", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}/${meta.batch_id}",
+           mode: 'copy',
+           overwrite: params.overwrite_output
 
     conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -42,15 +44,13 @@ process SUBMISSION {
     def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
 
     """
-    set -x
-    echo "Running SUBMISSION for ${meta.batch_id}" 
     submission_new.py \
         --submit \
         --submission_name ${meta.batch_id} \
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
         --species $params.species \
-        --output_dir  ./${params.metadata_basename}/${meta.batch_id} \
+        --output_dir  ./ \
         ${sample_args} \
         --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
@@ -60,5 +60,5 @@ process SUBMISSION {
     """
 
     output:
-    tuple val(meta), path("${params.metadata_basename}"), emit: submission_files
+    tuple val(meta), path("./"), emit: submission_files
 }
