@@ -26,14 +26,14 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
 def get_compound_extension(filename):
-    """Return the full extension (up to 2 suffixes) of a file, like '.fastq.gz'."""
-    parts = os.path.basename(filename).split('.')
-    if len(parts) >= 3:
-        return '.' + '.'.join(parts[-2:])  # e.g., '.fastq.gz'
-    elif len(parts) == 2:
-        return '.' + parts[-1]             # e.g., '.gz' or '.fq'
-    else:
-        return ''  # No extension
+	"""Return the full extension (up to 2 suffixes) of a file, like '.fastq.gz'."""
+	parts = os.path.basename(filename).split('.')
+	if len(parts) >= 3:
+		return '.' + '.'.join(parts[-2:])  # e.g., '.fastq.gz'
+	elif len(parts) == 2:
+		return '.' + parts[-1]             # e.g., '.gz' or '.fq'
+	else:
+		return ''  # No extension
 		
 def get_accessions(sample, report_df):
 	""" Returns a dict with available accessions for the input sample
@@ -631,8 +631,8 @@ class XMLSubmission(ABC):
 		self.biosample_metadata = parser.extract_biosample_metadata()
 		self.sra_metadata = parser.extract_sra_metadata()
 		# Call subclass-specific methods to add the unique parts
-		self.add_action_block(self.submission_root)
-		self.add_attributes_block(self.submission_root)
+		anchor_element = self.add_action_block(self.submission_root)
+		self.add_attributes_block(anchor_element)
 	@abstractmethod
 	def add_action_block(self, submission):
 		"""Add the action block, which differs between submissions."""
@@ -652,49 +652,47 @@ class BiosampleSubmission(XMLSubmission, Submission):
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, 'Action')
 		add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
-		data = ET.SubElement(add_data, 'Data', {'content_type': 'XML'})
+		data = ET.SubElement(add_data, 'Data', {'content_type': 'xml'})
 		xml_content = ET.SubElement(data, 'XmlContent')
-		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
-		identifier = ET.SubElement(add_data, 'Identifier')
-		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}_BS"})
-		identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
-		# BioSample-specific XML elements
+		# BioSample XML block
 		biosample = ET.SubElement(xml_content, 'BioSample', {'schema_version': '2.0'})
+		# SampleId with SPUID
+		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
 		sample_id = ET.SubElement(biosample, 'SampleId')
-		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}_BS"})
+		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+		# Descriptor with Title
 		descriptor = ET.SubElement(biosample, 'Descriptor')
 		if 'title' in self.top_metadata and self.top_metadata['title']:
 			title = ET.SubElement(descriptor, 'Title')
 			title.text = self.safe_text(self.top_metadata['title'])
-		# BioSample XSD will not accept a description here, although the example submission.xml has one ("white space not allowed, attribute is element-only")
-		#if 'description' in self.top_metadata and self.top_metadata['description']:
-		#	description = ET.SubElement(descriptor, 'Description')
-		#	description.text = self.safe_text(self.top_metadata['description'])
+		# Organism section
 		organism = ET.SubElement(biosample, 'Organism')
-		organismName = ET.SubElement(organism, 'OrganismName')
-		organismName.text = self.safe_text(self.biosample_metadata['organism'])
+		organism_name = ET.SubElement(organism, 'OrganismName')
+		organism_name.text = self.safe_text(self.biosample_metadata['organism'])
+		# BioProject reference
 		bioproject = ET.SubElement(biosample, 'BioProject')
-		primary_id = ET.SubElement(bioproject, 'PrimaryId')
+		primary_id = ET.SubElement(bioproject, 'PrimaryId', {'db': 'BioProject'})
 		primary_id.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
+		# Package
 		bs_package = ET.SubElement(biosample, 'Package')
 		bs_package.text = self.safe_text(self.submission_config['BioSample_package'])
-		# Add conditional block for accession_id
+		# Identifier for initial submission
+		if not self.accession_id:
+			identifier = ET.SubElement(biosample, 'Identifier')
+			identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
+			identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+		# Optional Accession link if updating a BioSample
 		if self.accession_id:
-			attribute_ref_id = ET.SubElement(biosample, 'AttributeRefId')
-			ref_id = ET.SubElement(attribute_ref_id, 'RefId')
-			primary_id = ET.SubElement(ref_id, 'PrimaryId', {'db': 'BioProject'})
-			primary_id.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
-			attribute_ref_id = ET.SubElement(biosample, 'AttributeRefId')
-			ref_id = ET.SubElement(attribute_ref_id, 'RefId')
-			primary_id = ET.SubElement(ref_id, 'PrimaryId', {'db': 'BioSample'})
+			identifier = ET.SubElement(biosample, 'Identifier')
+			primary_id = ET.SubElement(identifier, 'PrimaryId', {'db': 'BioSample'})
 			primary_id.text = self.accession_id
-	def add_attributes_block(self, submission):
-		biosample = submission.find(".//BioSample")
+		return biosample
+	def add_attributes_block(self, biosample):
 		attributes = ET.SubElement(biosample, 'Attributes')
 		for attr_name, attr_value in self.biosample_metadata.items():
 			# organism already added to XML in add_action_block, also ignore the test fields in the custom metadata JSON
-			ignored_fields = ['organism', 'test_field_1', 'test_field_2', 'test_field_3']
+			ignored_fields = ['organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2']
 			if attr_name not in ignored_fields:
 				attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 				attribute.text = self.safe_text(attr_value)
@@ -727,23 +725,26 @@ class SRASubmission(XMLSubmission, Submission):
 		file2 = ET.SubElement(add_files, "File", file_path=fastq2)
 		data_type2 = ET.SubElement(file2, "DataType")
 		data_type2.text = "generic-data"
-	def add_attributes_block(self, submission):
-		add_files = submission.find(".//AddFiles")
+		return add_files
+	def add_attributes_block(self, add_files):
 		for attr_name, attr_value in self.sra_metadata.items():
 			if attr_value != "Not Provided":
 				attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
 				attribute.text = self.safe_text(attr_value)
 		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+		# BioProject reference
 		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
 		refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
 		primaryid_bioproject = ET.SubElement(refid_bioproject, "PrimaryId")
 		primaryid_bioproject.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
+		# BioSample reference
 		attribute_ref_id_biosample = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
 		refid_biosample = ET.SubElement(attribute_ref_id_biosample, "RefId")
-		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}_BS"})
+		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid_biosample.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+		# Identifier
 		identifier = ET.SubElement(add_files, 'Identifier')
-		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}_SRA"})
+		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		# todo: add attribute ref ID for BioSample
 	def submit(self):
@@ -808,12 +809,12 @@ class GenbankSubmission(XMLSubmission, Submission):
 		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
 		biosample_ref = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
 		refid_biosample = ET.SubElement(biosample_ref, "RefId")
-		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}_BS"})
+		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid_biosample.text = self.safe_text(self.top_metadata["ncbi-spuid"])
 
 		# Add SPUID Identifier for BioSample
 		identifier = ET.SubElement(add_files, "Identifier")
-		spuid = ET.SubElement(identifier, "SPUID", spuid_namespace={'spuid_namespace': f"{spuid_namespace_value}_GB"})
+		spuid = ET.SubElement(identifier, "SPUID", spuid_namespace={'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
 
 	def add_attributes_block(self, submission):
@@ -828,7 +829,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		
 		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
 		sample_id = ET.SubElement(biosample, "SampleId")
-		spuid = ET.SubElement(sample_id, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}_BS"})
+		spuid = ET.SubElement(sample_id, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
 
 		# Descriptor section
@@ -856,7 +857,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		
 		# Add SPUID Identifier for BioSample
 		identifier = ET.SubElement(add_data, "Identifier")
-		spuid = ET.SubElement(identifier, "SPUID", spuid_namespace={'spuid_namespace': f"{spuid_namespace_value}_BS"})
+		spuid = ET.SubElement(identifier, "SPUID", spuid_namespace={'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
 
 

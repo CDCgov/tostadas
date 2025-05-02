@@ -59,7 +59,6 @@ workflow INITIAL_SUBMISSION {
                     .collect()
                     .set { all_report_csvs }
 
-                all_report_csvs.view { "all_report_csvs -> ${it}" }
                 // Aggregate all of them
                 AGGREGATE_REPORTS(all_report_csvs)
                 } 
