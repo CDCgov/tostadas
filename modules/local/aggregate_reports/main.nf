@@ -19,9 +19,9 @@ process AGGREGATE_REPORTS {
     script:
     """
     set -x
-    cat ${report_csvs.join(' ')} | head -n 1 > aggregated_submission_report.csv
+    cat ${report_csvs.join(' ')} | head -n 1 > submission_report.csv
     for f in ${report_csvs.join(' ')}; do
-        tail -n +2 "\$f" >> aggregated_submission_report.csv
+        tail -n +2 "\$f" >> submission_report.csv
     done
     """
 }

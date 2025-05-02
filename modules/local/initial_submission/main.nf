@@ -28,6 +28,9 @@ process SUBMISSION {
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
 
+    // Use a clean subdirectory as the output directory
+    def outdir = "submission_output_${meta.batch_id}"
+
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
         def s = [
@@ -44,13 +47,14 @@ process SUBMISSION {
     def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
 
     """
+    mkdir -p ${outdir} &&
     submission_new.py \
         --submit \
         --submission_name ${meta.batch_id} \
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
         --species $params.species \
-        --output_dir  ./ \
+        --output_dir  ${outdir} \
         ${sample_args} \
         --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
@@ -60,5 +64,5 @@ process SUBMISSION {
     """
 
     output:
-    tuple val(meta), path("./"), emit: submission_files
+    tuple val(meta), path("submission_output_${meta.batch_id}"), emit: submission_files
 }

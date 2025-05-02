@@ -25,6 +25,8 @@ process FETCH_SUBMISSION {
     def sra = params.sra == true ? '--sra' : ''
     def genbank = params.genbank == true ? '--genbank' : ''
 
+    def outdir = submission_folder.getName()
+
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
         def s = [
@@ -47,7 +49,7 @@ process FETCH_SUBMISSION {
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
         --species $params.species \
-        --output_dir  ./  \
+        --output_dir  $outdir  \
         ${sample_args} \
         --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
@@ -57,7 +59,8 @@ process FETCH_SUBMISSION {
     """
 
 output:
-tuple val(meta), path("./"), emit: submission_files
-path("${meta.batch_id}.csv"), emit: submission_report
+//tuple val(meta), path("${outdir}"), emit: submission_files
+// todo: I don't love this solution (it references the folder created in SUBMISSION)
+path("submission_output_${meta.batch_id}/${meta.batch_id}.csv"), emit: submission_report
 
 }

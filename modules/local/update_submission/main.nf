@@ -5,7 +5,7 @@
 */
 process UPDATE_SUBMISSION {
 
-    publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}/${meta.batch_id}", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "${params.output_dir}/${params.submission_output_dir}", mode: 'copy', overwrite: params.overwrite_output
 
     conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
