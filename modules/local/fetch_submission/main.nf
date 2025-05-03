@@ -5,7 +5,7 @@
 */
 process FETCH_SUBMISSION {
 
-    publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}/${meta.batch_id}",
+    publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}",
             mode: 'copy',
             overwrite: params.overwrite_output
 
@@ -49,7 +49,7 @@ process FETCH_SUBMISSION {
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
         --species $params.species \
-        --output_dir  $outdir  \
+        --output_dir  ${meta.batch_id}  \
         ${sample_args} \
         --custom_metadata_file $params.custom_fields_file \
         --submission_mode $params.submission_mode \
@@ -59,8 +59,8 @@ process FETCH_SUBMISSION {
     """
 
 output:
-//tuple val(meta), path("${outdir}"), emit: submission_files
+//tuple val(meta), path("${meta.batch_id}"), emit: submission_files
 // todo: I don't love this solution (it references the folder created in SUBMISSION)
-path("submission_output_${meta.batch_id}/${meta.batch_id}.csv"), emit: submission_report
+path("${meta.batch_id}/${meta.batch_id}.csv"), emit: submission_report
 
 }

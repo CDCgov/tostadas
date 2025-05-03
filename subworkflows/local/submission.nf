@@ -40,7 +40,15 @@ workflow INITIAL_SUBMISSION {
             .set { batch_with_folder }
 
             FETCH_SUBMISSION(WAIT.out, batch_with_folder, submission_config_file)
-                .set { fetched_reports }
+
+            // Collect all fetched per-batch CSV reports
+            FETCH_SUBMISSION.out.submission_report
+                .collect()
+                .set { all_report_csvs }
+
+            // Aggregate all of them
+            AGGREGATE_REPORTS(all_report_csvs)
+
         } else {
             if (params.update_submission == false) {
                 SUBMISSION(submission_ch, submission_config_file)
