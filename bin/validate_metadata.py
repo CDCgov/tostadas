@@ -492,7 +492,7 @@ class ValidateChecks:
 					self.metadata_df.loc[idx, fields_to_clean] = "Not Provided"
 		
 		except Exception as e:
-			self.global_log.append(f"Unexpected error during case metadata check: {str(e)}"
+			self.global_log.append(f"Unexpected error during case metadata check: {str(e)}")
 
 	def check_illumina_nanopore(self):
 		"""Validates Illumina and Nanopore metadata fields and file paths.
