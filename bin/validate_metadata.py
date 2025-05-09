@@ -27,7 +27,7 @@ def metadata_validation_main():
 
 	# call the constructor class for converting meta to df
 	meta_to_df = GetMetaAsDf(parameters)
-
+  
 	# print error message if ValueError is raised when GetMetaAsDf is run
 	try:
 		meta_to_df.load_meta()
