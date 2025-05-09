@@ -34,6 +34,14 @@ def get_compound_extension(filename):
 		return '.' + parts[-1]             # e.g., '.gz' or '.fq'
 	else:
 		return ''  # No extension
+
+def get_remote_submission_dir(batch_id, db, platform=None):
+	"""Return the remote directory path under submit/<Test|Production>/..."""
+	if db == "sra" and platform:
+		return f"{batch_id}_{db}_{platform}"
+	else:
+		return f"{batch_id}_{db}"
+
 		
 def get_accessions(sample, report_df):
 	""" Returns a dict with available accessions for the input sample
@@ -51,7 +59,7 @@ def get_accessions(sample, report_df):
 	return accessions
 
 # Functions for fetching module
-def fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, timeout=60):
+def fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, batch_id, timeout=60):
 	start_time = time.time()
 	reports_fetched = {}
 	for db in databases:
@@ -61,14 +69,16 @@ def fetch_all_reports(databases, output_dir, samples, config_dict, parameters, s
 			platforms = ['illumina', 'nanopore']
 		else:
 			platforms = [None]
-		
 		reports_fetched[db] = []
 		for platform in platforms:
 			output_dir = os.path.join(base_output_dir, platform) if platform else base_output_dir
 			report_local_path = f"{output_dir}/report.xml"
 			submission = Submission(parameters=parameters, submission_config=config_dict, output_dir=output_dir, 
 						 submission_mode=submission_mode, submission_dir=submission_dir, type=db, sample=None)
-			remote_dir = f"submit/{submission_dir}/{os.path.basename(output_dir)}_{db}_{platform}" if platform else f"submit/{submission_dir}/{os.path.basename(output_dir)}_{db}"
+			#remote_dir = f"submit/{submission_dir}/{os.path.basename(output_dir)}_{db}_{platform}" if platform else f"submit/{submission_dir}/{os.path.basename(output_dir)}_{db}"
+			remote_subdir = get_remote_submission_dir(batch_id, db, platform)
+			remote_dir = f"submit/{submission_dir}/{remote_subdir}"
+			print(f'remote dir: {remote_dir}, report local path: {report_local_path}')
 			success = False
 			while time.time() - start_time < timeout:
 				report_path = submission.fetch_report(remote_dir, report_local_path)
@@ -170,7 +180,7 @@ def submission_main():
 
 	# Fetch workflow
 	if workflow == 'fetch': 
-		reports_fetched = fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode)
+		reports_fetched = fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, batch_id)
 		parse_and_save_reports(reports_fetched, output_dir, batch_id)
 
 	# Beginning of submit and update workflows	
@@ -510,12 +520,12 @@ class Submission:
 		return df
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
-		sample_subtype_dir = f'{self.sample.batch_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
+		remote_subdir = get_remote_submission_dir(self.sample.batch_id, self.type, getattr(self, 'platform', None))
 		self.client.connect()
 		# Navigate to submit/<Test|Production>/<submission_db> folder
-		print(f"Uploading to FTP path: submit/{self.submission_dir}/{sample_subtype_dir}")
-		self.client.make_dir(f"submit/{self.submission_dir}/{sample_subtype_dir}")
-		self.client.change_dir(f"submit/{self.submission_dir}/{sample_subtype_dir}")
+		print(f"Uploading to FTP path: submit/{self.submission_dir}/{remote_subdir}")
+		self.client.make_dir(f"submit/{self.submission_dir}/{remote_subdir}")
+		self.client.change_dir(f"submit/{self.submission_dir}/{remote_subdir}")
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
 		print(f"Submitted files for sample batch: {self.sample.batch_id}")
@@ -626,22 +636,12 @@ class FTPClient:
 				print(f"Unexpected FTP error checking directory {dir_path}: {e}")
 				raise
 	def change_dir(self, dir_path):
-		current_dir = self.ftp.pwd()
 		try:
-			self.ftp.cwd(dir_path)  # Try to change to it
-			print(f"Directory already exists: {dir_path}")
+			self.ftp.cwd(dir_path)
+			print(f"Changed to directory: {dir_path}")
 		except ftplib.error_perm as e:
-			if '550' in str(e):  # Directory does not exist
-				try:
-					self.ftp.mkd(dir_path)
-					self.ftp.cwd(dir_path)  # Now change to it
-					print(f"Created and changed to directory: {dir_path}")
-				except ftplib.error_perm as e2:
-					print(f"Failed to create directory: {dir_path}. Error: {e2}")
-					raise
-			else:
-				print(f"Failed to change directory: {dir_path}. Error: {e}")
-				raise
+			print(f"Failed to change directory: {dir_path}. Error: {e}")
+			raise
 	def file_exists(self, file_path):
 		if file_path in self.ftp.nlst():
 			return True
