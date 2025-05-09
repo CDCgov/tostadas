@@ -513,6 +513,7 @@ class Submission:
 		sample_subtype_dir = f'{self.sample.batch_id}_{type}' # samplename_<biosample,sra,genbank> (a unique submission dir)
 		self.client.connect()
 		# Navigate to submit/<Test|Production>/<submission_db> folder
+		print(f"Uploading to FTP path: submit/{self.submission_dir}/{sample_subtype_dir}")
 		self.client.make_dir(f"submit/{self.submission_dir}/{sample_subtype_dir}")
 		self.client.change_dir(f"submit/{self.submission_dir}/{sample_subtype_dir}")
 		for file_path in files:
@@ -629,13 +630,17 @@ class FTPClient:
 		try:
 			self.ftp.cwd(dir_path)  # Try to change to it
 			print(f"Directory already exists: {dir_path}")
-			self.ftp.cwd(current_dir)  # Go back
-		except ftplib.error_perm:
-			try:
-				self.ftp.mkd(dir_path)
-				print(f"Created directory: {dir_path}")
-			except ftplib.error_perm as e:
-				print(f"Failed to create directory: {dir_path}. Error: {e}")
+		except ftplib.error_perm as e:
+			if '550' in str(e):  # Directory does not exist
+				try:
+					self.ftp.mkd(dir_path)
+					self.ftp.cwd(dir_path)  # Now change to it
+					print(f"Created and changed to directory: {dir_path}")
+				except ftplib.error_perm as e2:
+					print(f"Failed to create directory: {dir_path}. Error: {e2}")
+					raise
+			else:
+				print(f"Failed to change directory: {dir_path}. Error: {e}")
 				raise
 	def file_exists(self, file_path):
 		if file_path in self.ftp.nlst():
