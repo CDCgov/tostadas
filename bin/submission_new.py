@@ -41,8 +41,7 @@ def get_remote_submission_dir(batch_id, db, platform=None):
 		return f"{batch_id}_{db}_{platform}"
 	else:
 		return f"{batch_id}_{db}"
-
-		
+	
 def get_accessions(sample, report_df):
 	""" Returns a dict with available accessions for the input sample
 	"""
@@ -62,20 +61,30 @@ def get_accessions(sample, report_df):
 def fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, batch_id, timeout=60):
 	start_time = time.time()
 	reports_fetched = {}
+
 	for db in databases:
-		# Determine if this db has platform subdirs (SRA only)
-		base_output_dir = os.path.join(output_dir, db)
-		if db == 'sra' and all(os.path.isdir(os.path.join(base_output_dir, p)) for p in ['illumina', 'nanopore']):
-			platforms = ['illumina', 'nanopore']
-		else:
-			platforms = [None]
 		reports_fetched[db] = []
+		if db == 'sra':
+			base_output_dir = os.path.join(output_dir, db)
+			has_both_platforms = all(os.path.isdir(os.path.join(base_output_dir, p)) for p in ['illumina', 'nanopore'])
+			platforms = ['illumina', 'nanopore'] if has_both_platforms else [None]
+		else:
+			platforms = [None]  # only 1 path for biosample/genbank
 		for platform in platforms:
-			output_dir = os.path.join(base_output_dir, platform) if platform else base_output_dir
-			report_local_path = f"{output_dir}/report.xml"
-			submission = Submission(parameters=parameters, submission_config=config_dict, output_dir=output_dir, 
-						 submission_mode=submission_mode, submission_dir=submission_dir, type=db, sample=None)
-			#remote_dir = f"submit/{submission_dir}/{os.path.basename(output_dir)}_{db}_{platform}" if platform else f"submit/{submission_dir}/{os.path.basename(output_dir)}_{db}"
+			if db == 'sra' and platform:
+				local_output_path = os.path.join(output_dir, db, platform)
+			else:
+				local_output_path = os.path.join(output_dir, db)
+			report_local_path = os.path.join(local_output_path, "report.xml")
+			submission = Submission(
+				parameters=parameters,
+				submission_config=config_dict,
+				output_dir=local_output_path,
+				submission_mode=submission_mode,
+				submission_dir=submission_dir,
+				type=db,
+				sample=None
+			)
 			remote_subdir = get_remote_submission_dir(batch_id, db, platform)
 			remote_dir = f"submit/{submission_dir}/{remote_subdir}"
 			print(f'remote dir: {remote_dir}, report local path: {report_local_path}')
@@ -94,13 +103,76 @@ def fetch_all_reports(databases, output_dir, samples, config_dict, parameters, s
 				print(f"Timeout occurred while trying to fetch report for {db} ({platform or 'default'})")
 	return reports_fetched
 
+def parse_report_xml_to_df(report_path):
+	"""
+	Parses a report.xml file containing multiple samples.
+	Returns a DataFrame with one row per action_id (i.e., per sample).
+	"""
+	reports = []
+	try:
+		tree = ET.parse(report_path)
+		root = tree.getroot()
+		submission_status = root.get("status", None)
+		submission_id = root.get("submission_id", None)
+
+		tracking_location_tag = root.find("Tracking/SubmissionLocation")
+		tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
+
+		for action in root.findall("Action"):
+			action_id = action.get("action_id", None)
+			target_db = action.get("target_db", "").lower()
+			report = {
+				'submission_name': action_id,
+				'submission_status': submission_status,
+				'submission_id': submission_id,
+				'biosample_status': None,
+				'biosample_accession': None,
+				'biosample_message': None,
+				'sra_status': None,
+				'sra_accession': None,
+				'sra_message': None,
+				'genbank_status': None,
+				'genbank_accession': None,
+				'genbank_message': None,
+				'genbank_release_date': None,
+				'tracking_location': tracking_location,
+			}
+			# Common fields
+			status = action.get("status", None)
+			response = action.find("Response")
+			response_message = None
+			if response is not None:
+				message_tag = response.find("Message")
+				if message_tag is not None:
+					response_message = message_tag.text.strip()
+				else:
+					response_message = response.get("status", "").strip() or (response.text or "").strip()
+			# Fill in based on database
+			if target_db == "biosample":
+				report['biosample_status'] = status
+				report['biosample_message'] = response_message
+			elif target_db == "sra":
+				report['sra_status'] = status
+				report['sra_message'] = response_message
+			elif target_db == "genbank":
+				report['genbank_status'] = status
+				report['genbank_message'] = response_message
+				report['genbank_release_date'] = action.get("release_date", None)
+			reports.append(report)
+	except FileNotFoundError:
+		print(f"Report not found: {report_path}")
+	except ET.ParseError:
+		print(f"Error parsing XML report: {report_path}")
+	df = pd.DataFrame(reports)
+	df = df.where(pd.notna(df), None)
+	return df
+
 def parse_and_save_reports(reports_fetched, output_dir, batch_id):
 	all_reports = pd.DataFrame()
 	for db, report_paths in reports_fetched.items():
 		for report_path in report_paths:
 			if report_path and os.path.exists(report_path):
-				submission = Submission(parameters=None, submission_config=None, output_dir=None, submission_mode=None, submission_dir=None, type=db, sample=None)
-				df = submission.parse_report_to_df(report_path)
+				df = parse_report_xml_to_df(report_path)
 				all_reports = pd.concat([all_reports, df], ignore_index=True)
 	report_csv_file = os.path.join(output_dir, f"{batch_id}.csv")
 	try:
@@ -108,6 +180,7 @@ def parse_and_save_reports(reports_fetched, output_dir, batch_id):
 		print(f"Report table saved to: {report_csv_file}")
 	except Exception as e:
 		raise ValueError(f"Failed to save report CSV: {e}")
+
 
 def submission_main():
 	""" Main for initiating submission steps
@@ -180,6 +253,7 @@ def submission_main():
 
 	# Fetch workflow
 	if workflow == 'fetch': 
+		print(f'DEBUG: {submission_mode}x')
 		reports_fetched = fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, batch_id)
 		parse_and_save_reports(reports_fetched, output_dir, batch_id)
 
@@ -454,70 +528,6 @@ class Submission:
 		else:
 			print(f"No report found at {remote_dir}")
 			return False # Report not found, need to try again
-	def parse_report_to_df(self, report_path):
-		"""
-		Parses a report.xml file containing multiple samples.
-		Returns a DataFrame with one row per action_id (i.e., per sample).
-		"""
-		reports = []
-		try:
-			tree = ET.parse(report_path)
-			root = tree.getroot()
-			submission_status = root.get("status", None)
-			submission_id = root.get("submission_id", None)
-
-			tracking_location_tag = root.find("Tracking/SubmissionLocation")
-			tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
-
-			for action in root.findall("Action"):
-				action_id = action.get("action_id", None)
-				sample_id = action_id  # or strip prefix if needed
-				target_db = action.get("target_db", "").lower()
-				report = {
-					'submission_name': sample_id,
-					'submission_status': submission_status,
-					'submission_id': submission_id,
-					'biosample_status': None,
-					'biosample_accession': None,
-					'biosample_message': None,
-					'sra_status': None,
-					'sra_accession': None,
-					'sra_message': None,
-					'genbank_status': None,
-					'genbank_accession': None,
-					'genbank_message': None,
-					'genbank_release_date': None,
-					'tracking_location': tracking_location,
-				}
-				# Common fields
-				status = action.get("status", None)
-				response = action.find("Response")
-				response_message = None
-				if response is not None:
-					message_tag = response.find("Message")
-					if message_tag is not None:
-						response_message = message_tag.text.strip()
-					else:
-						response_message = response.get("status", "").strip() or (response.text or "").strip()
-				# Fill in based on database
-				if target_db == "biosample":
-					report['biosample_status'] = status
-					report['biosample_message'] = response_message
-				elif target_db == "sra":
-					report['sra_status'] = status
-					report['sra_message'] = response_message
-				elif target_db == "genbank":
-					report['genbank_status'] = status
-					report['genbank_message'] = response_message
-					report['genbank_release_date'] = action.get("release_date", None)
-				reports.append(report)
-		except FileNotFoundError:
-			print(f"Report not found: {report_path}")
-		except ET.ParseError:
-			print(f"Error parsing XML report: {report_path}")
-		df = pd.DataFrame(reports)
-		df = df.where(pd.notna(df), None)
-		return df
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
 		remote_subdir = get_remote_submission_dir(self.sample.batch_id, self.type, getattr(self, 'platform', None))
@@ -531,7 +541,6 @@ class Submission:
 		print(f"Submitted files for sample batch: {self.sample.batch_id}")
 	def close(self):
 		self.client.close()
-
 
 class SFTPClient:
 	def __init__(self, config):
