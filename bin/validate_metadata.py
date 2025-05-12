@@ -497,6 +497,11 @@ class ValidateChecks:
 	def check_illumina_nanopore(self):
 		"""Validates Illumina and Nanopore metadata fields and file paths.
 		"""
+		# Add default 'library_name' column if missing 
+		# todo:  need to add this to the template but preserve the backwards compatibility here
+		if "library_name" not in self.metadata_df.columns:
+			self.metadata_df["library_name"] = "Not Provided"
+
 		required_illumina = [
 			"illumina_sequencing_instrument",
 			"illumina_library_strategy",
