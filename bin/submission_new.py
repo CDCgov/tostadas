@@ -253,7 +253,6 @@ def submission_main():
 
 	# Fetch workflow
 	if workflow == 'fetch': 
-		print(f'DEBUG: {submission_mode}x')
 		reports_fetched = fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, batch_id)
 		parse_and_save_reports(reports_fetched, output_dir, batch_id)
 
@@ -857,7 +856,7 @@ class SRASubmission(XMLSubmission, Submission):
 		# Identifier
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
-		identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi-spuid']}_SRA")
 		# todo: add attribute ref ID for BioSample
 	def submit(self):
 		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
