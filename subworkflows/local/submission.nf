@@ -78,7 +78,8 @@ workflow INITIAL_SUBMISSION {
         } 
 
     emit:
-        submission_files = submission_files
-        update_files = update_files
+        all_report_csvs = all_report_csvs
+        //submission_files = submission_files
+        //update_files = update_files
         //fetched_reports = fetched_reports
 }
