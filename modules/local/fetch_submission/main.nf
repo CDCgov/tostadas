@@ -59,8 +59,7 @@ process FETCH_SUBMISSION {
     """
 
 output:
-//tuple val(meta), path("${meta.batch_id}"), emit: submission_files
-// todo: I don't love this solution (it references the folder created in SUBMISSION)
+tuple val(meta), path("${meta.batch_id}"), emit: submission_files
 path("${meta.batch_id}/${meta.batch_id}.csv"), emit: submission_report
 
 }
