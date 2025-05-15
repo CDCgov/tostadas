@@ -790,12 +790,12 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		bs_package.text = self.safe_text(self.submission_config['BioSample_package'])
 		# Identifier for initial submission
 		if not self.accession_id:
-			identifier = ET.SubElement(biosample, 'Identifier')
+			identifier = ET.SubElement(add_data, 'Identifier')
 			identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 			identifier_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		# Optional Accession link if updating a BioSample
 		if self.accession_id:
-			identifier = ET.SubElement(biosample, 'Identifier')
+			identifier = ET.SubElement(add_data, 'Identifier')
 			primary_id = ET.SubElement(identifier, 'PrimaryId', {'db': 'BioSample'})
 			primary_id.text = self.accession_id
 		return biosample
