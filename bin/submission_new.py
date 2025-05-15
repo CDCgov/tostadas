@@ -828,8 +828,10 @@ class SRASubmission(XMLSubmission, Submission):
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, "Action")
 		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
-		fastq1 = f"{self.sample.sample_id}_R1.fq.gz"
-		fastq2 = f"{self.sample.sample_id}_R2.fq.gz"
+		ext1 = get_compound_extension(self.sample.fastq1)
+		ext2 = get_compound_extension(self.sample.fastq2)
+		fastq1 = f"{self.sample.sample_id}_R1{ext1}"
+		fastq2 = f"{self.sample.sample_id}_R2{ext2}"
 		file1 = ET.SubElement(add_files, "File", file_path=fastq1)
 		data_type1 = ET.SubElement(file1, "DataType")
 		data_type1.text = "generic-data"
