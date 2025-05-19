@@ -48,6 +48,7 @@ process FETCH_SUBMISSION {
         --submission_name ${meta.batch_id} \
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
+        --identifier ${params.metadata_basename} \
         --species $params.species \
         --output_dir  ${meta.batch_id}  \
         ${sample_args} \

@@ -35,12 +35,12 @@ def get_compound_extension(filename):
 	else:
 		return ''  # No extension
 
-def get_remote_submission_dir(batch_id, db, platform=None):
+def get_remote_submission_dir(identifier, batch_id, db, platform=None):
 	"""Return the remote directory path under submit/<Test|Production>/..."""
 	if db == "sra" and platform:
-		return f"{batch_id}_{db}_{platform}"
+		return f"{identifier}_{batch_id}_{db}_{platform}"
 	else:
-		return f"{batch_id}_{db}"
+		return f"{identifier}_{batch_id}_{db}"
 	
 def get_accessions(sample, report_df):
 	""" Returns a dict with available accessions for the input sample
@@ -58,7 +58,7 @@ def get_accessions(sample, report_df):
 	return accessions
 
 # Functions for fetching module
-def fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, batch_id, timeout=60):
+def fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, identifier, batch_id, timeout=60):
 	start_time = time.time()
 	reports_fetched = {}
 
@@ -83,9 +83,10 @@ def fetch_all_reports(databases, output_dir, samples, config_dict, parameters, s
 				submission_mode=submission_mode,
 				submission_dir=submission_dir,
 				type=db,
-				sample=None
+				sample=None,
+				identifier=identifier
 			)
-			remote_subdir = get_remote_submission_dir(batch_id, db, platform)
+			remote_subdir = get_remote_submission_dir(identifier, batch_id, db, platform)
 			remote_dir = f"submit/{submission_dir}/{remote_subdir}"
 			print(f'remote dir: {remote_dir}, report local path: {report_local_path}')
 			success = False
@@ -196,6 +197,9 @@ def submission_main():
 	# Get the submission config file dictionary
 	config_parser = SubmissionConfigParser(parameters)
 	config_dict = config_parser.load_config()
+
+	# Get the unique identifier for this metadata
+	identifier = parameters['identifier']
 	
 	# Get the batch ID 
 	batch_id = parameters['metadata_file'].split('.')[0].split('/')[-1]
@@ -252,8 +256,19 @@ def submission_main():
 	print(f"Workflow requested: {workflow}")
 
 	# Fetch workflow
-	if workflow == 'fetch': 
-		reports_fetched = fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, batch_id)
+	if workflow == 'fetch':
+		reports_fetched = fetch_all_reports(
+			databases=databases,
+			output_dir=output_dir,
+			samples=samples,
+			config_dict=config_dict,
+			parameters=parameters,
+			submission_dir=submission_dir,
+			submission_mode=submission_mode,
+			identifier=identifier,
+			batch_id=batch_id,
+			timeout=60
+		)
 		parse_and_save_reports(reports_fetched, output_dir, batch_id)
 
 	# Beginning of submit and update workflows	
@@ -279,7 +294,8 @@ def submission_main():
 		# Run rest of the submission steps: Prep the files, submit, and fetch the report once
 		if parameters['biosample']:
 			biosample_submission = BiosampleSubmission(parameters=parameters, submission_config=config_dict, metadata_df=metadata_df, output_dir=f"{output_dir}/biosample", 
-								   submission_mode=submission_mode, submission_dir=submission_dir, type='biosample', sample=None, accession_id=accessions_dict['biosample'])
+								   submission_mode=submission_mode, submission_dir=submission_dir, type='biosample', sample=None, accession_id=accessions_dict['biosample'],
+								   identifier=parameters['identifier'])
 			biosample_submission.init_xml_root() # Start the xml file
 			for sample in samples:
 				sample_metadata = metadata_df[metadata_df['sample_name'] == sample.sample_id]
@@ -299,7 +315,8 @@ def submission_main():
 				for platform, platform_samples in platform_map.items():
 					output_path = f"{output_dir}/sra/{platform}"
 					sra_submission = SRASubmission(parameters=parameters, submission_config=config_dict, metadata_df=metadata_df, output_dir=output_path, 
-									 submission_mode=submission_mode, submission_dir=submission_dir, type='sra', samples=platform_samples, sample=None, accession_id=accessions_dict['sra'])
+									 submission_mode=submission_mode, submission_dir=submission_dir, type='sra', samples=platform_samples, sample=None, accession_id=accessions_dict['sra'],
+									 identifier=parameters['identifier'])
 					sra_submission.init_xml_root()
 					for sample in platform_samples:
 						sample_metadata = metadata_df[metadata_df['sample_name'] == sample.sample_id]
@@ -310,7 +327,8 @@ def submission_main():
 				platform_samples = illumina_samples if illumina_samples else nanopore_samples
 				output_path = f"{output_dir}/sra"
 				sra_submission = SRASubmission(parameters=parameters, submission_config=config_dict, metadata_df=metadata_df, output_dir=output_path, 
-								 submission_mode=submission_mode, submission_dir=submission_dir, type='sra', samples=platform_samples, sample=None, accession_id=accessions_dict['sra'])
+								 submission_mode=submission_mode, submission_dir=submission_dir, type='sra', samples=platform_samples, sample=None, accession_id=accessions_dict['sra'],
+								 identifier=parameters['identifier'])
 				sra_submission.init_xml_root()
 				for sample in platform_samples:
 					sample_metadata = metadata_df[metadata_df['sample_name'] == sample.sample_id]
@@ -319,7 +337,8 @@ def submission_main():
 		if parameters['genbank']:
 			# Generates an XML if ftp_upload is True
 			genbank_submission = GenbankSubmission(parameters, config_dict, metadata_df, f"{output_dir}/genbank/{parameters['submission_name']}",
-												parameters['submission_mode'], submission_dir, 'genbank', sample, accessions_dict['genbank'])
+												parameters['submission_mode'], submission_dir, 'genbank', sample, accessions_dict['genbank'],
+												identifier=parameters['identifier'])
 
 		# Submit all prepared submissions and fetch report once
 		if parameters['biosample']:
@@ -363,6 +382,7 @@ class GetParams:
 		parser.add_argument("--submission_name", help='Name of the submission',	required=True)	
 		parser.add_argument("--config_file", help="Name of the submission onfig file",	required=True)
 		parser.add_argument("--metadata_file", help="Name of the validated metadata batch tsv file", required=True)
+		parser.add_argument("--identifier", help="Original metadaata file prefix as unique identifier for NCBI FTP site folder name", required=True)
 		parser.add_argument("--submission_report", help="Path to submission report csv file", required=False, default="submission_report.csv")
 		parser.add_argument("--species", help="Type of organism data", required=True)
 		parser.add_argument('--submit', action='store_true', help='Run the full submission process')
@@ -494,13 +514,14 @@ class MetadataParser:
 
 # todo: this opens an ftp connection for every submission; would be better I think to open it once every x submissions?
 class Submission:
-	def __init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample):
+	def __init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample, identifier):
 		self.sample = sample
 		self.parameters = parameters
 		self.submission_config = submission_config
 		self.output_dir = output_dir
 		self.submission_mode = submission_mode
 		self.submission_dir = submission_dir
+		self.identifier = identifier
 		self.type = type
 		self.client = self.get_client()
 	def get_client(self):
@@ -529,7 +550,7 @@ class Submission:
 			return False # Report not found, need to try again
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
-		remote_subdir = get_remote_submission_dir(self.sample.batch_id, self.type, getattr(self, 'platform', None))
+		remote_subdir = get_remote_submission_dir(self.identifier, self.sample.batch_id, type, getattr(self, 'platform', None))
 		self.client.connect()
 		# Navigate to submit/<Test|Production>/<submission_db> folder
 		print(f"Uploading to FTP path: submit/{self.submission_dir}/{remote_subdir}")
@@ -754,10 +775,10 @@ class XMLSubmission(ABC):
 		pass
 
 class BiosampleSubmission(XMLSubmission, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, sample, accession_id = None):
+	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
-		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample) 
+		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample, identifier) 
 		self.accession_id = accession_id
 		os.makedirs(self.output_dir, exist_ok=True)
 	def add_action_block(self, submission):
@@ -818,10 +839,10 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		print(f"Submitted sample batch {self.sample.batch_id} to BioSample")
 
 class SRASubmission(XMLSubmission, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None):
+	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
-		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample)
+		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
 		self.samples = samples
 		os.makedirs(self.output_dir, exist_ok=True)
@@ -882,10 +903,10 @@ class SRASubmission(XMLSubmission, Submission):
 			print(f"Submitted sample batch {self.sample.batch_id} to SRA")
 
 class GenbankSubmission(XMLSubmission, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, sample, accession_id = None):
+	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
-		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample)
+		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample, identifier)
 		# Use the MetadataParser to extract metadata needed for GB submission
 		parser = MetadataParser(metadata_df, parameters)
 		self.top_metadata = parser.extract_top_metadata()
