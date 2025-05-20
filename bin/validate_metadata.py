@@ -91,7 +91,7 @@ def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
 
 	missing_batches = []
 
-	expected_samples = set(filled_df[col_name])
+	expected_samples = set(filled_df['sample_name'])
 	found_samples = set()
 
 	for batch_file, samples in batch_summary.items():
