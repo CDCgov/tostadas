@@ -15,7 +15,7 @@ include { MERGE_UPLOAD_LOG                              } from "../../modules/lo
 
 workflow INITIAL_SUBMISSION {
     take:
-        submission_ch         // (meta: [batch_id: ..., batch_tsv: ...], samples: [ [meta, fasta, fq1, fq2, gff], ... ])
+        submission_ch         // (meta: [batch_id: ..., batch_tsv: ...], samples: [ [meta, fasta, fq1, fq2, gff], ... ]), enabledDatabases (list)
         submission_config
         wait_time
 
@@ -29,13 +29,13 @@ workflow INITIAL_SUBMISSION {
 
         if (params.fetch_reports_only == true) {
             // Check if submission folder exists and run report fetching module
-            submission_ch.map { meta, samples ->
+            submission_ch.map { meta, samples, enabledDatabases ->
                 def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
                 def submission_folder = file("${resolved_output_dir}/${params.submission_output_dir}/${params.metadata_basename}/${meta.batch_id}") 
                 if (!submission_folder.exists()) {
                     throw new IllegalStateException("Submission folder does not exist for batch: ${meta.batch_id}")
                 }
-                return tuple(meta, samples, submission_folder)
+                return tuple(meta, samples, enabledDatabases, submission_folder)
             }
             .set { batch_with_folder }
 
