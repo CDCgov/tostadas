@@ -42,6 +42,6 @@ process METADATA_VALIDATION {
     output:
     path "*/batched_tsvs/*.tsv", emit: tsv_files
     // path "*/batched_tsvs", emit: tsv_dir
-    path "*/batched_tsvs/batch_summary.json", emit: json
-    path "*/error.txt", emit: errors
+    path "*/batched_tsvs/batch_summary.json", optional: true, emit: json
+    path "*/error.txt", optional: true, emit: errors
 }
