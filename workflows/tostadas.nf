@@ -139,9 +139,13 @@ workflow TOSTADAS {
 			samples.each { s ->
 				def sid = s.meta.sample_id
 				if (params.sra) {
-					if (!s.fq1 || !file(s.fq1).exists()) missingFiles << "${sid}:fastq_1"
-					if (!s.fq2 || !file(s.fq2).exists()) missingFiles << "${sid}:fastq_2"
-					if (!s.nnp || !file(s.nnp).exists()) missingFiles << "${sid}:nanopore"
+					def illumina_missing = (!s.fq1 || !file(s.fq1).exists()) && (!s.fq2 || !file(s.fq2).exists())
+					def nanopore_missing = (!s.nnp || !file(s.nnp).exists())
+					if (illumina_missing && nanopore_missing) {
+						if (!s.fq1 || !file(s.fq1).exists()) missingFiles << "${sid}:fastq_1"
+						if (!s.fq2 || !file(s.fq2).exists()) missingFiles << "${sid}:fastq_2"
+						if (!s.nnp || !file(s.nnp).exists()) missingFiles << "${sid}:nanopore"
+					} //todo: this doesn't address one or the other, which is difficult to do without an explicit param/flag
 
 					if (
 						(s.fq1 && file(s.fq1).exists() && s.fq2 && file(s.fq2).exists()) ||
