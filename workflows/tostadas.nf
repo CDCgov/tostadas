@@ -141,7 +141,14 @@ workflow TOSTADAS {
 				if (params.sra) {
 					if (!s.fq1 || !file(s.fq1).exists()) missingFiles << "${sid}:fastq_1"
 					if (!s.fq2 || !file(s.fq2).exists()) missingFiles << "${sid}:fastq_2"
-					else enabledDatabases << "sra"
+					if (!s.nnp || !file(s.nnp).exists()) missingFiles << "${sid}:nanopore"
+
+					if (
+						(s.fq1 && file(s.fq1).exists() && s.fq2 && file(s.fq2).exists()) ||
+						(s.nnp && file(s.nnp).exists())
+					) {
+						enabledDatabases << "sra"
+					}
 				}
 				if (params.genbank) {
 					if (!s.fasta || !file(s.fasta).exists()) missingFiles << "${sid}:fasta"
