@@ -497,17 +497,25 @@ class ValidateChecks:
 	def check_illumina_nanopore(self):
 		"""Validates Illumina and Nanopore metadata fields and file paths.
 		"""
-		# Add default 'library_name' column if missing 
-		# todo:  need to add this to the template but preserve the backwards compatibility here
-		if "library_name" not in self.metadata_df.columns:
-			self.metadata_df["library_name"] = "Not Provided"
+		# Add default 'library_name' column if missing (preserves backwards compatibility with older templates)
+		for col in ['illumina_library_name', 'nanopore_library_name']:
+			if col not in self.metadata_df.columns:
+				self.metadata_df[col] = "Not Provided"
+
+		# Rename internal-use-only SRA path columns to avoid submission metadata prefix
+		self.metadata_df.rename(columns={
+			'illumina_sra_file_path_1': 'int_illumina_sra_file_path_1',
+			'illumina_sra_file_path_2': 'int_illumina_sra_file_path_2',
+			'nanopore_sra_file_path_1': 'int_nanopore_sra_file_path_1',
+		}, inplace=True)
 
 		required_illumina = [
 			"illumina_sequencing_instrument",
 			"illumina_library_strategy",
 			"illumina_library_source",
 			"illumina_library_selection",
-			"illumina_library_layout"
+			"illumina_library_layout",
+			"illumina_library_name"
 		]
 
 		required_nanopore = [
@@ -515,20 +523,21 @@ class ValidateChecks:
 			"nanopore_library_strategy",
 			"nanopore_library_source",
 			"nanopore_library_selection",
-			"nanopore_library_layout"
+			"nanopore_library_layout",
+			"nanopore_library_name"
 		]
 
 		for idx, row in self.metadata_df.iterrows():
 			sample_name = row["sample_name"]
-			illumina_found = pd.notna(row.get("illumina_sra_file_path_1", None)) and pd.notna(row.get("illumina_sra_file_path_2", None))
-			nanopore_found = pd.notna(row.get("nanopore_sra_file_path_1", None))
+			illumina_found = pd.notna(row.get("int_illumina_sra_file_path_1", None)) and pd.notna(row.get("int_illumina_sra_file_path_2", None))
+			nanopore_found = pd.notna(row.get("int_nanopore_sra_file_path_1", None))
 
 			# Illumina check
 			if illumina_found:
 				illumina_missing = [f for f in required_illumina if not row.get(f)]
 				if row.get("illumina_library_layout") == "paired":
-					if not row.get("illumina_sra_file_path_2"):
-						illumina_missing.append("illumina_sra_file_path_2")
+					if not row.get("int_illumina_sra_file_path_2"):
+						illumina_missing.append("int_illumina_sra_file_path_2")
 				if row.get("illumina_sequencing_instrument") not in self.parameters.get("illumina_instrument_restrictions", []):
 					illumina_missing.append("illumina_sequencing_instrument (invalid or missing)")
 				if illumina_missing:

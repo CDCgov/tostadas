@@ -81,18 +81,19 @@ workflow TOSTADAS {
 				def trimFile = { path -> path?.trim() ? file(path.trim()) : null }
 
 				def fasta = trimFile(row.fasta_path)
-				def fq1 = trimFile(row.illumina_sra_file_path_1)
-				def fq2 = trimFile(row.illumina_sra_file_path_2)
+				def fq1 = trimFile(row.int_illumina_sra_file_path_1)
+				def fq2 = trimFile(row.int_illumina_sra_file_path_2)
+				def nnp = trimFile(row.int_nanopore_sra_file_path_1)
 				def gff = trimFile(row.gff_path)
 
-				return [sample_meta, fasta, fq1, fq2, gff]
+				return [sample_meta, fasta, fq1, fq2, nnp, gff]
 			}
 		}
 
 		// perform annotation if requested
 		if ( params.fetch_reports_only == false) {
 			if (params.annotation) {
-			annotation_ch = sample_ch.map { meta, fasta, fq1, fq2, gff -> 
+			annotation_ch = sample_ch.map { meta, fasta, fq1, fq2, nnp, gff -> 
 				// remove user-provided gff, if present, from annotation input channel before performing annotation
 				[meta, fasta, fq1, fq2] 
 			}
@@ -114,9 +115,9 @@ workflow TOSTADAS {
 
 						annotation_ch = annotation_ch
 							| join(RUN_BAKTA.out.gff)
-							| map { meta, fasta, fq1, fq2, gff -> [meta, fq1, fq2, gff] }
+							| map { meta, fasta, fq1, fq2, nnp, gff -> [meta, fq1, fq2, nnp, gff] }
 							| join(RUN_BAKTA.out.fna)
-							| map { meta, fq1, fq2, gff, fasta -> [meta, fasta, fq1, fq2, gff] }
+							| map { meta, fq1, fq2, nnp, gff, fasta -> [meta, fasta, fq1, fq2, gff] }
 					}
 				}
 			}
@@ -127,8 +128,8 @@ workflow TOSTADAS {
 
 	// Create batch initial submission channel, check for existence of files based on selected submission databases
 	submission_batch_ch = submission_ch
-		.map { meta, fasta, fq1, fq2, gff ->
-			[meta.batch_id, [meta: meta, fasta: fasta, fq1: fq1, fq2: fq2, gff: gff]]
+		.map { meta, fasta, fq1, fq2, nnp, gff ->
+			[meta.batch_id, [meta: meta, fasta: fasta, fq1: fq1, fq2: fq2, nnp: nnp, gff: gff]]
 		}
 		.groupTuple()
 		.map { batch_id, samples ->
