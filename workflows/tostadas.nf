@@ -78,7 +78,7 @@ workflow TOSTADAS {
 			def nanopore = trimFile(row.nanopore_sra_file_path_1)
 			def gff = trimFile(row.gff_path)
 
-			return [meta, fasta_path, fastq1, fastq2, gff]
+			return [meta, fasta_path, fastq1, fastq2, nanopore, gff]
 			}
 
 	// Create initial submission channel
@@ -89,7 +89,7 @@ workflow TOSTADAS {
 		if ( params.annotation ) {
 			// Remove user-provided gff, if present, from annotation input channel before performing annotation
 			submission_ch = submission_ch.map { elements ->
-				elements.take(5)  // Remove the last element (gff)
+				elements.take(6)  // Remove the last element (gff)
 				}
 
 			if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
@@ -107,7 +107,7 @@ workflow TOSTADAS {
 					RUN_VADR (
 						submission_ch
 					)
-					submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, tbl
+					submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, nanopore, tbl
 				}
 			}
 			else if (params.species == 'bacteria') {
@@ -118,12 +118,12 @@ workflow TOSTADAS {
 					)
 					// set up submission channels
 					submission_ch = submission_ch
-					| join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, gff
-					| map { meta, tsv, _, fq1, fq2, gff -> 
-						[meta, tsv, fq1, fq2, gff] } // drop original fasta
+					| join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, nanopore, gff
+					| map { meta, tsv, _, fq1, fq2, nnp, gff -> 
+						[meta, tsv, fq1, fq2, nnp, gff] } // drop original fasta
 					| join(RUN_BAKTA.out.fna) // join annotated fasta
-					| map { meta, tsv, fq1, fq2, gff, fasta -> 
-						[meta, tsv, fasta, fq1, fq2, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, gff
+					| map { meta, tsv, fq1, fq2, nnp, gff, fasta -> 
+						[meta, tsv, fasta, fq1, fq2, nnp, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, nanopore, gff
 				}   
 			}
 		}
@@ -137,7 +137,7 @@ workflow TOSTADAS {
 		)
 
 		INITIAL_SUBMISSION (
-			submission_ch,  // meta.id, tsv, fasta, fastq1, fastq2, gff
+			submission_ch,  // meta.id, tsv, fasta, fastq1, fastq2, nanopore, gff
 			params.submission_config,  
 			GET_WAIT_TIME.out
 			)
