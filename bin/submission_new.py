@@ -318,7 +318,7 @@ class MetadataParser:
 	def extract_sra_metadata(self):
 		columns = ['illumina_sequencing_instrument','illumina_library_protocol','illumina_library_layout','illumina_library_selection',
 				   'illumina_library_source','illumina_library_strategy','nanopore_library_layout','nanopore_library_protocol','nanopore_library_selection',
-				   'nanopore_library_source','nanopore_library_strategy','nanopore_sequencing_instrument']  # SRA specific columns
+				   'nanopore_library_source','nanopore_library_strategy','nanopore_sequencing_instrument', 'library_name']  # SRA specific columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_genbank_metadata(self):
