@@ -335,6 +335,15 @@ class ValidateChecks:
 		if 'library_name' not in self.metadata_df.columns:
 			self.metadata_df['library_name'] = "Not Provided"
 
+		# Drop any columns containing 'test' if they are all '', 'Not Provided', or empty
+		self.metadata_df.drop(
+			columns=[
+				col for col in self.metadata_df.columns
+				if 'test_field' in col.lower()
+			],
+			inplace=True
+		)
+
 		# get sample names as a list
 		metadata_samp_names = self.metadata_df['sample_name'].tolist()
 
