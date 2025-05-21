@@ -332,10 +332,11 @@ class ValidateChecks:
 	def validate_main(self):
 		""" Main validation function for the metadata """
 		# add library_name col - this is a temporary patch because this code has been rewritten for v6.0.0 (batch update)
-		if 'library_name' not in self.metadata_df.columns:
-			self.metadata_df['library_name'] = "Not Provided"
+		for col in ['illumina_library_name', 'nanopore_library_name']:
+			if col not in self.metadata_df.columns:
+				self.metadata_df[col] = "Not Provided"
 
-		# Drop any columns containing 'test' if they are all '', 'Not Provided', or empty
+		# Drop any columns containing 'test_field' 
 		self.metadata_df.drop(
 			columns=[
 				col for col in self.metadata_df.columns

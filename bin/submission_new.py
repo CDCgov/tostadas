@@ -329,13 +329,15 @@ class MetadataParser:
 			for k, v in self.metadata_df.iloc[0].items():
 				if not k.startswith(f"{prefix}_"):
 					continue
-				if pd.isna(v) or str(v).strip() in ["", "Not Provided"]:
-					continue
 				key = k.replace(f"{prefix}_", "")
 				key = rename_fields.get(key, key)
-				# Only set if not already set (preserves original renamed fields if both are present)
-				result.setdefault(key, v)
-			return result
+				result[key] = v
+			# Drop a platform if all values are empty or Not Provided (user is only submitting one type)
+			all_empty = all(
+				pd.isna(v) or str(v).strip() in ["", "Not Provided"]
+				for v in result.values()
+			)
+			return {} if all_empty else result
 		illumina_fields = process_platform('illumina')
 		nanopore_fields = process_platform('nanopore')
 		platforms = []
@@ -760,7 +762,6 @@ class SRASubmission(XMLSubmission, Submission):
 		# Use the MetadataParser to extract metadata
 		parser = MetadataParser(metadata_df, parameters)
 		self.top_metadata = parser.extract_top_metadata()
-		#self.sra_metadata = parser.extract_sra_metadata()
 		self.accession_id = accession_id
 		self.platform_metadata = parser.extract_sra_metadata() 
 		os.makedirs(self.output_dir, exist_ok=True) 
@@ -801,9 +802,8 @@ class SRASubmission(XMLSubmission, Submission):
 	def add_attributes_block(self, submission):
 		add_files = submission.find(".//AddFiles")
 		for attr_name, attr_value in self.current_metadata.items():
-			if attr_value != "Not Provided":
-				attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
-				attribute.text = self.safe_text(attr_value)
+			attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
+			attribute.text = self.safe_text(attr_value)
 		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
 		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
 		refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
