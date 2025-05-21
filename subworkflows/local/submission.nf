@@ -15,7 +15,7 @@ include { MERGE_UPLOAD_LOG                              } from "../../modules/lo
 
 workflow INITIAL_SUBMISSION {
     take:
-        submission_ch         // (meta: [batch_id: ..., batch_tsv: ...], samples: [ [meta, fasta, fq1, fq2, gff], ... ]), enabledDatabases (list)
+        submission_ch         // (meta: [batch_id: ..., batch_tsv: ...], samples: [ [meta, fasta, fq1, fq2, nnp, gff], ... ]), enabledDatabases (list)
         submission_config
         wait_time
 
