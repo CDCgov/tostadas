@@ -5,7 +5,7 @@
 */
 process FETCH_SUBMISSION {
 
-    publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}",
+    publishDir "${params.output_dir}/${params.final_submission_output_dir}/${params.metadata_basename}",
             mode: 'copy',
             overwrite: params.overwrite_output
 
@@ -19,6 +19,7 @@ process FETCH_SUBMISSION {
     path(submission_config)
 
     script:
+    def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
     def biosample = params.biosample == true ? '--biosample' : ''

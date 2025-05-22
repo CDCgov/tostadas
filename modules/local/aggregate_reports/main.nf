@@ -6,7 +6,7 @@
 
 process AGGREGATE_REPORTS {
 
-    publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}",
+    publishDir "${params.output_dir}/${params.final_submission_output_dir}/${params.metadata_basename}",
         mode: 'copy',
         overwrite: params.overwrite_output
 
