@@ -5,10 +5,7 @@
 */
 process METADATA_VALIDATION {
 
-    // label 'main'
-
-    //errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    //maxRetries 5
+    publishDir "$params.output_dir/$params.val_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
     conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -29,6 +26,7 @@ process METADATA_VALIDATION {
         """
         validate_metadata.py \
             --meta_path $meta_path \
+            --batch_size $params.batch_size \
             --project_dir $projectDir \
             --output_dir . \
             --custom_fields_file $params.custom_fields_file \
@@ -42,7 +40,8 @@ process METADATA_VALIDATION {
         """
         
     output:
-    path "*/tsv_per_sample/*.tsv", emit: tsv_Files
-    // path "*/tsv_per_sample", emit: tsv_dir
-    path "*/errors", emit: errors
+    path "*/batched_tsvs/*.tsv", emit: tsv_files
+    // path "*/batched_tsvs", emit: tsv_dir
+    path "*/batched_tsvs/batch_summary.json", optional: true, emit: json
+    path "*/error.txt", optional: true, emit: errors
 }

@@ -353,6 +353,12 @@
           "description": "Either name or relative/absolute path for the outputs from submission",
           "default": "submission_outputs"
         },
+        "final_submission_output_dir": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "Either name or relative/absolute path for the final outputs from submission report fetching",
+          "default": "final_submission_outputs"
+        },
         "submission_prod_or_test": {
           "type": "string",
           "description": "Whether to submit samples for test or actual production",
