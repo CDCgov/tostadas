@@ -424,6 +424,15 @@ class ValidateChecks:
 	def check_meta_core(self):
 		"""Check and update the metadata DataFrame with required and optional fields.
 		"""
+		# Drop any columns containing 'test_field' 
+		self.metadata_df.drop(
+					columns=[
+						col for col in self.metadata_df.columns
+						if 'test_field' in col.lower()
+					],
+					inplace=True
+				)
+
 		missing_fields = []
 		missing_optionals = []
 
