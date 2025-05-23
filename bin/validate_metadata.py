@@ -72,6 +72,7 @@ def metadata_validation_main():
 		# now call the main function for validating the metadata
 		validate_checks = ValidateChecks(filled_df, parameters, parameters_class)
 		validate_checks.validate_main()
+		print(f"Available keys after validate_checks: {filled_df.keys().tolist()}")
 
 		# insert necessary columns in metadata dataframe
 		insert = HandleDfInserts(parameters=parameters, filled_df=validate_checks.metadata_df)
@@ -330,7 +331,21 @@ class ValidateChecks:
 		
 	def validate_main(self):
 		""" Main validation function for the metadata """
-		# check if user would like to validate custom fields
+		# add library_name col - this is a temporary patch because this code has been rewritten for v6.0.0 (batch update)
+		for col in ['illumina_library_name', 'nanopore_library_name']:
+			if col not in self.metadata_df.columns:
+				self.metadata_df[col] = "Not Provided"
+
+		# Drop any columns containing 'test_field' 
+		self.metadata_df.drop(
+			columns=[
+				col for col in self.metadata_df.columns
+				if 'test_field' in col.lower()
+			],
+			inplace=True
+		)
+
+		# get sample names as a list
 		metadata_samp_names = self.metadata_df['sample_name'].tolist()
 
 		# if there are repeat samples then check them and replace the names
@@ -350,6 +365,9 @@ class ValidateChecks:
 			self.sample_error_msg = f"\n\t{str(name)}:"
 			sample_info = self.metadata_df.loc[self.metadata_df['sample_name'] == name]
 			sample_info.columns = sample_info.columns.str.lower() # normalize cols to lowercase
+
+			if "library_name" not in sample_info.columns:
+				sample_info["library_name"] = "Not Provided"
 
 			self.check_meta_core(sample_info)
 
