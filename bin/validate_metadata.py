@@ -812,8 +812,8 @@ class Check_Illumina_Nanopore_SRA:
 
 		# check if the SRA file exists for the first file path
 		# todo: I don't think we need to check for valid file paths until we're submitting?  Or check here instead of during submission?
-		'''
 		path_failed = False
+		'''
 		if instrument_type == 'illumina':
 			if self.sample_info["illumina_library_layout"].tolist()[0] == 'paired':
 				paths = [file_path1, file_path2]
