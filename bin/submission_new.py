@@ -809,24 +809,15 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		# Package
 		bs_package = ET.SubElement(biosample, 'Package')
 		bs_package.text = self.safe_text(self.submission_config['BioSample_package'])
-		# Identifier for initial submission (needs to be in 2 places: under BioSample and under AddData)
+		# Identifier for initial submission 
 		# Include optional Accession link if updating a BioSample
-		# === Inner <Identifier> under <BioSample> ===
-		inner_identifier = ET.SubElement(biosample, 'Identifier')
+		identifier = ET.SubElement(add_data, 'Identifier')
 		if not self.accession_id:
-			inner_spuid = ET.SubElement(inner_identifier, 'SPUID', {'spuid_namespace': spuid_namespace_value})
-			inner_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+			spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': spuid_namespace_value})
+			spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		else:
-			inner_primary_id = ET.SubElement(inner_identifier, 'PrimaryId', {'db': 'BioSample'})
-			inner_primary_id.text = self.accession_id
-		# === Outer <Identifier> under <AddData> ===
-		outer_identifier = ET.SubElement(add_data, 'Identifier')
-		if not self.accession_id:
-			outer_spuid = ET.SubElement(outer_identifier, 'SPUID', {'spuid_namespace': spuid_namespace_value})
-			outer_spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
-		else:
-			outer_primary_id = ET.SubElement(outer_identifier, 'PrimaryId', {'db': 'BioSample'})
-			outer_primary_id.text = self.accession_id
+			primary_id = ET.SubElement(identifier, 'PrimaryId', {'db': 'BioSample'})
+			primary_id.text = self.accession_id
 		return biosample
 	def add_attributes_block(self, biosample):
 		attributes = ET.SubElement(biosample, 'Attributes')
