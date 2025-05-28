@@ -1,0 +1,6 @@
+name: repeatmasker_env
+channels: 
+- bioconda
+- conda-forge
+dependencies: 
+- repeatmasker

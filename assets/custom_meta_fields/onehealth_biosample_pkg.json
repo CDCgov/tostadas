@@ -1,0 +1,14 @@
+{
+    "strain": {
+        "replace_empty_with": "Not Provided",
+        "new_field_name": "strain"
+    },
+    "source_type": {
+        "replace_empty_with": "Not Provided",
+        "new_field_name": "source_type"
+    },
+    "animal_environment": {
+        "replace_empty_with": "",
+        "new_field_name": "animal_env"
+    }
+}

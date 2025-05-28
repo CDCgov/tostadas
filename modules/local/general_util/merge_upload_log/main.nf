@@ -4,28 +4,16 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process MERGE_UPLOAD_LOG {
-
-    //label 'main'
     
-    conda (params.enable_conda ? params.env_yml : null)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' :
-        'staphb/tostadas:latest' }"
-        
-    publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.output_dir/$params.submission_output_dir/", mode: 'copy', overwrite: params.overwrite_output
 
-    if ( params.run_conda == true ) {
-        try {
-            conda params.env_yml
-        } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
-        }
-    }
+    conda(params.env_yml)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
     path submission_files
     path submission_log
-    val annotation_name
 
     script:
     """

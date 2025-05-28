@@ -5,20 +5,27 @@
 */
 process BAKTA {
 
-    // label 'bakta'
-    
-    conda (params.enable_conda ? "bioconda::bakta==1.9.1" : null)
+    conda("bioconda::bakta==1.9.4")
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bakta:1.9.1--pyhdfd78af_0' :
-        'quay.io/biocontainers/bakta:1.9.1--pyhdfd78af_0' }"
-    
-    publishDir "$params.output_dir/$params.bakta_output_dir", mode: 'copy', overwrite: params.overwrite_output
+        'https://depot.galaxyproject.org/singularity/bakta:1.9.4--pyhdfd78af_0' :
+        'quay.io/biocontainers/bakta:1.9.4--pyhdfd78af_0' }"
     
     input:
-    val signal
     path db_path
-    tuple val(meta), path(fasta_path)
-    
+    tuple val(meta), path(metadata), path(fasta_path), path(fastq1), path(fastq2)
+
+    output:
+    tuple val(meta), path("${meta.id}/*.fna"), emit: fna
+    tuple val(meta), path("${meta.id}/*.gff3"), emit: gff
+    tuple val(meta), path("${meta.id}/*.faa"), emit: faa
+    tuple val(meta), path("${meta.id}/*.embl"), emit: embl
+    tuple val(meta), path("${meta.id}/*.ffn"), emit: ffn
+    tuple val(meta), path("${meta.id}/*.gbff"), emit: gbff
+    tuple val(meta), path("${meta.id}/*.json"), emit: json
+    tuple val(meta), path("${meta.id}/*.log"), emit: log
+    tuple val(meta), path("${meta.id}/*.tsv"), emit: tsv
+    tuple val(meta), path("${meta.id}/*.txt"), emit: txt
+        
     script:
     def args = task.ext.args  ?: ''
     def prefix   = task.ext.prefix ?: "${meta.id}"
@@ -36,7 +43,9 @@ process BAKTA {
     def skip_ori = params.bakta_skip_ori ? "--skip-ori" : ""
     def compliant = params.bakta_compliant ? "--compliant" : ""
     def complete = params.bakta_complete ? "--complete" : ""
+    def skip_plot = params.bakta_skip_plot ? "--skip-plot" : ""
     def keep_contig_headers = params.bakta_keep_contig_headers ? "--keep-contig-headers" : ""
+    def locus_tag_param = params.bakta_locus_tag ? "--locus-tag ${params.bakta_locus_tag}" : ""
 
     """
     bakta --db $db_path  \
@@ -47,38 +56,12 @@ process BAKTA {
         --species $params.bakta_species \
         --strain $params.bakta_strain \
         --plasmid $params.bakta_plasmid  \
-        --complete $params.bakta_complete \
         --translation-table $params.bakta_translation_table \
         --gram $params.bakta_gram \
         --locus $params.bakta_locus \
-        --locus-tag $params.bakta_locus_tag \
-        $compliant \
-        $keep_contig_headers \
-        $proteins \
-        $prodigal_tf \
-        $skip_trna \
-        $skip_rrna \
-        $skip_ncrna \
-        $skip_ncrna_region \
-        $skip_crispr \
-        $skip_cds \
-        $skip_sorf \
-        $skip_gap \
-        $skip_ori \
-        $fasta_path
+        ${locus_tag_param} \
+        $complete $compliant $keep_contig_headers $proteins $prodigal_tf $skip_trna $skip_rrna \
+        $skip_ncrna $skip_ncrna_region $skip_crispr $skip_cds $skip_sorf $skip_gap $skip_ori $skip_plot \
+        $fasta_path 
     """
-    
-    output:
-    path "${fasta_path.getSimpleName()}/*.fna",   emit: fna
-    path "${fasta_path.getSimpleName()}/*.gff3",   emit: gff3
-    path "${fasta_path.getSimpleName()}/*.faa",   emit: faa
-    path "${fasta_path.getSimpleName()}/*.embl",   emit: embl
-    path "${fasta_path.getSimpleName()}/*.ffn",   emit: ffn
-    path "${fasta_path.getSimpleName()}/*.gbff",   emit: gbff
-    path "${fasta_path.getSimpleName()}/*.json",   emit: json
-    path "${fasta_path.getSimpleName()}/*.log",   emit: log
-    path "${fasta_path.getSimpleName()}/*.png",   emit: png
-    path "${fasta_path.getSimpleName()}/*.svg",   emit: svg
-    path "${fasta_path.getSimpleName()}/*.tsv",   emit: tsv
-    path "${fasta_path.getSimpleName()}/*.txt",   emit: txt
 }

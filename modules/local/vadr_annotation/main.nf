@@ -3,36 +3,37 @@
                                 RUN VADR ANNOTATION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process VADR {
-
-    label 'vadr'
+process VADR_ANNOTATION {
     
-    container 'https://hub.docker.com/r/staphb/vadr/tags:latest'
-
-    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
-    maxRetries 5
-    
-    try {
-        container "$params.docker_container_vadr"
-    } catch (Exception e) {
-        System.err.println("WARNING: Cannot pull the following docker container: $params.docker_container_vadr to run VADR")
-    }
+    conda(params.vadr_env_yml)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/vadr:latest' : 'staphb/vadr:latest' }"
 
     input:
-    val signal
-    path fasta_path
+	tuple val(meta), path(fasta_path)
     path vadr_models_dir
+
+    output:
+    tuple val(meta), path("${meta.id}_${params.species}"), emit: vadr_outputs
 
     script:
     """
-    VADRMODELDIR=$vadr_models_dir && \
-    v-annotate.pl --split --cpu 8 --glsearch --minimap2 -s -r --nomisc \
-    --r_lowsimok --r_lowsimxd 100 --r_lowsimxl 2000 --alt_pass \
-    discontn,dupregin --s_overhang 150 -i $vadr_models_dir/mpxv.rpt.minfo -n \
-    $vadr_models_dir/mpxv.fa -x $vadr_models_dir $fasta_path \
-    original_outputs -f
+    v-annotate.pl \
+        --split \
+        --cpu $task.cpus \
+        --glsearch \
+        --minimap2 \
+        -s \
+        -r \
+        --nomisc \
+        --mkey ${params.species} \
+        --r_lowsimok \
+        --r_lowsimxd 100 \
+        --r_lowsimxl 2000 \
+        --alt_pass discontn,dupregin \
+        --s_overhang 150 \
+        --mdir $vadr_models_dir \
+        $fasta_path \
+        ${meta.id}_${params.species}
     """
-
-    output:
-    path "original_outputs", emit: vadr_outputs
 }

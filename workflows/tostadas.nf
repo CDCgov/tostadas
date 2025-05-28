@@ -1,21 +1,24 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
-    
+	
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                         GET NECESSARY MODULES OR SUBWORKFLOWS
+						 GET NECESSARY MODULES OR SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // get the utility processes / subworkflows
-include { CHECK_FILES                                       } from "../modules/local/general_util/check_files/main"
-include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
+
+// include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
+include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
+
 include { GET_WAIT_TIME                                     } from "../modules/local/general_util/get_wait_time/main"
 
 // get metadata validation processes
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
+include { EXTRACT_INPUTS                                    } from '../modules/local/extract_inputs/main'
 
 // get viral annotation process/subworkflows
-include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
+// include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
 include { REPEATMASKER_LIFTOFF                              } from "../subworkflows/local/repeatmasker_liftoff"
 include { RUN_VADR                                          } from "../subworkflows/local/vadr"
 
@@ -26,229 +29,119 @@ include { RUN_BAKTA                                         } from "../subworkfl
 include { INITIAL_SUBMISSION                                } from "../subworkflows/local/submission"
 include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
 include { MERGE_UPLOAD_LOG                                  } from "../modules/local/general_util/merge_upload_log/main"
-
-include { SUBMISSION_FULL                               } from '../modules/local/initial_submission/main_full'
-include { SUBMISSION_SRA                                } from '../modules/local/initial_submission/main_sra'
-include { SUBMISSION_GENBANK                            } from '../modules/local/initial_submission/main_genbank'
-include { WAIT                                          } from '../modules/local/general_util/wait/main'
+include { SUBMISSION                                        } from '../modules/local/initial_submission/main'
+include { WAIT                                              } from '../modules/local/general_util/wait/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    MAIN WORKFLOW
+									MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-// To Do, create logic to run workflows for virus vs. bacteria
 workflow TOSTADAS {
-    
-    // To Do, maybe? create samplesheet input to initiate this channel instead
+	
+	// check if help parameter is set
+	if ( params.help == true ) {
+		PRINT_PARAMS_HELP()
+		exit 0
+	}
 
-    // initialize channels
-    // fastaCh = Channel.fromPath("$params.fasta_path/*.{fasta}")
-    // if (!params.final_annotated_files_path.isEmpty()) {
-    //     annotationCh = Channel.fromPath("$params.final_annotated_files_path/*.gff")
-    // }
+	// validate input parameters
+    validateParameters()
 
-    fastq_ch = 
-    Channel.fromPath("$params.fastq_path").first()
+    // print summary of supplied parameters
+    log.info paramsSummaryLog(workflow)
 
-    fasta_ch = 
-    Channel.fromPath("${params.fasta_path}/*.fasta")
-    .map { 
-         def meta = [:] 
-         meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-         [ meta, it ] 
-    }
+	// run metadata validation process
+	METADATA_VALIDATION ( 
 
-    // check if help parameter is set
-    if ( params.help == true ) {
-        PRINT_PARAMS_HELP()
-        exit 0
-    }
+		file(params.meta_path)
+	)
+    metadata_ch = METADATA_VALIDATION.out.tsv_Files
+        .flatten()
+		.map { 
+			meta = [id:it.getBaseName()] 
+			[ meta, it ] 
+		}
 
-    // run utility subworkflow
-    RUN_UTILITY()
+	// Generate the fasta annd fastq paths
+	reads_ch = 
+		METADATA_VALIDATION.out.tsv_Files
+		.flatten()
+		.splitCsv(header: true, sep: "\t")
+		.map { row ->
+			def trimFile = { path -> path && path.trim() ? file(path.trim()) : [] }
 
-    // run metadata validation process
-    METADATA_VALIDATION ( 
-        RUN_UTILITY.out,
-        params.meta_path
-    )
-    // todo: the names of these tsv_Files need to be from sample name not fasta file name 
-    metadata_ch = METADATA_VALIDATION.out.tsv_Files.flatten()
-    .map { 
-        def meta = [:] 
-        meta['id'] = it.getSimpleName()
-        [ meta, it ] 
-    }
+			def meta = [id: row.sample_name?.trim()]
+			def fasta_path = trimFile(row.fasta_path)
+			def fastq1 = trimFile(row.fastq_path_1)
+			def fastq2 = trimFile(row.fastq_path_2)
+			def nanopore = trimFile(row.nanopore_sra_file_path_1)
+			def gff = trimFile(row.gff_path)
 
-    // initialize files (stage and change names for files)
-    // CHECK_FILES (
-    //     RUN_UTILITY.out,
-    //     false,
-    //     false,
-    //     false,
-    //     METADATA_VALIDATION.out.tsv_dir)
+			return [meta, fasta_path, fastq1, fastq2, nanopore, gff]
+			}
 
-    // todo: check fasta_ch ids against metadata sample name, don't require fasta file name in metadata
-    // fasta_ch = CHECK_FILES.out.fasta_files.flatten()
-    // .map { 
-    //     def meta = [:] 
-    //     meta['id'] = it.getSimpleName()
-    //     [ meta, it ] 
-    // }
+	// Create initial submission channel
+	submission_ch = metadata_ch.join(reads_ch)
 
-    // check if the user wants to skip annotation or not
-    if ( params.annotation ) {
-        if ( params.virus && !params.bacteria ) {
-        // To Do remove liftoff only annotation from pipeline
-        // run liftoff annotation process (deprecated)
-            if ( params.liftoff ) {
-                LIFTOFF (
-                    RUN_UTILITY.out,
-                    params.meta_path, 
-                    params.fasta_path, 
-                    params.ref_fasta_path, 
-                    params.ref_gff_path 
-                )
-                liftoff_gff_ch = LIFTOFF.out.gff.collect().flatten()
-                .map { 
-                    def meta = [:] 
-                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                    [ meta, it ] 
-                }
-            }
+	if ( params.fetch_reports_only == false) {
+		// check if the user wants to skip annotation or not
+		if ( params.annotation ) {
+			// Remove user-provided gff, if present, from annotation input channel before performing annotation
+			submission_ch = submission_ch.map { elements ->
+				elements.take(6)  // Remove the last element (gff)
+				}
 
-            // run liftoff annotation process + repeatmasker 
-            if ( params.repeatmasker_liftoff ) {
-             // run repeatmasker annotation on files
-                REPEATMASKER_LIFTOFF (
-                    RUN_UTILITY.out, 
-                    fasta_ch
-                )
-                repeatmasker_gff_ch = REPEATMASKER_LIFTOFF.out.gff.collect().flatten()
-                .map { 
-                    def meta = [:] 
-                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                    [ meta, it ] 
-                }
+			if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
+				// run liftoff annotation process + repeatmasker 
+				if ( params.repeatmasker_liftoff && !params.vadr ) {
+					// run repeatmasker annotation on files
+					REPEATMASKER_LIFTOFF (
+						submission_ch
+					)
+					submission_ch = submission_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+				}
+				// run vadr processes
+				// todo: VADR fails when species == virus because it uses that flag to call the vadr_models files
+				if ( params.vadr ) {
+					RUN_VADR (
+						submission_ch
+					)
+					submission_ch = submission_ch.join(RUN_VADR.out.tbl) // meta.id, tsv, fasta, fastq1, fastq2, nanopore, tbl
+				}
+			}
+			else if (params.species == 'bacteria') {
+			// run bakta annotation process
+				if ( params.bakta ) {
+					RUN_BAKTA(
+						submission_ch
+					)
+					// set up submission channels
+					submission_ch = submission_ch
+					| join(RUN_BAKTA.out.gff) // meta.id, tsv, fasta, fastq1, fastq2, nanopore, gff
+					| map { meta, tsv, _, fq1, fq2, nnp, gff -> 
+						[meta, tsv, fq1, fq2, nnp, gff] } // drop original fasta
+					| join(RUN_BAKTA.out.fna) // join annotated fasta
+					| map { meta, tsv, fq1, fq2, nnp, gff, fasta -> 
+						[meta, tsv, fasta, fq1, fq2, nnp, gff] }  // meta.id, tsv, annotated fasta, fastq1, fastq2, nanopore, gff
+				}   
+			}
+		}
+	}
 
-            // set up submission channels
-            submission_ch = metadata_ch.join(fasta_ch)
-            submission_ch = submission_ch.join(repeatmasker_gff_ch)
-            }
-    
-            // run vadr processes
-            if ( params.vadr ) {
-                RUN_VADR (
-                    RUN_UTILITY.out, 
-                    fasta_ch
-                )
-                vadr_gff_ch = RUN_VADR.out.collect().flatten()
-                .map { 
-                    def meta = [:] 
-                    meta['id'] = it.getSimpleName().replaceAll('_reformatted', '')
-                    [ meta, it ] 
-                }
-            }
-        }
-        if ( params.bacteria ) {
-        // run bakta annotation process
-            if ( params.bakta == true ) {
-                RUN_BAKTA(
-                    RUN_UTILITY.out, 
-                    fasta_ch
-                )
-                // set up submission channels
-                bakta_gff_ch = RUN_BAKTA.out.gff3.flatten()
-                    .map { 
-                        def meta = [:] 
-                        meta['id'] = it.getSimpleName()
-                        [ meta, it ]
-                        }
-                submission_ch = metadata_ch.join(fasta_ch)
-                submission_ch = submission_ch.join(bakta_gff_ch)
-            }   
-        }
-    }
+	// run submission for the annotated samples 
+	if ( params.submission || params.fetch_reports_only || params.update_submission ) {
+		// pre submission process + get wait time (parallel)
+		GET_WAIT_TIME (
+			METADATA_VALIDATION.out.tsv_Files.collect() 
+		)
 
-    // run submission for the annotated samples 
-    if ( params.submission ) {
+		INITIAL_SUBMISSION (
+			submission_ch,  // meta.id, tsv, fasta, fastq1, fastq2, nanopore, gff
+			params.submission_config,  
+			GET_WAIT_TIME.out
+			)
 
-        // pre submission process + get wait time (parallel)
-        GET_WAIT_TIME (
-            METADATA_VALIDATION.out.tsv_Files.collect() 
-        )
-
-        // check if annotation is set to true 
-        if ( params.annotation ) {   
-            if (params.sra && params.genbank ) {                     // sra and genbank
-                INITIAL_SUBMISSION (
-                    submission_ch,  // meta.id, metadata_path, fasta, gff
-                    fastq_ch,
-                    params.submission_config,  
-                    GET_WAIT_TIME.out
-                    )
-                } 
-            else {      
-                if (! params.sra && params.genbank ) {               // only genebankk
-                    INITIAL_SUBMISSION ( 
-                        submission_ch,     // meta.id, metadata_path, fasta, gff
-                        fastq_ch,
-                        params.submission_config, 
-                        GET_WAIT_TIME.out
-                        )
-                    }
-                }
-        }
-        }
-        if ( !params.annotation && params.sra ) {        // no annotation only fastq submission
-            // submission_ch = metadata_ch
-    
-            // SUBMISSION_SRA ( submission_ch, fastq_ch, params.submission_config, params.req_col_config, '' )
-            
-            // // actual process to initiate wait 
-            // WAIT ( SUBMISSION_SRA.out.submission_files.collect(), GET_WAIT_TIME.out )
-
-            // // process for updating the submitted samples
-            // UPDATE_SUBMISSION ( WAIT.out, params.submission_config, SUBMISSION_SRA.out.submission_files, SUBMISSION_SRA.out.submission_log, '' )
-
-            // // combine the different upload_log csv files together 
-            // MERGE_UPLOAD_LOG ( UPDATE_SUBMISSION.out.submission_files.collect(), '' )
-
-
-            INITIAL_SUBMISSION (
-                metadata_ch,       // metadata_path
-                fastq_ch,
-                params.submission_config, 
-                GET_WAIT_TIME.out
-            )
-        } 
-        if ( !params.annotation && params.genbank ) {
-                // todo: make an error msg that follows the rest of the code protocol
-                throw new Exception("Cannot submit to GenBank without assembly and annotation files")
-        }
-
-        // To Do test update submission
-        if ( params.update_submission ) {
-            UPDATE_SUBMISSION (
-                RUN_UTILITY.out,
-                params.submission_config, 
-                params.submission_output
-            )
-        }
-        // combine the different upload_log csv files together 
-        if ( ! params.update_submission ) {
-            MERGE_UPLOAD_LOG ( 
-                INITIAL_SUBMISSION.out.submission_files.collect(), INITIAL_SUBMISSION.out.submission_log.collect(), 
-                '' )
-        }
-        else {
-            MERGE_UPLOAD_LOG ( 
-                UPDATE_SUBMISSION.out.submission_files.collect(), UPDATE_SUBMISSION.out.submission_log.collect(), 
-                ''
-            )
-        }
-
-        // To Do add Genbank / GISAID only submission
-    }
+		}
+	}
 

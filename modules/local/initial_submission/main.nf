@@ -1,36 +1,55 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                    RUNNING SUBMISSION
+                            RUNNING SUBMISSION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-process INITAL_SUBMISSION {
 
-    label 'main'
+process SUBMISSION {
 
-    publishDir "$params.output_dir/$params.submission_output_dir/$annotation_name", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
 
-    if ( params.run_conda == true ) {
-        try {
-            conda params.env_yml
-        } catch (Exception e) {
-            System.err.println("WARNING: Unable to use conda env from $params.env_yml")
-        }
-    }
+    conda(params.env_yml)
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(annotations_path)
-    path submission_config
-    path req_col_config
-    val annotation_name
+    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(nanopore), path(annotations_path), val(enabledDatabases)
+    path(submission_config)
+
+    when:
+    "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
 
     script:
-    """     
-    submission.py submit --genbank $params.genbank --sra $params.sra --gisaid $params.gisaid --biosample $params.biosample --organism $params.organism \
-                         --submission_dir ${task.workDir}  --submission_name ${validated_meta_path.getBaseName()} --config $submission_config  \
-                         --validated_meta_path $validated_meta_path --fasta_path $fasta_path --gff_path $annotations_path --table2asn true \
-                         --prod_or_test $params.submission_prod_or_test --req_col_config $req_col_config --update false --send_submission_email $params.send_submission_email
-    """
+    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+    def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
+    def biosample = params.biosample == true ? '--biosample' : ''
+    def sra = "sra" in enabledDatabases ? '--sra' : ''
+    def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
 
+    """   
+    echo "DEBUG: mainf.nf: enabledDatabases=${enabledDatabases}"
+    echo "DEBUG: mainf.nf: Params -> sra: $params.sra, genbank: $params.genbank, biosample: $params.biosample"
+    echo "DEBUG: mainf.nf: Submission Running for $meta.id"
+    echo "DEBUG: mainf.nf: Selected Databases: ${enabledDatabases[0]}"
+    submission_new.py \
+        --submit \
+        --submission_name $meta.id \
+        --config_file $submission_config  \
+        --metadata_file $validated_meta_path \
+        --species $params.species \
+        --output_dir  . \
+        ${fasta_path ? "--fasta_file $fasta_path" : ""} \
+        ${annotations_path ? "--annotation_file $annotations_path" : ""} \
+        ${fastq_1 ? "--fastq1 $fastq_1" : ""} \
+        ${fastq_2 ? "--fastq2 $fastq_2" : ""} \
+        ${nanopore ? "--nanopore $nanopore" : ""} \
+        --custom_metadata_file $params.custom_fields_file \
+        --submission_mode $params.submission_mode \
+        $test_flag \
+        $send_submission_email \
+        $genbank $sra $biosample 
+
+    """
     output:
-    path "$params.batch_name.${validated_meta_path.getBaseName()}", emit: submission_files 
+    tuple val(meta), path("${validated_meta_path.getBaseName()}"), emit: submission_files
 }

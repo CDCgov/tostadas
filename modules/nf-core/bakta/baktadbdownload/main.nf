@@ -1,13 +1,12 @@
 process BAKTADBDOWNLOAD {
 
-    conda (params.enable_conda ? "bioconda::bakta==1.9.1" : null)
+    conda("bioconda::bakta==1.9.4")
     container "${ workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bakta:1.8.2--pyhdfd78af_0' :
-        'quay.io/biocontainers/bakta:1.8.2--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/bakta:1.9.4--pyhdfd78af_0' :
+        'quay.io/biocontainers/bakta:1.9.4--pyhdfd78af_0' }"
 
     input: 
-    val signal
-
+    
     output:
     path "bakta_db/*"           , emit: db
 

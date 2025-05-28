@@ -23,10 +23,21 @@ def get_args():
     parser.add_argument("--refgff", type=str, help="Reference GFF to gather the ITR attributes and sample ID \n", required=True)
     parser.add_argument("--fasta", type=str, help="FASTA file for sample \n", required=True)
     parser.add_argument("--outdir", type=str, default=".", help="Output directory, defualt is current directory")
+    parser.add_argument("--sample_name", type=str, default=".", help="Sample name")
         
     args = parser.parse_args()
         
     return args
+
+def count_rows_starting_with_comment(file_path):
+    count = 0
+    with open(file_path, 'r') as file:
+        for line in file:
+            if line.startswith('#'):
+                count += 1
+            else:
+                break  # Stop counting once a line is encountered that doesn't start with '#'
+    return count
 
 def annotation_main():
     """ Main function for calling the annotation transfer pipeline
@@ -44,18 +55,23 @@ def annotation_main():
     headerList = ['seq_id', 'source', 'type', 'start', 'end', 'score', 'strand', 'phase', 'attributes']
     
     #####GATHER REF INFO#####
-
     #load in repeatmasker gff skip commented lines that dont belong in dataframe
-    ref_gff = pd.read_csv(args.refgff, delimiter='\t', skip_blank_lines=True, names=headerList, comment='#')
+    #ref_gff = pd.read_csv(args.refgff, delimiter='\t', skip_blank_lines=True, names=headerList, comment='#')
+    ref_gff = pd.read_csv(args.refgff, delimiter='\t', skip_blank_lines=True, names=headerList, skiprows=count_rows_starting_with_comment(args.refgff))
+    
     #gather ref sample id
     ref_id=ref_gff['seq_id'][0]
+    print(f'refgff is {args.refgff}')
+    #print(ref_gff.head())
     #gather index of attributes for first and second ITRs; needed for repeatmasker ITR attributes
-    first_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR")].index[0]
-    last_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR")].index[-1]
+    #print(ref_gff[ref_gff['attributes'][0]])
+    first_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR",na=False)].index[0]
+    last_ITR_index=ref_gff[ref_gff['attributes'].str.contains("ITR",na=False)].index[-1]
+    print(first_ITR_index,last_ITR_index)
     #gather the acutal attributes from the index
     first_ITR_refattr=ref_gff.loc[first_ITR_index,'attributes']
     last_ITR_refattr=ref_gff.loc[last_ITR_index,'attributes']
-
+    print(first_ITR_refattr, last_ITR_refattr)
     #####RUN MAIN PROCESS#####
 
     repMannotation_prep = RepeatMasker_Annotations(args.repeatm_gff, headerList, first_ITR_refattr, last_ITR_refattr, args.outdir)
@@ -63,10 +79,10 @@ def annotation_main():
     #samp_name=repMannotation_prep.sample_info()[0]
     #repMannotation_prep.repM_prep_main()
     
-    LOannotation_prep=Liftoff_Annotations(args.liftoff_gff, headerList, samp_name, args.outdir)
+    LOannotation_prep=Liftoff_Annotations(args.liftoff_gff, headerList, args.sample_name, args.outdir)
     #LOannotation_prep.LO_prep_main()
     #repMannotation_prep.sample_info()
-    new_gff=concat_gffs(args.liftoff_gff, repMannotation_prep.repM_prep_main(), LOannotation_prep.LO_prep_main(), ref_id, samp_name, args.outdir)
+    new_gff=concat_gffs(args.liftoff_gff, repMannotation_prep.repM_prep_main(), LOannotation_prep.LO_prep_main(), ref_id, args.sample_name, args.outdir)
     
     new_gff.concat_LO_RM()
    
@@ -74,7 +90,7 @@ def annotation_main():
     main_util=MainUtility()
     main_util.gff2tbl(
         samp_name=samp_name,
-        gff_loc=f"{args.outdir}/{samp_name}_reformatted.gff",
+        gff_loc=f"{args.outdir}/{args.sample_name}_reformatted.gff",
         tbl_output=f"{args.outdir}/"
     )
 
@@ -121,7 +137,7 @@ class RepeatMasker_Annotations:
         
     def cleanup_repeat_masker_gff(self):
         #load in repeatmasker gff skip the first two lines that dont belong in dataframe
-        rem_gff = pd.read_csv(self.repeatMGFF, delimiter='\t', skip_blank_lines=True, names=self.headerList, comment='#')
+        rem_gff = pd.read_csv(self.repeatMGFF, delimiter='\t', skip_blank_lines=True, names=self.headerList, skiprows=count_rows_starting_with_comment(self.repeatMGFF))
         #correct repeat region labels; repeatmasker labels repeat regions as dispersed_repeat 
         rem_gff['type'] = rem_gff['type'].replace({'dispersed_repeat': 'repeat_region'}, regex=True)
         
@@ -149,7 +165,7 @@ class RepeatMasker_Annotations:
         rem_gff=rem_gff[~rem_gff["attributes"].str.contains("Target", regex=True)]
         
         return rem_gff
-
+        
     def check_itr(self, rem_gff):
         """ For checking all ITR information is present and correct... raises flags and writes errors
         """
@@ -169,7 +185,7 @@ class RepeatMasker_Annotations:
         if rem_gff.loc[self.first_ITR,'start'] !=1:
             error = f"First repeat region coordinates does not start at 1: ({first_region_coord1}, {first_region_coord2}) in {self.samp_name} gff"
             itr_errors.append(error)
-        # change the ITR to start at 1
+            # change the ITR to start at 1
             rem_gff.loc[self.first_ITR,'start'] = 1
 
         # Check that the final coordinate in the second ITR extends to the end, if not output so in errors file
@@ -213,7 +229,7 @@ class Liftoff_Annotations:
         fields_to_drop = ['coverage', 'sequence_ID', 'matches_ref_protein', 'valid_ORF', 'valid_ORFs', 'extra_copy_number',
                               'copy_num_ID', 'pseudogene', 'partial_mapping', 'low_identity']
         #load in liftoff gff with same headers as Repeatmasker and skip commented lines at dont belong to dataframe
-        lo_gff = pd.read_csv(self.liftoffGFF, delimiter='\t', skip_blank_lines=True, names=self.headerList, comment='#')
+        lo_gff = pd.read_csv(self.liftoffGFF, delimiter='\t', skip_blank_lines=True, names=self.headerList, skiprows=count_rows_starting_with_comment(self.liftoffGFF))
         
         #run function to find and drop fields in attributes
         lo_gff['attributes']=lo_gff['attributes'].apply(lambda row : self.fix_attributes(fields_to_drop, row))
