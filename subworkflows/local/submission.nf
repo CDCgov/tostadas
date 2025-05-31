@@ -6,7 +6,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { SUBMISSION                                    } from '../../modules/local/initial_submission/main'
+include { PREP_SUBMISSION                               } from '../../modules/local/prep_submission/main'
+include { SUBMIT_SUBMISSION                             } from '../../modules/local/submit_submission/main'
 include { FETCH_SUBMISSION                              } from '../../modules/local/fetch_submission/main'
 include { UPDATE_SUBMISSION                             } from '../../modules/local/update_submission/main'
 include { AGGREGATE_REPORTS                             } from '../../modules/local/aggregate_reports/main'
@@ -51,8 +52,10 @@ workflow INITIAL_SUBMISSION {
 
         } else {
             if (params.update_submission == false) {
-                SUBMISSION(submission_ch, submission_config_file)
+                PREP_SUBMISSION(submission_ch, submission_config_file)
                     .set { submission_files }
+
+                SUBMIT_SUBMISSION(submission_files, submission_config_file)
             
                 submission_ch.join(submission_files)
                     .map { meta, samples, enabledDatabases, submission_folder ->
