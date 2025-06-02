@@ -219,6 +219,7 @@ class GetParams:
 		parser.add_argument("--biosample", help="Optional flag to run BioSample submission", action="store_const", default=False, const=True)
 		parser.add_argument("--sra", help="Optional flag to run SRA submission", action="store_const", default=False, const=True)
 		parser.add_argument("--gisaid", help="Optional flag to run GISAID submission", action="store_const", default=False, const=True)
+		parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
 		return parser
 	
 class SubmissionConfigParser:
