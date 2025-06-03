@@ -25,13 +25,9 @@
 /.nextflow/
 /.nextflow.log*
 /nf_test_results
-/tests/work
 /var_work/
 /var_work
 app/environment.yml
-/tests/.nextflow
-/tests/.nextflow
-/tests/.nextflow.log*
 /submission_scripts/upload_log.csv
 
 /bin/.nextflow
@@ -77,8 +73,6 @@ tests/__pycache__
 
 # add aspen related stuff
 /aspen/.nextflow.log*
-
-/tests/nf_test_results
 
 /input_files/
 /input_files
