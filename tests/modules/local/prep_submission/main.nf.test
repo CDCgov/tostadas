@@ -1,0 +1,58 @@
+nextflow_process {
+
+    name "Test Process PREP_SUBMISSION"
+    script "modules/local/prep_submission/main.nf"
+    process "PREP_SUBMISSION"
+
+    test("Run with profile test, virus | biosample") {
+
+        when {
+            params {
+                // define gold standard output(s) for comparison
+                gs_biosample_xml = "${projectDir}/modules/local/prep_submission/tests/submission_biosample.xml"
+                // define parameters here
+                submission_name = "batch_1"
+                metadata_file = "${projectDir}/modules/local/prep_submission/tests/batch_1.tsv"
+                identifier = "mpxv_test_metadata"
+                species = "virus"
+                output_dir = "${outputDir}/tests" 
+                submission_mode = "ftp"
+                test = true
+                send_submission_email = false
+                biosample = true
+                sra = true
+                genbank = false
+            }
+
+            process {
+                """
+                // define inputs of the process here
+                input[0] = [ [id: 'batch_1', batch_tsv: $params.metadata_file], 
+                             [ [sample_id: 'NY0006', fq1: ${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz, fq2: ${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz, fasta: ${projectDir}/assets/sample_fastas/mpox/NY0006.fasta", nnp: null, gff: null], 
+                               [sample_id: 'NY0007', fq1: ${projectDir}/assets/sample_fastqs/mpox/2022-029-7670_S4_L001_R1_001.fastq.gz, fq2: ${projectDir}/assets/sample_fastqs/mpox/2022-029-7670_S4_L001_R2_001.fastq.gz, fasta: ${projectDir}/assets/sample_fastas/mpox/NY0007.fasta", nnp: null, gff: null]
+                             ], 
+                             [biosample] ]
+                input[1] = path("${projectDir}/conf/submission_config.yaml")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def actualXml = output.path("biosample/submission.xml").toFile()
+            def actualJson = output.path("biosample/submission.json").toFile()
+            def goldJson = output.path("gold_standard.json").toFile()
+
+            // Convert actual output XML to JSON
+            def convertActual = "tools/xml_to_json.py ${actualXml} ${actualJson}".execute()
+            assert convertActual.waitFor() == 0
+
+            // Convert gold XML to JSON
+            def convertGold = "tools/xml_to_json.py ${gs_biosample_xml} ${goldJson}".execute()
+            assert convertGold.waitFor() == 0
+
+            assert snapshot(actualJson, goldJson).match()
+        }
+    }
+}

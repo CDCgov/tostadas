@@ -1,0 +1,37 @@
+nextflow_process {
+
+    name "Test Process SUBMISSION"
+    script "modules/local/submit_submission/main.nf"
+    process "SUBMISSION"
+
+    test("Run with profile test, virus | biosample") {
+
+        when {
+            params {
+                // define gold standard output(s) for comparison
+                gs_biosample_xml = "${projectDir}/modules/local/prep_submission/tests/submission_biosample.xml"
+                // define parameters here
+                submission_name = "batch_1"
+                identifier = "mpxv_test_metadata"
+                submission_mode = "ftp"
+                test = true
+                send_submission_email = false
+                dryrun = true
+            }
+
+            process {
+                """
+                // define inputs of the process here
+                input[0] = path("${params.submission_name}")
+                input[1] = path("${projectDir}/conf/submission_config.yaml")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            // todo: add more tests
+
+        }
+    }
+}

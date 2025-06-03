@@ -1,0 +1,303 @@
+{
+  "Submission": {
+    "Action": [
+      {
+        "AddData": {
+          "@target_db": "BioSample",
+          "Data": {
+            "@content_type": "xml",
+            "XmlContent": {
+              "BioSample": {
+                "@schema_version": "2.0",
+                "Attributes": {
+                  "Attribute": [
+                    {
+                      "#text": "MPXV_USA_2022_IL0005",
+                      "@attribute_name": "isolate"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "host_disease"
+                    },
+                    {
+                      "#text": "Homo sapiens",
+                      "@attribute_name": "host"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "collected_by"
+                    },
+                    {
+                      "#text": "na",
+                      "@attribute_name": "lat_lon"
+                    },
+                    {
+                      "#text": "USA: IL",
+                      "@attribute_name": "geo_loc_name"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "sample_type"
+                    },
+                    {
+                      "#text": "2022-06",
+                      "@attribute_name": "collection_date"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "isolation_source"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "host_age"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "host_sex"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "race"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "ethnicity"
+                    }
+                  ]
+                },
+                "BioProject": {
+                  "PrimaryId": {
+                    "#text": "PRJNA849962",
+                    "@db": "BioProject"
+                  }
+                },
+                "Descriptor": {
+                  "Title": "Test Monkeypoxvirus"
+                },
+                "Organism": {
+                  "OrganismName": "Monkeypox Virus"
+                },
+                "Package": "Pathogen.cl.1.0",
+                "SampleId": {
+                  "SPUID": {
+                    "#text": "MPXV_USA_2022_IL0005",
+                    "@spuid_namespace": "POX"
+                  }
+                }
+              }
+            }
+          },
+          "Identifier": {
+            "SPUID": {
+              "#text": "MPXV_USA_2022_IL0005",
+              "@spuid_namespace": "POX"
+            }
+          }
+        }
+      },
+      {
+        "AddData": {
+          "@target_db": "BioSample",
+          "Data": {
+            "@content_type": "xml",
+            "XmlContent": {
+              "BioSample": {
+                "@schema_version": "2.0",
+                "Attributes": {
+                  "Attribute": [
+                    {
+                      "#text": "MPXV_USA_2022_NY0006",
+                      "@attribute_name": "isolate"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "host_disease"
+                    },
+                    {
+                      "#text": "Homo sapiens",
+                      "@attribute_name": "host"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "collected_by"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "lat_lon"
+                    },
+                    {
+                      "#text": "USA: NY",
+                      "@attribute_name": "geo_loc_name"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "sample_type"
+                    },
+                    {
+                      "#text": "2022-06",
+                      "@attribute_name": "collection_date"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "isolation_source"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "host_age"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "host_sex"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "race"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "ethnicity"
+                    }
+                  ]
+                },
+                "BioProject": {
+                  "PrimaryId": {
+                    "#text": "PRJNA849962",
+                    "@db": "BioProject"
+                  }
+                },
+                "Descriptor": {
+                  "Title": "Test Monkeypoxvirus"
+                },
+                "Organism": {
+                  "OrganismName": "Monkeypox Virus"
+                },
+                "Package": "Pathogen.cl.1.0",
+                "SampleId": {
+                  "SPUID": {
+                    "#text": "MPXV_USA_2022_NY0006",
+                    "@spuid_namespace": "POX"
+                  }
+                }
+              }
+            }
+          },
+          "Identifier": {
+            "SPUID": {
+              "#text": "MPXV_USA_2022_NY0006",
+              "@spuid_namespace": "POX"
+            }
+          }
+        }
+      },
+      {
+        "AddData": {
+          "@target_db": "BioSample",
+          "Data": {
+            "@content_type": "xml",
+            "XmlContent": {
+              "BioSample": {
+                "@schema_version": "2.0",
+                "Attributes": {
+                  "Attribute": [
+                    {
+                      "#text": "MPXV_USA_2022_NY0007",
+                      "@attribute_name": "isolate"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "host_disease"
+                    },
+                    {
+                      "#text": "Homo sapiens",
+                      "@attribute_name": "host"
+                    },
+                    {
+                      "#text": "Not provided",
+                      "@attribute_name": "collected_by"
+                    },
+                    {
+                      "#text": "N/a",
+                      "@attribute_name": "lat_lon"
+                    },
+                    {
+                      "#text": "USA: NY",
+                      "@attribute_name": "geo_loc_name"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "sample_type"
+                    },
+                    {
+                      "#text": "2022-06",
+                      "@attribute_name": "collection_date"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "isolation_source"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "host_age"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "host_sex"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "race"
+                    },
+                    {
+                      "#text": "Not Provided",
+                      "@attribute_name": "ethnicity"
+                    }
+                  ]
+                },
+                "BioProject": {
+                  "PrimaryId": {
+                    "#text": "PRJNA849962",
+                    "@db": "BioProject"
+                  }
+                },
+                "Descriptor": {
+                  "Title": "Test Monkeypoxvirus"
+                },
+                "Organism": {
+                  "OrganismName": "Monkeypox Virus"
+                },
+                "Package": "Pathogen.cl.1.0",
+                "SampleId": {
+                  "SPUID": {
+                    "#text": "MPXV_USA_2022_NY0007",
+                    "@spuid_namespace": "POX"
+                  }
+                }
+              }
+            }
+          },
+          "Identifier": {
+            "SPUID": {
+              "#text": "MPXV_USA_2022_NY0007",
+              "@spuid_namespace": "POX"
+            }
+          }
+        }
+      }
+    ],
+    "Description": {
+      "Comment": "Batch submission",
+      "Organization": {
+        "@role": "owner",
+        "@type": "institute",
+        "Contact": {
+          "@email": "test@cdc.gov",
+          "Name": {
+            "First": "John",
+            "Last": "Doe"
+          }
+        },
+        "Name": "CDC"
+      }
+    }
+  }
+}
