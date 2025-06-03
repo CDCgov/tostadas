@@ -21,6 +21,7 @@ process SUBMISSION {
     script:
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
+    def dry_run = params.dry_run == true ? '--dry_run' : ''
 
     // Use a clean subdirectory as the output directory
     def outdir = "submission_output_${meta.batch_id}"
@@ -34,6 +35,7 @@ process SUBMISSION {
         --submission_mode $params.submission_mode \
         $test_flag \
         $send_submission_email \
+        $dry_run \
     """
 
     output:
