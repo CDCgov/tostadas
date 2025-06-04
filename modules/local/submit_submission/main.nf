@@ -35,7 +35,7 @@ process SUBMISSION {
         --submission_mode $params.submission_mode \
         $test_flag \
         $send_submission_email \
-        $dry_run \
+        $dry_run 
     """
 
     output:
