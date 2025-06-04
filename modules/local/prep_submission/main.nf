@@ -4,7 +4,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-process SUBMISSION {
+process PREP_SUBMISSION {
 
     publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}",
            mode: 'copy',
