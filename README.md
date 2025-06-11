@@ -57,7 +57,7 @@ vim conf/submission_config.yaml
 ### 5. Run the workflow with default parameters and the local run environment:
 ```
 # test command for virus reads
-nextflow run main.nf -profile test,<singularity|docker|conda> --virus
+nextflow run main.nf -profile test,<singularity|docker|conda> --species virus
 ```
 The pipeline outputs appear in `tostadas/test_output`
 
