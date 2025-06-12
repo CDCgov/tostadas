@@ -6,22 +6,18 @@ nextflow_process {
 
     test("Run with profile test, virus | biosample") {
 
-        when {
+                when {
             params {
-                // define gold standard output(s) for comparison
-                gs_biosample_xml = "${projectDir}/modules/local/prep_submission/tests/submission_biosample.xml"
                 // define parameters here
-                submission_name = "batch_1"
-                metadata_file = "${projectDir}/modules/local/prep_submission/tests/batch_1.tsv"
-                identifier = "mpxv_test_metadata"
-                species = "virus"
-                output_dir = "${outputDir}/tests" 
-                submission_mode = "ftp"
-                test = true
+                submission_prod_or_test = "test"
                 send_submission_email = false
                 biosample = true
-                sra = true
-                genbank = false
+                species = "virus"
+                submission_mode = "ftp"
+                output_dir = "${outputDir}"
+                submission_output_dir = "submission"
+                metadata_basename = "batch_1"
+                overwrite_output = true
             }
 
             process {
@@ -40,19 +36,15 @@ nextflow_process {
         then {
             assert process.success
 
+            assert snapshot(xmlToJson.xmlToJson(process.out.submission_files)),
+                   snapshot(xmlToJson.xmlToJson("${projectDir}/tests/modules/local/prep_submission")
+            ).match()
+
             def actualXml = output.path("biosample/submission.xml").toFile()
             def actualJson = output.path("biosample/submission.json").toFile()
             def goldJson = output.path("gold_standard.json").toFile()
 
-            // Convert actual output XML to JSON
-            def convertActual = "tools/xml_to_json.py ${actualXml} ${actualJson}".execute()
-            assert convertActual.waitFor() == 0
 
-            // Convert gold XML to JSON
-            def convertGold = "tools/xml_to_json.py ${gs_biosample_xml} ${goldJson}".execute()
-            assert convertGold.waitFor() == 0
-
-            assert snapshot(actualJson, goldJson).match()
         }
     }
 }
