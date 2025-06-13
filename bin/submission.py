@@ -10,18 +10,21 @@ def get_args():
 	parser = argparse.ArgumentParser(
 		description="Upload all prepared submissions under a folder to NCBI FTP/SFTP"
 	)
-	#p.add_argument("prepared_folder",
-	#			   help="Top-level folder containing biosample/, sra/, genbank/ subfolders")
-	parser.add_argument("--config_file", required=True,
-				   help="Your same NCBI creds/config YAML")
 	parser.add_argument("--submission_folder", required=True,
 				   help="Top-level folder containing biosample/, sra/, genbank/ subfolders")
 	parser.add_argument("--submission_name",
-				   help="for genbank path under prepared_folder/genbank")
+				   help="Name of the batch")
+	parser.add_argument("--config_file", required=True,
+				   help="Your same NCBI creds/config YAML")
+	parser.add_argument("--identifier", required=True,
+				   help="Original metadata file prefix as unique identifier for NCBI FTP site folder name")
 	parser.add_argument("--submission_mode", choices=['ftp','sftp'], default='ftp')
 	parser.add_argument("--test", action="store_true",
 				   help="Upload under Test instead of Production")
-	parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
+	parser.add_argument("--send_email", required=False, 
+				   help="Whether to send the ASN.1 file after running table2asn", action="store_const", default=False, const=True)
+	parser.add_argument("--dry_run", action="store_true", 
+				   help="Print what would be uploaded but don't connect or transfer files")
 	return parser
 
 def main_submit():
@@ -31,7 +34,7 @@ def main_submit():
 	# load parameters and credentials
 	config = SubmissionConfigParser(params).load_config()
 	client = SFTPClient(config) if params['submission_mode']=='sftp' else FTPClient(config)
-	root = params['prepared_folder']
+	root = params['submission_folder']
 	mode = 'Test' if params['test'] else 'Production'
 
 	for dirpath, _, files in os.walk(root):

@@ -29,10 +29,11 @@ process SUBMIT_SUBMISSION {
     """
     mkdir -p ${outdir} &&
     submission.py \
+        --submission_folder ${submission_files} \
         --submission_name ${meta.batch_id} \
-        --config_file $submission_config  \
+        --config_file ${submission_config}  \
         --identifier ${params.metadata_basename} \
-        --submission_mode $params.submission_mode \
+        --submission_mode ${params.submission_mode} \
         $test_flag \
         $send_submission_email \
         $dry_run 
