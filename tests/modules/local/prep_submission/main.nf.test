@@ -40,11 +40,6 @@ nextflow_process {
                    snapshot(xmlToJson.xmlToJson("${projectDir}/tests/modules/local/prep_submission")
             ).match()
 
-            def actualXml = output.path("biosample/submission.xml").toFile()
-            def actualJson = output.path("biosample/submission.json").toFile()
-            def goldJson = output.path("gold_standard.json").toFile()
-
-
         }
     }
 }
