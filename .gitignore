@@ -36,13 +36,11 @@ app/environment.yml
 
 /submission_scripts/__pycache__/
 /submission_scripts/upload_log.csv
-tests/__pycache__
 /work
 /mpxv-database-submissions-master
 /aspen_test_results
 /aspen/runs
 /aspen/latest_run
-/test*
 
 # vadr related 
 /vadr
