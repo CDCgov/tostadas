@@ -28,7 +28,7 @@ process SUBMIT_SUBMISSION {
 
     """
     mkdir -p ${outdir} &&
-    submission.py 
+    submission.py \
         --submission_name ${meta.batch_id} \
         --config_file $submission_config  \
         --identifier ${params.metadata_basename} \

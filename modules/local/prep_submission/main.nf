@@ -48,7 +48,7 @@ process PREP_SUBMISSION {
 
     """
     mkdir -p ${outdir} &&
-    submission_prep.py 
+    submission_prep.py \
         --submission_name ${meta.batch_id} \
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
