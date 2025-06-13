@@ -6,7 +6,7 @@ nextflow_process {
 
     test("Run with profile test, virus | biosample") {
 
-                when {
+        when {
             params {
                 // define parameters here
                 submission_prod_or_test = "test"
@@ -16,14 +16,14 @@ nextflow_process {
                 submission_mode = "ftp"
                 output_dir = "${outputDir}"
                 submission_output_dir = "submission"
-                metadata_basename = "batch_1"
+                metadata_basename = "mpxv_test_metadata"
                 overwrite_output = true
             }
 
             process {
                 """
                 // define inputs of the process here
-                input[0] = [ [id: 'batch_1', batch_tsv: $params.metadata_file], 
+                input[0] = [ [id: 'batch_1', batch_tsv: "${projectDir}/tests/modules/local/prep_submission/batch_1.tsv"], 
                              [ [sample_id: 'NY0006', fq1: ${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz, fq2: ${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz, fasta: ${projectDir}/assets/sample_fastas/mpox/NY0006.fasta", nnp: null, gff: null], 
                                [sample_id: 'NY0007', fq1: ${projectDir}/assets/sample_fastqs/mpox/2022-029-7670_S4_L001_R1_001.fastq.gz, fq2: ${projectDir}/assets/sample_fastqs/mpox/2022-029-7670_S4_L001_R2_001.fastq.gz, fasta: ${projectDir}/assets/sample_fastas/mpox/NY0007.fasta", nnp: null, gff: null]
                              ], 
@@ -36,14 +36,9 @@ nextflow_process {
         then {
             assert process.success
 
-            assert snapshot(xmlToJson.xmlToJson(process.out.submission_files)),
-                   snapshot(xmlToJson.xmlToJson("${projectDir}/tests/modules/local/prep_submission")
-            ).match()
-
-            def actualXml = output.path("biosample/submission.xml").toFile()
-            def actualJson = output.path("biosample/submission.json").toFile()
-            def goldJson = output.path("gold_standard.json").toFile()
-
+            assert snapshot(xmlToJson.xmlToJson(git "${process.out.submission_files}/biosample/submission.xml")),
+                   snapshot(xmlToJson.xmlToJson("${projectDir}/tests/modules/local/prep_submission/submission_biosample.xml"))
+                    .match()
 
         }
     }
