@@ -15,7 +15,7 @@ nextflow_process {
                 species = "virus"
                 submission_mode = "ftp"
                 output_dir = "${outputDir}" // (?: what does this NF variable resolve to?  surely not $params.output_dir?)
-                metadata_basename = "mpxv_test_metadata"
+                metadata_basename = "mpxv_test_metadata" // (?: is this taking the place of my global variable?)
                 overwrite_output = true
             }
 
@@ -37,7 +37,7 @@ nextflow_process {
             assert process.success
             // check that this run's submission.xml is the same as the last one (?: what I've passed is not a channel, the channel is a folder so can I use that or is it too complex)
             assert snapshot(xmlToJson.xmlToJson(git "${process.out.submission_files}/biosample/submission.xml")).match()
-            
+
         }
     }
 }

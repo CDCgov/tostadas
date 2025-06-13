@@ -8,21 +8,20 @@ nextflow_process {
 
         when {
             params {
-                // define gold standard output(s) for comparison
-                gs_biosample_xml = "${projectDir}/modules/local/prep_submission/tests/submission_biosample.xml"
                 // define parameters here
-                submission_name = "batch_1"
-                identifier = "mpxv_test_metadata"
-                submission_mode = "ftp"
-                test = true
+                submission_prod_or_test = "test"
                 send_submission_email = false
-                dryrun = true
+                submission_mode = "ftp"
+                output_dir = "${outputDir}" // (?: what does this NF variable resolve to?  surely not $params.output_dir?)
+                metadata_basename = "mpxv_test_metadata"
+                overwrite_output = true
+                dryrun = true // (?: not exactly sure how to make this work)
             }
 
             process {
                 """
                 // define inputs of the process here
-                input[0] = path("${params.submission_name}")
+                input[0] = path("${projectDir}/tests/modules/local/prep_submission/batch_1/")
                 input[1] = path("${projectDir}/conf/submission_config.yaml")
                 """
             }
