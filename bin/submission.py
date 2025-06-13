@@ -49,13 +49,13 @@ def main_submit():
 			database = parts[0]                               
 			platform = parts[1] if len(parts) > 1 else None    
 			# Build a “flattened” remote base folder: <identifier>_<submission_name>_<database>[_<platform>]
-			base_folder = f"{args['identifier']}_{args['submission_name']}_{database}"
+			base_folder = f"{params['identifier']}_{params['submission_name']}_{database}"
 			if platform:
 				base_folder += f"_{platform}"
 			# Final remote directory: submit/<Test|Production>/<that_flattened_folder>
 			remote_dir = f"submit/{mode}/{base_folder}"
-			if args['dry_run']:
-				print(f"[DRY-RUN] Would connect to {args['submission_mode'].upper()} and upload to: {remote_dir}")
+			if params['dry_run']:
+				print(f"[DRY-RUN] Would connect to {params['submission_mode'].upper()} and upload to: {remote_dir}")
 				for fname in files:
 					local = os.path.join(dirpath, fname)
 					print(f"[DRY-RUN]   Would upload {local} → {remote_dir}/{fname}")
