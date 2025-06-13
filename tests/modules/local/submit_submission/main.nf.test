@@ -29,7 +29,7 @@ nextflow_process {
 
         then {
             assert process.success
-            // todo: add more tests
+            // todo: add a test of the dry run output
 
         }
     }
