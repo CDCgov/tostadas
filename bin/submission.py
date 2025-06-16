@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import os
 import argparse
-from submission_helper import SubmissionConfigParser, FTPClient, SFTPClient
+import logging
+from submission_helper import SubmissionConfigParser, FTPClient, SFTPClient, setup_logging
 
 def get_args():
 	""" Expected args from user and default values associated with them
@@ -31,12 +32,15 @@ def main_submit():
 	args = get_args().parse_args()
 	params = vars(args)
 	
+	setup_logging(log_file=f'{params["submission_folder"]}/submission.log', level=logging.DEBUG)
+
 	# load parameters and credentials
 	config = SubmissionConfigParser(params).load_config()
 	client = SFTPClient(config) if params['submission_mode']=='sftp' else FTPClient(config)
 	root = params['submission_folder']
 	mode = 'Test' if params['test'] else 'Production'
 
+	# Loop through all the repositories in the batch folder and submit them
 	for dirpath, _, files in os.walk(root):
 		# Only consider directories that have both submission.xml and submit.ready
 		if dirpath == root:
@@ -47,7 +51,7 @@ def main_submit():
 			# Split into [database] or [database, platform]
 			parts = rel.split(os.sep)
 			database = parts[0]                               
-			platform = parts[1] if len(parts) > 1 else None    
+			platform = parts[1] if len(parts) > 1 else None  
 			# Build a “flattened” remote base folder: <identifier>_<submission_name>_<database>[_<platform>]
 			base_folder = f"{params['identifier']}_{params['submission_name']}_{database}"
 			if platform:
@@ -55,10 +59,12 @@ def main_submit():
 			# Final remote directory: submit/<Test|Production>/<that_flattened_folder>
 			remote_dir = f"submit/{mode}/{base_folder}"
 			if params['dry_run']:
+				logging.info(f"[DRY-RUN] Would connect to {params['submission_mode'].upper()} and upload to: {remote_dir}")
 				print(f"[DRY-RUN] Would connect to {params['submission_mode'].upper()} and upload to: {remote_dir}")
 				for fname in files:
 					local = os.path.join(dirpath, fname)
-					print(f"[DRY-RUN]   Would upload {local} → {remote_dir}/{fname}")
+					logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
+					print(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
 			else:
 				client.connect()
 				client.make_dir(remote_dir)
@@ -69,6 +75,7 @@ def main_submit():
 				client.close()
 		else:
 			# This line is purely informational; remove or comment out if you don't want “skip” messages
+			logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
 			print(f"[SKIP] {dirpath} does not contain both submission.xml and submit.ready")
 
 

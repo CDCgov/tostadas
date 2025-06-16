@@ -25,6 +25,7 @@ workflow INITIAL_SUBMISSION {
         // Declare channels to dynamically handle conditional process outputs
         Channel.empty().set { submission_files } // Default for SUBMISSION output
         Channel.empty().set { update_files } // Default for UPDATE_SUBMISSION output
+        Channel.empty().set { all_report_csvs } // Default empty output for optional emission
 
         WAIT(wait_time)
 
@@ -63,16 +64,18 @@ workflow INITIAL_SUBMISSION {
                     }
                     .set {submission_with_folder}
 
-                FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config_file )
+                if (params.dry_run == false) {
+                    FETCH_SUBMISSION ( WAIT.out, submission_with_folder, submission_config_file )
 
-                // Collect all fetched per-batch CSV reports
-                FETCH_SUBMISSION.out.submission_report
-                    .collect()
-                    .set { all_report_csvs }
+                    // Collect all fetched per-batch CSV reports
+                    FETCH_SUBMISSION.out.submission_report
+                        .collect()
+                        .set { all_report_csvs }
 
-                // Aggregate all of them
-                AGGREGATE_REPORTS(all_report_csvs)
-                } 
+                    // Aggregate all of them
+                    AGGREGATE_REPORTS(all_report_csvs)
+                    }
+            } 
 
             //if (params.update_submission == true) {
             //    UPDATE_SUBMISSION(submission_ch, submission_config_file)  
@@ -81,7 +84,7 @@ workflow INITIAL_SUBMISSION {
         } 
 
     emit:
-        all_report_csvs = all_report_csvs
+        all_report_csvs = all_report_csvs // Optional: may be empty if dry_run=true
         //submission_files = submission_files
         //update_files = update_files
         //fetched_reports = fetched_reports

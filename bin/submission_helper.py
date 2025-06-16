@@ -6,10 +6,10 @@ from datetime import datetime
 import argparse
 import yaml
 import json
+import logging
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom  # Import minidom for pretty-printing
 import math  # Required for isnan check
-import csv
 import time
 import shlex
 import subprocess
@@ -22,6 +22,17 @@ from zipfile import ZipFile
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+
+def setup_logging(log_file="submission.log", level=logging.INFO):
+    if not logging.getLogger().handlers:
+        logging.basicConfig(
+            level=level,
+            format="%(asctime)s [%(levelname)s] %(message)s",
+            handlers=[
+                logging.FileHandler(log_file),
+                logging.StreamHandler()
+            ]
+        )
 
 def get_compound_extension(filename):
 	"""Return the full extension (up to 2 suffixes) of a file, like '.fastq.gz'."""
