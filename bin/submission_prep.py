@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+import sys
 import pandas as pd
 from submission_helper import (
 	GetParams,
@@ -8,8 +9,28 @@ from submission_helper import (
 	Sample,
 	BiosampleSubmission,
 	SRASubmission,
-	GenbankSubmission
+	GenbankSubmission,
+	get_compound_extension
 )
+
+def prepare_sra_fastqs(samples, outdir, copy=False):
+	for sample in samples:
+		if sample.fastq1 and sample.fastq2:
+			ext1 = get_compound_extension(sample.fastq1)
+			ext2 = get_compound_extension(sample.fastq2)
+			dest_fq1 = os.path.join(outdir, f"{sample.sample_id}_R1{ext1}")
+			dest_fq2 = os.path.join(outdir, f"{sample.sample_id}_R2{ext2}")
+			print(f"{dest_fq1}, {dest_fq2}")
+			if not os.path.exists(dest_fq1):
+				if copy:
+					shutil.copy(sample.fastq1, dest_fq1)
+				else:
+					os.symlink(sample.fastq1, dest_fq1)
+			if not os.path.exists(dest_fq2):
+				if copy:
+					shutil.copy(sample.fastq2, dest_fq2)
+				else:
+					os.symlink(sample.fastq2, dest_fq2)
 
 def main_prepare():
 	# parse exactly the same CLI args you already have
@@ -87,6 +108,9 @@ def main_prepare():
 				sra.add_sample(s, md, platform)
 			sra.finalize_xml()
 			open(os.path.join(outdir,'submit.ready'),'w').close()
+			# copy/Symlink raw files to SRA folder
+			prepare_sra_fastqs(samp_list, outdir, copy=False)
+
 
 	# 3) Prepare GenBank (if FTP) or manual
 	if params['genbank']:
