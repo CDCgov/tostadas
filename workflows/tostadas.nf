@@ -26,10 +26,8 @@ include { RUN_VADR                                          } from "../subworkfl
 include { RUN_BAKTA                                         } from "../subworkflows/local/bakta"
 
 // get submission related process/subworkflows
-include { INITIAL_SUBMISSION                                } from "../subworkflows/local/submission"
-include { UPDATE_SUBMISSION                                 } from "../modules/local/update_submission/main"
+include { SUBMISSION		                                } from "../subworkflows/local/submission"
 include { MERGE_UPLOAD_LOG                                  } from "../modules/local/general_util/merge_upload_log/main"
-include { SUBMISSION                                        } from '../modules/local/initial_submission/main'
 include { WAIT                                              } from '../modules/local/general_util/wait/main'
 
 /*
@@ -183,7 +181,7 @@ workflow TOSTADAS {
 				METADATA_VALIDATION.out.tsv_files.collect() 
 			)
 
-			INITIAL_SUBMISSION (
+			SUBMISSION (
 				submission_batch_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff), enabledDatabases (list)
 				params.submission_config,  
 				GET_WAIT_TIME.out

@@ -14,7 +14,7 @@ include { AGGREGATE_REPORTS                             } from '../../modules/lo
 include { WAIT                                          } from '../../modules/local/general_util/wait/main'
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
 
-workflow INITIAL_SUBMISSION {
+workflow SUBMISSION {
     take:
         submission_ch         // (meta: [batch_id: ..., batch_tsv: ...], samples: [ [meta, fasta, fq1, fq2, nnp, gff], ... ]), enabledDatabases (list)
         submission_config
