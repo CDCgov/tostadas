@@ -24,6 +24,7 @@ process PREP_SUBMISSION {
     script:
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
+    def dry_run = params.dry_run == true ? '--dry_run' : ''
     def biosample = params.biosample == true ? '--biosample' : ''
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
@@ -59,7 +60,8 @@ process PREP_SUBMISSION {
         --submission_mode $params.submission_mode \
         $test_flag \
         $send_submission_email \
-        $genbank $sra $biosample
+        $genbank $sra $biosample \
+        $dry_run
     """
 
     output:

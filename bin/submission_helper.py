@@ -243,21 +243,21 @@ class SubmissionConfigParser:
 		# Example: returns a dictionary with SFTP credentials, paths, etc.
 		with open(self.parameters['config_file'], "r") as f:
 			config_dict = yaml.load(f, Loader=yaml.BaseLoader) # Load yaml as str only
-		if type(config_dict) is dict:
+		# Exit if yaml import and dict conversion not successful
+		if not isinstance(config_dict, dict):
+			print("Error: Config file is incorrect. File must have a valid yaml format.", file=sys.stderr)
+			sys.exit(1)
+		# Only check credentials if not in dry_run mode
+		if not self.parameters.get('dry_run', False):
 			for k, v in config_dict.items():
-				# If GISAID submission, check that GISAID keys have values
 				if self.parameters.get("gisaid", False):
 					if k.startswith('GISAID') and not v:
 						print("Error: There are missing GISAID values in the config file.", file=sys.stderr)
-						sys.exit(1)					
+						sys.exit(1)
 				else:
-					# If NCBI submission, check that non-GISAID keys have values (note: this only check top-level keys)
 					if k.startswith('NCBI') and not v:
 						print("Error: There are missing NCBI values in the config file.", file=sys.stderr)
-						sys.exit(1)	
-		else:	
-			print("Error: Config file is incorrect. File must has a valid yaml format.", file=sys.stderr)
-			sys.exit(1)
+						sys.exit(1)
 		return config_dict
 
 class Sample:
