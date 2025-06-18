@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<Submission>
+  <Description>
+    <Comment>Batch submission</Comment>
+    <Organization role="owner" type="institute">
+      <Name>CDC</Name>
+      <Contact email="test@cdc.gov">
+        <Name>
+          <First>John</First>
+          <Last>Doe</Last>
+        </Name>
+      </Contact>
+    </Organization>
+  </Description>
+  <Action>
+    <AddFiles target_db="SRA">
+      <File file_path="IL0005_R1.fastq.gz">
+        <DataType>generic-data</DataType>
+      </File>
+      <File file_path="IL0005_R2.fastq.gz">
+        <DataType>generic-data</DataType>
+      </File>
+      <Attribute name="instrument_model">Illumina MiSeq</Attribute>
+      <Attribute name="library_strategy">WGS</Attribute>
+      <Attribute name="library_source">METAGENOMIC</Attribute>
+      <Attribute name="library_selection">RANDOM</Attribute>
+      <Attribute name="library_layout">paired</Attribute>
+      <Attribute name="library_construction_protocol">Not Provided</Attribute>
+      <Attribute name="library_name">Not Provided</Attribute>
+      <AttributeRefId name="BioProject">
+        <RefId>
+          <PrimaryId>PRJNA849962</PrimaryId>
+        </RefId>
+      </AttributeRefId>
+      <AttributeRefId name="BioSample">
+        <RefId>
+          <SPUID spuid_namespace="POX">MPXV_USA_2022_IL0005</SPUID>
+        </RefId>
+      </AttributeRefId>
+      <Identifier>
+        <SPUID spuid_namespace="POX">MPXV_USA_2022_IL0005_SRA</SPUID>
+      </Identifier>
+    </AddFiles>
+  </Action>
+  <Action>
+    <AddFiles target_db="SRA">
+      <File file_path="NY0006_R1.fastq.gz">
+        <DataType>generic-data</DataType>
+      </File>
+      <File file_path="NY0006_R2.fastq.gz">
+        <DataType>generic-data</DataType>
+      </File>
+      <Attribute name="instrument_model">Illumina MiSeq</Attribute>
+      <Attribute name="library_strategy">WGS</Attribute>
+      <Attribute name="library_source">METAGENOMIC</Attribute>
+      <Attribute name="library_selection">RANDOM</Attribute>
+      <Attribute name="library_layout">paired</Attribute>
+      <Attribute name="library_construction_protocol">Not Provided</Attribute>
+      <Attribute name="library_name">Not Provided</Attribute>
+      <AttributeRefId name="BioProject">
+        <RefId>
+          <PrimaryId>PRJNA849962</PrimaryId>
+        </RefId>
+      </AttributeRefId>
+      <AttributeRefId name="BioSample">
+        <RefId>
+          <SPUID spuid_namespace="POX">MPXV_USA_2022_NY0006</SPUID>
+        </RefId>
+      </AttributeRefId>
+      <Identifier>
+        <SPUID spuid_namespace="POX">MPXV_USA_2022_NY0006_SRA</SPUID>
+      </Identifier>
+    </AddFiles>
+  </Action>
+</Submission>

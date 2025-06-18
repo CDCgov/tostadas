@@ -2,9 +2,9 @@ nextflow_process {
 
     name "Test Process SUBMISSION"
     script "modules/local/submit_submission/main.nf"
-    process "SUBMISSION"
+    process "SUBMIT_SUBMISSION"
 
-    test("Run with profile test, virus | biosample") {
+    test("Run with profile test, virus") {
 
         when {
             params {
@@ -15,14 +15,14 @@ nextflow_process {
                 output_dir = "${outputDir}" // (?: what does this NF variable resolve to?  surely not $params.output_dir?)
                 metadata_basename = "mpxv_test_metadata"
                 overwrite_output = true
-                dryrun = true // (?: not exactly sure how to make this work)
+                dryrun = true 
             }
 
             process {
                 """
                 // define inputs of the process here
-                input[0] = path("${projectDir}/tests/modules/local/prep_submission/batch_1/")
-                input[1] = path("${projectDir}/conf/submission_config.yaml")
+                input[0] = "${projectDir}/tests/modules/local/submit_submission/batch_1/"
+                input[1] = file("${projectDir}/conf/submission_config.yaml")
                 """
             }
         }
