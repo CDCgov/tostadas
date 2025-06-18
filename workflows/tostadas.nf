@@ -95,7 +95,7 @@ workflow TOSTADAS {
 			if (params.annotation) {
 			annotation_ch = sample_ch.map { meta, fasta, fq1, fq2, nnp, gff -> 
 				// remove user-provided gff, if present, from annotation input channel before performing annotation
-				[meta, fasta, fq1, fq2] 
+				[meta, fasta, fq1, fq2, nnp] 
 			}
 				if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
 					// perform viral annotation according to user's choice: liftoff+repeatmasker or vadr
@@ -117,7 +117,7 @@ workflow TOSTADAS {
 							| join(RUN_BAKTA.out.gff)
 							| map { meta, fasta, fq1, fq2, nnp, gff -> [meta, fq1, fq2, nnp, gff] }
 							| join(RUN_BAKTA.out.fna)
-							| map { meta, fq1, fq2, nnp, gff, fasta -> [meta, fasta, fq1, fq2, gff] }
+							| map { meta, fq1, fq2, nnp, gff, fasta -> [meta, fasta, fq1, fq2, nnp, gff] }
 					}
 				}
 			}
