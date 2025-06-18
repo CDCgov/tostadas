@@ -17,17 +17,18 @@ nextflow_process {
                 output_dir = "${outputDir}" // (?: what does this NF variable resolve to?  surely not $params.output_dir?)
                 metadata_basename = "mpxv_test_metadata" // (?: is this taking the place of my global variable?)
                 overwrite_output = true
+                dry_run = true
             }
 
             process {
                 """
                 // define inputs of the process here
-                input[0] = [ [id: 'batch_1', batch_tsv: "${projectDir}/tests/modules/local/prep_submission/batch_1.tsv"], 
-                             [ [sample_id: 'NY0006', fq1: ${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz, fq2: ${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz, fasta: ${projectDir}/assets/sample_fastas/mpox/NY0006.fasta", nnp: null, gff: null], 
-                               [sample_id: 'NY0007', fq1: ${projectDir}/assets/sample_fastqs/mpox/2022-029-7670_S4_L001_R1_001.fastq.gz, fq2: ${projectDir}/assets/sample_fastqs/mpox/2022-029-7670_S4_L001_R2_001.fastq.gz, fasta: ${projectDir}/assets/sample_fastas/mpox/NY0007.fasta", nnp: null, gff: null]
+                input[0] = [ [batch_id: 'batch_1', batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv")], 
+                             [ [meta: [ sample_id: 'NY0006' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), nnp: null, gff: null], 
+                               [meta: [ sample_id: 'NY0007' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/2022-029-7670_S4_L001_R1_001.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/2022-029-7670_S4_L001_R2_001.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/NY0007.fasta"), nnp: null, gff: null]
                              ], 
-                             [biosample] ]
-                input[1] = path("${projectDir}/conf/submission_config.yaml")
+                             ["biosample"] ]
+                input[1] = file("${projectDir}/conf/submission_config.yaml")
                 """
             }
         }
@@ -36,7 +37,7 @@ nextflow_process {
             // check if test case succeeded  (?: what does this do exactly?)
             assert process.success
             // check that this run's submission.xml is the same as the last one (?: what I've passed is not a channel, the channel is a folder so can I use that or is it too complex)
-            assert snapshot(xmlToJson.xmlToJson(git "${process.out.submission_files}/biosample/submission.xml")).match()
+            assert snapshot(xmlToJson.xmlToJson("${process.out.submission_files}/biosample/submission.xml")).match()
 
         }
     }
