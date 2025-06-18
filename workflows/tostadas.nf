@@ -89,7 +89,7 @@ workflow TOSTADAS {
 		if ( params.annotation ) {
 			// Remove user-provided gff, if present, from annotation input channel before performing annotation
 			submission_ch = submission_ch.map { elements ->
-				elements.take(6)  // Remove the last element (gff)
+				elements.take(5)  // Remove the last element (gff)
 				}
 
 			if (params.species == 'mpxv' || params.species == 'variola' || params.species == 'rsv' || params.species == 'virus') {
