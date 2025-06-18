@@ -66,4 +66,5 @@ process PREP_SUBMISSION {
 
     output:
     tuple val(meta), path("${meta.batch_id}"), emit: submission_files
+    path("${meta.batch_id}"), emit: submission_dir
 }
