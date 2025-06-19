@@ -41,5 +41,5 @@ process SUBMIT_SUBMISSION {
 
     output:
     tuple val(meta), path("${meta.batch_id}"), emit: submission_files
-    path("${outdir}/submission.log"), emit: submission_log, optional: true
+    path("${meta.batch_id}/submission.log"), emit: submission_log, optional: true
 }

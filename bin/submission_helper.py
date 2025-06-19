@@ -27,7 +27,7 @@ def setup_logging(log_file="submission.log", level=logging.INFO):
     if not logging.getLogger().handlers:
         logging.basicConfig(
             level=level,
-            format="%(asctime)s [%(levelname)s] %(message)s",
+            format="[%(levelname)s] %(message)s",
             handlers=[
                 logging.FileHandler(log_file),
                 logging.StreamHandler()
@@ -190,7 +190,6 @@ def parse_and_save_reports(reports_fetched, output_dir, batch_id):
 		print(f"Report table saved to: {report_csv_file}")
 	except Exception as e:
 		raise ValueError(f"Failed to save report CSV: {e}")
-
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
 	"""
@@ -232,7 +231,6 @@ class GetParams:
 		parser.add_argument("--gisaid", help="Optional flag to run GISAID submission", action="store_const", default=False, const=True)
 		parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
 		return parser
-	
 class SubmissionConfigParser:
 	""" Class constructor to read in config file as dict
 	"""
@@ -259,7 +257,6 @@ class SubmissionConfigParser:
 						print("Error: There are missing NCBI values in the config file.", file=sys.stderr)
 						sys.exit(1)
 		return config_dict
-
 class Sample:
 	def __init__(self, sample_id, batch_id, species, databases, fastq1=None, fastq2=None, nanopore=None, fasta_file=None, annotation_file=None):
 		self.sample_id = sample_id
@@ -280,8 +277,6 @@ class Sample:
 			f"species={self.species}, databases={self.databases}, "
 			f"fasta_file={self.fasta_file}, annotation_file={self.annotation_file})"
 		)
-
-
 class MetadataParser:
 	def __init__(self, metadata_df, parameters):
 		self.metadata_df = metadata_df
