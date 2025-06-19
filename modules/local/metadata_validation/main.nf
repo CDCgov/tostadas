@@ -30,7 +30,6 @@ process METADATA_VALIDATION {
             --project_dir $projectDir \
             --output_dir . \
             --custom_fields_file $params.custom_fields_file \
-            --validate_custom_fields $params.validate_custom_fields \
             --date_format_flag $params.date_format_flag \
             $remove_demographic_info $validate_custom_fields \
             ${params.fetch_reports_only ? "--find_paths" : ""} \

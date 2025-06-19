@@ -173,7 +173,7 @@ class GetParams:
 		parser.add_argument("--project_dir", type=str, default=None, help="Path to the tostadas project directory")
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
 							help="Output Directory for final Files, default is current directory")
-		parser.add_argument("--overwrite_output_files", type=bool, default=True, help='whether to overwrite the output dir')
+		parser.add_argument("--overwrite_output_files", action="store_true", default=True, help='Flag for whether to overwrite the output dir')
 		parser.add_argument("-k", "--remove_demographic_info", action="store_true", default=False,
 							help="Flag to remove potentially identifying demographic info if provided otherwise no change will be made " +
 								 "Applies to host_sex, host_age, race, ethnicity.")
@@ -181,7 +181,7 @@ class GetParams:
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
 		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
-		parser.add_argument("--validate_custom_fields", type=lambda x: str(x).lower() == "true", default=True, help="Flag for whether or not validate custom fields ")
+		parser.add_argument("--validate_custom_fields", action="store_true", default=True, help="Flag for whether or not validate custom fields ")
 		parser.add_argument("--find_paths", action="store_true", help="Only check for existing TSV file paths (for use with fetch_reports_only)")
 		parser.add_argument("--path_to_existing_tsvs", type=str, required=False, help="Path to existing per-sample TSVs (for use with fetch_reports_only)")
 		parser.add_argument("--config_file", type=str, help="Path to submission config file with a valid BioSample_package key")

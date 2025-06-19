@@ -17,7 +17,6 @@ nextflow_process {
                 validate_custom_fields = true
                 date_format_flag = 's'
                 remove_demographic_info = true
-                validate_custom_fields = true
                 fetch_reports_only = false
                 resolved_output_dir = "${outputDir}" // (?: I'm not sure about this)
                 resolved_submission_config = "${projectDir}/conf/submission_config.yaml"
