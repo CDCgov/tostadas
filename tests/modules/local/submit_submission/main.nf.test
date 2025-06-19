@@ -15,7 +15,7 @@ nextflow_process {
                 output_dir = "${outputDir}" // (?: what does this NF variable resolve to?  surely not $params.output_dir?)
                 metadata_basename = "mpxv_test_metadata"
                 overwrite_output = true
-                dryrun = true 
+                dry_run = true 
             }
 
             process {
@@ -29,8 +29,7 @@ nextflow_process {
 
         then {
             assert process.success
-            // todo: add a test of the dry run output
-
+            assert snapshot(file("${process.out.submission_log}")).match()
         }
     }
 }
