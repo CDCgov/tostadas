@@ -14,6 +14,8 @@ nextflow_process {
                 submission_prod_or_test = "test"
                 send_submission_email = false
                 biosample = true
+                sra = false
+                genbank = false
                 species = "virus"
                 submission_mode = "ftp"
                 output_dir = "${outputDir}"
@@ -38,8 +40,47 @@ nextflow_process {
         then {
             // check if test case succeeded
             assert process.success
-            // check that this run's submission.xml is the same as the last one (?: what I've passed is not a channel, the channel is a folder so can I use that or is it too complex)
-            assert snapshot(XmlToJson.xmlToJson(file("${process.out.submission_dir[0]}/biosample/submission.xml"))).match()
+            // check that this run's submission.xml is the same as the last one
+            assert snapshot(XmlToJson.xmlToJson(file("${process.out.submission_files[0][1]}/biosample/submission.xml"))).match()
+        }
+    }
+
+    test("Run with profile test, virus | sra") {
+
+        when {
+            params {
+                // define parameters here
+                submission_prod_or_test = "test"
+                send_submission_email = false
+                biosample = false
+                sra = true
+                genbank = false
+                species = "virus"
+                submission_mode = "ftp"
+                output_dir = "${outputDir}"
+                metadata_basename = "mpxv_test_metadata"
+                overwrite_output = true
+                dry_run = true
+            }
+
+            process {
+                """
+                // define inputs of the process here
+                input[0] = [ [batch_id: 'batch_1', batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv")], 
+                             [ [meta: [ sample_id: 'NY0006' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), nnp: null, gff: null], 
+                               [meta: [ sample_id: 'IL0005' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_2.mpx.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/IL0005.fasta"), nnp: null, gff: null]
+                             ], 
+                             ["sra"] ]
+                input[1] = file("${projectDir}/conf/submission_config.yaml")
+                """
+            }
+        }
+
+        then {
+            // check if test case succeeded
+            assert process.success
+            // check that this run's submission.xml is the same as the last one
+            assert snapshot(XmlToJson.xmlToJson(file("${process.out.submission_files[0][1]}/sra/submission.xml"))).match()
 
 
         }
