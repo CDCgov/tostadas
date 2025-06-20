@@ -1,0 +1,28 @@
+nextflow_process {
+
+    name "Test Process REPEATMASKER"
+    script "modules/local/repeatmasker_annotation/main.nf"
+    process "REPEATMASKER"
+
+    test("Should run without failures") {
+
+        when {
+            process {
+                """
+                input[0] = ["test-meta", file("${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"), 
+                                         file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), 
+                                         file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), 
+                                         file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz")]
+                input[1] = file("${projectDir}/assets/lib/varv_repeats_lib.fasta")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out).match()
+        }
+
+    }
+
+}
