@@ -9,7 +9,7 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = ["test-meta", file("${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"), 
+                input[0] = ["NY0006", file("${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"), 
                                          file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), 
                                          file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), 
                                          file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz")]
