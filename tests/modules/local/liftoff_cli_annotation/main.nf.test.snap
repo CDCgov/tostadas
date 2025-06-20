@@ -1,0 +1,31 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    "NY0006.fasta:md5,4a11c4fe6d828bf5e411c21d10075b7c"
+                ],
+                "1": [
+                    "NY0006.liftoff-orig.gff:md5,787a3dcd1df02dedd91a2994e30d9fd2"
+                ],
+                "2": [
+                    "output.unmapped_features.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "errors": [
+                    "output.unmapped_features.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "fasta": [
+                    "NY0006.fasta:md5,4a11c4fe6d828bf5e411c21d10075b7c"
+                ],
+                "gff": [
+                    "NY0006.liftoff-orig.gff:md5,787a3dcd1df02dedd91a2994e30d9fd2"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.4"
+        },
+        "timestamp": "2025-06-20T10:10:16.993506301"
+    }
+}
