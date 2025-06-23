@@ -17,7 +17,7 @@ def vadr_main():
     parameters = vars(args)
 
     # get the path for outputs
-    meta_filename = parameters['meta_path'].split('/')[-1].split('.')[0]
+    meta_filename = parameters['sample_id']
     parameters['output_path'] = f"{parameters['vadr_outdir']}/{meta_filename}/transformed_outputs"
 
     # initialize the directory structure + move the original input files into this location
@@ -47,7 +47,7 @@ def get_args():
     parser = argparse.ArgumentParser(description="Parameters for Running VADR Annotation")
     parser.add_argument("--vadr_outdir", type=str, default='vadr_outputs', help="Name of vadr output directory")
     parser.add_argument("--vadr_outputs", type=str, help="Path to the vadr outputs")
-    parser.add_argument("--meta_path", type=str, help="Path to the input metadata file")
+    parser.add_argument("--sample_id", type=str, help="Sample name")
     return parser
 
 
