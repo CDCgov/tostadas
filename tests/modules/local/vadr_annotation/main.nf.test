@@ -8,8 +8,6 @@ nextflow_process {
 
         when {
             params {
-                // define parameters here. Example:
-                sample_id = ""
                 species = "mpxv"
 
             }
