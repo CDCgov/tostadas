@@ -56,6 +56,8 @@ workflow SUBMISSION {
                 PREP_SUBMISSION(submission_ch, submission_config_file)
                     .set { submission_files }
 
+                submission_files.view()
+                
                 SUBMIT_SUBMISSION(submission_files, submission_config_file)
             
                 submission_ch.join(submission_files)
