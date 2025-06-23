@@ -1,0 +1,68 @@
+nextflow_process {
+
+    name "Test Process BAKTA"
+    script "modules/nf-core/bakta/bakta/main.nf"
+    process "BAKTA"
+
+    test("Should run without failures") {
+
+        when {
+            params {
+                bakta_db_type             = "light"
+                download_bakta_db         = ""
+                bakta_db_path             = ""
+                bakta_min_contig_length   = 5
+                bakta_threads             = 2
+                bakta_gram                = "?"
+                bakta_genus               = "N/A"
+                bakta_species             = "N/A"
+                bakta_strain              = "N/A"
+                bakta_plasmid             = "unnamed"
+                bakta_locus               = "contig"
+                bakta_locus_tag           = ""
+                bakta_translation_table   = 11
+
+                bakta_complete            = ""           // Will not be added
+                bakta_keep_contig_headers = ""           // Will not be added
+                bakta_replicons           = ""           // Will not be added
+                bakta_proteins            = ""           // Will not be added
+                bakta_skip_trna           = ""           // Will not be added
+                bakta_skip_tmrna          = ""           // Will not be added
+                bakta_skip_rrna           = ""           // Will not be added
+                bakta_skip_ncrna          = ""           // Will not be added
+                bakta_skip_ncrna_region   = ""           // Will not be added
+                bakta_skip_crispr         = ""           // Will not be added
+                bakta_skip_cds            = ""           // Will not be added
+                bakta_skip_pseudo         = ""           // Will not be added
+                bakta_skip_sorf           = ""           // Will not be added
+                bakta_skip_gap            = ""           // Will not be added
+                bakta_skip_ori            = ""           // Will not be added
+                bakta_compliant           = true
+                bakta_skip_plot           = true
+            }
+
+            process {
+                """
+                // todo: need to change the bakta path
+                input[0] = file("/scicomp/reference/bakta/bakta/")
+                input[1] =  [   [ 
+                                batch_id: "batch_1",
+                                batch_tsv: file("${projectDir}/tests/modules/nf-core/bakta/bakta/batch_1.tsv"),
+                                sample_id: "CP040557" 
+                                ],
+                                file("${projectDir}/assets/sample_fastas/bacteria/CP040557.fasta"), 
+                                file("${projectDir}/assets/sample_fastqs/bacteria/CP040557_R1.fastq.gz"), 
+                                file("${projectDir}/assets/sample_fastqs/bacteria/CP040557_R2.fastq.gz") 
+                            ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out).match()
+        }
+
+    }
+
+}
