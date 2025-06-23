@@ -1,0 +1,4 @@
+#seq  seq        seq                                       sub                                 seq    mdl         num                     sub   score  diff/  seq   
+#idx  name       len  p/f   ant  model1     grp1           grp1                score  sc/nt    cov    cov  bias  hits  str  model2  grp2  grp2   diff     nt  alerts
+#---  ------  ------  ----  ---  ---------  -------------  ---------------  --------  -----  -----  -----  ----  ----  ---  ------  ----  ----  -----  -----  ------
+1     NY0006  197189  PASS  yes  NC_063383  Orthopoxvirus  Monkeypox_virus  367714.8  1.855  1.005  1.005     0    19    +  -       -     -         -      -  DUPLICATE_REGIONS(dupregin),DISCONTINUOUS_SIMILARITY(discontn)

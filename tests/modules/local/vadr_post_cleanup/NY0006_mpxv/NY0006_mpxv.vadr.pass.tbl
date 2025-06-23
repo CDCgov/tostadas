@@ -1,0 +1,896 @@
+>Feature NY0006
+1569	829	gene
+			gene	OPG001
+1569	829	CDS
+			product	Chemokine binding protein
+			protein_id	NY0006_1
+2745	1696	gene
+			gene	OPG002
+2745	1696	CDS
+			product	Crm-B secreted TNF-alpha-receptor-like protein
+			protein_id	NY0006_2
+4601	2835	gene
+			gene	OPG003
+4601	2835	CDS
+			product	Ankyrin repeat protein (25)
+			protein_id	NY0006_3
+6166	4853	gene
+			gene	OPG015
+6166	4853	CDS
+			product	Ankyrin repeat protein (39)
+			protein_id	NY0006_4
+7590	8018	gene
+			gene	OPG019
+7590	8018	CDS
+			product	EGF-like domain protein
+			protein_id	NY0006_5
+9597	10325	gene
+			gene	OPG021
+9597	10325	CDS
+			product	Zinc finger-like protein (2)
+			protein_id	NY0006_6
+10868	10488	gene
+			gene	OPG022
+10868	10488	CDS
+			product	Interleukin-18-binding protein
+			protein_id	NY0006_7
+12910	10928	gene
+			gene	OPG023
+12910	10928	CDS
+			product	Ankyrin repeat protein (2)
+			protein_id	NY0006_8
+13238	13044	gene
+			gene	OPG024
+13238	13044	CDS
+			product	retroviral pseudoprotease-like protein
+			protein_id	NY0006_9
+15277	13385	gene
+			gene	OPG025
+15277	13385	CDS
+			product	Ankyrin repeat protein (14)
+			protein_id	NY0006_10
+16387	15935	gene
+			gene	OPG027
+16387	15935	CDS
+			product	Host range protein
+			protein_id	NY0006_11
+17079	16612	gene
+			gene	OPG029
+17079	16612	CDS
+			product	Bcl-2-like protein
+			protein_id	NY0006_12
+17843	17223	gene
+			gene	OPG030
+17843	17223	CDS
+			product	Kelch-like protein (1)
+			protein_id	NY0006_13
+18838	17888	gene
+			gene	OPG031
+18838	17888	CDS
+			product	C4L/C10L-like family protein
+			protein_id	NY0006_14
+20015	19371	gene
+			gene	OPG034
+20015	19371	CDS
+			product	Bcl-2-like protein
+			protein_id	NY0006_15
+20414	20061	gene
+			gene	OPG035
+20414	20061	CDS
+			product	Bcl-2-like protein
+			protein_id	NY0006_16
+21074	20541	gene
+			gene	OPG036
+21074	20541	CDS
+			product	Bcl-2-like protein
+			protein_id	NY0006_17
+22443	21115	gene
+			gene	OPG037
+22443	21115	CDS
+			product	Ankyrin-like protein (1)
+			protein_id	NY0006_18
+23169	22507	gene
+			gene	OPG038
+23169	22507	CDS
+			product	NFkB inhibitor
+			protein_id	NY0006_19
+24128	23274	gene
+			gene	OPG039
+24128	23274	CDS
+			product	Ankyrin-like protein (3)
+			protein_id	NY0006_20
+25488	24361	gene
+			gene	OPG040
+25488	24361	CDS
+			product	Serpin
+			protein_id	NY0006_21
+27107	25833	gene
+			gene	OPG042
+27107	25833	CDS
+			product	Phospholipase-D-like protein
+			protein_id	NY0006_22
+27965	27135	gene
+			gene	OPG043
+27965	27135	CDS
+			product	Putative monoglyceride lipase
+			protein_id	NY0006_23
+28101	28550	gene
+			gene	OPG044
+28101	28550	CDS
+			product	Bcl-2-like protein
+			protein_id	NY0006_24
+29272	28613	gene
+			gene	OPG045
+29272	28613	CDS
+			product	Caspase-9 inhibitor
+			protein_id	NY0006_25
+29739	29284	gene
+			gene	OPG046
+29739	29284	CDS
+			product	dUTPase
+			protein_id	NY0006_26
+31204	29756	gene
+			gene	OPG047
+31204	29756	CDS
+			product	Kelch-like protein (2)
+			protein_id	NY0006_27
+32174	31215	gene
+			gene	OPG048
+32174	31215	CDS
+			product	Ribonucleotide reductase small subunit
+			protein_id	NY0006_28
+33161	32205	gene
+			gene	OPG049
+33161	32205	CDS
+			product	Telomere-binding protein I6 (1)
+			protein_id	NY0006_29
+33418	33191	gene
+			gene	OPG050
+33418	33191	CDS
+			product	CPXV053 protein
+			protein_id	NY0006_30
+33659	33435	gene
+			gene	OPG051
+33659	33435	CDS
+			product	CPXV054 protein
+			protein_id	NY0006_31
+34005	33811	gene
+			gene	OPG052
+34005	33811	CDS
+			product	Cytoplasmic protein
+			protein_id	NY0006_32
+34700	34062	gene
+			gene	OPG053
+34700	34062	CDS
+			product	IMV membrane protein L1R
+			protein_id	NY0006_33
+36006	34687	gene
+			gene	OPG054
+36006	34687	CDS
+			product	Serine/threonine-protein kinase
+			protein_id	NY0006_34
+37093	36029	gene
+			gene	OPG055
+37093	36029	CDS
+			product	Protein F11
+			protein_id	NY0006_35
+39044	37137	gene
+			gene	OPG056
+39044	37137	CDS
+			product	EEV maturation protein
+			protein_id	NY0006_36
+40205	39087	gene
+			gene	OPG057
+40205	39087	CDS
+			product	Palmytilated EEV membrane protein
+			protein_id	NY0006_37
+40444	40223	gene
+			gene	OPG058
+40444	40223	CDS
+			product	Protein F14 (1)
+			protein_id	NY0006_38
+40643	40494	gene
+			gene	OPG059
+40643	40494	CDS
+			product	Cytochrome C oxidase
+			protein_id	NY0006_39
+41192	40716	gene
+			gene	OPG060
+41192	40716	CDS
+			product	Protein F15
+			protein_id	NY0006_40
+41894	41199	gene
+			gene	OPG061
+41894	41199	CDS
+			product	Protein F16 (1)
+			protein_id	NY0006_41
+41957	42262	gene
+			gene	OPG062
+41957	42262	CDS
+			product	DNA-binding phosphoprotein (1)
+			protein_id	NY0006_42
+43698	42259	gene
+			gene	OPG063
+43698	42259	CDS
+			product	Poly(A) polymerase catalytic subunit (3)
+			protein_id	NY0006_43
+45908	43695	gene
+			gene	OPG064
+45908	43695	CDS
+			product	Iev morphogenesis protein
+			protein_id	NY0006_44
+46493	46032	gene
+			gene	OPG065
+46493	46032	CDS
+			product	Double-stranded RNA binding protein
+			protein_id	NY0006_45
+47438	46659	gene
+			gene	OPG066
+47438	46659	CDS
+			product	DNA-directed RNA polymerase 30 kDa polypeptide
+			protein_id	NY0006_46
+48211	49914	gene
+			gene	OPG068
+48211	49914	CDS
+			product	IMV membrane protein E6
+			protein_id	NY0006_47
+49996	50496	gene
+			gene	OPG069
+49996	50496	CDS
+			product	Myristoylated protein E7
+			protein_id	NY0006_48
+50600	51421	gene
+			gene	OPG070
+50600	51421	CDS
+			product	Membrane protein E8
+			protein_id	NY0006_49
+54448	51428	gene
+			gene	OPG071
+54448	51428	CDS
+			product	DNA polymerase (2)
+			protein_id	NY0006_50
+54480	54767	gene
+			gene	OPG072
+54480	54767	CDS
+			product	Sulfhydryl oxidase
+			protein_id	NY0006_51
+55151	54762	gene
+			gene	OPG073
+55151	54762	CDS
+			product	Virion core protein E11
+			protein_id	NY0006_52
+57135	55138	gene
+			gene	OPG074
+57135	55138	CDS
+			product	Iev morphogenesis protein
+			protein_id	NY0006_53
+57508	57182	gene
+			gene	OPG075
+57508	57182	CDS
+			product	Glutaredoxin-1
+			protein_id	NY0006_54
+57640	57533	gene
+			gene	OPG076
+57640	57533	CDS
+			product	MV membrane EFC component
+			protein_id	NY0006_55
+58593	57655	gene
+			gene	OPG077
+58593	57655	CDS
+			product	Telomere-binding protein I1
+			protein_id	NY0006_56
+58821	58600	gene
+			gene	OPG078
+58821	58600	CDS
+			product	IMV membrane protein I2
+			protein_id	NY0006_57
+59631	58822	gene
+			gene	OPG079
+59631	58822	CDS
+			product	DNA-binding phosphoprotein (2)
+			protein_id	NY0006_58
+62028	59713	gene
+			gene	OPG080
+62028	59713	CDS
+			product	Ribonucleoside-diphosphate reductase (2)
+			protein_id	NY0006_59
+62295	62056	gene
+			gene	OPG081
+62295	62056	CDS
+			product	IMV membrane protein I5
+			protein_id	NY0006_60
+63462	62314	gene
+			gene	OPG082
+63462	62314	CDS
+			product	Telomere-binding protein
+			protein_id	NY0006_61
+64726	63455	gene
+			gene	OPG083
+64726	63455	CDS
+			product	Viral core cysteine proteinase
+			protein_id	NY0006_62
+64732	66762	gene
+			gene	OPG084
+64732	66762	CDS
+			product	RNA helicase NPH-II (2)
+			protein_id	NY0006_63
+68541	66766	gene
+			gene	OPG085
+68541	66766	CDS
+			product	Metalloendopeptidase
+			protein_id	NY0006_64
+68873	68538	gene
+			gene	OPG086
+68873	68538	CDS
+			product	Entry/fusion complex component
+			protein_id	NY0006_65
+68867	69529	gene
+			gene	OPG087
+68867	69529	CDS
+			product	Late transcription elongation factor
+			protein_id	NY0006_66
+69873	69499	gene
+			gene	OPG088
+69873	69499	CDS
+			product	Glutaredoxin-2
+			protein_id	NY0006_67
+69876	71180	gene
+			gene	OPG089
+69876	71180	CDS
+			product	FEN1-like nuclease
+			protein_id	NY0006_68
+71189	71380	gene
+			gene	OPG090
+71189	71380	CDS
+			product	DNA-directed RNA polymerase 7 kDa subunit
+			protein_id	NY0006_69
+71380	71877	gene
+			gene	OPG091
+71380	71877	CDS
+			product	Nlpc/p60 superfamily protein
+			protein_id	NY0006_70
+72957	71842	gene
+			gene	OPG092
+72957	71842	CDS
+			product	Assembly protein G7
+			protein_id	NY0006_71
+72988	73770	gene
+			gene	OPG093
+72988	73770	CDS
+			product	Late transcription factor VLTF-1
+			protein_id	NY0006_72
+73790	74812	gene
+			gene	OPG094
+73790	74812	CDS
+			product	Myristylated protein
+			protein_id	NY0006_73
+74813	75565	gene
+			gene	OPG095
+74813	75565	CDS
+			product	IMV membrane protein L1R
+			protein_id	NY0006_74
+75597	75875	gene
+			gene	OPG096
+75597	75875	CDS
+			product	Crescent membrane and immature virion formation protein
+			protein_id	NY0006_75
+76885	75851	gene
+			gene	OPG097
+76885	75851	CDS
+			product	Internal virion L3/FP4 protein
+			protein_id	NY0006_76
+76910	77665	gene
+			gene	OPG098
+76910	77665	CDS
+			product	Nucleic acid binding protein VP8/L4R
+			protein_id	NY0006_77
+77675	78061	gene
+			gene	OPG099
+77675	78061	CDS
+			product	Membrane protein CL5
+			protein_id	NY0006_78
+78018	78476	gene
+			gene	OPG100
+78018	78476	CDS
+			product	IMV membrane protein J1
+			protein_id	NY0006_79
+78496	79029	gene
+			gene	OPG101
+78496	79029	CDS
+			product	Thymidine kinase
+			protein_id	NY0006_80
+79095	80096	gene
+			gene	OPG102
+79095	80096	CDS
+			product	Cap-specific mRNA
+			protein_id	NY0006_81
+80011	80568	gene
+			gene	OPG103
+80011	80568	CDS
+			product	DNA-directed RNA polymerase subunit
+			protein_id	NY0006_82
+81029	80628	gene
+			gene	OPG104
+81029	80628	CDS
+			product	Myristylated protein
+			protein_id	NY0006_83
+81136	84996	gene
+			gene	OPG105
+81136	84996	CDS
+			product	DNA-dependent RNA polymerase subunit rpo147
+			protein_id	NY0006_84
+85508	84993	gene
+			gene	OPG106
+85508	84993	CDS
+			product	Tyr/ser protein phosphatase
+			protein_id	NY0006_85
+85522	86091	gene
+			gene	OPG107
+85522	86091	CDS
+			product	Entry-fusion complex essential component
+			protein_id	NY0006_86
+87069	86095	gene
+			gene	OPG108
+87069	86095	CDS
+			product	IMV heparin binding surface protein
+			protein_id	NY0006_87
+89457	87070	gene
+			gene	OPG109
+89457	87070	CDS
+			product	RNA polymerase-associated transcription-specificity factor RAP94
+			protein_id	NY0006_88
+89642	90274	gene
+			gene	OPG110
+89642	90274	CDS
+			product	Late transcription factor VLTF-4 (1)
+			protein_id	NY0006_89
+90275	91219	gene
+			gene	OPG111
+90275	91219	CDS
+			product	DNA topoisomerase type I
+			protein_id	NY0006_90
+91257	91697	gene
+			gene	OPG112
+91257	91697	CDS
+			product	Late protein H7
+			protein_id	NY0006_91
+91741	94278	gene
+			gene	OPG113
+91741	94278	CDS
+			product	mRNA capping enzyme large subunit
+			protein_id	NY0006_92
+94677	94237	gene
+			gene	OPG114
+94677	94237	CDS
+			product	Virion protein D2
+			protein_id	NY0006_93
+94670	95371	gene
+			gene	OPG115
+94670	95371	CDS
+			product	Virion core protein D3
+			protein_id	NY0006_94
+95371	96027	gene
+			gene	OPG116
+95371	96027	CDS
+			product	Uracil DNA glycosylase superfamily
+			protein_id	NY0006_95
+96059	98416	gene
+			gene	OPG117
+96059	98416	CDS
+			product	NTPase (1)
+			protein_id	NY0006_96
+98456	100369	gene
+			gene	OPG118
+98456	100369	CDS
+			product	Early transcription factor 70 kDa subunit
+			protein_id	NY0006_97
+100396	100881	gene
+			gene	OPG119
+100396	100881	CDS
+			product	RNA polymerase subunit RPO18
+			protein_id	NY0006_98
+101758	100844	gene
+			gene	OPG120
+101758	100844	CDS
+			product	Carbonic anhydrase
+			protein_id	NY0006_99
+101800	102441	gene
+			gene	OPG121
+101800	102441	CDS
+			product	NUDIX domain protein
+			protein_id	NY0006_100
+102438	103184	gene
+			gene	OPG122
+102438	103184	CDS
+			product	MutT motif protein
+			protein_id	NY0006_101
+105080	103185	gene
+			gene	OPG123
+105080	103185	CDS
+			product	Nucleoside triphosphatase I
+			protein_id	NY0006_102
+105978	105115	gene
+			gene	OPG124
+105978	105115	CDS
+			product	mRNA capping enzyme small subunit
+			protein_id	NY0006_103
+107664	106009	gene
+			gene	OPG125
+107664	106009	CDS
+			product	Rifampicin resistance protein
+			protein_id	NY0006_104
+108140	107688	gene
+			gene	OPG126
+108140	107688	CDS
+			product	Late transcription factor VLTF-2 (2)
+			protein_id	NY0006_105
+108835	108161	gene
+			gene	OPG127
+108835	108161	CDS
+			product	Late transcription factor VLTF-3 (1)
+			protein_id	NY0006_106
+109065	108832	gene
+			gene	OPG128
+109065	108832	CDS
+			product	S-S bond formation pathway protein
+			protein_id	NY0006_107
+111014	109080	gene
+			gene	OPG129
+111014	109080	CDS
+			product	Virion core protein P4b
+			protein_id	NY0006_108
+111912	111067	gene
+			gene	OPG130
+111912	111067	CDS
+			product	A5L protein-like
+			protein_id	NY0006_109
+111950	112435	gene
+			gene	OPG131
+111950	112435	CDS
+			product	DNA-directed RNA polymerase 19 kDa subunit
+			protein_id	NY0006_110
+113550	112432	gene
+			gene	OPG132
+113550	112432	CDS
+			product	Virion morphogenesis protein
+			protein_id	NY0006_111
+115706	113574	gene
+			gene	OPG133
+115706	113574	CDS
+			product	Early transcription factor 82 kDa subunit
+			protein_id	NY0006_112
+115760	116638	gene
+			gene	OPG134
+115760	116638	CDS
+			product	Intermediate transcription factor VITF-3 (1)
+			protein_id	NY0006_113
+116921	116619	gene
+			gene	OPG135
+116921	116619	CDS
+			product	IMV membrane protein A9
+			protein_id	NY0006_114
+119597	116922	gene
+			gene	OPG136
+119597	116922	CDS
+			product	Virion core protein P4a
+			protein_id	NY0006_115
+119612	120568	gene
+			gene	OPG137
+119612	120568	CDS
+			product	Viral membrane formation protein
+			protein_id	NY0006_116
+121142	120570	gene
+			gene	OPG138
+121142	120570	CDS
+			product	A12 protein
+			protein_id	NY0006_117
+121378	121166	gene
+			gene	OPG139
+121378	121166	CDS
+			product	IMV membrane protein A13L
+			protein_id	NY0006_118
+121756	121484	gene
+			gene	OPG140
+121756	121484	CDS
+			product	IMV membrane protein A14
+			protein_id	NY0006_119
+121934	121773	gene
+			gene	OPG141
+121934	121773	CDS
+			product	DUF1029 domain protein
+			protein_id	NY0006_120
+122208	121924	gene
+			gene	OPG142
+122208	121924	CDS
+			product	Core protein A15
+			protein_id	NY0006_121
+123325	122192	gene
+			gene	OPG143
+123325	122192	CDS
+			product	Myristylated protein
+			protein_id	NY0006_122
+123942	123328	gene
+			gene	OPG144
+123942	123328	CDS
+			product	IMV membrane protein P21
+			protein_id	NY0006_123
+123957	125435	gene
+			gene	OPG145
+123957	125435	CDS
+			product	DNA helicase
+			protein_id	NY0006_124
+125649	125416	gene
+			gene	OPG146
+125649	125416	CDS
+			product	Zinc finger-like protein (1)
+			protein_id	NY0006_125
+125997	125650	gene
+			gene	OPG147
+125997	125650	CDS
+			product	IMV membrane protein A21
+			protein_id	NY0006_126
+125996	127276	gene
+			gene	OPG148
+125996	127276	CDS
+			product	DNA polymerase processivity factor
+			protein_id	NY0006_127
+127206	127769	gene
+			gene	OPG149
+127206	127769	CDS
+			product	Holliday junction resolvase
+			protein_id	NY0006_128
+127789	128937	gene
+			gene	OPG150
+127789	128937	CDS
+			product	Intermediate transcription factor VITF-3 (2)
+			protein_id	NY0006_129
+128934	132428	gene
+			gene	OPG151
+128934	132428	CDS
+			product	DNA-dependent RNA polymerase subunit rpo132
+			protein_id	NY0006_130
+137668	136139	gene
+			gene	OPG153
+137668	136139	CDS
+			product	Orthopoxvirus A26L/A30L protein
+			protein_id	NY0006_131
+138051	137719	gene
+			gene	OPG154
+138051	137719	CDS
+			product	IMV surface fusion protein
+			protein_id	NY0006_132
+138492	138052	gene
+			gene	OPG155
+138492	138052	CDS
+			product	Envelope protein A28 homolog
+			protein_id	NY0006_133
+139410	138493	gene
+			gene	OPG156
+139410	138493	CDS
+			product	DNA-directed RNA polymerase 35 kDa subunit
+			protein_id	NY0006_134
+139609	139373	gene
+			gene	OPG157
+139609	139373	CDS
+			product	IMV membrane protein A30
+			protein_id	NY0006_135
+139770	139642	gene
+			gene	OPG158
+139770	139642	CDS
+			product	A32.5L
+			protein_id	NY0006_136
+139769	140206	gene
+			gene	OPG159
+139769	140206	CDS
+			product	CPXV166 protein
+			protein_id	NY0006_137
+141075	140173	gene
+			gene	OPG160
+141075	140173	CDS
+			product	ATPase A32
+			protein_id	NY0006_138
+141103	141648	gene
+			gene	OPG161
+141103	141648	CDS
+			product	EEV glycoprotein (1)
+			protein_id	NY0006_139
+141653	142159	gene
+			gene	OPG162
+141653	142159	CDS
+			product	EEV glycoprotein (2)
+			protein_id	NY0006_140
+142203	142733	gene
+			gene	OPG163
+142203	142733	CDS
+			product	MHC class II antigen presentation inhibitor
+			protein_id	NY0006_141
+142779	143465	gene
+			gene	OPG164
+142779	143465	CDS
+			product	IEV transmembrane phosphoprotein
+			protein_id	NY0006_142
+143517	144323	gene
+			gene	OPG165
+143517	144323	CDS
+			product	CPXV173 protein
+			protein_id	NY0006_143
+144399	144578	gene
+			gene	OPG166
+144399	144578	CDS
+			product	hypothetical protein
+			protein_id	NY0006_144
+145408	144575	gene
+			gene	OPG167
+145408	144575	CDS
+			product	CD47-like protein
+			protein_id	NY0006_145
+146779	146114	gene
+			gene	OPG170
+146779	146114	CDS
+			product	Chemokine binding protein
+			protein_id	NY0006_146
+146989	147390	gene
+			gene	OPG171
+146989	147390	CDS
+			product	Profilin domain protein
+			protein_id	NY0006_147
+147428	148018	gene
+			gene	OPG172
+147428	148018	CDS
+			product	Type-I membrane glycoprotein
+			protein_id	NY0006_148
+148038	148262	gene
+			gene	OPG173
+148038	148262	CDS
+			product	MPXVgp154
+			protein_id	NY0006_149
+149396	148356	gene
+			gene	OPG174
+149396	148356	CDS
+			product	Hydroxysteroid dehydrogenase
+			protein_id	NY0006_150
+149443	149820	gene
+			gene	OPG175
+149443	149820	CDS
+			product	Copper/zinc superoxide dismutase
+			protein_id	NY0006_151
+149810	150532	gene
+			gene	OPG176
+149810	150532	CDS
+			product	Bcl-2-like protein
+			protein_id	NY0006_152
+151493	152107	gene
+			gene	OPG178
+151493	152107	CDS
+			product	Thymidylate kinase
+			protein_id	NY0006_153
+152676	154355	gene
+			gene	OPG180
+152676	154355	CDS
+			product	DNA ligase (2)
+			protein_id	NY0006_154
+154396	155400	gene
+			gene	OPG181
+154396	155400	CDS
+			product	M137R
+			protein_id	NY0006_155
+158901	159842	gene
+			gene	OPG185
+158901	159842	CDS
+			product	Hemagglutinin
+			protein_id	NY0006_156
+160606	161517	gene
+			gene	OPG187
+160606	161517	CDS
+			product	Ser/thr kinase
+			protein_id	NY0006_157
+161580	163091	gene
+			gene	OPG188
+161580	163091	CDS
+			product	Schlafen (1)
+			protein_id	NY0006_158
+163317	165002	gene
+			gene	OPG189
+163317	165002	CDS
+			product	Ankyrin repeat protein (25)
+			protein_id	NY0006_159
+165106	166059	gene
+			gene	OPG190
+165106	166059	CDS
+			product	EEV type-I membrane glycoprotein
+			protein_id	NY0006_160
+166145	166651	gene
+			gene	OPG191
+166145	166651	CDS
+			product	Ankyrin-like protein (46)
+			protein_id	NY0006_161
+166715	167263	gene
+			gene	OPG192
+166715	167263	CDS
+			product	Virulence protein
+			protein_id	NY0006_162
+167318	168121	gene
+			gene	OPG193
+167318	168121	CDS
+			product	Soluble interferon-gamma receptor-like protein
+			protein_id	NY0006_163
+168214	168879	gene
+			gene	OPG195
+168214	168879	CDS
+			product	Intracellular viral protein
+			protein_id	NY0006_164
+169654	169956	gene
+			gene	OPG197
+169654	169956	CDS
+			product	CPXV205 protein
+			protein_id	NY0006_165
+170022	170870	gene
+			gene	OPG198
+170022	170870	CDS
+			product	Ser/thr kinase
+			protein_id	NY0006_166
+170972	172006	gene
+			gene	OPG199
+170972	172006	CDS
+			product	Serpin
+			protein_id	NY0006_167
+172134	172583	gene
+			gene	OPG200
+172134	172583	CDS
+			product	Bcl-2-like protein
+			protein_id	NY0006_168
+174520	175575	gene
+			gene	OPG204
+174520	175575	CDS
+			product	IFN-alpha/beta-receptor-like secreted glycoprotein
+			protein_id	NY0006_169
+175644	178007	gene
+			gene	OPG205
+175644	178007	CDS
+			product	Ankyrin repeat protein (44)
+			protein_id	NY0006_170
+179236	180309	gene
+			gene	OPG208
+179236	180309	CDS
+			product	Serpin
+			protein_id	NY0006_171
+180488	181060	gene
+			gene	OPG209
+180488	181060	CDS
+			product	Virulence protein
+			protein_id	NY0006_172
+181326	186968	gene
+			gene	OPG210
+181326	186968	CDS
+			product	B22R family protein
+			protein_id	NY0006_173
+189169	189630	gene
+			gene	OPG005
+189169	189630	CDS
+			product	Bcl-2-like protein
+			protein_id	NY0006_174
+190380	190910	gene
+			gene	OPG016
+190380	190910	CDS
+			product	Brix domain protein
+			protein_id	NY0006_175
+191024	192337	gene
+			gene	OPG015
+191024	192337	CDS
+			product	Ankyrin repeat protein (39)
+			protein_id	NY0006_176
+192589	194355	gene
+			gene	OPG003
+192589	194355	CDS
+			product	Ankyrin repeat protein (25)
+			protein_id	NY0006_177
+194445	195494	gene
+			gene	OPG002
+194445	195494	CDS
+			product	Crm-B secreted TNF-alpha-receptor-like protein
+			protein_id	NY0006_178
+195621	196361	gene
+			gene	OPG001
+195621	196361	CDS
+			product	Chemokine binding protein
+			protein_id	NY0006_179

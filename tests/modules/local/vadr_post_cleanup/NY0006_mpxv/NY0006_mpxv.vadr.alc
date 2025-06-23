@@ -1,0 +1,6 @@
+#     alert     causes   short                          per    num   num  long       
+#idx  code      failure  description                   type  cases  seqs  description
+#---  --------  -------  ------------------------  --------  -----  ----  -----------
+1     dupregin  no       DUPLICATE_REGIONS         sequence     24     1  similarity to a model region occurs more than once
+2     discontn  no       DISCONTINUOUS_SIMILARITY  sequence      1     1  not all hits are in the same order in the sequence and the homology model
+#---  --------  -------  ------------------------  --------  -----  ----  -----------

@@ -1,0 +1,83 @@
+# v-annotate.pl :: classify and annotate sequences using a model library
+# VADR 1.6.3 (Dec 2023)
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# date:              Mon Jun 23 17:30:34 2025
+# $VADRBIOEASELDIR:  /opt/vadr/Bio-Easel
+# $VADRBLASTDIR:     /opt/vadr/ncbi-blast/bin
+# $VADREASELDIR:     /opt/vadr/infernal/binaries
+# $VADRFASTADIR:     /opt/vadr/fasta/bin
+# $VADRINFERNALDIR:  /opt/vadr/infernal/binaries
+# $VADRMINIMAP2DIR:  /opt/vadr/minimap2
+# $VADRMODELDIR:     /opt/vadr/vadr-models
+# $VADRSCRIPTSDIR:   /opt/vadr/vadr
+#
+# sequence file:                                                                  NY0006.trimmed.fasta
+# output directory:                                                               NY0006_mpxv
+# specify that alert codes in <s> do not cause FAILure:                           discontn,dupregin [--alt_pass]
+# .cm, .minfo, blastn .fa files in $VADRMODELDIR start with key <s>, not 'vadr':  mpxv [--mkey]
+# model files are in directory <s>, not in $VADRMODELDIR:                         mpxv-models [--mdir]
+# in feature table for failed seqs, never change feature type to misc_feature:    yes [--nomisc]
+# align with glsearch from the FASTA package, not to a cm with cmalign:           yes [--glsearch]
+# use top-scoring HSP from blastn to seed the alignment:                          yes [-s]
+# for -s, set length of nt overhang for subseqs to align to <n>:                  150 [--s_overhang]
+# use minimap2 to derive seed and use it if >= length of blastn seed:             yes [--minimap2]
+# replace stretches of Ns with expected nts, where possible:                      yes [-r]
+# with -r, do not report lowsim{5,3,i}s within identified N-rich regions:         yes [--r_lowsimok]
+# w/--r_lowsimok, maximum length of N-rich region is <n>:                         2000 [--r_lowsimxl]
+# w/--r_lowsimok, max diff from expected length for N-rich region is <n>:         100 [--r_lowsimxd]
+# split input file into chunks, run each chunk separately:                        yes [--split]
+# parallelize across <n> CPU workers (requires --split or --glsearch):            1 [--cpu]
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Validating input                                                                                          ... done. [    0.1 seconds]
+# Splitting sequence file into chunks to run independently                                                  ... done. [    0.0 seconds]
+# Executing 1 script to process 1 partition(s) of all 1 sequence(s)                                         ... done. [   17.9 seconds]
+# Merging and finalizing output                                                                             ... done. [    0.3 seconds]
+#
+# Summary of classified sequences:
+#
+#                                                 num   num   num
+#idx  model      group          subgroup         seqs  pass  fail
+#---  ---------  -------------  ---------------  ----  ----  ----
+1     NC_063383  Orthopoxvirus  Monkeypox_virus     1     1     0
+#---  ---------  -------------  ---------------  ----  ----  ----
+-     *all*      -              -                   1     1     0
+-     *none*     -              -                   0     0     0
+#---  ---------  -------------  ---------------  ----  ----  ----
+#
+# Summary of reported alerts:
+#
+#     alert     causes   short                          per    num   num  long
+#idx  code      failure  description                   type  cases  seqs  description
+#---  --------  -------  ------------------------  --------  -----  ----  -----------
+1     dupregin  no       DUPLICATE_REGIONS         sequence     24     1  similarity to a model region occurs more than once
+2     discontn  no       DISCONTINUOUS_SIMILARITY  sequence      1     1  not all hits are in the same order in the sequence and the homology model
+#---  --------  -------  ------------------------  --------  -----  ----  -----------
+#
+# Output printed to screen saved in:                              NY0006_mpxv.vadr.log
+# List of executed commands saved in:                             NY0006_mpxv.vadr.cmd
+# List and description of all output files saved in:              NY0006_mpxv.vadr.filelist
+# esl-seqstat -a output for input fasta file saved in:            NY0006_mpxv.vadr.seqstat
+# 5 column feature table output for passing sequences saved in:   NY0006_mpxv.vadr.pass.tbl
+# 5 column feature table output for failing sequences saved in:   NY0006_mpxv.vadr.fail.tbl
+# list of passing sequences saved in:                             NY0006_mpxv.vadr.pass.list
+# list of failing sequences saved in:                             NY0006_mpxv.vadr.fail.list
+# list of alerts in the feature tables saved in:                  NY0006_mpxv.vadr.alt.list
+# fasta file with passing sequences saved in:                     NY0006_mpxv.vadr.pass.fa
+# fasta file with failing sequences saved in:                     NY0006_mpxv.vadr.fail.fa
+# per-sequence tabular annotation summary file saved in:          NY0006_mpxv.vadr.sqa
+# per-sequence tabular classification summary file saved in:      NY0006_mpxv.vadr.sqc
+# per-feature tabular summary file saved in:                      NY0006_mpxv.vadr.ftr
+# per-model-segment tabular summary file saved in:                NY0006_mpxv.vadr.sgm
+# per-alert tabular summary file saved in:                        NY0006_mpxv.vadr.alt
+# alert count tabular summary file saved in:                      NY0006_mpxv.vadr.alc
+# per-model tabular summary file saved in:                        NY0006_mpxv.vadr.mdl
+# alignment doctoring tabular summary file saved in:              NY0006_mpxv.vadr.dcr
+# seed alignment summary file (-s) saved in:                      NY0006_mpxv.vadr.sda
+# replaced stretches of Ns summary file (-r) saved in:            NY0006_mpxv.vadr.rpn
+#
+# All output files created in directory ./NY0006_mpxv/
+#
+# Elapsed time:  00:00:18.30
+#                hh:mm:ss
+# 
+[ok]
