@@ -10,13 +10,13 @@ process VADR_TRIM {
         'staphb/vadr:latest' : 'staphb/vadr:latest' }"
 
     input:
-	tuple val(meta), path(metadata), path(fasta_path), path(fastq1), path(fastq2)
+	tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
 
     output:
     tuple val(meta), path('*.trimmed.fasta') , emit: trimmed_fasta
 
     script:
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = task.ext.prefix ?: "${meta.sample_id}"
 
     """
     fasta-trim-terminal-ambigs.pl \
