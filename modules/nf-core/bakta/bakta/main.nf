@@ -5,30 +5,30 @@
 */
 process BAKTA {
 
-    conda("bioconda::bakta==1.9.4")
+    conda("bioconda::bakta==1.11.0")
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bakta:1.9.4--pyhdfd78af_0' :
-        'quay.io/biocontainers/bakta:1.9.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/1.11.0--pyhdfd78af_0' :
+        'quay.io/biocontainers/bakta:1.11.0--pyhdfd78af_0' }"
     
     input:
     path db_path
-    tuple val(meta), path(metadata), path(fasta_path), path(fastq1), path(fastq2)
+    tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
 
     output:
-    tuple val(meta), path("${meta.id}/*.fna"), emit: fna
-    tuple val(meta), path("${meta.id}/*.gff3"), emit: gff
-    tuple val(meta), path("${meta.id}/*.faa"), emit: faa
-    tuple val(meta), path("${meta.id}/*.embl"), emit: embl
-    tuple val(meta), path("${meta.id}/*.ffn"), emit: ffn
-    tuple val(meta), path("${meta.id}/*.gbff"), emit: gbff
-    tuple val(meta), path("${meta.id}/*.json"), emit: json
-    tuple val(meta), path("${meta.id}/*.log"), emit: log
-    tuple val(meta), path("${meta.id}/*.tsv"), emit: tsv
-    tuple val(meta), path("${meta.id}/*.txt"), emit: txt
+    tuple val(meta), path("${meta.sample_id}/*.fna"), emit: fna
+    tuple val(meta), path("${meta.sample_id}/*.gff3"), emit: gff
+    tuple val(meta), path("${meta.sample_id}/*.faa"), emit: faa
+    tuple val(meta), path("${meta.sample_id}/*.embl"), emit: embl
+    tuple val(meta), path("${meta.sample_id}/*.ffn"), emit: ffn
+    tuple val(meta), path("${meta.sample_id}/*.gbff"), emit: gbff
+    tuple val(meta), path("${meta.sample_id}/*.json"), emit: json
+    tuple val(meta), path("${meta.sample_id}/*.log"), emit: log
+    tuple val(meta), path("${meta.sample_id}/*.tsv"), emit: tsv
+    tuple val(meta), path("${meta.sample_id}/*.txt"), emit: txt
         
     script:
     def args = task.ext.args  ?: ''
-    def prefix   = task.ext.prefix ?: "${meta.id}"
+    def prefix   = task.ext.prefix ?: "${meta.sample_id}"
     def proteins = params.bakta_proteins ? "--proteins ${proteins[0]}" : ""
     def prodigal_tf = params.bakta_prodigal_tf ? "--prodigal-tf ${prodigal_tf[0]}" : ""
     def skip_trna = params.bakta_skip_trna ? "--skip-trna" : ""
@@ -47,11 +47,11 @@ process BAKTA {
     def keep_contig_headers = params.bakta_keep_contig_headers ? "--keep-contig-headers" : ""
     def locus_tag_param = params.bakta_locus_tag ? "--locus-tag ${params.bakta_locus_tag}" : ""
 
-    """
+    """"
     bakta --db $db_path  \
         --min-contig-length $params.bakta_min_contig_length \
-        --prefix $meta.id \
-        --output $meta.id \
+        --prefix $meta.sample_id \
+        --output $meta.sample_id \
         --genus $params.bakta_genus \
         --species $params.bakta_species \
         --strain $params.bakta_strain \
