@@ -49,7 +49,6 @@ nextflow_process {
 
         when {
             params {
-                // define parameters here
                 submission_prod_or_test = "test"
                 send_submission_email = false
                 biosample = false

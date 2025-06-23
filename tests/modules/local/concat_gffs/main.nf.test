@@ -14,7 +14,7 @@ nextflow_process {
             process {
                 """
                 input[0] = file("${projectDir}/assets/ref/ref.MPXV.NC063383.v7.gff")
-                input[1] = [ [ id: "NY0006" ], file("${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"), 
+                input[1] = [ [ id: "NY0006" ], file("${projectDir}/tests/modules/local/concat_gffs/batch_1.tsv"), 
                                       file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), 
                                       file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), 
                                       file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz"),
