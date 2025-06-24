@@ -11,7 +11,7 @@ include { VADR_POST_CLEANUP                                 } from "../../module
 
 workflow RUN_VADR {
     take:
-        fasta // meta, fasta_path, fastq1, fastq2, nnp
+        fasta // meta, fasta_path
 
     main:
         // Step 1: Trim terminal ambiguous nucleotides from fasta
