@@ -101,7 +101,7 @@ workflow TOSTADAS {
 						REPEATMASKER_LIFTOFF(annotation_ch)
 						annotation_ch = annotation_ch.join(REPEATMASKER_LIFTOFF.out.gff)
 					}
-					annotation_ch.view()
+
 					if (params.vadr) {
 						RUN_VADR(annotation_ch)
 						//annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
