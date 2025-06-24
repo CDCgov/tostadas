@@ -37,8 +37,6 @@ workflow REPEATMASKER_LIFTOFF {
                 [meta, fasta_file, repeatmasker_gff, liftoff_gff] 
             }
 
-        concat_gffs_ch.view { "CONCAT_GFFS INPUT: $it" }
-
         // concat gffs 
         CONCAT_GFFS (
            params.ref_gff_path,
