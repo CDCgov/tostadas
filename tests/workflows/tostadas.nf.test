@@ -4,17 +4,39 @@ nextflow_workflow {
     script "workflows/tostadas.nf"
     workflow "TOSTADAS"
 
-    test("Should run without failures - mpxv annotation with VADR") {
+    setup {
+        // Define source -> destination mappings
+        def filesToCopy = [
+            "${projectDir}/assets/sample_metadata/rsv_test_metadata.xlsx": "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx",
+            "${projectDir}/assets/sample_fastas/rsv/MZ568967.fasta": "${outputDir}/assets/sample_fastas/rsv/MZ568967.fasta",
+            "${projectDir}/assets/sample_fastqs/rsv/DRR152972.R1.fastq.gz": "${outputDir}/assets/sample_fastqs/rsv/DRR152972.R1.fastq.gz",
+            "${projectDir}/assets/sample_fastqs/rsv/DRR152972.R2.fastq.gz": "${outputDir}/assets/sample_fastqs/rsv/DRR152972.R2.fastq.gz"
+        ]
+        
+        // Copy all files
+        filesToCopy.each { sourcePath, destPath ->
+            def sourceFile = file(sourcePath)
+            def destFile = file(destPath)
+            
+            // Create parent directory structure
+            file(destFile.getParent()).mkdirs()
+            
+            // Copy the file
+            destFile.bytes = sourceFile.bytes
+        }
+    }
+
+    test("Should run without failures - rsv annotation with VADR") {
 
         when {
             params {
                 // Basic pipeline parameters
-                meta_path = "${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"
-                outdir = ${outputDir}
+                meta_path = "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+                outdir = "${outputDir}/results"
                 
                 // Annotation parameters
                 annotation = true
-                species = "mpxv"
+                species = "rsv"
                 vadr = true
                 repeatmasker_liftoff = false
                 bakta = false
@@ -59,8 +81,8 @@ nextflow_workflow {
         when {
             params {
                 // Basic pipeline parameters
-                meta_path = "${projectDir}/assets/sample_metadata/bacteria_test_metadata.xlsx"
-                outdir = ${outputDir}
+                meta_path = "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+                outdir = "${outputDir}/results"
                 
                 // Annotation parameters
                 annotation = true
@@ -102,11 +124,11 @@ nextflow_workflow {
 
         when {
             params {
-                meta_path = "${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"
-                outdir = ${outputDir}
+                meta_path = "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+                outdir = "${outputDir}/results"
                 
                 annotation = true
-                species = "mpxv"
+                species = "rsv"
                 vadr = false
                 repeatmasker_liftoff = true
                 bakta = false
@@ -139,8 +161,8 @@ nextflow_workflow {
 
         when {
             params {
-                meta_path = "${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"
-                outdir = ${outputDir}
+                meta_path = "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+                outdir = "${outputDir}/results"
                 
                 // Skip annotation for submission-only test
                 annotation = false
@@ -183,8 +205,8 @@ nextflow_workflow {
 
         when {
             params {
-                meta_path = "${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"
-                outdir = ${outputDir}
+                meta_path = "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+                outdir = "${outputDir}/results"
                 
                 // Skip annotation for submission-only test
                 annotation = false
@@ -229,8 +251,8 @@ nextflow_workflow {
 
     //     when {
     //         params {
-    //             meta_path = "${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"
-    //             outdir = ${outputDir}
+    //            meta_path = "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+    //            outdir = "${outputDir}/results"
                 
     //             annotation = false
                 
@@ -264,8 +286,8 @@ nextflow_workflow {
 
     //     when {
     //         params {
-    //             meta_path = "${baseDir}/test_data/metadata/test_batch_missing_files.tsv"
-    //             outdir = ${outputDir}
+    //            meta_path = "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+    //            outdir = "${outputDir}/results"
                 
     //             annotation = false
     //             submission = true
@@ -293,7 +315,7 @@ nextflow_workflow {
         when {
             params {
                 help = true
-                meta_path = "${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"
+                meta_path = "${projectDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
             }
         }
 
@@ -310,12 +332,12 @@ nextflow_workflow {
 
         when {
             params {
-                meta_path = "${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"
-                outdir = ${outputDir}
+                meta_path = "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+                outdir = "${outputDir}/results"
                 
                 // Enable both annotation and submission
                 annotation = true
-                species = "mpxv"
+                species = "rsv"
                 vadr = false
                 
                 submission = true
@@ -356,12 +378,12 @@ nextflow_workflow {
 
         when {
             params {
-                meta_path = "${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx"
-                outdir = ${outputDir}
+                meta_path = "${outputDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+                outdir = "${outputDir}/results"
                 
                 // Enable both annotation and submission
                 annotation = true
-                species = "mpxv"
+                species = "rsv"
                 vadr = false
                 
                 submission = true

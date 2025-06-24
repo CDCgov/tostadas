@@ -51,7 +51,6 @@ workflow TOSTADAS {
 
 	// run metadata validation process
 	METADATA_VALIDATION ( 
-
 		file(params.meta_path)
 	)
 
