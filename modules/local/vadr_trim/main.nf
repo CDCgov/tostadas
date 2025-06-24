@@ -10,7 +10,8 @@ process VADR_TRIM {
         'staphb/vadr:latest' : 'staphb/vadr:latest' }"
 
     input:
-	tuple val(meta), path(fasta_path), val(fastq1), val(fastq2), val(nnp) // these are vals because the raw files aren't used, they're just placeholders
+	tuple val(meta), path(fasta_path), val(fastq1), val(fastq2), val(nnp) 
+    // these are vals because the raw files aren't used, they're just placeholders
     // todo: remove them from the input channel later to be cleaner
 
     output:
