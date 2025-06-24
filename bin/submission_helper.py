@@ -97,20 +97,20 @@ def fetch_all_reports(databases, output_dir, config_dict, parameters, submission
 			)
 			remote_subdir = get_remote_submission_dir(identifier, batch_id, db, platform)
 			remote_dir = f"submit/{submission_dir}/{remote_subdir}"
-			print(f'remote dir: {remote_dir}, report local path: {report_local_path}')
+			logging.info(f'remote dir: {remote_dir}, report local path: {report_local_path}')
 			success = False
 			while time.time() - start_time < timeout:
 				report_path = submission.fetch_report(remote_dir, report_local_path)
 				if report_path:
-					print(f"Fetched report.xml for {db} ({platform or 'default'})")
+					logging.info(f"Fetched report.xml for {db} ({platform or 'default'})")
 					reports_fetched[db].append(report_path)
 					success = True
 					break
 				else:
-					print(f"Retrying fetch for {db} ({platform or 'default'})...")
+					logging.info(f"Retrying fetch for {db} ({platform or 'default'})...")
 					time.sleep(3)
 			if not success:
-				print(f"Timeout occurred while trying to fetch report for {db} ({platform or 'default'})")
+				logging.error(f"Timeout occurred while trying to fetch report for {db} ({platform or 'default'})")
 	return reports_fetched
 
 def parse_report_xml_to_df(report_path):
@@ -170,9 +170,9 @@ def parse_report_xml_to_df(report_path):
 				report['genbank_release_date'] = action.get("release_date", None)
 			reports.append(report)
 	except FileNotFoundError:
-		print(f"Report not found: {report_path}")
+		logging.error(f"Report not found: {report_path}")
 	except ET.ParseError:
-		print(f"Error parsing XML report: {report_path}")
+		logging.error(f"Error parsing XML report: {report_path}")
 	df = pd.DataFrame(reports)
 	df = df.where(pd.notna(df), None)
 	return df
@@ -187,7 +187,7 @@ def parse_and_save_reports(reports_fetched, output_dir, batch_id):
 	report_csv_file = os.path.join(output_dir, f"{batch_id}.csv")
 	try:
 		all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
-		print(f"Report table saved to: {report_csv_file}")
+		logging.info(f"Report table saved to: {report_csv_file}")
 	except Exception as e:
 		raise ValueError(f"Failed to save report CSV: {e}")
 class GetParams:

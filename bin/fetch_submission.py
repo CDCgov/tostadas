@@ -17,14 +17,12 @@ def get_args():
                         help="Original metadata file prefix (identifier for the NCBI submission).")
     parser.add_argument("--batch_id", required=True,
                         help="Batch ID for submission (used for naming files).")
-    parser.add_argument("--submission_dir", required=True,
-                        help="Submission mode directory (Test or Production).")
     parser.add_argument("--databases", required=True, nargs="+",
                         help="List of databases to fetch reports from (e.g., biosample sra genbank).")
     parser.add_argument("--submission_mode", choices=["ftp", "sftp"], required=False, default="ftp",
                         help="Connect via FTP or SFTP (default: ftp).")
     parser.add_argument("--test", action="store_true",
-                        help="Connect to the Test submission area.")
+                        help="True if submitting to Test, false if submitting to Production")
     parser.add_argument("--dry_run", action="store_true",
                         help="Perform a dry run (don't fetch files).")
     return parser
@@ -53,7 +51,7 @@ def main_fetch():
         output_dir=params["submission_folder"],
         config_dict=config,
         parameters=params,
-        submission_dir=params["submission_dir"],
+        submission_dir=mode,
         submission_mode=params["submission_mode"],
         identifier=params["identifier"],
         batch_id=params["batch_id"],
