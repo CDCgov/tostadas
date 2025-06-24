@@ -21,7 +21,12 @@ process CONCAT_GFFS {
 
 	input:
 	path ref_gff_path
-    tuple val(meta), path(fasta_path), path(repeatmasker_gff), path(liftoff_gff)
+    tuple val(meta), path(fasta), path(repeatmasker_gff), path(liftoff_gff)
+
+	output:
+    tuple val(meta), path('*.gff'), emit: gff
+    tuple val(meta), path('*.txt'), emit: errors
+    tuple val(meta), path('*.tbl'), emit: tbl
 
 	script:
 	"""
@@ -29,14 +34,8 @@ process CONCAT_GFFS {
         --repeatm_gff $repeatmasker_gff \
         --liftoff_gff $liftoff_gff \
         --refgff $ref_gff_path \
-        --fasta $fasta_path  \
+        --fasta $fasta  \
         --sample_name $meta.id
 	"""
-
-	output:
-    
-    tuple val(meta), path('*.gff'), emit: gff
-    tuple val(meta), path('*.txt'), emit: errors
-    tuple val(meta), path('*.tbl'), emit: tbl
 }
 
