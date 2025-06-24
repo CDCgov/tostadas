@@ -88,46 +88,48 @@ workflow TOSTADAS {
 			}
 		}
 
-		// perform annotation if requested
-		if ( params.fetch_reports_only == false) {
-			if (params.annotation) {
+	// Initialize submission_ch with sample_ch by default
+	submission_ch = sample_ch
+
+	// perform annotation if requested
+	if (params.fetch_reports_only == false) {
+		if (params.annotation) {
+			// Create simplified annotation channel with only what's needed for annotation
 			annotation_ch = sample_ch.map { meta, fasta, fq1, fq2, nnp, gff -> 
-				// remove user-provided gff, if present, from annotation input channel before performing annotation
-				[meta, fasta, fq1, fq2, nnp] 
+				[meta, fasta] 
 			}
-				if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
-					// perform viral annotation according to user's choice: liftoff+repeatmasker or vadr
-					if (params.repeatmasker_liftoff && !params.vadr) {
-						REPEATMASKER_LIFTOFF(annotation_ch)
-						annotation_ch = annotation_ch.join(REPEATMASKER_LIFTOFF.out.gff)
-					}
+			
+			if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
+				// perform viral annotation according to user's choice: liftoff+repeatmasker or vadr
+				if (params.repeatmasker_liftoff && !params.vadr) {
+					REPEATMASKER_LIFTOFF(annotation_ch)
+					annotation_ch = annotation_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+				}
+				
+				if (params.vadr) {
+					RUN_VADR(annotation_ch)
+					annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
+				}
 
-					if (params.vadr) {
-						RUN_VADR(annotation_ch)
-						//annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
-						annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
-													 .map { meta, fasta, fq1, fq2, nnp, tbl -> 
-															[meta, fasta, fq1, fq2, nnp, tbl] 
-														  }
-					}
-
-				// or perform bacterial annotation using bakta
-				} else if (params.species == 'bacteria') {
-					if (params.bakta) {
-						RUN_BAKTA(annotation_ch)
-
-						annotation_ch = annotation_ch
-							| join(RUN_BAKTA.out.gff)
-							| map { meta, fasta, fq1, fq2, nnp, gff -> [meta, fq1, fq2, nnp, gff] }
-							| join(RUN_BAKTA.out.fna)
-							| map { meta, fq1, fq2, nnp, gff, fasta -> [meta, fasta, fq1, fq2, gff] }
-					}
+			// or perform bacterial annotation using bakta
+			} else if (params.species == 'bacteria') {
+				if (params.bakta) {
+					RUN_BAKTA(annotation_ch)
+					annotation_ch = annotation_ch
+						| join(RUN_BAKTA.out.gff)
+						| join(RUN_BAKTA.out.fna)
+						| map { meta, orig_fasta, gff, fasta -> [meta, fasta, gff] }
 				}
 			}
+			
+			// Reconstruct full channel by joining annotation results back with original sample_ch
+			submission_ch = sample_ch.map { meta, fasta, fq1, fq2, nnp, gff -> [meta, fq1, fq2, nnp] }
+									.join(annotation_ch)
+									.map { meta, fq1, fq2, nnp, fasta, gff -> 
+										[meta, fasta, fq1, fq2, nnp, gff] 
+									}
 		}
-
-	// Assign initial submission channel based on wether annotation was performed or not
-	submission_ch = params.annotation ? annotation_ch : sample_ch
+	}
 
 	// Create batch initial submission channel, check for existence of files based on selected submission databases
 	submission_batch_ch = submission_ch
