@@ -93,7 +93,7 @@ workflow TOSTADAS {
 			if (params.annotation) {
 			annotation_ch = sample_ch.map { meta, fasta, fq1, fq2, nnp, gff -> 
 				// remove user-provided gff, if present, from annotation input channel before performing annotation
-				[meta, fasta, fq1, fq2] 
+				[meta, fasta, fq1, fq2, nnp] 
 			}
 				if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
 					// perform viral annotation according to user's choice: liftoff+repeatmasker or vadr
@@ -101,11 +101,16 @@ workflow TOSTADAS {
 						REPEATMASKER_LIFTOFF(annotation_ch)
 						annotation_ch = annotation_ch.join(REPEATMASKER_LIFTOFF.out.gff)
 					}
-
+					annotation_ch.view()
 					if (params.vadr) {
 						RUN_VADR(annotation_ch)
+						//annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
 						annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
+													 .map { meta, fasta, fq1, fq2, nnp, tbl -> 
+															[meta, fasta, fq1, fq2, nnp, tbl] 
+														  }
 					}
+
 				// or perform bacterial annotation using bakta
 				} else if (params.species == 'bacteria') {
 					if (params.bakta) {
