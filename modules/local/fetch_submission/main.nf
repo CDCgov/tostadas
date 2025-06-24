@@ -14,54 +14,34 @@ process FETCH_SUBMISSION {
         'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
 
     input:
-    val wait_time
+    val(wait_time)
     tuple val(meta), val(samples), val(enabledDatabases), path(submission_folder)
     path(submission_config)
 
+    output:
+    tuple val(meta), path("${batch_dir}"), emit: submission_files
+    path("${batch_dir}/fetch_submission.log"), emit: submission_log, optional: true
+    path("${batch_dir}/${meta.batch_id}.csv"), emit: submission_report
+
     script:
-    def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
-    def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
-    def biosample = params.biosample == true ? '--biosample' : ''
-    def sra = params.sra == true ? '--sra' : ''
-    def genbank = params.genbank == true ? '--genbank' : ''
+    def dry_run_flag = params.dry_run == true ? '--dry_run' : ''
 
-    def outdir = submission_folder.getName()
+    // Build database argument list
+    def databases_flag = enabledDatabases.join(' ')
+    def batch_dir = meta.batch_id
 
-    // Assemble per-sample arguments, quoting paths in case of spaces
-    def sample_args_list = samples.collect { sample ->
-        def s = [
-            "sample_id=${sample.meta.sample_id}",
-            "fq1=${sample.fq1}",
-            "fq2=${sample.fq2}",
-            "nanopore=${sample.nanopore}",
-            "fasta=${sample.fasta}",
-            "gff=${sample.gff}"
-        ].findAll { it.split('=')[1] != "null" }  // remove nulls
-        .join(',')
-        return "\"${s}\""
-    }
-    def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
-    
     """
-    submission_new.py \
-        --fetch \
-        --submission_name ${meta.batch_id} \
-        --config_file $submission_config  \
-        --metadata_file ${meta.batch_tsv} \
+    mkdir -p ${batch_dir} && \
+    fetch_submission.py \
+        --submission_folder ${submission_folder} \
+        --config_file ${submission_config} \
         --identifier ${params.metadata_basename} \
-        --species $params.species \
-        --output_dir  ${meta.batch_id}  \
-        ${sample_args} \
-        --custom_metadata_file $params.custom_fields_file \
-        --submission_mode $params.submission_mode \
-        $test_flag \
-        $send_submission_email \
-        $genbank $sra $biosample
+        --batch_id ${meta.batch_id} \
+        --submission_dir ${params.submission_dir} \
+        --databases ${databases_flag} \
+        --submission_mode ${params.submission_mode} \
+        ${test_flag} \
+        ${dry_run_flag}
     """
-
-output:
-tuple val(meta), path("${meta.batch_id}"), emit: submission_files
-path("${meta.batch_id}/${meta.batch_id}.csv"), emit: submission_report
-
 }

@@ -67,7 +67,7 @@ def get_accessions(sample, report_df):
 	return accessions
 
 # Functions for fetching module
-def fetch_all_reports(databases, output_dir, samples, config_dict, parameters, submission_dir, submission_mode, identifier, batch_id, timeout=60):
+def fetch_all_reports(databases, output_dir, config_dict, parameters, submission_dir, submission_mode, identifier, batch_id, timeout=60):
 	start_time = time.time()
 	reports_fetched = {}
 
