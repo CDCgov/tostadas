@@ -21,7 +21,7 @@ process CONCAT_GFFS {
 
 	input:
 	path ref_gff_path
-    tuple val(meta), path(metadata), path(fasta_path), path(fastq_1), path(fastq_2), path(repeatmasker_gff), path(liftoff_gff)
+    tuple val(meta), path(fasta_path), path(repeatmasker_gff), path(liftoff_gff)
 
 	script:
 	"""

@@ -20,14 +20,14 @@ process LIFTOFF_CLI {
         }
 
 	input:
-	tuple val(meta), path(metadata), path(fasta), path(fastq1), path(fastq2)
+	tuple val(meta), path(fasta)
     path ref_fasta_path 
     path ref_gff_path 
 
     output:
-    path fasta, emit: fasta
-    path "*.gff", emit: gff
-    path "*.txt", emit: errors
+    tuple val(meta), path(fasta), emit: fasta
+    tuple val(meta), path("*.gff"), emit: gff
+    tuple val(meta), path("*.txt"), emit: errors
 
 	script:
     """
