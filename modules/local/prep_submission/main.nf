@@ -17,6 +17,9 @@ process PREP_SUBMISSION {
     input:
     tuple val(meta), val(samples), val(enabledDatabases)
     path(submission_config)
+    
+    output:
+    tuple val(meta), path("${meta.batch_id}"), emit: submission_files
 
     when:
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
@@ -63,7 +66,4 @@ process PREP_SUBMISSION {
         $genbank $sra $biosample \
         $dry_run
     """
-
-    output:
-    tuple val(meta), path("${meta.batch_id}"), emit: submission_files
 }

@@ -9,7 +9,6 @@
 include { PREP_SUBMISSION                               } from '../../modules/local/prep_submission/main'
 include { SUBMIT_SUBMISSION                             } from '../../modules/local/submit_submission/main'
 include { FETCH_SUBMISSION                              } from '../../modules/local/fetch_submission/main'
-include { UPDATE_SUBMISSION                             } from '../../modules/local/update_submission/main'
 include { AGGREGATE_REPORTS                             } from '../../modules/local/aggregate_reports/main'
 include { WAIT                                          } from '../../modules/local/general_util/wait/main'
 include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"

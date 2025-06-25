@@ -170,7 +170,6 @@ class GetParams:
 		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for MetaData")
 		# optional parameters
 		parser.add_argument("--batch_size", type=int, default=1, help="Number of samples to process per batch")
-		parser.add_argument("--project_dir", type=str, default=None, help="Path to the tostadas project directory")
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
 							help="Output Directory for final Files, default is current directory")
 		parser.add_argument("--overwrite_output_files", action="store_true", default=True, help='Flag for whether to overwrite the output dir')
