@@ -66,26 +66,26 @@ workflow TOSTADAS {
 		}
 
 	// Generate the (per-sample) fasta and fastq paths
-	sample_ch = metadata_batch_ch
-		.flatMap { meta, _ ->
-			def rows = meta.batch_tsv.splitCsv(header: true, sep: "\t")
-			return rows.collect { row ->
-				def sample_meta = [
-					batch_id: meta.batch_id,
-					batch_tsv: meta.batch_tsv,
-					sample_id: row.sample_name?.trim()
-				]
-				def trimFile = { path -> path?.trim() ? file(path.trim()) : null }
+	sample_ch = metadata_batch_ch.flatMap { meta, _ -> 
+		def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
+		return rows.collect { row -> 
+			def sample_meta = [
+				batch_id : meta.batch_id,
+				batch_tsv: meta.batch_tsv,
+				sample_id : row.sample_name?.trim()
+			]
+			def trimFile = { path -> path?.trim() ? file(path.trim()) : null }
 
-				def fasta = trimFile(row.fasta_path)
-				def fq1 = trimFile(row.int_illumina_sra_file_path_1)
-				def fq2 = trimFile(row.int_illumina_sra_file_path_2)
-				def nnp = trimFile(row.int_nanopore_sra_file_path_1)
-				def gff = trimFile(row.gff_path)
+			def fasta = row.containsKey('fasta_path')        			? trimFile(row.fasta_path)                       : null
+			def fq1   = row.containsKey('int_illumina_sra_file_path_1') ? trimFile(row.int_illumina_sra_file_path_1) 	 : null
+			def fq2   = row.containsKey('int_illumina_sra_file_path_2') ? trimFile(row.int_illumina_sra_file_path_2)	 : null
+			def nnp   = row.containsKey('int_nanopore_sra_file_path_1') ? trimFile(row.int_nanopore_sra_file_path_1)	 : null
+			def gff    = row.containsKey('gff_path')           			? trimFile(row.gff_path)                         : null
 
-				return [sample_meta, fasta, fq1, fq2, nnp, gff]
-			}
+			return [sample_meta, fasta, fq1, fq2, nnp, gff]
 		}
+	}
+	sample_ch.view()
 
 	// Initialize submission_ch with sample_ch by default
 	submission_ch = sample_ch
