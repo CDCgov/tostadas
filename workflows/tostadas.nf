@@ -7,15 +7,12 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 // get the utility processes / subworkflows
-
-// include { RUN_UTILITY                                       } from "../subworkflows/local/utility"
 include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 
 include { GET_WAIT_TIME                                     } from "../modules/local/general_util/get_wait_time/main"
 
 // get metadata validation processes
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
-include { EXTRACT_INPUTS                                    } from '../modules/local/extract_inputs/main'
 
 // get viral annotation process/subworkflows
 // include { LIFTOFF                                           } from "../modules/local/liftoff_annotation/main"
@@ -35,19 +32,21 @@ include { WAIT                                              } from '../modules/l
 									MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+// Global method to trim white space from file paths
+def trimFile(path) {
+    return path?.trim() ? file(path.trim()) : null
+}
 workflow TOSTADAS {
-	
-	// check if help parameter is set
-	if ( params.help == true ) {
-		PRINT_PARAMS_HELP()
-		exit 0
-	}
 
 	// validate input parameters
 	validateParameters()
 
 	// print summary of supplied parameters
 	log.info paramsSummaryLog(workflow)
+
+	
+	//def trimFile = { path -> path?.trim() ? file(path.trim()) : null }
 
 	// run metadata validation process
 	METADATA_VALIDATION ( 
@@ -66,7 +65,7 @@ workflow TOSTADAS {
 		}
 
 	// Generate the (per-sample) fasta and fastq paths
-	sample_ch = metadata_batch_ch.flatMap { meta, _ -> 
+	sample_ch = metadata_batch_ch.flatMap { meta, _files -> 
 		def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
 		return rows.collect { row -> 
 			def sample_meta = [
@@ -74,7 +73,6 @@ workflow TOSTADAS {
 				batch_tsv: meta.batch_tsv,
 				sample_id : row.sample_name?.trim()
 			]
-			def trimFile = { path -> path?.trim() ? file(path.trim()) : null }
 
 			def fasta = row.containsKey('fasta_path')        			? trimFile(row.fasta_path)                       : null
 			def fq1   = row.containsKey('int_illumina_sra_file_path_1') ? trimFile(row.int_illumina_sra_file_path_1) 	 : null
@@ -85,7 +83,6 @@ workflow TOSTADAS {
 			return [sample_meta, fasta, fq1, fq2, nnp, gff]
 		}
 	}
-	sample_ch.view()
 
 	// Initialize submission_ch with sample_ch by default
 	submission_ch = sample_ch
@@ -94,7 +91,7 @@ workflow TOSTADAS {
 	if (params.fetch_reports_only == false) {
 		if (params.annotation) {
 			// Create simplified annotation channel with only what's needed for annotation
-			annotation_ch = sample_ch.map { meta, fasta, fq1, fq2, nnp, gff -> 
+			annotation_ch = sample_ch.map { meta, fasta, _fq1, _fq2, _nnp, _gff -> 
 				[meta, fasta] 
 			}
 			
@@ -117,12 +114,12 @@ workflow TOSTADAS {
 					annotation_ch = annotation_ch
 						| join(RUN_BAKTA.out.gff)
 						| join(RUN_BAKTA.out.fna)
-						| map { meta, orig_fasta, gff, fasta -> [meta, fasta, gff] }
+						| map { meta, _orig_fasta, gff, fasta -> [meta, fasta, gff] }
 				}
 			}
 			
 			// Reconstruct full channel by joining annotation results back with original sample_ch
-			submission_ch = sample_ch.map { meta, fasta, fq1, fq2, nnp, gff -> [meta, fq1, fq2, nnp] }
+			submission_ch = sample_ch.map { meta, _fasta, fq1, fq2, nnp, _gff -> [meta, fq1, fq2, nnp] }
 									.join(annotation_ch)
 									.map { meta, fq1, fq2, nnp, fasta, gff -> 
 										[meta, fasta, fq1, fq2, nnp, gff] 
