@@ -1,67 +1,72 @@
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                RUN BAKTA ANNOTATION
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-process BAKTA {
+process BAKTA_BAKTA {
+    label 'process_medium'
 
-    conda("bioconda::bakta==1.11.0")
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/1.11.0--pyhdfd78af_0' :
-        'quay.io/biocontainers/bakta:1.11.0--pyhdfd78af_0' }"
-    
+        'https://depot.galaxyproject.org/singularity/bakta:1.10.4--pyhdfd78af_0' :
+        'biocontainers/bakta:1.10.4--pyhdfd78af_0' }"
+
     input:
-    path db_path
-    tuple val(meta), path(fasta_path), path(fastq1), path(fastq2)
+    tuple val(meta), path(fasta)
+    path db
+    path proteins
+    path prodigal_tf
 
     output:
-    tuple val(meta), path("${meta.sample_id}/*.fna"), emit: fna
-    tuple val(meta), path("${meta.sample_id}/*.gff3"), emit: gff
-    tuple val(meta), path("${meta.sample_id}/*.faa"), emit: faa
-    tuple val(meta), path("${meta.sample_id}/*.embl"), emit: embl
-    tuple val(meta), path("${meta.sample_id}/*.ffn"), emit: ffn
-    tuple val(meta), path("${meta.sample_id}/*.gbff"), emit: gbff
-    tuple val(meta), path("${meta.sample_id}/*.json"), emit: json
-    tuple val(meta), path("${meta.sample_id}/*.log"), emit: log
-    tuple val(meta), path("${meta.sample_id}/*.tsv"), emit: tsv
-    tuple val(meta), path("${meta.sample_id}/*.txt"), emit: txt
-        
-    script:
-    def args = task.ext.args  ?: ''
-    def prefix   = task.ext.prefix ?: "${meta.sample_id}"
-    def proteins = params.bakta_proteins ? "--proteins ${proteins[0]}" : ""
-    def prodigal_tf = params.bakta_prodigal_tf ? "--prodigal-tf ${prodigal_tf[0]}" : ""
-    def skip_trna = params.bakta_skip_trna ? "--skip-trna" : ""
-    def skip_tmrna = params.bakta_skip_tmrna ? "--skip-tmrna" : ""
-    def skip_rrna = params.bakta_skip_rrna ? "--skip-rrna" : ""
-    def skip_ncrna = params.bakta_skip_ncrna ? "--skip-ncrna" : ""
-    def skip_ncrna_region = params.bakta_skip_ncrna_region ? "--skip-ncrna-region" : ""
-    def skip_crispr = params.bakta_skip_crispr ? "--skip-crispr" : ""
-    def skip_cds = params.bakta_skip_cds ? "--skip-cds" : ""
-    def skip_sorf = params.bakta_skip_sorf ? "--skip-sorf" : ""
-    def skip_gap = params.bakta_skip_gap ? "--skip-gap" : ""
-    def skip_ori = params.bakta_skip_ori ? "--skip-ori" : ""
-    def compliant = params.bakta_compliant ? "--compliant" : ""
-    def complete = params.bakta_complete ? "--complete" : ""
-    def skip_plot = params.bakta_skip_plot ? "--skip-plot" : ""
-    def keep_contig_headers = params.bakta_keep_contig_headers ? "--keep-contig-headers" : ""
-    def locus_tag_param = params.bakta_locus_tag ? "--locus-tag ${params.bakta_locus_tag}" : ""
+    tuple val(meta), path("${prefix}.embl")             , emit: embl
+    tuple val(meta), path("${prefix}.faa")              , emit: faa
+    tuple val(meta), path("${prefix}.ffn")              , emit: ffn
+    tuple val(meta), path("${prefix}.fna")              , emit: fna
+    tuple val(meta), path("${prefix}.gbff")             , emit: gbff
+    tuple val(meta), path("${prefix}.gff3")             , emit: gff
+    tuple val(meta), path("${prefix}.hypotheticals.tsv"), emit: hypotheticals_tsv
+    tuple val(meta), path("${prefix}.hypotheticals.faa"), emit: hypotheticals_faa
+    tuple val(meta), path("${prefix}.tsv")              , emit: tsv
+    tuple val(meta), path("${prefix}.txt")              , emit: txt
+    path "versions.yml"                                 , emit: versions
 
-    """"
-    bakta --db $db_path  \
-        --min-contig-length $params.bakta_min_contig_length \
-        --prefix $meta.sample_id \
-        --output $meta.sample_id \
-        --genus $params.bakta_genus \
-        --species $params.bakta_species \
-        --strain $params.bakta_strain \
-        --plasmid $params.bakta_plasmid  \
-        --translation-table $params.bakta_translation_table \
-        --gram $params.bakta_gram \
-        --locus $params.bakta_locus \
-        ${locus_tag_param} \
-        $complete $compliant $keep_contig_headers $proteins $prodigal_tf $skip_trna $skip_rrna \
-        $skip_ncrna $skip_ncrna_region $skip_crispr $skip_cds $skip_sorf $skip_gap $skip_ori $skip_plot \
-        $fasta_path 
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    def args = task.ext.args   ?: ''
+    prefix   = task.ext.prefix ?: "${meta.id}"
+    def proteins_opt = proteins ? "--proteins ${proteins[0]}" : ""
+    def prodigal_tf = prodigal_tf ? "--prodigal-tf ${prodigal_tf[0]}" : ""
+
+    """
+    bakta \\
+        $fasta \\
+        $args \\
+        --threads $task.cpus \\
+        --prefix $prefix \\
+        $proteins_opt \\
+        $prodigal_tf \\
+        --db $db
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bakta: \$(echo \$(bakta --version) 2>&1 | cut -f '2' -d ' ')
+    END_VERSIONS
+    """
+
+    stub:
+    prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.embl
+    touch ${prefix}.faa
+    touch ${prefix}.ffn
+    touch ${prefix}.fna
+    touch ${prefix}.gbff
+    touch ${prefix}.gff3
+    touch ${prefix}.hypotheticals.tsv
+    touch ${prefix}.hypotheticals.faa
+    touch ${prefix}.tsv
+    touch ${prefix}.txt
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bakta: \$(echo \$(bakta --version) 2>&1 | cut -f '2' -d ' ')
+    END_VERSIONS
     """
 }
