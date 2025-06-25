@@ -286,6 +286,10 @@
           "type": "string",
           "hidden": true
         },
+        "bakta_prodigal_tf": {
+          "type": "string",
+          "hidden": true
+        },
         "bakta_skip_trna": {
           "type": "string",
           "hidden": true
