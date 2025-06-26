@@ -35,7 +35,7 @@ process CONCAT_GFFS {
         --liftoff_gff $liftoff_gff \
         --refgff $ref_gff_path \
         --fasta $fasta  \
-        --sample_name $meta.id
+        --sample_name $meta.sample_id
 	"""
 }
 
