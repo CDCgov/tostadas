@@ -54,7 +54,7 @@ def metadata_validation_main():
 
 		# output the batched tsv files  
 		batch_size = parameters['batch_size']
-		output_dir = os.path.join(parameters["output_dir"], parameters["file_name"], "batched_tsvs")
+		output_dir = ("batched_tsvs")
 		os.makedirs(output_dir, exist_ok=True)
 
 		total_rows = len(final_df)
@@ -80,7 +80,7 @@ def metadata_validation_main():
 
 def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
 	"""Retrieve and verify existing batch TSVs and their associated samples."""
-	summary_path = os.path.join(parameters["path_to_existing_tsvs"], parameters["file_name"], "batched_tsvs", "batch_summary.json")
+	summary_path = os.path.join(parameters["path_to_existing_tsvs"], "batched_tsvs", "batch_summary.json")
 
 	if not os.path.exists(summary_path):
 		print(f"\nERROR: batch_summary.json not found at {summary_path}\n", file=sys.stderr)
@@ -95,8 +95,8 @@ def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
 	found_samples = set()
 
 	for batch_file, samples in batch_summary.items():
-		src_batch_path = os.path.join(parameters["path_to_existing_tsvs"], parameters["file_name"],	"batched_tsvs",	batch_file)
-		dest_batch_path = os.path.join(parameters["output_dir"], parameters["file_name"], "batched_tsvs", batch_file)
+		src_batch_path = os.path.join(parameters["path_to_existing_tsvs"], "batched_tsvs",	batch_file)
+		dest_batch_path = os.path.join("batched_tsvs", batch_file)
 
 		if os.path.exists(src_batch_path):
 			os.makedirs(os.path.dirname(dest_batch_path), exist_ok=True)
@@ -135,10 +135,6 @@ class GetParams:
 		"""
 		# get the restrictions 
 		self.get_restrictions()
-
-		# create new directory for output if it does not exist and user does not pass in preference
-		if not os.path.isdir(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}'):
-			os.system(f'mkdir -p -m777 {self.parameters["output_dir"]}/{self.parameters["file_name"]}')
 
 	# read in parameters
 	def get_inputs(self):
@@ -312,7 +308,7 @@ class ValidateChecks:
 		self.report_errors()
 				
 	def report_errors(self):
-		with open(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}/error.txt', "w") as f:
+		with open('error.txt', "w") as f:
 			# Write Global Errors
 			f.write("General Errors:\n\n")
 			if self.global_log:
