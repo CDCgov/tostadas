@@ -27,7 +27,7 @@ workflow RUN_VADR {
         VADR_POST_CLEANUP(VADR_ANNOTATION.out.vadr_outputs)
 
     emit:
-        gff    = VADR_POST_CLEANUP.out.gff      // tuple val(meta), path('*/transformed_outputs/gffs/*.gff')
-        errors = VADR_POST_CLEANUP.out.errors   // tuple val(meta), path('*/transformed_outputs/errors/*.txt')
-        tbl    = VADR_POST_CLEANUP.out.tbl      // tuple val(meta), path('*/transformed_outputs/tbl/*.tbl')
+        gff    = VADR_POST_CLEANUP.out.gff      // tuple val(meta), path('*/gffs/*.gff')
+        errors = VADR_POST_CLEANUP.out.errors   // tuple val(meta), path('*/errors/*.txt')
+        tbl    = VADR_POST_CLEANUP.out.tbl      // tuple val(meta), path('*/tbl/*.tbl')
 }
