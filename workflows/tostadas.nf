@@ -24,7 +24,7 @@ include { RUN_BAKTA                                         } from "../subworkfl
 
 // get submission related process/subworkflows
 include { SUBMISSION		                                } from "../subworkflows/local/submission"
-include { MERGE_UPLOAD_LOG                                  } from "../modules/local/general_util/merge_upload_log/main"
+//include { MERGE_UPLOAD_LOG                                  } from "../modules/local/general_util/merge_upload_log/main"
 include { WAIT                                              } from '../modules/local/general_util/wait/main'
 
 /*
