@@ -19,7 +19,7 @@ clear_work_dir: true
 clear_conda_env: false
 clear_nf_results: false
 
-output_dir: "nf_test_results"
+outdir: "nf_test_results"
 overwrite_output: true
 
 val_output_dir: "validation_outputs"

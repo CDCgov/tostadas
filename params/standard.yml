@@ -19,7 +19,7 @@ clear_work_dir: null
 clear_conda_env: null
 clear_nf_results: null
 
-output_dir: ""
+outdir: ""
 overwrite_output: null
 
 val_output_dir: ""

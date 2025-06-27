@@ -45,9 +45,9 @@ Example:
 
 ### Example: Modifying the output directory
 
-By default, the pipeline will create and store pipeline outputs in the test\_output directory. You can modify the location output files are stored by adding the `--output_dir` flag to the command line and providing the new path as a string.
+By default, the pipeline will create and store pipeline outputs in the test\_output directory. You can modify the location output files are stored by adding the `--outdir` flag to the command line and providing the new path as a string.
 
-`nextflow run main.nf -profile test,singularity –-virus --output_dir </path/to/output/dir>`
+`nextflow run main.nf -profile test,singularity –-virus --outdir </path/to/output/dir>`
 
 ### Running Annotation and Submission
 
