@@ -12,13 +12,6 @@ process LIFTOFF_CLI {
         'https://depot.galaxyproject.org/singularity/liftoff:1.6.3--pyhdfd78af_0' :
         'quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_0'}"
 
-    publishDir "$params.output_dir/liftoff", mode: "copy", overwrite: params.overwrite_output,
-        saveAs: { filename ->
-                      filename.indexOf('.fasta') > 0 ? "fasta/${filename}":
-                      filename.indexOf('.txt') > 0 ? "errors/${filename}":
-                      filename
-        }
-
 	input:
 	tuple val(meta), path(fasta)
     path ref_fasta_path 

@@ -13,9 +13,9 @@ process VADR_POST_CLEANUP {
     tuple val(meta), path(vadr_outputs)
     
     output:
-    tuple val(meta), path('*/transformed_outputs/gffs/*.gff'), emit: gff
-    tuple val(meta), path('*/transformed_outputs/errors/*.txt'), emit: errors
-    tuple val(meta), path('*/transformed_outputs/tbl/*.tbl'), emit: tbl
+    tuple val(meta), path('*/gffs/*.gff'), emit: gff
+    tuple val(meta), path('*/errors/*.txt'), emit: errors
+    tuple val(meta), path('*/tbl/*.tbl'), emit: tbl
 
     script:
     """

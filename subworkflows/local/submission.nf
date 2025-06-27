@@ -11,7 +11,7 @@ include { SUBMIT_SUBMISSION                             } from '../../modules/lo
 include { FETCH_SUBMISSION                              } from '../../modules/local/fetch_submission/main'
 include { AGGREGATE_REPORTS                             } from '../../modules/local/aggregate_reports/main'
 include { WAIT                                          } from '../../modules/local/general_util/wait/main'
-include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
+//include { MERGE_UPLOAD_LOG                              } from "../../modules/local/general_util/merge_upload_log/main"
 
 workflow SUBMISSION {
     take:
@@ -31,8 +31,8 @@ workflow SUBMISSION {
         if (params.fetch_reports_only == true) {
             // Check if submission folder exists and run report fetching module
             submission_ch.map { meta, samples, enabledDatabases ->
-                def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
-                def submission_folder = file("${resolved_output_dir}/${params.submission_output_dir}/${params.metadata_basename}/${meta.batch_id}") 
+                def resolved_outdir = params.outdir.startsWith('/') ? params.outdir : "${baseDir}/${params.outdir}"
+                def submission_folder = file("${resolved_outdir}/${params.submission_outdir}/${params.metadata_basename}/${meta.batch_id}") 
                 if (!submission_folder.exists()) {
                     throw new IllegalStateException("Submission folder does not exist for batch: ${meta.batch_id}")
                 }
