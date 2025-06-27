@@ -12,13 +12,13 @@ nextflow_process {
                 // outdir = "tests/results"
                 batch_size = 1
                 project_dir = "${projectDir}" // (?: do I need this)
-                output_dir = "${outputDir}"
+                outdir = "${outputDir}"
                 custom_fields_file = "${projectDir}/assets/example_custom_fields.json"
                 validate_custom_fields = true
                 date_format_flag = 's'
                 remove_demographic_info = true
                 fetch_reports_only = false
-                resolved_output_dir = "${outputDir}" // (?: I'm not sure about this)
+                resolved_outdir = "${outputDir}" // (?: I'm not sure about this)
                 resolved_submission_config = "${projectDir}/conf/submission_config.yaml"
                 biosample_fields_key = "${projectDir}/assets/biosample_fields_key.yaml"
             }

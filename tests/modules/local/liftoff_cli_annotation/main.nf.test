@@ -9,7 +9,6 @@ nextflow_process {
         when {
             params {
                 // parameter values
-                output_dir = "${outputDir}"
                 overwrite_output = true
                 lift_unmapped_features_file_name = "output.unmapped_features.txt"
                 lift_coverage_threshold = 0.5

@@ -18,7 +18,6 @@ nextflow_process {
                 genbank = false
                 species = "virus"
                 submission_mode = "ftp"
-                output_dir = "${outputDir}"
                 metadata_basename = "mpxv_test_metadata"
                 overwrite_output = true
                 dry_run = true
@@ -56,7 +55,6 @@ nextflow_process {
                 genbank = false
                 species = "virus"
                 submission_mode = "ftp"
-                output_dir = "${outputDir}"
                 metadata_basename = "mpxv_test_metadata"
                 overwrite_output = true
                 dry_run = true

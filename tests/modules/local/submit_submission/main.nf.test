@@ -12,7 +12,6 @@ nextflow_process {
                 submission_prod_or_test = "test"
                 send_submission_email = false
                 submission_mode = "ftp"
-                output_dir = "${outputDir}" // (?: what does this NF variable resolve to?  surely not $params.output_dir?)
                 metadata_basename = "mpxv_test_metadata"
                 overwrite_output = true
                 dry_run = true 
