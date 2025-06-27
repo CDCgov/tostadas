@@ -21,9 +21,8 @@ workflow RUN_BAKTA {
         }
 
         // Prepare optional input files
-        proteins_file = params.bakta_proteins ? file(params.bakta_proteins) : []
-        prodigal_tf_file = params.bakta_prodigal_tf ? file(params.bakta_prodigal_tf) : []
-
+        //proteins_file = file(params.bakta_proteins) ? params.bakta_proteins : []
+        //prodigal_tf_file = file(params.bakta_prodigal_tf) ? params.bakta_prodigal_tf : []
 
         if ( params.download_bakta_db ) {
             BAKTA_BAKTADBDOWNLOAD (
@@ -32,16 +31,16 @@ workflow RUN_BAKTA {
             BAKTA_BAKTA (
                 bakta_input_ch,
                 BAKTA_BAKTADBDOWNLOAD.out.db,
-                proteins_file,
-                prodigal_tf_file
+                params.bakta_proteins ?: [], 
+                params.bakta_prodigal_tf ?: []
                 )
             }
         else {
             BAKTA_BAKTA (
             bakta_input_ch,
             file(params.bakta_db_path),
-            proteins_file,
-            prodigal_tf_file
+            params.bakta_proteins ?: [], 
+            params.bakta_prodigal_tf ?: []
             )
         }
 
