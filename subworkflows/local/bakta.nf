@@ -20,10 +20,6 @@ workflow RUN_BAKTA {
             return [bakta_meta, fasta]
         }
 
-        // Prepare optional input files
-        //proteins_file = file(params.bakta_proteins) ? params.bakta_proteins : []
-        //prodigal_tf_file = file(params.bakta_prodigal_tf) ? params.bakta_prodigal_tf : []
-
         if ( params.download_bakta_db ) {
             BAKTA_BAKTADBDOWNLOAD (
                 )
