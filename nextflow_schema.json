@@ -32,7 +32,7 @@
           "default": "${projectDir}/tostadas/assets/ref/ref.MPXV.NC063383.v7.gff",
           "pattern": "^\\S+\\.(gff|gff3)$"
         },
-        "output_dir": {
+        "outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "File path to submit outputs from pipeline",
@@ -346,6 +346,10 @@
         "download_bakta_db": {
           "type": "boolean",
           "description": "Option to download Bakta database"
+        },
+        "save_reference": {
+          "type": "boolean",
+          "description": "Option to save the downloaded Bakta database"
         }
       }
     },
@@ -388,6 +392,15 @@
           "type": "string",
           "description": "Mode of submission.",
           "default": "ftp"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "description": "Simulate submission and print a log.",
+          "default": false
+        },
+        "biosample_fields_key": {
+          "type": "string",
+          "description": "Path to a yaml file containing required parameters for all supported BioSample packages."
         }
       }
     },
@@ -407,6 +420,11 @@
           "type": "boolean",
           "description": "Flag to enable or disable submission to BioSample.",
           "default": true
+        },
+        "gisaid": {
+          "type": "boolean",
+          "description": "Flag to enable or disable submission to GISAID (under development).",
+          "default": false
         }
       }
     },
@@ -416,6 +434,12 @@
           "type": "string",
           "description": "The schema file for validating the pipeline parameters.",
           "default": "nextflow_schema.json",
+          "hidden": true
+        },
+        "batch_size": {
+          "type": "integer",
+          "description": "The number of samples to prepare in one submission file.",
+          "default": 1,
           "hidden": true
         },
         "env_yml": {
