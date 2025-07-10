@@ -823,7 +823,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 		spuid = ET.SubElement(identifier, "SPUID", spuid_namespace={'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
 
-
 	# Functions for manually preparing files for table2asn + manual submission (where ftp upload not supported)
 	def create_source_file(self):
 		source_data = {

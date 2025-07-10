@@ -73,9 +73,10 @@ def main_submit():
 					local = os.path.join(dirpath, fname)
 					client.upload_file(local, fname)
 				client.close()
+		# todo: add an elif for genbank email/manual submissions 
 		else:
-			# This line is purely informational; remove or comment out if you don't want “skip” messages
-			logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
+			if params['dry_run']:
+				logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
 			print(f"[SKIP] {dirpath} does not contain both submission.xml and submit.ready")
 
 

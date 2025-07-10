@@ -122,11 +122,11 @@ def main_prepare():
 			submission_mode=params['submission_mode'],
 			submission_dir=submission_dir,
 			type='genbank',
-			sample=samples[0],               # class expects one sample
+			sample=s,               # class expects one sample
 			accession_id=None,
 			identifier=identifier
 		)
-		if samples[0].ftp_upload:
+		if s.ftp_upload:
 			gb.prepare_files_ftp_submission()
 		else:
 			gb.prepare_files_manual_submission()
