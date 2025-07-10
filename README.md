@@ -142,3 +142,12 @@ The submission portion of this pipeline was adapted from SeqSender. To find more
 
 :link: RepeatMasker Documentation: https://www.repeatmasker.org/
 
+## CDC Metadata
+```
+Organization: NCEZID-OAMD
+contact email: ncezid_shareit@cdc.gov
+exemption status: NA
+exemption justification: NA
+description fields: Nextflow workflow for viral and bacterial annotation and automated upload to NCBI databases
+```
+
