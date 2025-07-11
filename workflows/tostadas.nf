@@ -95,6 +95,8 @@ workflow TOSTADAS {
 				[meta, fasta] 
 			}
 			
+			annotation_ch.view { "annotation_ch before: $it" }
+
 			if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
 				// perform viral annotation according to user's choice: liftoff+repeatmasker or vadr
 				if (params.repeatmasker_liftoff && !params.vadr) {
@@ -111,6 +113,7 @@ workflow TOSTADAS {
 			} else if (params.species == 'bacteria') {
 				if (params.bakta) {
 					RUN_BAKTA(annotation_ch)
+
 					annotation_ch = annotation_ch
 						| join(RUN_BAKTA.out.gff)
 						| join(RUN_BAKTA.out.fna)
@@ -176,6 +179,8 @@ workflow TOSTADAS {
 			return tuple(meta, samples, enabledDatabases as List)
 		}
 		.filter { it != null }
+
+		submission_batch_ch.view { it -> "submission_batch_ch: $it" }
 
 		// run submission batched samples 
 		if ( params.submission || params.fetch_reports_only || params.update_submission ) {
