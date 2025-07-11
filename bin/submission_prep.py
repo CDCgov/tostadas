@@ -61,12 +61,12 @@ def main_prepare():
 
 	# 1) Prepare BioSample XML + submit.ready
 	if params['biosample']:
-		bs_out = os.path.join(output_root, 'biosample')
+		submission_dir = os.path.join(output_root, 'biosample')
 		bs = BiosampleSubmission(
 			parameters=params,
 			submission_config=config,
 			metadata_df=metadata_df,
-			output_dir=bs_out,
+			output_dir=submission_dir,
 			submission_mode=params['submission_mode'],
 			submission_dir=submission_dir,
 			type='biosample',
@@ -88,12 +88,13 @@ def main_prepare():
 		nano  = [s for s in samples if s.nanopore]
 		platforms = (('illumina',illum),('nanopore',nano)) if illum and nano else [(None, illum or nano)]
 		for platform, samp_list in platforms:
-			outdir = os.path.join(output_root,'sra',platform) if platform else os.path.join(output_root,'sra')
+			# submission_dir needs to be unique if submitting both illumina and nanopore
+			submission_outdir = os.path.join(output_root,'sra',platform) if platform else os.path.join(output_root,'sra')
 			sra = SRASubmission(
 				parameters=params,
 				submission_config=config,
 				metadata_df=metadata_df,
-				output_dir=outdir,
+				output_dir=submission_dir,
 				submission_mode=params['submission_mode'],
 				submission_dir=submission_dir,
 				type='sra',
@@ -111,27 +112,31 @@ def main_prepare():
 			# copy/Symlink raw files to SRA folder
 			prepare_sra_fastqs(samp_list, outdir, copy=False)
 
-
-	# 3) Prepare GenBank (if FTP) or manual
+	# 3) Prepare GenBank submission, per-sample
 	if params['genbank']:
-		gb = GenbankSubmission(
-			parameters=params,
-			submission_config=config,
-			metadata_df=metadata_df,
-			output_dir=os.path.join(output_root,'genbank',params['submission_name']),
-			submission_mode=params['submission_mode'],
-			submission_dir=submission_dir,
-			type='genbank',
-			sample=s,               # class expects one sample
-			accession_id=None,
-			identifier=identifier
-		)
-		if s.ftp_upload:
+		for s in samples:
+			submission_dir = os.path.join(output_root, 'genbank', s)
+			gb = GenbankSubmission(
+				parameters=params,
+				submission_config=config,
+				metadata_df=metadata_df,
+				output_dir=submission_dir,
+				submission_mode=params['submission_mode'],
+				submission_dir=submission_dir,
+				type='genbank',
+				samples=samples,
+				sample=s,               # class expects one sample
+				accession_id=None,
+				identifier=identifier
+			)
+			gb.genbank_submission_driver()
+		"""
+	 		if s.ftp_upload:
 			gb.prepare_files_ftp_submission()
 		else:
 			gb.prepare_files_manual_submission()
 			if params['send_email']:
-				gb.sendemail()
+				gb.sendemail() """
 
 if __name__=="__main__":
 	main_prepare()
