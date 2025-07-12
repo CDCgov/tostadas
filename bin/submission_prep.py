@@ -20,7 +20,6 @@ def prepare_sra_fastqs(samples, outdir, copy=False):
 			ext2 = get_compound_extension(sample.fastq2)
 			dest_fq1 = os.path.join(outdir, f"{sample.sample_id}_R1{ext1}")
 			dest_fq2 = os.path.join(outdir, f"{sample.sample_id}_R2{ext2}")
-			print(f"{dest_fq1}, {dest_fq2}")
 			if not os.path.exists(dest_fq1):
 				if copy:
 					shutil.copy(sample.fastq1, dest_fq1)
@@ -79,8 +78,6 @@ def main_prepare():
 			md = metadata_df[metadata_df['sample_name']==s.sample_id]
 			bs.add_sample(s, md)
 		bs.finalize_xml()
-		# write submit.ready
-		open(os.path.join(bs_out,'submit.ready'),'w').close()
 
 	# 2) Prepare SRA XML + submit.ready (per-platform if needed)
 	if params['sra']:
@@ -108,9 +105,8 @@ def main_prepare():
 				md = metadata_df[metadata_df['sample_name']==s.sample_id]
 				sra.add_sample(s, md, platform)
 			sra.finalize_xml()
-			open(os.path.join(outdir,'submit.ready'),'w').close()
 			# copy/Symlink raw files to SRA folder
-			prepare_sra_fastqs(samp_list, outdir, copy=False)
+			prepare_sra_fastqs(samp_list, submission_outdir, copy=False)
 
 	# 3) Prepare GenBank submission, per-sample
 	if params['genbank']:

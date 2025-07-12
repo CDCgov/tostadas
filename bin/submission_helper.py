@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import shutil
 import tempfile
 from datetime import datetime
@@ -243,18 +244,18 @@ class SubmissionConfigParser:
 			config_dict = yaml.load(f, Loader=yaml.BaseLoader) # Load yaml as str only
 		# Exit if yaml import and dict conversion not successful
 		if not isinstance(config_dict, dict):
-			print("Error: Config file is incorrect. File must have a valid yaml format.", file=sys.stderr)
+			logging.info("Error: Config file is incorrect. File must have a valid yaml format.", file=sys.stderr)
 			sys.exit(1)
 		# Only check credentials if not in dry_run mode
 		if not self.parameters.get('dry_run', False):
 			for k, v in config_dict.items():
 				if self.parameters.get("gisaid", False):
 					if k.startswith('GISAID') and not v:
-						print("Error: There are missing GISAID values in the config file.", file=sys.stderr)
+						logging.info("Error: There are missing GISAID values in the config file.", file=sys.stderr)
 						sys.exit(1)
 				else:
 					if k.startswith('NCBI') and not v:
-						print("Error: There are missing NCBI values in the config file.", file=sys.stderr)
+						logging.info("Error: There are missing NCBI values in the config file.", file=sys.stderr)
 						sys.exit(1)
 		return config_dict
 class Sample:
@@ -298,7 +299,7 @@ class MetadataParser:
 			]
 			return custom_columns
 		except Exception as e:
-			print(f"Error loading custom metadata file: {e}")
+			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
 		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Main columns
@@ -356,7 +357,7 @@ class Submission:
 		self.type = type
 		self.client = self.get_client()
 	def get_client(self):
-		print(f"submission_mode is {self.submission_mode}")
+		logging.info(f"submission_mode is {self.submission_mode}")
 		if self.submission_mode == 'sftp':
 			return SFTPClient(self.submission_config)
 		elif self.submission_mode == 'ftp':
@@ -370,26 +371,26 @@ class Submission:
 		self.client.change_dir(remote_dir)
 		# Check if report.xml exists and download it
 		if os.path.exists(report_local_path):
-			print(f"Report already exists locally: {report_local_path}")
+			logging.info(f"Report already exists locally: {report_local_path}")
 			return report_local_path
 		elif self.client.file_exists('report.xml'):
-			print(f"Report found on server. Downloading to: {report_local_path}.")
+			logging.info(f"Report found on server. Downloading to: {report_local_path}.")
 			self.client.download_file('report.xml', report_local_path)
 			return report_local_path # Report fetched, return its path
 		else:
-			print(f"No report found at {remote_dir}")
+			logging.info(f"No report found at {remote_dir}")
 			return False # Report not found, need to try again
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
 		remote_subdir = get_remote_submission_dir(self.identifier, self.sample.batch_id, type, getattr(self, 'platform', None))
 		self.client.connect()
 		# Navigate to submit/<Test|Production>/<submission_db> folder
-		print(f"Uploading to FTP path: submit/{self.submission_dir}/{remote_subdir}")
+		logging.info(f"Uploading to FTP path: submit/{self.submission_dir}/{remote_subdir}")
 		self.client.make_dir(f"submit/{self.submission_dir}/{remote_subdir}")
 		self.client.change_dir(f"submit/{self.submission_dir}/{remote_subdir}")
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
-		print(f"Submitted files for sample batch: {self.sample.batch_id}")
+		logging.info(f"Submitted files for sample batch: {self.sample.batch_id}")
 	def close(self):
 		self.client.close()
 
@@ -407,31 +408,31 @@ class SFTPClient:
 			self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 			self.ssh.connect(self.host, username=self.username, password=self.password, port=self.port)
 			self.sftp = self.ssh.open_sftp()
-			print(f"Connected to SFTP: {self.host}")
+			logging.info(f"Connected to SFTP: {self.host}")
 		except Exception as e:
 			raise ConnectionError(f"Failed to connect to SFTP: {e}")
 	def make_dir(self, dir_path):
 		try:
 			self.sftp.stat(dir_path)  # Will succeed if dir exists
-			print(f"Directory already exists: {dir_path}")
+			logging.info(f"Directory already exists: {dir_path}")
 		except IOError as e:
 			# Check if it's a 'no such file' type of error
 			if 'No such file' in str(e):
 				try:
 					self.sftp.mkdir(dir_path)
-					print(f"Created directory: {dir_path}")
+					logging.info(f"Created directory: {dir_path}")
 				except IOError as e2:
-					print(f"Failed to create directory: {dir_path}. Error: {e2}")
+					logging.info(f"Failed to create directory: {dir_path}. Error: {e2}")
 					raise
 			else:
-				print(f"Unexpected error checking directory {dir_path}: {e}")
+				logging.info(f"Unexpected error checking directory {dir_path}: {e}")
 				raise
 	def change_dir(self, dir_path):
 		try:
 			self.sftp.chdir(dir_path)
-			print(f"Changed directories to {dir_path}")
+			logging.info(f"Changed directories to {dir_path}")
 		except IOError as e:
-			print(f"Failed to change directory: {dir_path}. Error: {e}")
+			logging.info(f"Failed to change directory: {dir_path}. Error: {e}")
 			raise
 	def file_exists(self, file_path):
 		try:
@@ -442,13 +443,13 @@ class SFTPClient:
 	def download_file(self, remote_file, local_path):
 		try:
 			self.sftp.get(remote_file, local_path)
-			print(f"Downloaded {remote_file} to {local_path}")
+			logging.info(f"Downloaded {remote_file} to {local_path}")
 		except Exception as e:
 			raise IOError(f"Failed to download {remote_file}: {e}")
 	def upload_file(self, file_path, destination_path):
 		try:
 			self.sftp.put(file_path, destination_path)
-			print(f"Uploaded {file_path} to {destination_path}")
+			logging.info(f"Uploaded {file_path} to {destination_path}")
 		except Exception as e:
 			raise IOError(f"Failed to upload {file_path}: {e}")
 	def close(self):
@@ -456,7 +457,7 @@ class SFTPClient:
 			self.sftp.close()
 		if self.ssh:
 			self.ssh.close()
-		print("SFTP connection closed.")
+		logging.info("SFTP connection closed.")
 
 class FTPClient:
 	def __init__(self, config):
@@ -471,36 +472,36 @@ class FTPClient:
 			self.ftp = ftplib.FTP()
 			self.ftp.connect(self.host, self.port)
 			self.ftp.login(user=self.username, passwd=self.password)
-			print(f"Connected to FTP: {self.host}:{self.port}")
+			logging.info(f"Connected to FTP: {self.host}:{self.port}")
 		except EOFError as e:
-			print("EOFError occurred during FTP connection.")
+			logging.info("EOFError occurred during FTP connection.")
 			raise ConnectionError(f"Failed to connect to FTP: {e}")
 		except Exception as e:
-			print(f"Unexpected error during FTP connection: {e}")
+			logging.info(f"Unexpected error during FTP connection: {e}")
 			raise ConnectionError(f"Failed to connect to FTP: {e}")
 	def make_dir(self, dir_path):
 		try:
 			current = self.ftp.pwd()
 			self.ftp.cwd(dir_path)
 			self.ftp.cwd(current)  # Go back to original directory
-			print(f"Directory already exists: {dir_path}")
+			logging.info(f"Directory already exists: {dir_path}")
 		except ftplib.error_perm as e:
 			if '550' in str(e):  # 550 usually means "no such file or directory"
 				try:
 					self.ftp.mkd(dir_path)
-					print(f"Created directory: {dir_path}")
+					logging.info(f"Created directory: {dir_path}")
 				except ftplib.error_perm as e2:
-					print(f"Failed to create directory: {dir_path}. Error: {e2}")
+					logging.info(f"Failed to create directory: {dir_path}. Error: {e2}")
 					raise
 			else:
-				print(f"Unexpected FTP error checking directory {dir_path}: {e}")
+				logging.info(f"Unexpected FTP error checking directory {dir_path}: {e}")
 				raise
 	def change_dir(self, dir_path):
 		try:
 			self.ftp.cwd(dir_path)
-			print(f"Changed to directory: {dir_path}")
+			logging.info(f"Changed to directory: {dir_path}")
 		except ftplib.error_perm as e:
-			print(f"Failed to change directory: {dir_path}. Error: {e}")
+			logging.info(f"Failed to change directory: {dir_path}. Error: {e}")
 			raise
 	def file_exists(self, file_path):
 		if file_path in self.ftp.nlst():
@@ -510,19 +511,19 @@ class FTPClient:
 	def download_file(self, remote_file, local_path):
 		with open(local_path, 'wb') as f:
 			self.ftp.retrbinary(f'RETR {remote_file}', f.write)
-		print(f"Downloaded file from {remote_file} to {local_path}")
+		logging.info(f"Downloaded file from {remote_file} to {local_path}")
 	def upload_file(self, file_path, destination_path):
 		try:
 			if file_path.endswith(('.fasta', '.fastq', '.fna', '.fsa', '.gff', '.gff3', '.gz', 'xml', '.sqn', '.sbt', '.cmt')):  
 				with open(file_path, 'rb') as file:
-					print(f"Uploading binary file: {file_path}")
+					logging.info(f"Uploading binary file: {file_path}")
 					self.ftp.storbinary(f'STOR {destination_path}', file)
 			else:
 				with open(file_path, 'r') as file:
-					print(f"Uploading text file: {file_path}")
+					logging.info(f"Uploading text file: {file_path}")
 					self.ftp.storlines(f'STOR {destination_path}', file)
 				# Open the file and upload it
-			print(f"Uploaded {file_path} to {destination_path}")
+			logging.info(f"Uploaded {file_path} to {destination_path}")
 		except Exception as e:
 			raise IOError(f"Failed to upload {file_path}: {e}")
 	def close(self):
@@ -531,7 +532,7 @@ class FTPClient:
 				self.ftp.quit()  # Gracefully close the connection
 			except Exception:
 				self.ftp.close()  # Force close if quit() fails
-		print("FTP connection closed.")
+		logging.info("FTP connection closed.")
 
 class XMLSubmission(ABC):
 	def __init__(self, submission_config, metadata_df, output_dir, parameters, sample):
@@ -577,7 +578,7 @@ class XMLSubmission(ABC):
 		pretty_xml = reparsed.toprettyxml(indent="  ")
 		with open(xml_output_path, 'w', encoding='utf-8') as f:
 			f.write(pretty_xml)
-		print(f"Batch XML generated at {xml_output_path}")
+		logging.info(f"Batch XML generated at {xml_output_path}")
 		self.xml_output_path = xml_output_path
 	def add_sample(self, sample, metadata_df, platform=None):
 		# Support passing each sample object and its associated metadata (for the per-sample blocks)
@@ -666,7 +667,7 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		# Submit files
 		files_to_submit = [submit_ready_file, self.xml_output_path]
 		self.submit_files(files_to_submit, 'biosample')
-		print(f"Submitted sample batch {self.sample.batch_id} to BioSample")
+		logging.info(f"Submitted sample batch {self.sample.batch_id} to BioSample")
 
 class SRASubmission(XMLSubmission, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
@@ -729,7 +730,7 @@ class SRASubmission(XMLSubmission, Submission):
 				files_to_submit.extend([fastq1, fastq2])
 			# Submit files from temporary directory
 			self.submit_files(files_to_submit, 'sra')
-			print(f"Submitted sample batch {self.sample.batch_id} to SRA")
+			logging.info(f"Submitted sample batch {self.sample.batch_id} to SRA")
 
 class GenbankSubmission(XMLSubmission, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
@@ -784,6 +785,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		identifier = ET.SubElement(add_files, 'Identifier')
 		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		self.safe_text(self.top_metadata['ncbi-spuid'])
+		logging.info
 	
 	def xml_create_wgs(self):
 		# Create root Submission element
