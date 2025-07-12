@@ -111,7 +111,7 @@ def main_prepare():
 	# 3) Prepare GenBank submission, per-sample
 	if params['genbank']:
 		for s in samples:
-			submission_dir = os.path.join(output_root, 'genbank', s)
+			submission_dir = os.path.join(output_root, 'genbank', s.sample_id)
 			gb = GenbankSubmission(
 				parameters=params,
 				submission_config=config,
@@ -126,13 +126,6 @@ def main_prepare():
 				identifier=identifier
 			)
 			gb.genbank_submission_driver()
-		"""
-	 		if s.ftp_upload:
-			gb.prepare_files_ftp_submission()
-		else:
-			gb.prepare_files_manual_submission()
-			if params['send_email']:
-				gb.sendemail() """
 
 if __name__=="__main__":
 	main_prepare()
