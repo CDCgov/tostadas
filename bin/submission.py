@@ -75,8 +75,6 @@ def main_submit():
 				client.close()
 		# todo: add an elif for genbank email/manual submissions 
 		else:
-			if params['dry_run']:
-				logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
 			print(f"[SKIP] {dirpath} does not contain both submission.xml and submit.ready")
 
 
