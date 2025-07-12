@@ -594,9 +594,17 @@ class XMLSubmission(ABC):
 		else:
 			# fallback for single-platform submission
 			self.sra_metadata = all_platform_metadata[0][1] if all_platform_metadata else {}
-		# Call subclass-specific methods to add the unique parts
-		anchor_element = self.add_action_block(self.submission_root)
-		self.add_attributes_block(anchor_element)
+		# Call subclass-specific methods to add the unique parts (guard the calls because GenbankSubmission doesn't use them)
+		if hasattr(self, "add_action_block") and hasattr(self, "add_attributes_block"):
+			anchor_element = self.add_action_block(self.submission_root)
+			self.add_attributes_block(anchor_element)
+		else:
+			logging.debug(f"{type(self).__name__} does not implement action/attributes block additions.")
+
+class XMLSubmissionMixin(ABC):
+	""" A Mixin for the abstract methods that are used by both Biosample and SRA, but not Genbank
+		These are called during add_sample() in XMLSubmission.
+	"""
 	@abstractmethod
 	def add_action_block(self, submission):
 		"""Add the action block, which differs between submissions."""
@@ -606,7 +614,7 @@ class XMLSubmission(ABC):
 		"""Add the attributes block, which differs between submissions."""
 		pass
 
-class BiosampleSubmission(XMLSubmission, Submission):
+class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
@@ -669,7 +677,7 @@ class BiosampleSubmission(XMLSubmission, Submission):
 		self.submit_files(files_to_submit, 'biosample')
 		logging.info(f"Submitted sample batch {self.sample.batch_id} to BioSample")
 
-class SRASubmission(XMLSubmission, Submission):
+class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
@@ -742,6 +750,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.sample = sample
 		parser = MetadataParser(metadata_df, parameters)
 		self.top_metadata = parser.extract_top_metadata()
+		self.biosample_metadata = parser.extract_biosample_metadata()
+		self.genbank_metadata = parser.extract_genbank_metadata()
 		os.makedirs(self.output_dir, exist_ok=True)
 	def xml_create_bankit(self, submission):
 		"""
@@ -785,13 +795,12 @@ class GenbankSubmission(XMLSubmission, Submission):
 		identifier = ET.SubElement(add_files, 'Identifier')
 		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		self.safe_text(self.top_metadata['ncbi-spuid'])
-		logging.info
 	
 	def xml_create_wgs(self):
 		# Create root Submission element
 		self.init_xml_root() # Write first part of submission.xml (Description)
 		# --- Action: AddFiles (WGS) ---
-		action1 = ET.SubElement(submission, "Action")
+		action1 = ET.SubElement(self.submission_root, "Action")
 		add_files = ET.SubElement(action1, "AddFiles", target_db="WGS")
 		file1 = ET.SubElement(add_files, "File", file_path=f"{self.sample.sample_id}.sqn")
 		ET.SubElement(file1, "DataType").text = "wgs-contigs-sqn"
@@ -1029,6 +1038,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.prep_table2asn_files()
 		# Delete all but the sqn file
 		[os.remove(f) for p in ['*.cmt', '*.sbt', '*.src'] for f in glob.glob(p) if os.path.isfile(f)]
+		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
 		with open(submit_ready_file, 'w') as fh:
 			pass
 
