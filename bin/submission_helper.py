@@ -1165,15 +1165,3 @@ class GenbankSubmission(XMLSubmission, Submission):
 		except subprocess.CalledProcessError as e:
 			print(f"Error running table2asn: {e.stderr}")
 			raise
-
-""" 	# Functions to ftp upload files
-	def submit(self):
-		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
-		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
-		with open(submit_ready_file, 'w') as fh:
-			pass 
-		# Submit files
-		files_to_submit = [submit_ready_file, self.xml_output_path, f"{self.output_dir}/{self.sample.sample_id}.sqn", 
-						   f"{self.output_dir}/authorset.sbt", f"{self.output_dir}/comment.cmt"]
-		self.submit_files(files_to_submit, 'genbank')
-		print(f"Submitted sample {self.sample.sample_id} to Genbank") """
