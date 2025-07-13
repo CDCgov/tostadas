@@ -2,7 +2,13 @@
 import os
 import argparse
 import logging
-from submission_helper import SubmissionConfigParser, FTPClient, SFTPClient, setup_logging
+from submission_helper import (
+	SubmissionConfigParser,
+	FTPClient,
+	SFTPClient,
+	GenbankSubmission,
+	setup_logging
+)
 
 def get_args():
 	""" Expected args from user and default values associated with them
@@ -44,15 +50,16 @@ def main_submit():
 	for dirpath, _, files in os.walk(root):
 		# Only consider directories that have both submission.xml and submit.ready
 		if dirpath == root:
-			continue # Submission files are never directly under top folder
+			continue # Skip root, submission files are never directly under top folder
 		if 'submission.xml' in files and 'submit.ready' in files:
-			# Compute relative path from root, e.g. "biosample" or "sra/illumina"
+			# Perform an ftp submission
+			# Compute relative path from root to the subdirectory, e.g. "biosample" or "sra/illumina"
 			rel = os.path.relpath(dirpath, root)             
 			# Split into [database] or [database, platform]
 			parts = rel.split(os.sep)
 			database = parts[0]                               
 			platform = parts[1] if len(parts) > 1 else None  
-			# Build a “flattened” remote base folder: <identifier>_<submission_name>_<database>[_<platform>]
+			# Build a “flattened” remote base folder: <metadata filename>_<submission_name>_<database>[_<platform>]
 			base_folder = f"{params['identifier']}_{params['submission_name']}_{database}"
 			if platform:
 				base_folder += f"_{platform}"
@@ -73,6 +80,20 @@ def main_submit():
 					local = os.path.join(dirpath, fname)
 					client.upload_file(local, fname)
 				client.close()
+		elif any(f.endswith('.zip') for f in files):
+			# Handle non-ftp submissions (directories with a zip file but without submission.xml and submit.ready)
+			rel = os.path.relpath(dirpath, root)
+			parts = rel.split(os.sep)
+			database = parts[0] # genbank
+			sample = parts[1] # genbank submission files are stored in a subfolder called <sample name>
+			# Build a “flattened” remote base folder: <metadata file name>_<sample name>_<database>
+			base_folder = f"{params['identifier']}_{sample}_{database}"
+			if params['dry_run']:
+				sendemail(sample, config, mode, base_folder)
+				#logging.info(f"[DRY-RUN] Would connect to {params['submission_mode'].upper()} and upload to: {remote_dir}")
+			elif parameters['send_email']:
+					sendemail(sample, config, mode, base_folder, dry_run=False)
+
 		# todo: add an elif for genbank email/manual submissions 
 		else:
 			print(f"[SKIP] {dirpath} does not contain both submission.xml and submit.ready")

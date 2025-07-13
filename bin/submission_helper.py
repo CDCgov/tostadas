@@ -45,6 +45,50 @@ def get_compound_extension(filename):
 	else:
 		return ''  # No extension
 
+def sendemail(sample_id, config_dict, mode, submission_dir, dry_run=True):
+	# Code for creating a zip archive for Genbank submission
+	logging.info(f"Sending submission email for {sample_id}")
+	TABLE2ASN_EMAIL = config_dict["table2asn_email"]
+	try:
+		msg = MIMEMultipart('multipart')
+		msg['Subject'] = sample_id + " table2asn submission"
+		from_email = sconfig_dict["Submitter"]["@email"]
+		to_email = []
+		cc_email = []
+		if mode == 'Test':
+			to_email.append(config_dict["Submitter"]["@email"])
+		else:
+			to_email.append(TABLE2ASN_EMAIL)
+			#cc_email.append(config_dict["Description"]["Organization"]["Submitter"]["@email"])
+		if config_dict["Submitter"]["@alt_email"]:
+			cc_email.append(config_dict["Submitter"]["@alt_email"])
+		msg['From'] = from_email
+		msg['To'] = ", ".join(to_email)
+		if len(cc_email) != 0:
+			msg['Cc'] = ", ".join(cc_email)
+		attachment_path = os.path.join(submission_dir, f"{sample_id}.sqn")
+		if dry_run:
+            logging.info(
+                f"[DRY-RUN] Would send email:\n"
+                f"  From: {from_email}\n"
+                f"  To: {to_email}\n"
+                f"  Cc: {cc_email}\n"
+                f"  Subject: {msg['Subject']}\n"
+                f"  Attachment: {attachment_path}"
+            )
+            return
+		with open(attachment_path, 'rb') as file_input:
+			part = MIMEApplication(file_input.read(), Name=f"{sample_id}.sqn")
+		part['Content-Disposition'] = "attachment; filename=f'{sample_id}.sqn'"
+		msg.attach(part)
+		s = smtplib.SMTP('localhost')
+		s.sendmail(from_email, to_email, msg.as_string())
+		logging.info(f"Email sent for {sample_id}")
+	except Exception as e:
+		logging.debug("Error: Unable to send mail automatically. If unable to email, submission can be made manually using the sqn file.", file=sys.stderr)
+		logging.debug("sqn_file:" + os.path.join(self.output_dir, f"{sample_id}.sqn"), file=sys.stderr)
+		logging.debug(e, file=sys.stderr)
+
 def get_remote_submission_dir(identifier, batch_id, db, platform=None):
 	"""Return the remote directory path under submit/<Test|Production>/..."""
 	if db == "sra" and platform:
@@ -1037,6 +1081,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.xml_create_wgs()
 		self.prep_table2asn_files()
 		# Delete all but the sqn file
+		[print(f) for p in ['*.cmt', '*.sbt', '*.src'] for f in glob.glob(p) if os.path.isfile(f)] # debug 
 		[os.remove(f) for p in ['*.cmt', '*.sbt', '*.src'] for f in glob.glob(p) if os.path.isfile(f)]
 		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
 		with open(submit_ready_file, 'w') as fh:
@@ -1133,38 +1178,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		except subprocess.CalledProcessError as e:
 			print(f"Error running table2asn: {e.stderr}")
 			raise
-	def sendemail(self):
-		# Code for creating a zip archive for Genbank submission
-		print(f"Sending submission email for {self.sample.sample_id}")
-		TABLE2ASN_EMAIL = self.submission_config["table2asn_email"]
-		try:
-			msg = MIMEMultipart('multipart')
-			msg['Subject'] = self.sample.sample_id + " table2asn submission"
-			from_email = self.submission_config["Submitter"]["@email"]
-			to_email = []
-			cc_email = []
-			if self.parameters.test == True:
-				to_email.append(self.submission_config["Submitter"]["@email"])
-			else:
-				to_email.append(TABLE2ASN_EMAIL)
-				#cc_email.append(config_dict["Description"]["Organization"]["Submitter"]["@email"])
-			if self.submission_config["Submitter"]["@alt_email"]:
-				cc_email.append(self.submission_config["Submitter"]["@alt_email"])
-			msg['From'] = from_email
-			msg['To'] = ", ".join(to_email)
-			if len(cc_email) != 0:
-				msg['Cc'] = ", ".join(cc_email)
-			with open(os.path.join(self.output_dor, f"{self.sample.sample_id}.sqn"), 'rb') as file_input:
-				part = MIMEApplication(file_input.read(), Name=f"{self.sample.sample_id}.sqn")
-			part['Content-Disposition'] = "attachment; filename=f'{self.sample.sample_id}.sqn'"
-			msg.attach(part)
-			s = smtplib.SMTP('localhost')
-			s.sendmail(from_email, to_email, msg.as_string())
-			print(f"Email sent for {self.sample.sample_id}")
-		except Exception as e:
-			print("Error: Unable to send mail automatically. If unable to email, submission can be made manually using the sqn file.", file=sys.stderr)
-			print("sqn_file:" + os.path.join(self.output_dir, f"{self.sample.sample_id}.sqn"), file=sys.stderr)
-			print(e, file=sys.stderr)
+
 """ 	# Functions to ftp upload files
 	def submit(self):
 		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
