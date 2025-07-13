@@ -25,15 +25,15 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
 def setup_logging(log_file="submission.log", level=logging.INFO):
-    if not logging.getLogger().handlers:
-        logging.basicConfig(
-            level=level,
-            format="[%(levelname)s] %(message)s",
-            handlers=[
-                logging.FileHandler(log_file),
-                logging.StreamHandler()
-            ]
-        )
+	if not logging.getLogger().handlers:
+		logging.basicConfig(
+			level=level,
+			format="[%(levelname)s] %(message)s",
+			handlers=[
+				logging.FileHandler(log_file),
+				logging.StreamHandler()
+			]
+		)
 
 def get_compound_extension(filename):
 	"""Return the full extension (up to 2 suffixes) of a file, like '.fastq.gz'."""
@@ -48,41 +48,52 @@ def get_compound_extension(filename):
 def sendemail(sample_id, config_dict, mode, submission_dir, dry_run=True):
 	# Code for creating a zip archive for Genbank submission
 	logging.info(f"Sending submission email for {sample_id}")
-	TABLE2ASN_EMAIL = config_dict["table2asn_email"]
+	# Get email addresses from config
+	table2asn_email = config_dict.get("table2asn_email")
+	submitter_info = config_dict.get("Submitter", {})
+	from_email = submitter_info.get("@email")
+	alt_email = submitter_info.get("@alt_email")
+	to_email = []
+	cc_email = []
+	if alt_email:
+		cc_email.append(alt_email)
+	# If test mode, send email to the Submitter (user), otherwise send to table2asn email
+	if mode == 'Test':
+		if from_email:
+			to_email.append(from_email)
+	else:
+		if table2asn_email:
+			to_email.append(table2asn_email)
+	subject = f"{sample_id} table2asn submission"
+	attachment_path = os.path.join(submission_dir, f"{sample_id}.sqn")
+
+	if dry_run:
+		logging.info(
+			f"[DRY-RUN] Would send email:\n"
+			f"  From: {from_email}\n"
+			f"  To: {to_email}\n"
+			f"  Cc: {cc_email}\n"
+			f"  Subject: {msg['Subject']}\n"
+			f"  Attachment: {attachment_path}"
+		)
+		return
+
 	try:
-		msg = MIMEMultipart('multipart')
-		msg['Subject'] = sample_id + " table2asn submission"
-		from_email = sconfig_dict["Submitter"]["@email"]
-		to_email = []
-		cc_email = []
-		if mode == 'Test':
-			to_email.append(config_dict["Submitter"]["@email"])
-		else:
-			to_email.append(TABLE2ASN_EMAIL)
-			#cc_email.append(config_dict["Description"]["Organization"]["Submitter"]["@email"])
-		if config_dict["Submitter"]["@alt_email"]:
-			cc_email.append(config_dict["Submitter"]["@alt_email"])
+		msg = MIMEMultipart('mixed')
+		msg['Subject'] = subject
 		msg['From'] = from_email
 		msg['To'] = ", ".join(to_email)
-		if len(cc_email) != 0:
+		if cc_email:
 			msg['Cc'] = ", ".join(cc_email)
-		attachment_path = os.path.join(submission_dir, f"{sample_id}.sqn")
-		if dry_run:
-            logging.info(
-                f"[DRY-RUN] Would send email:\n"
-                f"  From: {from_email}\n"
-                f"  To: {to_email}\n"
-                f"  Cc: {cc_email}\n"
-                f"  Subject: {msg['Subject']}\n"
-                f"  Attachment: {attachment_path}"
-            )
-            return
+		# Attach the .sqn file
 		with open(attachment_path, 'rb') as file_input:
 			part = MIMEApplication(file_input.read(), Name=f"{sample_id}.sqn")
-		part['Content-Disposition'] = "attachment; filename=f'{sample_id}.sqn'"
+		part['Content-Disposition'] = f"attachment; filename=\"{sample_id}.sqn\""
 		msg.attach(part)
+		# Send the email
 		s = smtplib.SMTP('localhost')
-		s.sendmail(from_email, to_email, msg.as_string())
+		s.sendmail(from_email, to_email + cc_email, msg.as_string())
+		s.quit()
 		logging.info(f"Email sent for {sample_id}")
 	except Exception as e:
 		logging.debug("Error: Unable to send mail automatically. If unable to email, submission can be made manually using the sqn file.", file=sys.stderr)
@@ -1068,6 +1079,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 
 	# Define internal workflow functions for the 3 different GenBank submission modalities
 	def _workflow_bankit(self):
+		logging.info("Entering sars/flu workflow") # debug
 		# Prepare a Bank-It ftp submission
 		self.xml_create_bankit()
 		self.prep_table2asn_files()
@@ -1077,17 +1089,19 @@ class GenbankSubmission(XMLSubmission, Submission):
 			pass
 
 	def _workflow_bacteria_euk(self):
+		logging.info("Entering bacteria/euk workflow") # debug
 		# Prepare a WGS ftp submission
 		self.xml_create_wgs()
 		self.prep_table2asn_files()
 		# Delete all but the sqn file
-		[print(f) for p in ['*.cmt', '*.sbt', '*.src'] for f in glob.glob(p) if os.path.isfile(f)] # debug 
+		[logging.info(f) for p in ['*.cmt', '*.sbt', '*.src'] for f in glob.glob(p) if os.path.isfile(f)] # debug 
 		[os.remove(f) for p in ['*.cmt', '*.sbt', '*.src'] for f in glob.glob(p) if os.path.isfile(f)]
 		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
 		with open(submit_ready_file, 'w') as fh:
 			pass
 
 	def _workflow_virus(self):
+		logging.info("Entering virus workflow") # debug
 		# Prepare a manual submission
 		self.prep_zip_folder()
 

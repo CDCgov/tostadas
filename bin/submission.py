@@ -51,6 +51,8 @@ def main_submit():
 		# Only consider directories that have both submission.xml and submit.ready
 		if dirpath == root:
 			continue # Skip root, submission files are never directly under top folder
+		if not files:
+			continue # Skip a dir with no files inside (e.g., genbank dir only has sample dirs, so only traverse the sample dirs)
 		if 'submission.xml' in files and 'submit.ready' in files:
 			# Perform an ftp submission
 			# Compute relative path from root to the subdirectory, e.g. "biosample" or "sra/illumina"
@@ -67,11 +69,9 @@ def main_submit():
 			remote_dir = f"submit/{mode}/{base_folder}"
 			if params['dry_run']:
 				logging.info(f"[DRY-RUN] Would connect to {params['submission_mode'].upper()} and upload to: {remote_dir}")
-				print(f"[DRY-RUN] Would connect to {params['submission_mode'].upper()} and upload to: {remote_dir}")
 				for fname in files:
 					local = os.path.join(dirpath, fname)
 					logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
-					print(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
 			else:
 				client.connect()
 				client.make_dir(remote_dir)
