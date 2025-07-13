@@ -722,15 +722,6 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 			if attr_name not in ignored_fields:
 				attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 				attribute.text = self.safe_text(attr_value)
-	def submit(self):
-		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
-		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
-		with open(submit_ready_file, 'w') as fh:
-			pass 
-		# Submit files
-		files_to_submit = [submit_ready_file, self.xml_output_path]
-		self.submit_files(files_to_submit, 'biosample')
-		logging.info(f"Submitted sample batch {self.sample.batch_id} to BioSample")
 
 class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
@@ -774,26 +765,6 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi-spuid']}_SRA")
 		# todo: add attribute ref ID for BioSample
-	def submit(self):
-		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
-		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
-		with open(submit_ready_file, 'w') as fh:
-			pass 
-		# Submit files (rename them using a temporary dir that gets removed after the loop)
-		with tempfile.TemporaryDirectory() as tmpdir:
-			files_to_submit = [submit_ready_file, self.xml_output_path] # files to submit
-			# Rename (copy) FASTQ files for each sample in batch
-			for sample in self.samples:
-				ext1 = get_compound_extension(sample.fastq1)
-				ext2 = get_compound_extension(sample.fastq2)
-				fastq1 = os.path.join(tmpdir, f"{sample.sample_id}_R1{ext1}")
-				fastq2 = os.path.join(tmpdir, f"{sample.sample_id}_R2{ext2}")
-				shutil.copy(sample.fastq1, fastq1)
-				shutil.copy(sample.fastq2, fastq2)
-				files_to_submit.extend([fastq1, fastq2])
-			# Submit files from temporary directory
-			self.submit_files(files_to_submit, 'sra')
-			logging.info(f"Submitted sample batch {self.sample.batch_id} to SRA")
 
 class GenbankSubmission(XMLSubmission, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
@@ -1079,7 +1050,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 
 	# Define internal workflow functions for the 3 different GenBank submission modalities
 	def _workflow_bankit(self):
-		logging.info("Entering sars/flu workflow") # debug
 		# Prepare a Bank-It ftp submission
 		self.xml_create_bankit()
 		self.prep_table2asn_files()
@@ -1089,19 +1059,22 @@ class GenbankSubmission(XMLSubmission, Submission):
 			pass
 
 	def _workflow_bacteria_euk(self):
-		logging.info("Entering bacteria/euk workflow") # debug
 		# Prepare a WGS ftp submission
 		self.xml_create_wgs()
 		self.prep_table2asn_files()
-		# Delete all but the sqn file
-		[logging.info(f) for p in ['*.cmt', '*.sbt', '*.src'] for f in glob.glob(p) if os.path.isfile(f)] # debug 
-		[os.remove(f) for p in ['*.cmt', '*.sbt', '*.src'] for f in glob.glob(p) if os.path.isfile(f)]
+		# Delete all but the sqn file 
+		# todo: this also keeps the fsa file, need to check on that
+		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff']:
+			pattern = os.path.join(self.output_dir, p)
+			for f in glob.glob(pattern):
+				if os.path.isfile(f):
+					print(f)  # debug
+					os.remove(f)
 		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
 		with open(submit_ready_file, 'w') as fh:
 			pass
 
 	def _workflow_virus(self):
-		logging.info("Entering virus workflow") # debug
 		# Prepare a manual submission
 		self.prep_zip_folder()
 
