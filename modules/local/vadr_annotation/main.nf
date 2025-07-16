@@ -7,7 +7,7 @@ process VADR_ANNOTATION {
     
     conda(params.vadr_env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/vadr:latest' : 'staphb/vadr:latest' }"
+        'docker.io/staphb/vadr:latest' : 'docker.io/staphb/vadr:latest' }"
 
     input:
 	tuple val(meta), path(fasta_path)

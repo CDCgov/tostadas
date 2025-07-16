@@ -6,13 +6,9 @@
 
 process SUBMIT_SUBMISSION {
 
-    // publishDir "${params.output_dir}/${params.submission_output_dir}/${params.metadata_basename}",
-    //        mode: 'copy',
-    //        overwrite: params.overwrite_output
-
     conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+        'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
     input:
     tuple val(meta), path(submission_files)
