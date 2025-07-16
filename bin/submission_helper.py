@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import shutil
 import tempfile
 from datetime import datetime
@@ -24,15 +25,15 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
 def setup_logging(log_file="submission.log", level=logging.INFO):
-    if not logging.getLogger().handlers:
-        logging.basicConfig(
-            level=level,
-            format="[%(levelname)s] %(message)s",
-            handlers=[
-                logging.FileHandler(log_file),
-                logging.StreamHandler()
-            ]
-        )
+	if not logging.getLogger().handlers:
+		logging.basicConfig(
+			level=level,
+			format="[%(levelname)s] %(message)s",
+			handlers=[
+				logging.FileHandler(log_file),
+				logging.StreamHandler()
+			]
+		)
 
 def get_compound_extension(filename):
 	"""Return the full extension (up to 2 suffixes) of a file, like '.fastq.gz'."""
@@ -43,6 +44,61 @@ def get_compound_extension(filename):
 		return '.' + parts[-1]             # e.g., '.gz' or '.fq'
 	else:
 		return ''  # No extension
+
+def sendemail(sample_id, config_dict, mode, submission_dir, dry_run=True):
+	# Code for creating a zip archive for Genbank submission
+	logging.info(f"Sending submission email for {sample_id}")
+	# Get email addresses from config
+	table2asn_email = config_dict.get("table2asn_email")
+	submitter_info = config_dict.get("Submitter", {})
+	from_email = submitter_info.get("@email")
+	alt_email = submitter_info.get("@alt_email")
+	to_email = []
+	cc_email = []
+	if alt_email:
+		cc_email.append(alt_email)
+	# If test mode, send email to the Submitter (user), otherwise send to table2asn email
+	if mode == 'Test':
+		if from_email:
+			to_email.append(from_email)
+	else:
+		if table2asn_email:
+			to_email.append(table2asn_email)
+	subject = f"{sample_id} table2asn submission"
+	attachment_path = os.path.join(submission_dir, f"{sample_id}.sqn")
+
+	if dry_run:
+		logging.info(
+			f"[DRY-RUN] Would send email:\n"
+			f"  From: {from_email}\n"
+			f"  To: {to_email}\n"
+			f"  Cc: {cc_email}\n"
+			f"  Subject: {msg['Subject']}\n"
+			f"  Attachment: {attachment_path}"
+		)
+		return
+
+	try:
+		msg = MIMEMultipart('mixed')
+		msg['Subject'] = subject
+		msg['From'] = from_email
+		msg['To'] = ", ".join(to_email)
+		if cc_email:
+			msg['Cc'] = ", ".join(cc_email)
+		# Attach the .sqn file
+		with open(attachment_path, 'rb') as file_input:
+			part = MIMEApplication(file_input.read(), Name=f"{sample_id}.sqn")
+		part['Content-Disposition'] = f"attachment; filename=\"{sample_id}.sqn\""
+		msg.attach(part)
+		# Send the email
+		s = smtplib.SMTP('localhost')
+		s.sendmail(from_email, to_email + cc_email, msg.as_string())
+		s.quit()
+		logging.info(f"Email sent for {sample_id}")
+	except Exception as e:
+		logging.debug("Error: Unable to send mail automatically. If unable to email, submission can be made manually using the sqn file.", file=sys.stderr)
+		logging.debug("sqn_file:" + os.path.join(self.output_dir, f"{sample_id}.sqn"), file=sys.stderr)
+		logging.debug(e, file=sys.stderr)
 
 def get_remote_submission_dir(identifier, batch_id, db, platform=None):
 	"""Return the remote directory path under submit/<Test|Production>/..."""
@@ -243,18 +299,18 @@ class SubmissionConfigParser:
 			config_dict = yaml.load(f, Loader=yaml.BaseLoader) # Load yaml as str only
 		# Exit if yaml import and dict conversion not successful
 		if not isinstance(config_dict, dict):
-			print("Error: Config file is incorrect. File must have a valid yaml format.", file=sys.stderr)
+			logging.info("Error: Config file is incorrect. File must have a valid yaml format.", file=sys.stderr)
 			sys.exit(1)
 		# Only check credentials if not in dry_run mode
 		if not self.parameters.get('dry_run', False):
 			for k, v in config_dict.items():
 				if self.parameters.get("gisaid", False):
 					if k.startswith('GISAID') and not v:
-						print("Error: There are missing GISAID values in the config file.", file=sys.stderr)
+						logging.info("Error: There are missing GISAID values in the config file.", file=sys.stderr)
 						sys.exit(1)
 				else:
 					if k.startswith('NCBI') and not v:
-						print("Error: There are missing NCBI values in the config file.", file=sys.stderr)
+						logging.info("Error: There are missing NCBI values in the config file.", file=sys.stderr)
 						sys.exit(1)
 		return config_dict
 class Sample:
@@ -298,7 +354,7 @@ class MetadataParser:
 			]
 			return custom_columns
 		except Exception as e:
-			print(f"Error loading custom metadata file: {e}")
+			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
 		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Main columns
@@ -356,7 +412,7 @@ class Submission:
 		self.type = type
 		self.client = self.get_client()
 	def get_client(self):
-		print(f"submission_mode is {self.submission_mode}")
+		logging.info(f"submission_mode is {self.submission_mode}")
 		if self.submission_mode == 'sftp':
 			return SFTPClient(self.submission_config)
 		elif self.submission_mode == 'ftp':
@@ -370,26 +426,26 @@ class Submission:
 		self.client.change_dir(remote_dir)
 		# Check if report.xml exists and download it
 		if os.path.exists(report_local_path):
-			print(f"Report already exists locally: {report_local_path}")
+			logging.info(f"Report already exists locally: {report_local_path}")
 			return report_local_path
 		elif self.client.file_exists('report.xml'):
-			print(f"Report found on server. Downloading to: {report_local_path}.")
+			logging.info(f"Report found on server. Downloading to: {report_local_path}.")
 			self.client.download_file('report.xml', report_local_path)
 			return report_local_path # Report fetched, return its path
 		else:
-			print(f"No report found at {remote_dir}")
+			logging.info(f"No report found at {remote_dir}")
 			return False # Report not found, need to try again
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
 		remote_subdir = get_remote_submission_dir(self.identifier, self.sample.batch_id, type, getattr(self, 'platform', None))
 		self.client.connect()
 		# Navigate to submit/<Test|Production>/<submission_db> folder
-		print(f"Uploading to FTP path: submit/{self.submission_dir}/{remote_subdir}")
+		logging.info(f"Uploading to FTP path: submit/{self.submission_dir}/{remote_subdir}")
 		self.client.make_dir(f"submit/{self.submission_dir}/{remote_subdir}")
 		self.client.change_dir(f"submit/{self.submission_dir}/{remote_subdir}")
 		for file_path in files:
 			self.client.upload_file(file_path, f"{os.path.basename(file_path)}")
-		print(f"Submitted files for sample batch: {self.sample.batch_id}")
+		logging.info(f"Submitted files for sample batch: {self.sample.batch_id}")
 	def close(self):
 		self.client.close()
 
@@ -407,31 +463,31 @@ class SFTPClient:
 			self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 			self.ssh.connect(self.host, username=self.username, password=self.password, port=self.port)
 			self.sftp = self.ssh.open_sftp()
-			print(f"Connected to SFTP: {self.host}")
+			logging.info(f"Connected to SFTP: {self.host}")
 		except Exception as e:
 			raise ConnectionError(f"Failed to connect to SFTP: {e}")
 	def make_dir(self, dir_path):
 		try:
 			self.sftp.stat(dir_path)  # Will succeed if dir exists
-			print(f"Directory already exists: {dir_path}")
+			logging.info(f"Directory already exists: {dir_path}")
 		except IOError as e:
 			# Check if it's a 'no such file' type of error
 			if 'No such file' in str(e):
 				try:
 					self.sftp.mkdir(dir_path)
-					print(f"Created directory: {dir_path}")
+					logging.info(f"Created directory: {dir_path}")
 				except IOError as e2:
-					print(f"Failed to create directory: {dir_path}. Error: {e2}")
+					logging.info(f"Failed to create directory: {dir_path}. Error: {e2}")
 					raise
 			else:
-				print(f"Unexpected error checking directory {dir_path}: {e}")
+				logging.info(f"Unexpected error checking directory {dir_path}: {e}")
 				raise
 	def change_dir(self, dir_path):
 		try:
 			self.sftp.chdir(dir_path)
-			print(f"Changed directories to {dir_path}")
+			logging.info(f"Changed directories to {dir_path}")
 		except IOError as e:
-			print(f"Failed to change directory: {dir_path}. Error: {e}")
+			logging.info(f"Failed to change directory: {dir_path}. Error: {e}")
 			raise
 	def file_exists(self, file_path):
 		try:
@@ -442,13 +498,13 @@ class SFTPClient:
 	def download_file(self, remote_file, local_path):
 		try:
 			self.sftp.get(remote_file, local_path)
-			print(f"Downloaded {remote_file} to {local_path}")
+			logging.info(f"Downloaded {remote_file} to {local_path}")
 		except Exception as e:
 			raise IOError(f"Failed to download {remote_file}: {e}")
 	def upload_file(self, file_path, destination_path):
 		try:
 			self.sftp.put(file_path, destination_path)
-			print(f"Uploaded {file_path} to {destination_path}")
+			logging.info(f"Uploaded {file_path} to {destination_path}")
 		except Exception as e:
 			raise IOError(f"Failed to upload {file_path}: {e}")
 	def close(self):
@@ -456,7 +512,7 @@ class SFTPClient:
 			self.sftp.close()
 		if self.ssh:
 			self.ssh.close()
-		print("SFTP connection closed.")
+		logging.info("SFTP connection closed.")
 
 class FTPClient:
 	def __init__(self, config):
@@ -471,36 +527,36 @@ class FTPClient:
 			self.ftp = ftplib.FTP()
 			self.ftp.connect(self.host, self.port)
 			self.ftp.login(user=self.username, passwd=self.password)
-			print(f"Connected to FTP: {self.host}:{self.port}")
+			logging.info(f"Connected to FTP: {self.host}:{self.port}")
 		except EOFError as e:
-			print("EOFError occurred during FTP connection.")
+			logging.info("EOFError occurred during FTP connection.")
 			raise ConnectionError(f"Failed to connect to FTP: {e}")
 		except Exception as e:
-			print(f"Unexpected error during FTP connection: {e}")
+			logging.info(f"Unexpected error during FTP connection: {e}")
 			raise ConnectionError(f"Failed to connect to FTP: {e}")
 	def make_dir(self, dir_path):
 		try:
 			current = self.ftp.pwd()
 			self.ftp.cwd(dir_path)
 			self.ftp.cwd(current)  # Go back to original directory
-			print(f"Directory already exists: {dir_path}")
+			logging.info(f"Directory already exists: {dir_path}")
 		except ftplib.error_perm as e:
 			if '550' in str(e):  # 550 usually means "no such file or directory"
 				try:
 					self.ftp.mkd(dir_path)
-					print(f"Created directory: {dir_path}")
+					logging.info(f"Created directory: {dir_path}")
 				except ftplib.error_perm as e2:
-					print(f"Failed to create directory: {dir_path}. Error: {e2}")
+					logging.info(f"Failed to create directory: {dir_path}. Error: {e2}")
 					raise
 			else:
-				print(f"Unexpected FTP error checking directory {dir_path}: {e}")
+				logging.info(f"Unexpected FTP error checking directory {dir_path}: {e}")
 				raise
 	def change_dir(self, dir_path):
 		try:
 			self.ftp.cwd(dir_path)
-			print(f"Changed to directory: {dir_path}")
+			logging.info(f"Changed to directory: {dir_path}")
 		except ftplib.error_perm as e:
-			print(f"Failed to change directory: {dir_path}. Error: {e}")
+			logging.info(f"Failed to change directory: {dir_path}. Error: {e}")
 			raise
 	def file_exists(self, file_path):
 		if file_path in self.ftp.nlst():
@@ -510,19 +566,19 @@ class FTPClient:
 	def download_file(self, remote_file, local_path):
 		with open(local_path, 'wb') as f:
 			self.ftp.retrbinary(f'RETR {remote_file}', f.write)
-		print(f"Downloaded file from {remote_file} to {local_path}")
+		logging.info(f"Downloaded file from {remote_file} to {local_path}")
 	def upload_file(self, file_path, destination_path):
 		try:
 			if file_path.endswith(('.fasta', '.fastq', '.fna', '.fsa', '.gff', '.gff3', '.gz', 'xml', '.sqn', '.sbt', '.cmt')):  
 				with open(file_path, 'rb') as file:
-					print(f"Uploading binary file: {file_path}")
+					logging.info(f"Uploading binary file: {file_path}")
 					self.ftp.storbinary(f'STOR {destination_path}', file)
 			else:
 				with open(file_path, 'r') as file:
-					print(f"Uploading text file: {file_path}")
+					logging.info(f"Uploading text file: {file_path}")
 					self.ftp.storlines(f'STOR {destination_path}', file)
 				# Open the file and upload it
-			print(f"Uploaded {file_path} to {destination_path}")
+			logging.info(f"Uploaded {file_path} to {destination_path}")
 		except Exception as e:
 			raise IOError(f"Failed to upload {file_path}: {e}")
 	def close(self):
@@ -531,7 +587,7 @@ class FTPClient:
 				self.ftp.quit()  # Gracefully close the connection
 			except Exception:
 				self.ftp.close()  # Force close if quit() fails
-		print("FTP connection closed.")
+		logging.info("FTP connection closed.")
 
 class XMLSubmission(ABC):
 	def __init__(self, submission_config, metadata_df, output_dir, parameters, sample):
@@ -577,7 +633,7 @@ class XMLSubmission(ABC):
 		pretty_xml = reparsed.toprettyxml(indent="  ")
 		with open(xml_output_path, 'w', encoding='utf-8') as f:
 			f.write(pretty_xml)
-		print(f"Batch XML generated at {xml_output_path}")
+		logging.info(f"Batch XML generated at {xml_output_path}")
 		self.xml_output_path = xml_output_path
 	def add_sample(self, sample, metadata_df, platform=None):
 		# Support passing each sample object and its associated metadata (for the per-sample blocks)
@@ -593,9 +649,17 @@ class XMLSubmission(ABC):
 		else:
 			# fallback for single-platform submission
 			self.sra_metadata = all_platform_metadata[0][1] if all_platform_metadata else {}
-		# Call subclass-specific methods to add the unique parts
-		anchor_element = self.add_action_block(self.submission_root)
-		self.add_attributes_block(anchor_element)
+		# Call subclass-specific methods to add the unique parts (guard the calls because GenbankSubmission doesn't use them)
+		if hasattr(self, "add_action_block") and hasattr(self, "add_attributes_block"):
+			anchor_element = self.add_action_block(self.submission_root)
+			self.add_attributes_block(anchor_element)
+		else:
+			logging.debug(f"{type(self).__name__} does not implement action/attributes block additions.")
+
+class XMLSubmissionMixin(ABC):
+	""" A Mixin for the abstract methods that are used by both Biosample and SRA, but not Genbank
+		These are called during add_sample() in XMLSubmission.
+	"""
 	@abstractmethod
 	def add_action_block(self, submission):
 		"""Add the action block, which differs between submissions."""
@@ -605,7 +669,7 @@ class XMLSubmission(ABC):
 		"""Add the attributes block, which differs between submissions."""
 		pass
 
-class BiosampleSubmission(XMLSubmission, Submission):
+class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
@@ -658,17 +722,8 @@ class BiosampleSubmission(XMLSubmission, Submission):
 			if attr_name not in ignored_fields:
 				attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 				attribute.text = self.safe_text(attr_value)
-	def submit(self):
-		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
-		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
-		with open(submit_ready_file, 'w') as fp:
-			pass 
-		# Submit files
-		files_to_submit = [submit_ready_file, self.xml_output_path]
-		self.submit_files(files_to_submit, 'biosample')
-		print(f"Submitted sample batch {self.sample.batch_id} to BioSample")
 
-class SRASubmission(XMLSubmission, Submission):
+class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
@@ -710,121 +765,93 @@ class SRASubmission(XMLSubmission, Submission):
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi-spuid']}_SRA")
 		# todo: add attribute ref ID for BioSample
-	def submit(self):
-		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
-		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
-		with open(submit_ready_file, 'w') as fp:
-			pass 
-		# Submit files (rename them using a temporary dir that gets removed after the loop)
-		with tempfile.TemporaryDirectory() as tmpdir:
-			files_to_submit = [submit_ready_file, self.xml_output_path] # files to submit
-			# Rename (copy) FASTQ files for each sample in batch
-			for sample in self.samples:
-				ext1 = get_compound_extension(sample.fastq1)
-				ext2 = get_compound_extension(sample.fastq2)
-				fastq1 = os.path.join(tmpdir, f"{sample.sample_id}_R1{ext1}")
-				fastq2 = os.path.join(tmpdir, f"{sample.sample_id}_R2{ext2}")
-				shutil.copy(sample.fastq1, fastq1)
-				shutil.copy(sample.fastq2, fastq2)
-				files_to_submit.extend([fastq1, fastq2])
-			# Submit files from temporary directory
-			self.submit_files(files_to_submit, 'sra')
-			print(f"Submitted sample batch {self.sample.batch_id} to SRA")
 
 class GenbankSubmission(XMLSubmission, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, sample, accession_id = None, identifier = None):
+	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
 		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
 		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample, identifier)
-		# Use the MetadataParser to extract metadata needed for GB submission
+		self.accession_id = accession_id
+		self.samples = samples
+		self.sample = sample
 		parser = MetadataParser(metadata_df, parameters)
 		self.top_metadata = parser.extract_top_metadata()
-		self.genbank_metadata = parser.extract_genbank_metadata()
 		self.biosample_metadata = parser.extract_biosample_metadata()
-		self.accession_id = accession_id
+		self.genbank_metadata = parser.extract_genbank_metadata()
 		os.makedirs(self.output_dir, exist_ok=True)
-		# Generate the GenBank XML upon initialization only if sample.ftp_upload is True
-		if self.sample.ftp_upload:
-			self.xml_output_path = self.create_xml(output_dir)
-	def add_action_block(self, submission):
-		action = ET.SubElement(submission, "Action")
-		add_files = ET.SubElement(action, "AddFiles", target_db="WGS")
-		# File details
+	def xml_create_bankit(self, submission):
+		"""
+		Prepares a submission for ftp upload via Bank-It
+		Used for SARS-CoV-2 and influenza submissions
+		"""
+		# Create submission xml
+		self.submission_root = ET.Element('Submission')
+		description = ET.SubElement(self.submission_root, 'Description')
+		org_attrs = {
+			'type': self.submission_config['Type'],
+			'role': self.submission_config['Role']
+		}
+		org_id = self.submission_config.get('Org_ID', '').strip()
+		if org_id:
+			org_attrs['org_id'] = org_id
+		organization_el = ET.SubElement(description, 'Organization', org_attrs)
+		name = ET.SubElement(organization_el, 'Name')
+		name.text = self.safe_text(self.submission_config['Submitting_Org'])
+		if "Specified_Release_Date" in self.submission_config:
+			release_date_value = self.submission_config["Specified_Release_Date"]
+			if release_date_value and release_date_value != "Not Provided":
+				hold = ET.SubElement(description, "Hold")
+				hold.set("release_date", release_date_value)
+		# Action section
+		action = ET.SubElement(self.submission_root, 'Action')
+		add_files = ET.SubElement(action, 'AddFiles', {'target_db': 'GenBank'})
+		# File section
+		file_el = ET.SubElement(add_files, 'File', {'file_path': 'submission.zip'})
+		data_type = ET.SubElement(file_el, 'DataType')
+		data_type.text = 'genbank-submission-package'
+		# Attribute section
+		attribute = ET.SubElement(add_files, 'Attribute', {'name': 'wizard'})
+		if self.sample.species == 'sars':
+			attribute.text = 'BankIt_SARSCoV2_api'
+		elif self.sample.species == 'influenza':
+			attribute.text = 'BankIt_influenza_api'
+		# todo: add else condition for failure
+		# Identifier section
+		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+		identifier = ET.SubElement(add_files, 'Identifier')
+		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
+		self.safe_text(self.top_metadata['ncbi-spuid'])
+	
+	def xml_create_wgs(self):
+		# Create root Submission element
+		self.init_xml_root() # Write first part of submission.xml (Description)
+		# --- Action: AddFiles (WGS) ---
+		action1 = ET.SubElement(self.submission_root, "Action")
+		add_files = ET.SubElement(action1, "AddFiles", target_db="WGS")
 		file1 = ET.SubElement(add_files, "File", file_path=f"{self.sample.sample_id}.sqn")
-		data_type1 = ET.SubElement(file1, "DataType")
-		data_type1.text = "wgs-contigs-sqn"
+		ET.SubElement(file1, "DataType").text = "wgs-contigs-sqn"
 		# Meta content with genome description
 		meta = ET.SubElement(add_files, "Meta", content_type="XML")
 		xml_content = ET.SubElement(meta, "XmlContent")
 		genome = ET.SubElement(xml_content, "Genome")
 		description = ET.SubElement(genome, "Description")
-		# todo: adding these using the comment.cmt file but would rather put them here
-		#assembly_metadata_choice = ET.SubElement(description, "GenomeAssemblyMetadataChoice")
-		# Add StructuredComment tag within GenomeAssemblyMetadataChoice
-		#ET.SubElement(assembly_metadata_choice, "StructuredComment")
-		#ET.SubElement(description, "GenomeRepresentation").text = "Full"
-		# Add AttributeRefId and BioProject Reference
+		assembly_metadata_choice = ET.SubElement(description, "GenomeAssemblyMetadataChoice")
+		ET.SubElement(assembly_metadata_choice, "StructuredComment")
+		# todo: these need to be controlled variables
+		ET.SubElement(description, "GenomeRepresentation").text = "Full"
+		ET.SubElement(description, "ExpectedFinalVersion").text = "Yes"
+		# AttributeRefId for BioProject
 		attribute_ref = ET.SubElement(add_files, "AttributeRefId")
 		ref_id = ET.SubElement(attribute_ref, "RefId")
 		primary_id = ET.SubElement(ref_id, "PrimaryId", db="BioProject")
 		primary_id.text = self.safe_text(self.top_metadata["ncbi-bioproject"])
-		# BioSample SPUID Reference
-		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
-		biosample_ref = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
-		refid_biosample = ET.SubElement(biosample_ref, "RefId")
-		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
-		spuid_biosample.text = self.safe_text(self.top_metadata["ncbi-spuid"])
-
-		# Add SPUID Identifier for BioSample
+		# Identifier for submission
 		identifier = ET.SubElement(add_files, "Identifier")
-		spuid = ET.SubElement(identifier, "SPUID", spuid_namespace={'spuid_namespace': f"{spuid_namespace_value}"})
-		spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
+		# todo: why is there no Identifier block in the submission example?
+		self.finalize_xml()
+		# todo: the order & placement of these calls is different from BS and SRA, and this bothers me
 
-	def add_attributes_block(self, submission):
-		# Adding a second action for the BioSample details
-		action = ET.SubElement(submission, "Action")
-		add_data = ET.SubElement(action, "AddData", target_db="BioSample")
-		
-		# XML content for BioSample details
-		data = ET.SubElement(add_data, "Data", content_type="XML")
-		xml_content = ET.SubElement(data, "XmlContent")
-		biosample = ET.SubElement(xml_content, "BioSample", schema_version="2.0")
-		
-		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
-		sample_id = ET.SubElement(biosample, "SampleId")
-		spuid = ET.SubElement(sample_id, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
-		spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
-
-		# Descriptor section
-		descriptor = ET.SubElement(biosample, "Descriptor")
-		ET.SubElement(descriptor, "Title").text = self.safe_text(self.top_metadata["title"])
-		
-		# Organism information
-		organism = ET.SubElement(biosample, "Organism")
-		ET.SubElement(organism, "OrganismName").text = self.safe_text(self.biosample_metadata['organism'])
-
-		# BioProject reference within BioSample
-		bio_project = ET.SubElement(biosample, "BioProject")
-		primary_id = ET.SubElement(bio_project, "PrimaryId", db="BioProject")
-		primary_id.text = self.safe_text(self.top_metadata["ncbi-bioproject"])
-
-		# Package and Attributes
-		ET.SubElement(biosample, "Package").text = "Microbe.1.0"
-		attributes = ET.SubElement(biosample, "Attributes")
-		ET.SubElement(attributes, "Attribute", attribute_name="strain").text = self.safe_text(self.biosample_metadata['strain'])
-		ET.SubElement(attributes, "Attribute", attribute_name="collection_date").text = self.safe_text(self.biosample_metadata['collection_date'])
-		ET.SubElement(attributes, "Attribute", attribute_name="geo_loc_name").text = self.safe_text(self.biosample_metadata['geo_loc_name'])
-		ET.SubElement(attributes, "Attribute", attribute_name="host").text = self.safe_text(self.biosample_metadata['host'])
-		ET.SubElement(attributes, "Attribute", attribute_name="isolation_source").text = self.safe_text(self.biosample_metadata['isolation_source'])
-		ET.SubElement(attributes, "Attribute", attribute_name="sample_type").text = self.safe_text(self.biosample_metadata['sample_type'])
-		
-		# Add SPUID Identifier for BioSample
-		identifier = ET.SubElement(add_data, "Identifier")
-		spuid = ET.SubElement(identifier, "SPUID", spuid_namespace={'spuid_namespace': f"{spuid_namespace_value}"})
-		spuid.text = self.safe_text(self.top_metadata["ncbi-spuid"])
-
-
-	# Functions for manually preparing files for table2asn + manual submission (where ftp upload not supported)
+	# Functions for preparing files for table2asn
 	def create_source_file(self):
 		source_data = {
 			"Sequence_ID": self.top_metadata.get("sequence_name"),
@@ -992,9 +1019,10 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("    }\n")
 			f.write("  }\n")
 			f.write("}\n")
-	def prepare_files_manual_submission(self):
-		""" Prepare files for manual upload to GenBank because FTP support not available 
-			These files will be emailed to user and/or GenBank, and also zipped to output dir """
+	def prep_table2asn_files(self):
+		""" Creates authorset (sbt), comment (cmt), source (src) files
+			Runs table2asn on them
+		"""
 		# Create the source df
 		# todo: that seq_id needs to be the genbank sequence id
 		self.create_source_file()
@@ -1002,38 +1030,65 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.create_comment_file()
 		# Create authorset file
 		self.create_authorset_file()
-		print(f"Genbank files prepared for {self.sample.sample_id}")
 		# Rename and move the fasta for table2asn call
 		renamed_fasta = os.path.join(f"{self.output_dir}/sequence.fsa")
 		if not os.path.exists(renamed_fasta):
 			shutil.move(self.sample.fasta_file, renamed_fasta)
 		# Run table2asn 
 		self.run_table2asn()
-		# Zip the files
+		print(f"Genbank files prepared for {self.sample.sample_id}")
+
+	def prep_zip_folder(self):
+		""" Prepare files for manual upload to GenBank because FTP support not available 
+			These files will be emailed to user and/or GenBank, and also zipped to output dir """
 		with ZipFile(os.path.join(self.output_dir, self.sample.sample_id + ".zip"), 'w') as zip:
 			filelist = [f"{self.sample.sample_id}.sqn","authorset.sbt","sequence.fsa","source.src","comment.cmt"]
 			for file in filelist:
 				filepath = os.path.join(self.output_dir, file)
 				if os.path.exists(filepath):
-					zip.write(filepath, file)
-				# add f"{self.sample.sample_id}.sqn" to zip files? 
-	
-	def prepare_files_ftp_submission(self):
-		""" Prepare some files needed for table2asn for GenBank FTP submission
-			These files will be uploaded along with submission.xml and <sample_name>.sqn files """
-		if not os.path.exists(self.output_dir):
-			os.makedirs(self.output_dir)
-		# Create Structured Comment file
-		self.create_comment_file()
-		# Create authorset file
-		self.create_authorset_file()
-		print(f"Genbank files prepared for {self.sample.sample_id}")
-		# Rename and move the fasta for table2asn call
-		renamed_fasta = os.path.join(f"{self.output_dir}/sequence.fsa")
-		if not os.path.exists(renamed_fasta):
-			shutil.move(self.sample.fasta_file, renamed_fasta)
-		# Run table2asn
-		self.run_table2asn() 
+					zip.write(filepath, file) 
+
+	# Define internal workflow functions for the 3 different GenBank submission modalities
+	def _workflow_bankit(self):
+		# Prepare a Bank-It ftp submission
+		self.xml_create_bankit()
+		self.prep_table2asn_files()
+		self.prep_zip_folder()
+		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
+		with open(submit_ready_file, 'w') as fh:
+			pass
+
+	def _workflow_bacteria_euk(self):
+		# Prepare a WGS ftp submission
+		self.xml_create_wgs()
+		self.prep_table2asn_files()
+		# Delete all but the sqn file 
+		# todo: this also keeps the fsa file, need to check on that
+		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff']:
+			pattern = os.path.join(self.output_dir, p)
+			for f in glob.glob(pattern):
+				if os.path.isfile(f):
+					print(f)  # debug
+					os.remove(f)
+		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
+		with open(submit_ready_file, 'w') as fh:
+			pass
+
+	def _workflow_virus(self):
+		# Prepare a manual submission
+		self.prep_zip_folder()
+
+	def genbank_submission_driver(self):
+		""" Runs the appropriate workflow to prepare the GenBank submission
+		"""
+		if self.sample.species in ['sars','flu']:
+			self._workflow_bankit()
+		elif self.sample.species in ['bacteria', 'eukaryote']:
+			self._workflow_bacteria_euk()
+		elif self.sample.species== 'virus':
+			self._workflow_virus()
+		else:
+			print(f"{self.sample.species} must be one of: sars, flu, bacteria, eukaryote, virus")
 
 	# Functions for running table2asn
 	def get_gff_locus_tag(self):
@@ -1110,46 +1165,3 @@ class GenbankSubmission(XMLSubmission, Submission):
 		except subprocess.CalledProcessError as e:
 			print(f"Error running table2asn: {e.stderr}")
 			raise
-	def sendemail(self):
-		# Code for creating a zip archive for Genbank submission
-		print(f"Sending submission email for {self.sample.sample_id}")
-		TABLE2ASN_EMAIL = self.submission_config["table2asn_email"]
-		try:
-			msg = MIMEMultipart('multipart')
-			msg['Subject'] = self.sample.sample_id + " table2asn submission"
-			from_email = self.submission_config["Submitter"]["@email"]
-			to_email = []
-			cc_email = []
-			if self.parameters.test == True:
-				to_email.append(self.submission_config["Submitter"]["@email"])
-			else:
-				to_email.append(TABLE2ASN_EMAIL)
-				#cc_email.append(config_dict["Description"]["Organization"]["Submitter"]["@email"])
-			if self.submission_config["Submitter"]["@alt_email"]:
-				cc_email.append(self.submission_config["Submitter"]["@alt_email"])
-			msg['From'] = from_email
-			msg['To'] = ", ".join(to_email)
-			if len(cc_email) != 0:
-				msg['Cc'] = ", ".join(cc_email)
-			with open(os.path.join(self.output_dor, f"{self.sample.sample_id}.sqn"), 'rb') as file_input:
-				part = MIMEApplication(file_input.read(), Name=f"{self.sample.sample_id}.sqn")
-			part['Content-Disposition'] = "attachment; filename=f'{self.sample.sample_id}.sqn'"
-			msg.attach(part)
-			s = smtplib.SMTP('localhost')
-			s.sendmail(from_email, to_email, msg.as_string())
-			print(f"Email sent for {self.sample.sample_id}")
-		except Exception as e:
-			print("Error: Unable to send mail automatically. If unable to email, submission can be made manually using the sqn file.", file=sys.stderr)
-			print("sqn_file:" + os.path.join(self.output_dir, f"{self.sample.sample_id}.sqn"), file=sys.stderr)
-			print(e, file=sys.stderr)
-	# Functions to ftp upload files
-	def submit(self):
-		# Create submit.ready file (without using Posix object because all files_to_submit need to be same type)
-		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
-		with open(submit_ready_file, 'w') as fp:
-			pass 
-		# Submit files
-		files_to_submit = [submit_ready_file, self.xml_output_path, f"{self.output_dir}/{self.sample.sample_id}.sqn", 
-						   f"{self.output_dir}/authorset.sbt", f"{self.output_dir}/comment.cmt"]
-		self.submit_files(files_to_submit, 'genbank')
-		print(f"Submitted sample {self.sample.sample_id} to Genbank")

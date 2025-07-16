@@ -94,7 +94,7 @@ workflow TOSTADAS {
 			annotation_ch = sample_ch.map { meta, fasta, _fq1, _fq2, _nnp, _gff -> 
 				[meta, fasta] 
 			}
-			
+
 			if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
 				// perform viral annotation according to user's choice: liftoff+repeatmasker or vadr
 				if (params.repeatmasker_liftoff && !params.vadr) {
@@ -111,6 +111,7 @@ workflow TOSTADAS {
 			} else if (params.species == 'bacteria') {
 				if (params.bakta) {
 					RUN_BAKTA(annotation_ch)
+
 					annotation_ch = annotation_ch
 						| join(RUN_BAKTA.out.gff)
 						| join(RUN_BAKTA.out.fna)
