@@ -19,11 +19,7 @@ process SUBMIT_SUBMISSION {
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
     def dry_run = params.dry_run == true ? '--dry_run' : ''
 
-    // Use a clean subdirectory as the output directory
-    def outdir = "submission_output_${meta.batch_id}"
-
     """
-    mkdir -p ${outdir} &&
     submission.py \
         --submission_folder ${submission_files} \
         --submission_name ${meta.batch_id} \

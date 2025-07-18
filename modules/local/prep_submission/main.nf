@@ -28,9 +28,6 @@ process PREP_SUBMISSION {
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
 
-    // Use a clean subdirectory as the output directory
-    def outdir = "submission_output_${meta.batch_id}"
-
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
         def s = [
@@ -47,7 +44,6 @@ process PREP_SUBMISSION {
     def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
 
     """
-    mkdir -p ${outdir} &&
     submission_prep.py \
         --submission_name ${meta.batch_id} \
         --config_file $submission_config  \
