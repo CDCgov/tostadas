@@ -46,8 +46,6 @@ def get_compound_extension(filename):
 		return ''  # No extension
 
 def sendemail(sample_id, config_dict, mode, submission_dir, dry_run=True):
-	# Code for creating a zip archive for Genbank submission
-	logging.info(f"Sending submission email for {sample_id}")
 	# Get email addresses from config
 	table2asn_email = config_dict.get("table2asn_email")
 	submitter_info = config_dict.get("Submitter", {})
@@ -73,7 +71,7 @@ def sendemail(sample_id, config_dict, mode, submission_dir, dry_run=True):
 			f"  From: {from_email}\n"
 			f"  To: {to_email}\n"
 			f"  Cc: {cc_email}\n"
-			f"  Subject: {msg['Subject']}\n"
+			f"  Subject: {subject}\n"
 			f"  Attachment: {attachment_path}"
 		)
 		return
@@ -880,6 +878,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		}
 		comment_df = pd.DataFrame([comment_data])
 		comment_df.to_csv(os.path.join(self.outdir, "comment.cmt"), sep="\t", index=False)
+
 	def create_authorset_file(self):
 		""" Create the authorset.sbt file that is required for table2asn to run """
 		submitter_first = self.submission_config["Submitter"]["Name"]["First"]
@@ -1019,6 +1018,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("    }\n")
 			f.write("  }\n")
 			f.write("}\n")
+
 	def prep_table2asn_files(self):
 		""" Creates authorset (sbt), comment (cmt), source (src) files
 			Runs table2asn on them

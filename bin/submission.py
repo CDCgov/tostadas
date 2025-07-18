@@ -7,7 +7,8 @@ from submission_helper import (
 	FTPClient,
 	SFTPClient,
 	GenbankSubmission,
-	setup_logging
+	setup_logging,
+	sendemail
 )
 
 def get_args():
@@ -48,9 +49,9 @@ def main_submit():
 
 	# Loop through all the repositories in the batch folder and submit them
 	for dirpath, _, files in os.walk(root):
-		# Only consider directories that have both submission.xml and submit.ready
+		# dirpath should look like: <batch_id>/<database>[_<platform>]/[<sample_id>]
 		if dirpath == root:
-			continue # Skip root, submission files are never directly under top folder
+			continue # Skip root, submission files are never directly under top folder (<batch_id>)
 		if not files:
 			continue # Skip a dir with no files inside (e.g., genbank dir only has sample dirs, so only traverse the sample dirs)
 		if 'submission.xml' in files and 'submit.ready' in files:
@@ -82,17 +83,16 @@ def main_submit():
 				client.close()
 		elif any(f.endswith('.zip') for f in files):
 			# Handle non-ftp submissions (directories with a zip file but without submission.xml and submit.ready)
-			rel = os.path.relpath(dirpath, root)
-			parts = rel.split(os.sep)
+			rel = os.path.relpath(dirpath, root) # dirpath should be <batch_id>/genbank/<sample_id>
+			parts = rel.split(os.sep) # genbank/<sample_id>
 			database = parts[0] # genbank
 			sample = parts[1] # genbank submission files are stored in a subfolder called <sample name>
-			# Build a “flattened” remote base folder: <metadata file name>_<sample name>_<database>
-			base_folder = f"{params['identifier']}_{sample}_{database}"
-			if params['dry_run']:
-				sendemail(sample, config, mode, base_folder)
-				#logging.info(f"[DRY-RUN] Would connect to {params['submission_mode'].upper()} and upload to: {remote_dir}")
-			elif parameters['send_email']:
-					sendemail(sample, config, mode, base_folder, dry_run=False)
+			if database == 'genbank': # make sure we're only uploading the intended zip file
+				if params['dry_run']:
+					sendemail(sample, config, mode, dirpath)
+					#logging.info(f"[DRY-RUN] Would connect to {params['submission_mode'].upper()} and upload to: {remote_dir}")
+				elif params['send_email']:
+						sendemail(sample, config, mode, dirpath, dry_run=False)
 
 		# todo: add an elif for genbank email/manual submissions 
 		else:
