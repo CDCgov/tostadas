@@ -123,28 +123,28 @@ def get_accessions(sample, report_df):
 	return accessions
 
 # Functions for fetching module
-def fetch_all_reports(databases, output_dir, config_dict, parameters, submission_dir, submission_mode, identifier, batch_id, timeout=60):
+def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir, submission_mode, identifier, batch_id, timeout=60):
 	start_time = time.time()
 	reports_fetched = {}
 
 	for db in databases:
 		reports_fetched[db] = []
 		if db == 'sra':
-			base_output_dir = os.path.join(output_dir, db)
-			has_both_platforms = all(os.path.isdir(os.path.join(base_output_dir, p)) for p in ['illumina', 'nanopore'])
+			base_outdir = os.path.join(outdir, db)
+			has_both_platforms = all(os.path.isdir(os.path.join(base_outdir, p)) for p in ['illumina', 'nanopore'])
 			platforms = ['illumina', 'nanopore'] if has_both_platforms else [None]
 		else:
 			platforms = [None]  # only 1 path for biosample/genbank
 		for platform in platforms:
 			if db == 'sra' and platform:
-				local_output_path = os.path.join(output_dir, db, platform)
+				local_output_path = os.path.join(outdir, db, platform)
 			else:
-				local_output_path = os.path.join(output_dir, db)
+				local_output_path = os.path.join(outdir, db)
 			report_local_path = os.path.join(local_output_path, "report.xml")
 			submission = Submission(
 				parameters=parameters,
 				submission_config=config_dict,
-				output_dir=local_output_path,
+				outdir=local_output_path,
 				submission_mode=submission_mode,
 				submission_dir=submission_dir,
 				type=db,
@@ -233,14 +233,14 @@ def parse_report_xml_to_df(report_path):
 	df = df.where(pd.notna(df), None)
 	return df
 
-def parse_and_save_reports(reports_fetched, output_dir, batch_id):
+def parse_and_save_reports(reports_fetched, outdir, batch_id):
 	all_reports = pd.DataFrame()
 	for db, report_paths in reports_fetched.items():
 		for report_path in report_paths:
 			if report_path and os.path.exists(report_path):
 				df = parse_report_xml_to_df(report_path)
 				all_reports = pd.concat([all_reports, df], ignore_index=True)
-	report_csv_file = os.path.join(output_dir, f"{batch_id}.csv")
+	report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
 	try:
 		all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
 		logging.info(f"Report table saved to: {report_csv_file}")
@@ -276,7 +276,7 @@ class GetParams:
 		parser.add_argument("--species", help="Type of organism data", required=True)
 		parser.add_argument('--sample', action='append', help='Comma-separated sample attributes')
 		# optional parameters
-		parser.add_argument("-o", "--output_dir", type=str, default='submission_outputs',
+		parser.add_argument("-o", "--outdir", type=str, default='submission_outputs',
 							help="Output Directory for final Files, default is current directory")
 		parser.add_argument("--test", help="Whether to perform a test submission.", required=False,	action="store_const", default=False, const=True)
 		parser.add_argument("--submission_mode", help="Whether to upload via ftp or sftp", required=False, default='ftp')
@@ -401,11 +401,11 @@ class MetadataParser:
 
 # todo: this opens an ftp connection for every submission; would be better I think to open it once every x submissions?
 class Submission:
-	def __init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample, identifier):
+	def __init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier):
 		self.sample = sample
 		self.parameters = parameters
 		self.submission_config = submission_config
-		self.output_dir = output_dir
+		self.outdir = outdir
 		self.submission_mode = submission_mode
 		self.submission_dir = submission_dir
 		self.identifier = identifier
@@ -590,9 +590,9 @@ class FTPClient:
 		logging.info("FTP connection closed.")
 
 class XMLSubmission(ABC):
-	def __init__(self, submission_config, metadata_df, output_dir, parameters, sample):
+	def __init__(self, submission_config, metadata_df, outdir, parameters, sample):
 		self.submission_config = submission_config
-		self.output_dir = output_dir
+		self.outdir = outdir
 		self.parameters = parameters
 		self.metadata_df = metadata_df
 		self.sample = sample
@@ -627,7 +627,7 @@ class XMLSubmission(ABC):
 		ET.SubElement(contact_name, 'First').text = self.safe_text(self.submission_config['Submitter']['Name']['First'])
 		ET.SubElement(contact_name, 'Last').text = self.safe_text(self.submission_config['Submitter']['Name']['Last'])
 	def finalize_xml(self):
-		xml_output_path = os.path.join(self.output_dir, "submission.xml")
+		xml_output_path = os.path.join(self.outdir, "submission.xml")
 		rough_string = ET.tostring(self.submission_root, encoding='utf-8')
 		reparsed = minidom.parseString(rough_string)
 		pretty_xml = reparsed.toprettyxml(indent="  ")
@@ -670,12 +670,12 @@ class XMLSubmissionMixin(ABC):
 		pass
 
 class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, sample, accession_id = None, identifier = None):
+	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
-		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
-		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample, identifier) 
+		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample) 
+		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier) 
 		self.accession_id = accession_id
-		os.makedirs(self.output_dir, exist_ok=True)
+		os.makedirs(self.outdir, exist_ok=True)
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, 'Action')
 		add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
@@ -724,13 +724,13 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 				attribute.text = self.safe_text(attr_value)
 
 class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
+	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
-		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
-		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample, identifier)
+		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample) 
+		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
 		self.samples = samples
-		os.makedirs(self.output_dir, exist_ok=True)
+		os.makedirs(self.outdir, exist_ok=True)
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, "Action")
 		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
@@ -767,10 +767,10 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		# todo: add attribute ref ID for BioSample
 
 class GenbankSubmission(XMLSubmission, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, output_dir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
+	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
 		# Properly initialize the base classes 
-		XMLSubmission.__init__(self, submission_config, metadata_df, output_dir, parameters, sample) 
-		Submission.__init__(self, parameters, submission_config, output_dir, submission_mode, submission_dir, type, sample, identifier)
+		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample) 
+		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
 		self.samples = samples
 		self.sample = sample
@@ -778,7 +778,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.top_metadata = parser.extract_top_metadata()
 		self.biosample_metadata = parser.extract_biosample_metadata()
 		self.genbank_metadata = parser.extract_genbank_metadata()
-		os.makedirs(self.output_dir, exist_ok=True)
+		os.makedirs(self.outdir, exist_ok=True)
 	def xml_create_bankit(self, submission):
 		"""
 		Prepares a submission for ftp upload via Bank-It
@@ -865,7 +865,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 			"isolation_source": self.biosample_metadata.get("isolation_source")
 		}
 		source_df = pd.DataFrame([source_data])
-		source_df.to_csv(os.path.join(self.output_dir, "source.src"), sep="\t", index=False)
+		source_df.to_csv(os.path.join(self.outdir, "source.src"), sep="\t", index=False)
 	def create_comment_file(self):
 		comment_data = {
 			"SeqID": self.top_metadata.get("sequence_name"),
@@ -879,7 +879,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 			"StructuredCommentSuffix": "Assembly-Data"
 		}
 		comment_df = pd.DataFrame([comment_data])
-		comment_df.to_csv(os.path.join(self.output_dir, "comment.cmt"), sep="\t", index=False)
+		comment_df.to_csv(os.path.join(self.outdir, "comment.cmt"), sep="\t", index=False)
 	def create_authorset_file(self):
 		""" Create the authorset.sbt file that is required for table2asn to run """
 		submitter_first = self.submission_config["Submitter"]["Name"]["First"]
@@ -897,7 +897,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		email = self.submission_config["Email"]
 		phone = self.submission_config["Phone"]
 		zip_code = self.submission_config["Postal_code"]
-		authorset_file = os.path.join(self.output_dir, "authorset.sbt")
+		authorset_file = os.path.join(self.outdir, "authorset.sbt")
 		with open(authorset_file, "w+") as f:
 			f.write("Submit-block ::= {\n")
 			f.write("  contact {\n")
@@ -1031,7 +1031,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		# Create authorset file
 		self.create_authorset_file()
 		# Rename and move the fasta for table2asn call
-		renamed_fasta = os.path.join(f"{self.output_dir}/sequence.fsa")
+		renamed_fasta = os.path.join(f"{self.outdir}/sequence.fsa")
 		if not os.path.exists(renamed_fasta):
 			shutil.move(self.sample.fasta_file, renamed_fasta)
 		# Run table2asn 
@@ -1041,10 +1041,10 @@ class GenbankSubmission(XMLSubmission, Submission):
 	def prep_zip_folder(self):
 		""" Prepare files for manual upload to GenBank because FTP support not available 
 			These files will be emailed to user and/or GenBank, and also zipped to output dir """
-		with ZipFile(os.path.join(self.output_dir, self.sample.sample_id + ".zip"), 'w') as zip:
+		with ZipFile(os.path.join(self.outdir, self.sample.sample_id + ".zip"), 'w') as zip:
 			filelist = [f"{self.sample.sample_id}.sqn","authorset.sbt","sequence.fsa","source.src","comment.cmt"]
 			for file in filelist:
-				filepath = os.path.join(self.output_dir, file)
+				filepath = os.path.join(self.outdir, file)
 				if os.path.exists(filepath):
 					zip.write(filepath, file) 
 
@@ -1054,7 +1054,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.xml_create_bankit()
 		self.prep_table2asn_files()
 		self.prep_zip_folder()
-		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
+		submit_ready_file = os.path.join(self.outdir, 'submit.ready')
 		with open(submit_ready_file, 'w') as fh:
 			pass
 
@@ -1065,12 +1065,12 @@ class GenbankSubmission(XMLSubmission, Submission):
 		# Delete all but the sqn file 
 		# todo: this also keeps the fsa file, need to check on that
 		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff']:
-			pattern = os.path.join(self.output_dir, p)
+			pattern = os.path.join(self.outdir, p)
 			for f in glob.glob(pattern):
 				if os.path.isfile(f):
 					print(f)  # debug
 					os.remove(f)
-		submit_ready_file = os.path.join(self.output_dir, 'submit.ready')
+		submit_ready_file = os.path.join(self.outdir, 'submit.ready')
 		with open(submit_ready_file, 'w') as fh:
 			pass
 
@@ -1135,28 +1135,28 @@ class GenbankSubmission(XMLSubmission, Submission):
 		# Check if a GFF file is supplied and extract the locus tag
 		# todo: the locus tag needs to be fetched (?) after BioSample is assigned (it appears under Manage Data for the BioProject)
 		locus_tag = self.get_gff_locus_tag()
-		shutil.move(self.sample.annotation_file, self.output_dir)
+		shutil.move(self.sample.annotation_file, self.outdir)
 		# Construct the table2asn command
 		cmd = [
 			"table2asn",
-			"-i", f"{self.output_dir}/sequence.fsa",
-			"-o", f"{self.output_dir}/{self.sample.sample_id}.sqn",
-			"-t", f"{self.output_dir}/authorset.sbt",
-			"-f", f"{self.output_dir}/{os.path.basename(self.sample.annotation_file)}"
+			"-i", f"{self.outdir}/sequence.fsa",
+			"-o", f"{self.outdir}/{self.sample.sample_id}.sqn",
+			"-t", f"{self.outdir}/authorset.sbt",
+			"-f", f"{self.outdir}/{os.path.basename(self.sample.annotation_file)}"
 		]
 		if locus_tag:
 			cmd.extend(["-locus-tag-prefix", locus_tag])
-		if self.is_multicontig_fasta(f"{self.output_dir}/sequence.fsa"):
+		if self.is_multicontig_fasta(f"{self.outdir}/sequence.fsa"):
 			cmd.append("-M")
 			cmd.append("n")
 			cmd.append("-Z")
-		if os.path.isfile(f"{self.output_dir}/comment.cmt"):
+		if os.path.isfile(f"{self.outdir}/comment.cmt"):
 			cmd.append("-w")
 			cmd.append("comment.cmt")
 		# if not using submission.xml file, need the source.src file
 		if not self.sample.ftp_upload:
 			cmd.append("-src-file")
-			cmd.append(f"{self.output_dir}/source.src")
+			cmd.append(f"{self.outdir}/source.src")
 		# Run the command and capture errors
 		print(f'table2asn command: {shlex.join(cmd)}')
 		try:
