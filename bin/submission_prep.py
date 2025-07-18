@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-import sys
+import shutil
 import sys
 import pandas as pd
 from submission_helper import (
@@ -61,6 +61,7 @@ def main_prepare():
 	# 1) Prepare BioSample XML + submit.ready
 	if params['biosample']:
 		submission_dir = os.path.join(output_root, 'biosample')
+		os.makedirs(submission_dir, exist_ok=True)
 		bs = BiosampleSubmission(
 			parameters=params,
 			submission_config=config,
@@ -78,6 +79,8 @@ def main_prepare():
 			md = metadata_df[metadata_df['sample_name']==s.sample_id]
 			bs.add_sample(s, md)
 		bs.finalize_xml()
+		# write submit.ready
+		open(os.path.join(submission_dir,'submit.ready'),'w').close()
 
 	# 2) Prepare SRA XML + submit.ready (per-platform if needed)
 	if params['sra']:
@@ -86,7 +89,8 @@ def main_prepare():
 		platforms = (('illumina',illum),('nanopore',nano)) if illum and nano else [(None, illum or nano)]
 		for platform, samp_list in platforms:
 			# submission_dir needs to be unique if submitting both illumina and nanopore
-			submission_outdir = os.path.join(output_root,'sra',platform) if platform else os.path.join(output_root,'sra')
+			submission_dir = os.path.join(output_root,'sra',platform) if platform else os.path.join(output_root,'sra')
+			os.makedirs(submission_dir, exist_ok=True)
 			sra = SRASubmission(
 				parameters=params,
 				submission_config=config,
@@ -105,13 +109,16 @@ def main_prepare():
 				md = metadata_df[metadata_df['sample_name']==s.sample_id]
 				sra.add_sample(s, md, platform)
 			sra.finalize_xml()
+			# write submit.ready
+			open(os.path.join(submission_dir,'submit.ready'),'w').close()
 			# copy/Symlink raw files to SRA folder
-			prepare_sra_fastqs(samp_list, submission_outdir, copy=False)
+			prepare_sra_fastqs(samp_list, submission_dir, copy=False)
 
 	# 3) Prepare GenBank submission, per-sample
 	if params['genbank']:
 		for s in samples:
 			submission_dir = os.path.join(output_root, 'genbank', s.sample_id)
+			os.makedirs(submission_dir, exist_ok=True)
 			gb = GenbankSubmission(
 				parameters=params,
 				submission_config=config,

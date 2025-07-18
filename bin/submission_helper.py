@@ -97,7 +97,7 @@ def sendemail(sample_id, config_dict, mode, submission_dir, dry_run=True):
 		logging.info(f"Email sent for {sample_id}")
 	except Exception as e:
 		logging.debug("Error: Unable to send mail automatically. If unable to email, submission can be made manually using the sqn file.", file=sys.stderr)
-		logging.debug("sqn_file:" + os.path.join(self.output_dir, f"{sample_id}.sqn"), file=sys.stderr)
+		logging.debug("sqn_file:" + os.path.join(submission_dir, f"{sample_id}.sqn"), file=sys.stderr)
 		logging.debug(e, file=sys.stderr)
 
 def get_remote_submission_dir(identifier, batch_id, db, platform=None):
