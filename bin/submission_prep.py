@@ -41,7 +41,7 @@ def main_prepare():
 	metadata_df = pd.read_csv(params['metadata_file'], sep='\t')
 	identifier = params['identifier']
 	submission_dir = 'Test' if params['test'] else 'Production'
-	output_root = params['output_dir']
+	output_root = params['outdir']
 	# build sample objects
 	samples = []
 	for s in params['sample']:
@@ -66,7 +66,7 @@ def main_prepare():
 			parameters=params,
 			submission_config=config,
 			metadata_df=metadata_df,
-			output_dir=submission_dir,
+			outdir=submission_dir,
 			submission_mode=params['submission_mode'],
 			submission_dir=submission_dir,
 			type='biosample',
@@ -95,7 +95,7 @@ def main_prepare():
 				parameters=params,
 				submission_config=config,
 				metadata_df=metadata_df,
-				output_dir=submission_dir,
+				outdir=submission_dir,
 				submission_mode=params['submission_mode'],
 				submission_dir=submission_dir,
 				type='sra',
@@ -123,7 +123,7 @@ def main_prepare():
 				parameters=params,
 				submission_config=config,
 				metadata_df=metadata_df,
-				output_dir=submission_dir,
+				outdir=submission_dir,
 				submission_mode=params['submission_mode'],
 				submission_dir=submission_dir,
 				type='genbank',

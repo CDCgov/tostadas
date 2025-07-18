@@ -50,7 +50,7 @@ process PREP_SUBMISSION {
         --metadata_file ${meta.batch_tsv} \
         --identifier ${params.metadata_basename} \
         --species $params.species \
-        --output_dir  ${meta.batch_id} \
+        --outdir  ${meta.batch_id} \
         ${sample_args} \
         --submission_mode $params.submission_mode \
         $test_flag \

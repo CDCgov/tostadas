@@ -48,7 +48,7 @@ def main_fetch():
     # Perform actual fetch
     reports_fetched = fetch_all_reports(
         databases=params["databases"],
-        output_dir=params["submission_folder"],
+        outdir=params["submission_folder"],
         config_dict=config,
         parameters=params,
         submission_dir=mode,
