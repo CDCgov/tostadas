@@ -35,6 +35,13 @@ def setup_logging(log_file="submission.log", level=logging.INFO):
 			]
 		)
 
+def symlink_or_copy(src, dst, copy=False):
+    if not os.path.exists(dst):
+        if copy:
+            shutil.copy(src, dst)
+        else:
+            os.symlink(os.path.abspath(src), dst)
+
 def get_compound_extension(filename):
 	"""Return the full extension (up to 2 suffixes) of a file, like '.fastq.gz'."""
 	parts = os.path.basename(filename).split('.')
@@ -355,7 +362,7 @@ class MetadataParser:
 			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid_namespace', 'ncbi-spuid']  # Main columns
+		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid']  # Main columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	def extract_biosample_metadata(self):
@@ -682,7 +689,7 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		# BioSample XML block
 		biosample = ET.SubElement(xml_content, 'BioSample', {'schema_version': '2.0'})
 		# SampleId with SPUID
-		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		sample_id = ET.SubElement(biosample, 'SampleId')
 		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
@@ -747,7 +754,7 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		for attr_name, attr_value in self.sra_metadata.items():
 			attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
 			attribute.text = self.safe_text(attr_value)
-		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		# BioProject reference
 		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
 		refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
@@ -815,7 +822,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 			attribute.text = 'BankIt_influenza_api'
 		# todo: add else condition for failure
 		# Identifier section
-		spuid_namespace_value = self.safe_text(self.top_metadata['ncbi-spuid_namespace'])
+		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		identifier = ET.SubElement(add_files, 'Identifier')
 		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		self.safe_text(self.top_metadata['ncbi-spuid'])
@@ -864,6 +871,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		}
 		source_df = pd.DataFrame([source_data])
 		source_df.to_csv(os.path.join(self.outdir, "source.src"), sep="\t", index=False)
+
 	def create_comment_file(self):
 		comment_data = {
 			"SeqID": self.top_metadata.get("sequence_name"),
@@ -1031,9 +1039,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 		# Create authorset file
 		self.create_authorset_file()
 		# Rename and move the fasta for table2asn call
-		renamed_fasta = os.path.join(f"{self.outdir}/sequence.fsa")
-		if not os.path.exists(renamed_fasta):
-			shutil.move(self.sample.fasta_file, renamed_fasta)
+		renamed_fasta = os.path.join(self.outdir, "sequence.fsa")
+		symlink_or_copy(self.sample.fasta_file, renamed_fasta)
 		# Run table2asn 
 		self.run_table2asn()
 		print(f"Genbank files prepared for {self.sample.sample_id}")
@@ -1068,7 +1075,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 			pattern = os.path.join(self.outdir, p)
 			for f in glob.glob(pattern):
 				if os.path.isfile(f):
-					print(f)  # debug
 					os.remove(f)
 		submit_ready_file = os.path.join(self.outdir, 'submit.ready')
 		with open(submit_ready_file, 'w') as fh:
@@ -1076,16 +1082,18 @@ class GenbankSubmission(XMLSubmission, Submission):
 
 	def _workflow_virus(self):
 		# Prepare a manual submission
+		self.prep_table2asn_files()
 		self.prep_zip_folder()
 
 	def genbank_submission_driver(self):
 		""" Runs the appropriate workflow to prepare the GenBank submission
 		"""
+		print(f"Preparing GenBank submission of type: {self.sample.species}")
 		if self.sample.species in ['sars','flu']:
 			self._workflow_bankit()
 		elif self.sample.species in ['bacteria', 'eukaryote']:
 			self._workflow_bacteria_euk()
-		elif self.sample.species== 'virus':
+		elif self.sample.species in ['virus','rsv','mpxv']:
 			self._workflow_virus()
 		else:
 			print(f"{self.sample.species} must be one of: sars, flu, bacteria, eukaryote, virus")
@@ -1135,7 +1143,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 		# Check if a GFF file is supplied and extract the locus tag
 		# todo: the locus tag needs to be fetched (?) after BioSample is assigned (it appears under Manage Data for the BioProject)
 		locus_tag = self.get_gff_locus_tag()
-		shutil.move(self.sample.annotation_file, self.outdir)
+		gff_dest = os.path.join(self.outdir, os.path.basename(self.sample.annotation_file))
+		symlink_or_copy(self.sample.annotation_file, gff_dest)
 		# Construct the table2asn command
 		cmd = [
 			"table2asn",

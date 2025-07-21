@@ -574,7 +574,7 @@ class ValidateChecks:
 			return
 
 		static_columns = {
-			"sample_name", "sequence_name", "ncbi-spuid", "ncbi-spuid_namespace", "ncbi-bioproject", "title", "description",
+			"sample_name", "sequence_name", "ncbi-spuid", "ncbi-bioproject", "title", "description",
 			"authors", "submitting_lab", "submitting_lab_division", "submitting_lab_address", "publication_status", "publication_title",
 			"isolate", "isolation_source", "host_disease", "host", "organism", "collection_date", "country", "state",
 			"collected_by", "sample_type", "lat_lon", "purpose_of_sampling", "host_sex", "host_age", "race", "ethnicity",
