@@ -14,6 +14,10 @@ process SUBMIT_SUBMISSION {
     tuple val(meta), path(submission_files)
     path(submission_config)
 
+    output:
+    tuple val(meta), path("${meta.batch_id}"), emit: submission_files
+    path("${meta.batch_id}/submission.log"), emit: submission_log, optional: true
+
     script:
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
@@ -30,8 +34,4 @@ process SUBMIT_SUBMISSION {
         $send_submission_email \
         $dry_run 
     """
-
-    output:
-    tuple val(meta), path("${meta.batch_id}"), emit: submission_files
-    path("${meta.batch_id}/submission.log"), emit: submission_log, optional: true
 }
