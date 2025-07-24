@@ -46,39 +46,6 @@ workflow TOSTADAS {
 	// print summary of supplied parameters
 	log.info paramsSummaryLog(workflow)
 
-	// only fetching accession IDs
-	if (params.fetch_reports_only) {
-		def batch_json = file("${params.outdir}/${params.val_output_dir}/batched_tsvs/batch_summary.json").text
-		def batch_map = batch_json.toString().parseJson()  // returns Map<String, List<String>>
-
-		submission_batch_ch = Channel.from(batch_map.entrySet())
-			.map { entry -> 
-				def batch_tsv = file("${params.outdir}/${params.val_outdir}/batched_tsvs/${entry.key}")
-				def meta = [ batch_id: batch_tsv.getBaseName(), batch_tsv: batch_tsv ]
-				// def sample_ids = entry.value
-				// def samples = sample_ids.collect { sid -> 
-				// 	// Use placeholder values for files — they'll be validated in FETCH_SUBMISSION if needed
-				// 	[ 
-				// 	meta: [ sample_id: sid, batch_tsv: batch_tsv, batch_id: meta.batch_id ], 
-				// 	fasta: null, fq1: null, fq2: null, nnp: null, gff: null 
-				// 	]
-				// }
-
-				def enabledDatabases = []
-				if (params.biosample) enabledDatabases << 'biosample'
-				if (params.sra)       enabledDatabases << 'sra'
-				if (params.genbank)   enabledDatabases << 'genbank'
-				return tuple(meta, enabledDatabases)
-			}
-		submission_batch_ch.view()
-
-		GET_WAIT_TIME(Channel.of(batch_map.keySet().collect { file("${params.outdir}/${params.val_outdir}/batched_tsvs/${it}") }))
-		FETCH_ACCESSIONS(submission_batch_ch, params.submission_config, GET_WAIT_TIME.out)
-		return
-	}
-
-	// running full workflow
-
 	// run metadata validation process
 	METADATA_VALIDATION ( 
 		file(params.meta_path)
@@ -118,45 +85,45 @@ workflow TOSTADAS {
 	// Initialize submission_ch with sample_ch by default
 	submission_ch = sample_ch
 
-	// perform annotation if requested{
-	if (params.annotation) {
-		// Create simplified annotation channel with only what's needed for annotation
-		annotation_ch = sample_ch.map { meta, fasta, _fq1, _fq2, _nnp, _gff -> 
-			[meta, fasta] 
-		}
-
-		if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
-			// perform viral annotation according to user's choice: liftoff+repeatmasker or vadr
-			if (params.repeatmasker_liftoff && params.vadr) {
-				error "You cannot enable both RepeatMasker+Liftoff and VADR annotation. Please choose only one."
-			} else if (params.repeatmasker_liftoff) {
-				REPEATMASKER_LIFTOFF(annotation_ch)
-				annotation_ch = annotation_ch.join(REPEATMASKER_LIFTOFF.out.gff)
-			} else if (params.vadr) {
-				RUN_VADR(annotation_ch)
-				annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
+	// perform annotation if requested
+	if (params.fetch_reports_only == false) {
+		if (params.annotation) {
+			// Create simplified annotation channel with only what's needed for annotation
+			annotation_ch = sample_ch.map { meta, fasta, _fq1, _fq2, _nnp, _gff -> 
+				[meta, fasta] 
 			}
 
-		// or perform bacterial annotation using bakta
-		} else if (params.species == 'bacteria') {
-			if (params.bakta) {
-				RUN_BAKTA(annotation_ch)
+			if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
+				// perform viral annotation according to user's choice: liftoff+repeatmasker or vadr
+				if (params.repeatmasker_liftoff && !params.vadr) {
+					REPEATMASKER_LIFTOFF(annotation_ch)
+					annotation_ch = annotation_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+				}
+				
+				if (params.vadr) {
+					RUN_VADR(annotation_ch)
+					annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
+				}
 
-				annotation_ch = annotation_ch
-					| join(RUN_BAKTA.out.gff)
-					| join(RUN_BAKTA.out.fna)
-					| map { meta, _orig_fasta, gff, fasta -> [meta, fasta, gff] }
+			// or perform bacterial annotation using bakta
+			} else if (params.species == 'bacteria') {
+				if (params.bakta) {
+					RUN_BAKTA(annotation_ch)
+
+					annotation_ch = annotation_ch
+						| join(RUN_BAKTA.out.gff)
+						| join(RUN_BAKTA.out.fna)
+						| map { meta, _orig_fasta, gff, fasta -> [meta, fasta, gff] }
+				}
 			}
-		} else if (params.species == 'eukaryote') {
-			error "Annotation for eukaryote genomes is not supported at this time."
-		}
 			
-		// Reconstruct full channel by joining annotation results back with original sample_ch
-		submission_ch = sample_ch.map { meta, _fasta, fq1, fq2, nnp, _gff -> [meta, fq1, fq2, nnp] }
-								.join(annotation_ch)
-								.map { meta, fq1, fq2, nnp, fasta, gff -> 
-									[meta, fasta, fq1, fq2, nnp, gff] 
-								}
+			// Reconstruct full channel by joining annotation results back with original sample_ch
+			submission_ch = sample_ch.map { meta, _fasta, fq1, fq2, nnp, _gff -> [meta, fq1, fq2, nnp] }
+									.join(annotation_ch)
+									.map { meta, fq1, fq2, nnp, fasta, gff -> 
+										[meta, fasta, fq1, fq2, nnp, gff] 
+									}
+		}
 	}
 
 	// Create batch initial submission channel, check for existence of files based on selected submission databases
@@ -209,25 +176,17 @@ workflow TOSTADAS {
 		}
 		.filter { it != null }
 
-		// Only process batches that include biosample or sra submissions
-		def biosample_sra_ch = submission_batch_ch.filter { tuple ->
-			def enabled = tuple[2]  // third item in tuple is enabledDatabases list
-			enabled.contains('biosample') || enabled.contains('sra')
-		}
-
-		if ( params.submission ) {
+		// run submission batched samples 
+		if ( params.submission || params.fetch_reports_only || params.update_submission ) {
 			// pre submission process + get wait time (parallel)
 			GET_WAIT_TIME (
 				METADATA_VALIDATION.out.tsv_files.collect() 
 			)
 
-			SUBMIT_BIOSAMPLE_SRA(
-				biosample_sra_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff), enabledDatabases (list)
+			SUBMISSION (
+				submission_batch_ch,  // meta (batch_id), samples (list of maps, each with sample_id, fasta, fq1, fq2, gff), enabledDatabases (list)
 				params.submission_config,  
-				GET_WAIT_TIME.out			
-			)
-
-
-		// run submission: genbank
-		}
+				GET_WAIT_TIME.out
+				)
+			}
 }
