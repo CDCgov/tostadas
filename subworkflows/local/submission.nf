@@ -53,11 +53,12 @@ workflow SUBMISSION {
         } else {
             if (params.update_submission == false) {
                 PREP_SUBMISSION(submission_ch, submission_config_file)
-                    .set { submission_files }
-                
+                    .set { submission_files } // channel of: [[batch_id, batch_tsv], batch_submission_folder]
+
                 SUBMIT_SUBMISSION(submission_files, submission_config_file)
-            
-                submission_ch.join(submission_files)
+
+                // submission_ch is a channel of: [[batch_id, batch_tsv], [batch_id, batch_tsv, sample_id], fasta, fq1, fq2, nnp, gff, [enabledDatabases]]
+                submission_ch.join(SUBMIT_SUBMISSION.out.submission_files)
                     .map { meta, samples, enabledDatabases, submission_folder ->
                         return tuple(meta, samples, enabledDatabases, submission_folder)
                     }
