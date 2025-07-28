@@ -47,6 +47,7 @@ def metadata_validation_main():
 		# now call the main function for validating the metadata
 		validate_checks = ValidateChecks(filled_df, parameters, parameters_class)
 		validate_checks.validate_main()
+		print(f"Available keys after validate_checks: {filled_df.keys().tolist()}")
 
 		# insert necessary columns in metadata dataframe
 		insert = HandleDfInserts(filled_df, parameters)
