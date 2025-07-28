@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 # Adapted from Perl scripts by MH Seabolt and Python scripts by J Heuser
-# Refactored and updated by AK Gupta and KA O'Connell
+# Refactored and updated by J Rowell, AK Gupta, and KA O'Connell
 
-# necessary packages
 import os
 import pandas as pd
 import warnings
@@ -14,11 +13,7 @@ import math
 import yaml
 import json
 import shutil
-from typing import List, Dict, Union
-
-# module level import
-from annotation_utility import MainUtility as main_util
-
+from collections import defaultdict
 
 def metadata_validation_main():
 	""" Main for initiating metadata validation steps
@@ -32,40 +27,20 @@ def metadata_validation_main():
 
 	# call the constructor class for converting meta to df
 	meta_to_df = GetMetaAsDf(parameters)
-
-	# call the load_meta function passing in the path to the metadata file
+  
+	# print error message if ValueError is raised when GetMetaAsDf is run
 	try:
-		meta_to_df.run_get_meta_df()
+		meta_to_df.load_meta()
 		print("Metadata loaded and validated successfully.")
 	except ValueError as e:
 		print(f"Error: {e}")
 		sys.exit(1)
 	
-	filled_df = meta_to_df.final_df
+	filled_df = meta_to_df.df
 
 	# handle case where we're only fetching reports
 	if parameters['find_paths']:
-		sample_dfs = {}
-		col_name = "sequence_name" if "sequence_name" in filled_df.columns else "sample_name" # allow flexibility in col name
-		for row in range(len(filled_df)):
-			sample_df = filled_df.iloc[row].to_frame().transpose()
-			sample_df = sample_df.set_index(col_name)
-			sample_dfs[filled_df.iloc[row][col_name]] = sample_df
-		missing_tsvs = []
-		for sample in sample_dfs.keys():
-			tsv_file = f'{parameters["path_to_existing_tsvs"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
-			dest_tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
-			if os.path.exists(tsv_file):
-				shutil.copy(tsv_file, dest_tsv_file) # copy to local directory
-			else:
-				missing_tsvs.append(tsv_file) # add to missing tsvs list if not found
-		if not missing_tsvs:
-			print(f'\nPaths to existing sample metadata tsvs were found!\n')
-		else:
-			print("\nERROR: The following expected TSV files are missing:\n", file=sys.stderr)
-			for missing in missing_tsvs:
-				print(f"  - {missing}", file=sys.stderr)
-			sys.exit(1)	
+		retrieve_existing_batch_tsvs(filled_df, parameters)
 		
 	# if fetch_reports_only is false, we run validation steps
 	else:
@@ -75,26 +50,78 @@ def metadata_validation_main():
 		print(f"Available keys after validate_checks: {filled_df.keys().tolist()}")
 
 		# insert necessary columns in metadata dataframe
-		insert = HandleDfInserts(parameters=parameters, filled_df=validate_checks.metadata_df)
-		insert.handle_df_inserts()
+		insert = HandleDfInserts(filled_df, parameters)
+		final_df = insert.handle_df_inserts() # final updated, validated dataframe
 
-		if validate_checks.did_validation_work:
-			# now split the modified and checked dataframe into individual samples
-			sample_dfs = {}
-			final_df = insert.filled_df
-			for row in range(len(final_df)):
-				sample_df = final_df.iloc[row].to_frame().transpose()
-				sample_df = sample_df.set_index('sample_name')
-				sample_dfs[final_df.iloc[row]['sample_name']] = sample_df
-			# now export the .xlsx file as a .tsv 
-			for sample in sample_dfs.keys():
-				tsv_file = f'{parameters["output_dir"]}/{parameters["file_name"]}/tsv_per_sample/{sample}.tsv'
-				sample_dfs[sample].to_csv(tsv_file, sep="\t")
-				print(f'\nMetadata Validation was Successful!!!\n')
+		# output the batched tsv files  
+		batch_size = parameters['batch_size']
+		output_dir = ("batched_tsvs")
+		os.makedirs(output_dir, exist_ok=True)
+
+		total_rows = len(final_df)
+		num_batches = math.ceil(total_rows / batch_size)
+		batch_log = {}
+		print(f"batch size is {parameters['batch_size']} and number of batches is {num_batches}") # debug
+	
+		for i in range(num_batches):
+			start_idx = i * batch_size
+			end_idx = min(start_idx + batch_size, total_rows)
+			batch_df = final_df.iloc[start_idx:end_idx]
+			batch_file = os.path.join(output_dir, f'batch_{i+1}.tsv')
+			batch_df.to_csv(batch_file, sep='\t', index=False)
+			batch_log[f"batch_{i+1}.tsv"] = batch_df["sample_name"].tolist()
+
+		# Write the JSON batch-to-sample dictionary 
+		summary_path = os.path.join(output_dir, "batch_summary.json")
+		with open(summary_path, "w") as json_file:
+			json.dump(batch_log, json_file, indent=4)
+
+		print(f"\n Metadata successfully split into {num_batches} batch file(s) in {output_dir}.\n")
+		print(f"Summary written to: {summary_path}\n")
+
+def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
+	"""Retrieve and verify existing batch TSVs and their associated samples."""
+	summary_path = os.path.join(parameters["path_to_existing_tsvs"], "batched_tsvs", "batch_summary.json")
+
+	if not os.path.exists(summary_path):
+		print(f"\nERROR: batch_summary.json not found at {summary_path}\n", file=sys.stderr)
+		sys.exit(1)
+
+	with open(summary_path, "r") as f:
+		batch_summary = json.load(f)
+
+	missing_batches = []
+
+	expected_samples = set(filled_df['sample_name'])
+	found_samples = set()
+
+	for batch_file, samples in batch_summary.items():
+		src_batch_path = os.path.join(parameters["path_to_existing_tsvs"], "batched_tsvs",	batch_file)
+		dest_batch_path = os.path.join("batched_tsvs", batch_file)
+
+		if os.path.exists(src_batch_path):
+			os.makedirs(os.path.dirname(dest_batch_path), exist_ok=True)
+			shutil.copy(src_batch_path, dest_batch_path)
+			found_samples.update(samples)
 		else:
-			print(f'\nMetadata Validation Failed Please Consult : {parameters["output_dir"]}/{parameters["file_name"]}/errors/full_error.txt for a Detailed List\n')
-			sys.exit(1)
-		# todo: handle multiple tsvs for illumina vs. nanopore
+			missing_batches.append(batch_file)
+
+	missing_samples = expected_samples - found_samples
+
+	if not missing_batches and not missing_samples:
+		print(f'\nAll batch TSV files and expected samples were found!\n')
+	else:
+		if missing_batches:
+			print("\nERROR: The following batch TSV files are missing:\n", file=sys.stderr)
+			for missing in missing_batches:
+				print(f"  - {missing}", file=sys.stderr)
+
+		if missing_samples:
+			print("\nERROR: The following samples were not found in any batch file:\n", file=sys.stderr)
+			for sample in missing_samples:
+				print(f"  - {sample}", file=sys.stderr)
+		sys.exit(1)
+
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
@@ -109,12 +136,6 @@ class GetParams:
 		"""
 		# get the restrictions 
 		self.get_restrictions()
-
-		# create new directory for output if it does not exist and user does not pass in preference
-		if os.path.isdir(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}'):
-			os.system(f'rm -r -f {self.parameters["output_dir"]}/{self.parameters["file_name"]}')
-		os.system(f'mkdir -p -m777 {self.parameters["output_dir"]}/{self.parameters["file_name"]}/errors')
-		os.system(f'mkdir -p -m777 {self.parameters["output_dir"]}/{self.parameters["file_name"]}/tsv_per_sample')
 
 	# read in parameters
 	def get_inputs(self):
@@ -145,10 +166,10 @@ class GetParams:
 		# required parameters (do not have default)
 		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for MetaData")
 		# optional parameters
-		parser.add_argument("--project_dir", type=str, default=None, help="Path to the tostadas project directory")
+		parser.add_argument("--batch_size", type=int, default=1, help="Number of samples to process per batch")
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
 							help="Output Directory for final Files, default is current directory")
-		parser.add_argument("--overwrite_output_files", type=bool, default=True, help='whether to overwrite the output dir')
+		parser.add_argument("--overwrite_output_files", action="store_true", default=True, help='Flag for whether to overwrite the output dir')
 		parser.add_argument("-k", "--remove_demographic_info", action="store_true", default=False,
 							help="Flag to remove potentially identifying demographic info if provided otherwise no change will be made " +
 								 "Applies to host_sex, host_age, race, ethnicity.")
@@ -156,7 +177,7 @@ class GetParams:
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
 		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
-		parser.add_argument("--validate_custom_fields", type=lambda x: str(x).lower() == "true", default=True, help="Flag for whether or not validate custom fields ")
+		parser.add_argument("--validate_custom_fields", action="store_true", default=True, help="Flag for whether or not validate custom fields ")
 		parser.add_argument("--find_paths", action="store_true", help="Only check for existing TSV file paths (for use with fetch_reports_only)")
 		parser.add_argument("--path_to_existing_tsvs", type=str, required=False, help="Path to existing per-sample TSVs (for use with fetch_reports_only)")
 		parser.add_argument("--config_file", type=str, help="Path to submission config file with a valid BioSample_package key")
@@ -202,19 +223,14 @@ class GetMetaAsDf:
 	"""
 	def __init__(self, parameters):
 		self.parameters = parameters
-
-	def run_get_meta_df(self):
-		""" Main for getting the full dataframe for the metadata
-		"""
 		self.df = self.load_meta()
-		self.final_df = self.populate_fields()
 
 	def load_meta(self):
 		""" Loads the metadata file in as a dataframe from an Excel file (.xlsx)
 		"""
 		df = pd.read_excel(self.parameters['meta_path'], header=[1], dtype = str, engine = "openpyxl", index_col=None, na_filter=False)
 		df = df.loc[:, ~df.columns.str.contains('^Unnamed')] # Remove "Unnamed" col that sometimes gets imported due to trailing commas
-		# Check for duplicate columns
+		# Check for duplicate columns - pandas imports duplicate columns with .1, .2 endings so detect these and return an error if found
 		duplicate_pattern = r"\.\d+$"  # Matches column names ending with .1, .2, etc.
 		mangled_columns = [re.sub(duplicate_pattern, "", col) for col in df.columns if any(re.match(rf"^{re.escape(base)}{duplicate_pattern}$", col) for base in df.columns if base != col)]
 		duplicate_bases = list(set(mangled_columns))
@@ -238,37 +254,8 @@ class GetMetaAsDf:
 			error_message = f"Error: The metadata file contains missing values in the 'sample_name' column at rows: {missing_indices}. Please provide valid sample names."
 			print(error_message, file=sys.stderr)  # Print the error message to stderr
 			sys.exit(1)
-		
-		return df
 
-	def populate_fields(self):
-		""" Replacing the NaN values in certain columns with "Not Provided" or ""
-		"""
-		terms_2_replace = ["collected_by", "sample_type", "lat_lon", "host_age", "host_disease", "host_sex", "isolation_source", "purpose_of_sampling"]
-		# Filter terms to include only those present in the dataframe
-		existing_terms = [term for term in terms_2_replace if term in self.df.columns]
-		# Remove any NaNs
-		field_value_mapping = {term: "Not Provided" for term in existing_terms}
-		replaced_df = self.df.replace(to_replace={term: ["", None] for term in existing_terms}, value=field_value_mapping)
-		final_df = replaced_df.fillna("")
-		# Remove any N/A or na or N/a or n/A
-		unwanted_vals = ['N/A', 'NA']
-		for col in existing_terms:
-			final_df[col] = final_df[col].apply(
-				lambda x: "Not Provided" if str(x).strip().upper() in map(str.upper, unwanted_vals) else x
-			)
-		# Validate populated fields
-		try:
-			# Ensure all values, if absent, are either empty or "Not Provided"
-			for field in existing_terms:
-				final_df[field] = final_df[field].apply(
-					lambda x: "Not Provided" if str(x).strip().lower() == "not provided" else x)
-				assert all(isinstance(value, str) for value in final_df[field].values)
-		except AssertionError:
-			raise AssertionError(
-				f'Populating certain fields in the metadata df with "" or "Not Provided" was unsuccessful'
-			)		
-		return final_df
+		return df
 
 class ValidateChecks:
 	""" Class constructor for performing a variety of checks on metadata
@@ -277,27 +264,8 @@ class ValidateChecks:
 		# passed into class constructor
 		self.metadata_df = filled_df
 		self.parameters = parameters
-
-		# error messages
-		self.error_tsv = pd.DataFrame(index=self.metadata_df['sample_name'].tolist())
-		[self.sample_error_msg, self.repeat_error, self.sra_msg, self.date_error_msg, self.matchup_error,
-		 				self.illumina_error_msg, self.nanopore_error_msg] = [''] * 7
-		# actual error files 
-		self.final_error_file = open(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}/errors/full_error.txt', "w")
-		self.custom_fields_error_file = open(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}/errors/custom_fields_error.txt', "w")
-
-		# check flags
-		self.nanopore_grades = {''}
-		[self.meta_nanopore_grade, self.meta_illumina_grade, self.meta_core_grade, self.meta_case_grade,
-		 self.author_valid, self.valid_date_flag] = [True] * 6
-		self.repeated = False
-
-		# global variables for keeping track of sample properties
-		self.did_validation_work = True
-		self.valid_sample_num = 0
-		self.list_of_sample_errors = []
-		self.list_of_sample_dfs = {}
-		self.final_cols = []
+		self.global_log = []
+		self.sample_log = defaultdict(list)  # sample_name -> list of messages
 
 		# Set required and "at least one" fields dynamically
 		self.biosample_package = get_params.load_config() # get the correct BioSample package
@@ -306,21 +274,67 @@ class ValidateChecks:
 		self.required_core = self.required_fields_dict.get(self.biosample_package, {}).get("required", [])
 		self.optional_core = self.required_fields_dict.get(self.biosample_package, {}).get("at_least_one_required", [])
 		self.case_fields = ["host_sex", "host_age", "race", "ethnicity"]
-		
-		## instantiate CustomFieldsProcessor class
-		self.custom_fields_processor = CustomFieldsProcessor(
-			json_file=parameters['custom_fields_file'],
-			error_file=self.custom_fields_error_file
-		)
 
-		# get the main utility class 
-		self.main_util = main_util()
-		
 		# normalize authors column
 		self.normalize_author_columns()
 
+	def validate_main(self):
+		""" Main function that performs metadata validation
+		"""
+		# checks date
+		if self.parameters['date_format_flag'].lower() != 'o':
+			self.check_date()
+
+		# check authors
+		try:
+			self.check_authors()
+		except:
+			self.global_log.append("\n\t Invalid Author Name, please list as full names separated by ;")
+		
+		# checks required and optional BioSample package fields 
+		self.check_meta_core()
+
+		# removes demographic data if user requested
+		if self.parameters['remove_demographic_info'] is True:
+			self.global_log.append(f"\n\t\t'remove_demographic_info' flag is True. Sample demographic data will be removed if present.")
+			self.check_meta_case()
+
+		# check SRA data fields
+		self.check_illumina_nanopore()
+
+		# check custom data fields
+		self.check_custom_fields(self.parameters['custom_fields_file'])
+
+		# write error file
+		self.report_errors()
+				
+	def report_errors(self):
+		with open('error.txt', "w") as f:
+			# Write Global Errors
+			f.write("General Errors:\n\n")
+			if self.global_log:
+				for line in self.global_log:
+					f.write(f"\t{line}\n")
+			else:
+				f.write("\tPassed all global checks!\n")
+
+			f.write("\nSample Errors:\n\n")
+			valid_samples = sum(1 for s in self.sample_log if not any("ERROR" in msg for msg in self.sample_log[s]))
+			f.write(f"\tNumber of Valid Samples: {valid_samples}/{len(self.metadata_df)}\n\n")
+
+			# Write Sample Errors
+			for sample in self.metadata_df["sample_name"]:
+				f.write(f"\t{sample}:\n")
+				if sample in self.sample_log and self.sample_log[sample]:
+					for log in self.sample_log[sample]:
+						f.write(f"\t\t{log.strip()}\n")
+				else:
+					f.write("\t\tPassed all sample checks!\n")
+				f.write("\n")
+		
 	def normalize_author_columns(self):
-		""" Normalize author/authors column to always be 'authors' """
+		""" Normalize author/authors column to always be 'authors' 
+		"""
 		# Rename 'author' to 'authors' if 'authors' doesn't already exist
 		if 'author' in self.metadata_df.columns and 'authors' not in self.metadata_df.columns:
 			self.metadata_df.rename(columns={'author': 'authors'}, inplace=True)
@@ -328,659 +342,288 @@ class ValidateChecks:
 			# Merge both columns if they exist, prioritizing 'authors'
 			self.metadata_df['authors'] = self.metadata_df['authors'].fillna(self.metadata_df['author'])
 			self.metadata_df.drop(columns=['author'], inplace=True)
+	
+	def check_date(self):
+		""" Validates and reformats dates based on date_format_flag value
+		"""
+		flag = self.parameters.get("date_format_flag", "").lower()
+		if flag not in {"v", "s"}:
+			raise ValueError(f"Unknown date_format_flag: {flag}")
+
+		def validate_and_format(row):
+			date_str = str(row['collection_date'])
+			sample = row['sample_name']
+
+			if not date_str or date_str.strip() == "":
+				self.sample_log[sample].append("ERROR: Missing collection_date.")
+				return date_str
+
+			match = re.match(r"^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?", date_str)
+			if not match:
+				self.sample_log[sample].append(f"ERROR: Invalid date format: '{date_str}'")
+				return date_str
+
+			year, month, day = match.groups()
+			if len(year) == 2:
+				self.sample_log[sample].append(f"ERROR: Year is two digits: '{year}'")
+				return date_str
+
+			month = month.zfill(2) if month else "01"
+			day = day.zfill(2) if day else "01"
+
+			return f"{year}-{month}-{day}" if flag == "v" else f"{year}-{month}"
+
+		self.metadata_df["collection_date"] = self.metadata_df.apply(validate_and_format, axis=1)
+
+	def check_authors(self):
+		"""Checks and reformats the 'authors' column to ensure consistent First Last or F.M. Last format.
+		"""
+		if 'authors' not in self.metadata_df.columns:
+			self.global_log.append("No 'authors' column found in metadata.")
+			return
 		
-	def validate_main(self):
-		""" Main validation function for the metadata """
-		# add library_name col - this is a temporary patch because this code has been rewritten for v6.0.0 (batch update)
+		def fix_name(raw_name):
+			# Remove digits and leading/trailing whitespace
+			cleaned = ''.join([char for char in raw_name if not char.isdigit()]).strip()
+
+			# Remove unwanted tokens/characters
+			for token in ['...', 'Name:', 'author', ',', 'dtype:', ':', 'object', '\\', '/']:
+				cleaned = cleaned.replace(token, '')
+			parts = cleaned.split()
+
+			# Convert First Middle Last to F.M. Last
+			if len(parts) == 3 and len(parts[0]) > 1:
+				new_name = f"{parts[0][0]}.{parts[1][0]}. {parts[2]}"
+				if not (new_name.count('.') == 2 and len(new_name.split()) == 2):
+					return cleaned  # fallback
+				return new_name
+			else:
+				return cleaned
+
+		# Apply to the full dataframe
+		for idx, row in self.metadata_df.iterrows():
+			raw = row.get('authors', '')
+			if pd.isna(raw) or str(raw).strip() == '':
+				continue  # Skip if authors field is empty or NaN
+
+			raw_authors = str(raw).split(';')
+			cleaned_authors = [fix_name(author.strip()) for author in raw_authors if author.strip()]
+			fixed_authors_str = '; '.join(cleaned_authors)
+
+			# Optional logging if the cleaned string differs from original
+			if fixed_authors_str != row.get('authors', ''):
+				sample_name = row.get('sample_name', f'Row {idx}')
+				self.sample_log[sample_name].append("Author names were cleaned and reformatted.")
+				self.metadata_df.at[idx, 'authors'] = fixed_authors_str
+
+	
+	def check_meta_core(self):
+		"""Check and update the metadata DataFrame with required and optional fields.
+		"""
+		# Drop any columns containing 'test_field' 
+		self.metadata_df.drop(
+					columns=[
+						col for col in self.metadata_df.columns
+						if 'test_field' in col.lower()
+					],
+					inplace=True
+				)
+
+		missing_fields = []
+		missing_optionals = []
+
+		# Ensure all required columns are present
+		for field in self.required_core:
+			if field in self.metadata_df.columns:
+				missing_mask = self.metadata_df[field].isna() | (self.metadata_df[field].astype(str).str.strip() == "")
+				if missing_mask.any():
+					self.metadata_df.loc[missing_mask, field] = "Not Provided"
+					for sample_name in self.metadata_df.loc[missing_mask, 'sample_name']:
+						self.sample_log[sample_name].append(f"WARNING: {field} is missing for sample {sample_name}, setting to 'Not Provided'\n")
+			else:
+				# If column is completely missing
+				missing_fields.append(field)
+
+		# Process optional groups: at least one column in each group must exist and have non-empty values
+		if self.optional_core:
+			for group in self.optional_core:
+				group_in_df = [field for field in group if field in self.metadata_df.columns]
+
+				if not group_in_df:
+					# Entire group is missing
+					missing_optionals.append(group)
+					continue
+
+				group_values = self.metadata_df[group_in_df].astype(str).apply(lambda col: col.str.strip())
+				group_missing = group_values.apply(lambda col: col == "", axis=0).all(axis=1)
+
+				if group_missing.any():
+					for field in group_in_df:
+						empty_field_mask = group_values[field] == ""
+						self.metadata_df.loc[empty_field_mask, field] = "Not Provided"
+						for sample_name in self.metadata_df.loc[empty_field_mask, 'sample_name']:
+							self.sample_log[sample_name].append(
+								f"WARNING: {field} in optional group is missing for sample {sample_name}, "
+								f"setting to 'Not Provided'\n")
+		# Final check
+		if missing_fields:
+			self.global_log.append("Missing required fields: " + ", ".join(missing_fields))
+		if missing_optionals:
+			opt_str = ["[" + ", ".join(group) + "]" for group in missing_optionals]
+			self.global_log.append("Missing optional field groups: " + ", ".join(opt_str))
+	
+	def check_meta_case(self):
+		"""Checks and removes demographics metadata for cases (sex, age, race, and ethnicity) if present.
+		"""
+		try:
+			invalid_mask = pd.DataFrame(False, index=df.index, columns=self.case_fields)
+
+			for field in self.case_fields:
+				if field in self.metadata_df.columns:
+					field_values = self.metadata_df[field].astype(str).str.strip()
+					invalid_mask[field] = ~field_values.isin(["", "None", "Not Provided"])
+
+			rows_with_invalid = invalid_mask.any(axis=1)
+
+			for idx in self.metadata_df[rows_with_invalid].index:
+				sample_name = self.metadata_df.at[idx, "sample_name"]
+				fields_to_clean = [field for field in self.case_fields if invalid_mask.at[idx, field]]
+
+				if fields_to_clean:
+					self.sample_log[sample_name].append(
+						f"Present Case Data found in: {', '.join(fields_to_clean)}. "
+						f"The case data has been removed automatically."
+					)
+					self.metadata_df.loc[idx, fields_to_clean] = "Not Provided"
+		
+		except Exception as e:
+			self.global_log.append(f"Unexpected error during case metadata check: {str(e)}")
+
+	def check_illumina_nanopore(self):
+		"""Validates Illumina and Nanopore metadata fields and file paths.
+		"""
+		# Add default 'library_name' column if missing (preserves backwards compatibility with older templates)
 		for col in ['illumina_library_name', 'nanopore_library_name']:
 			if col not in self.metadata_df.columns:
 				self.metadata_df[col] = "Not Provided"
 
-		# Drop any columns containing 'test_field' 
-		self.metadata_df.drop(
-			columns=[
-				col for col in self.metadata_df.columns
-				if 'test_field' in col.lower()
-			],
-			inplace=True
-		)
+		# Rename internal-use-only SRA path columns to avoid submission metadata prefix
+		self.metadata_df.rename(columns={
+			'illumina_sra_file_path_1': 'int_illumina_sra_file_path_1',
+			'illumina_sra_file_path_2': 'int_illumina_sra_file_path_2',
+			'nanopore_sra_file_path_1': 'int_nanopore_sra_file_path_1',
+		}, inplace=True)
 
-		# get sample names as a list
-		metadata_samp_names = self.metadata_df['sample_name'].tolist()
-
-		# if there are repeat samples then check them and replace the names
-		if len(self.metadata_df['sample_name']) != len(set(self.metadata_df['sample_name'])):
-			self.check_for_repeats_in_meta()
-
-		# checks date
-		if self.parameters['date_format_flag'].lower() != 'o':
-			self.check_date()
-
-		# Check custom fields
-		if self.parameters.get('validate_custom_fields') is True:
-			self.metadata_df = self.custom_fields_processor.process(self.metadata_df)
-			
-		# lists through the entire set of samples and runs the different checks below
-		for name in metadata_samp_names:
-			self.sample_error_msg = f"\n\t{str(name)}:"
-			sample_info = self.metadata_df.loc[self.metadata_df['sample_name'] == name]
-			sample_info.columns = sample_info.columns.str.lower() # normalize cols to lowercase
-
-			if "library_name" not in sample_info.columns:
-				sample_info["library_name"] = "Not Provided"
-
-			self.check_meta_core(sample_info)
-
-			# if the author for the sample is not empty then check to make sure it is properly formatted
-			try:
-				assert self.author_valid is True
-			except AssertionError:
-				raise AssertionError(f'Author valid flag does not have the proper default value of True')
-			if str(sample_info["authors"]) != "" and str(sample_info["authors"]) != '':
-				try:
-					fixed_authors = self.check_authors(sample_info["authors"].to_list()[0].split(';'))
-					self.metadata_df.loc[self.metadata_df['sample_name'] == name, 'author'] = fixed_authors
-				except:
-					self.author_valid = False
-					self.sample_error_msg = "\n\t Invalid Author Name, please list as full names separated by ;"
-
-			# run the check on the PI meta information if the remove_demographic_info flag is true
-			try:
-				assert self.meta_case_grade is True
-			except AssertionError:
-				raise AssertionError(f'meta_case_grade was not reset to True')
-			if self.parameters['remove_demographic_info'] is True:
-				self.sample_error_msg += (f"\n\t\t'remove_demographic_info' flag is True. Sample demographic data will be removed if present.")
-				self.metadata_df = self.check_meta_case(sample_info)
-
-			# check if the SRA submission is triggered, if it is, then run the class of functions for handling sra submission
-			if str(sample_info["ncbi_sequence_name_sra"]) != "" or str(sample_info["ncbi_sequence_name_sra"]) != '':
-				self.sra_msg = "\n\t\tSRA Submission Detected: "
-				sra_check = Check_Illumina_Nanopore_SRA (
-											sample_info=sample_info, sra_msg=self.sra_msg, parameters=self.parameters,
-											meta_nanopore_grade=self.meta_nanopore_grade, meta_illumina_grade=self.meta_illumina_grade,
-											nanopore_error_msg=self.nanopore_error_msg, illumina_error_msg=self.illumina_error_msg,
-											)
-				try:
-					assert sra_check
-				except AssertionError:
-					raise AssertionError(f'check_illumina_nanopore_sra class was not properly instantiated')
-				sra_check.handle_sra_submission_check()
-				self.sra_msg = sra_check.sra_msg
-				self.meta_nanopore_grade = sra_check.meta_nanopore_grade
-				self.nanopore_error_msg = sra_check.nanopore_error_msg
-				self.meta_illumina_grade = sra_check.meta_illumina_grade
-				self.illumina_error_msg = sra_check.illumina_error_msg
-
-			# capture the error messages at the sample level
-			errors_class = HandleErrors(
-				grades = {'meta_case_grade': self.meta_case_grade, 'meta_illumina_grade': self.meta_illumina_grade,
-						  'meta_nanopore_grade': self.meta_nanopore_grade, 'author_valid': self.author_valid,
-						  'meta_core_grade': self.meta_core_grade},
-				errors = {'sample_error_msg': self.sample_error_msg, 'sra_msg': self.sra_msg,
-						  'illumina_error_msg': self.illumina_error_msg, 'nanopore_error_msg': self.nanopore_error_msg,
-						  'list_of_sample_errors': self.list_of_sample_errors},
-				valid_sample_num = self.valid_sample_num,
-				sample_info = sample_info,
-				sample_flag = True,
-				parameters= self.parameters,
-				tsv = self.error_tsv,
-				valid_date_flag = self.valid_date_flag
-			)
-
-			try:
-				assert errors_class
-			except AssertionError:
-				raise AssertionError(f'errors_class was not properly instantiated')
-
-			# update the list of sample errors in this class
-			errors_class.capture_errors_per_sample()
-			self.list_of_sample_errors = errors_class.list_of_sample_errors
-			self.valid_sample_num = errors_class.valid_sample_num
-
-			# reset all checks back to true (for each sample)
-			[self.meta_case_grade, self.meta_illumina_grade, self.meta_nanopore_grade,
-			 self.author_valid, self.meta_core_grade] = [True] * 5
-			try:
-				assert False not in [grade is True for grade in [self.meta_case_grade, self.meta_illumina_grade, self.meta_nanopore_grade,
-																 self.author_valid, self.meta_core_grade]]
-			except AssertionError:
-				raise AssertionError(f'Grades were not properly reset after sample round')
-
-			# reset all of the error messages
-			[self.sra_msg, self.illumina_error_msg, self.nanopore_error_msg] = [''] * 3
-			try:
-				assert False not in [error == '' for error in [self.sra_msg, self.illumina_error_msg, self.nanopore_error_msg]]
-			except AssertionError:
-				raise AssertionError(f'Errors were not properly reset after sample round')
-
-		# trim the final df based on cols to keep 
-		if len(self.final_cols) != 0:  # this means that there were custom fields
-			# only keep this set in final dataframe 
-			self.metadata_df = self.metadata_df.loc[:, self.final_cols]
-
-		# get the final error message
-		self.did_validation_work = errors_class.capture_final_error (
-			final_error_file = self.final_error_file, repeat_error = self.repeat_error,
-			matchup_error = self.matchup_error, valid_date_flag = self.valid_date_flag,
-			date_error_msg = self.date_error_msg, valid_sample_num = self.valid_sample_num,
-			metadata_df = self.metadata_df, list_of_sample_errors = self.list_of_sample_errors, repeated = self.repeated,
-			did_validation_work = self.did_validation_work,
-		)
-
-	def check_for_repeats_in_meta(self):
-		""" Check if the metadata files has repeat samples
-		"""
-		try:
-			assert self.repeated is False
-		except AssertionError:
-			raise AssertionError(f'repeated flag does not have proper default value of False')
-
-		# convert the samples to a list
-		samp_list = self.metadata_df['sample_name'].tolist()
-		original_samp_list = samp_list.copy()
-		assert samp_list == original_samp_list
-
-		# populate the unique id dictionary
-		uniqueid_dict = {}
-		for i in set(original_samp_list):
-			uniqueid_dict[i] = 0
-
-		# loops through each sample and checks if it occurs more than twice
-		for i in range(len(samp_list)):
-			if samp_list.count(samp_list[i]) > 1:
-				samp_list[i] = f'{samp_list[i]}_Copy_Sample_Num_{uniqueid_dict[samp_list[i]]}'
-				uniqueid_dict[original_samp_list[i]] = uniqueid_dict[original_samp_list[i]] + 1
-				self.repeated = True
-
-		# replace the sample list column with new names
-		self.metadata_df['sample_name'] = samp_list
-		# output the repeat error with the sample names that are repeated
-		if self.repeated:
-			self.repeat_error = f'\n\tRepeated Sample Names: {", ".join([x for x in uniqueid_dict.keys() if uniqueid_dict[x] > 0])}'
-			# check that those samples that are repeated actually were changed
-			try:
-				assert len([x for x in uniqueid_dict.keys() if uniqueid_dict[x] > 0]) != 0
-				skip = []
-				for sample, sample2 in zip(samp_list, original_samp_list):
-					if uniqueid_dict[sample2] > 0 and sample2 not in skip:
-						assert '_Copy_Sample_Num_' in sample
-						skip.append(sample.split('_')[0])
-			except AssertionError:
-				raise AssertionError(f'Repeated flag was triggered but could not find >1 recordings or name changes to samples')
-		else:
-			try:
-				assert len([x for x in uniqueid_dict.keys() if uniqueid_dict[x] > 0]) == 0
-			except AssertionError:
-				raise AssertionError(f'Repeated flag not triggered despite recording multiple repeats')
-
-	def check_date(self):
-		"""
-		Reformats the date based on the input flag. Accepts date formats as YYYY, YYYY-MM, YYYY-MM-DD, MMDDYYYY, MMYYYY.
-		Flags dates with two-digit years (YY) as invalid.
-		Outputs error details in a text file for missing or invalid dates and raises an error if the flag is not valid.
-		"""
-		try:
-			assert self.valid_date_flag is True
-		except AssertionError:
-			raise AssertionError(f"Valid date flag is not properly set to the default value of True")
-
-		dates_list = self.metadata_df["collection_date"].tolist()
-		samples_list = self.metadata_df["sample_name"].tolist()
-		dates_holder = {'missing_dates': [], 'invalid_dates': []}
-		
-		# Updated regex patterns for different formats
-		date_patterns = [
-			# Matches different date forms, all patterns accept '-' or '/' separator, and all have optional time
-			r"^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?(?:\s(\d{2}):(\d{2}):(\d{2}))?$",  # YYYY, YYYY/MM, YYYY/MM/DD, YYYY/M, YYYY/M/DD
-			r"^(\d{1,2})(?:[-/](\d{1,2}))?(?:[-/](\d{4}))?(?:\s(\d{2}):(\d{2}):(\d{2}))?$",  # M/D/YYYY, MM/DD/YYYY
-			r"^(\d{1,2})(?:[-/](\d{4}))?(?:\s(\d{2}):(\d{2}):(\d{2}))?$",                  # M/YYYY, MM/YYYY
-			r"^(\d{1,2})(?:[-/](\d{1,2}))[-/](\d{2})(?:\s(\d{2}):(\d{2}):(\d{2}))?$"      # M/D/YY, MM/DD/YY
+		required_illumina = [
+			"illumina_sequencing_instrument",
+			"illumina_library_strategy",
+			"illumina_library_source",
+			"illumina_library_selection",
+			"illumina_library_layout",
+			"illumina_library_name"
 		]
 
-		print(f"flag: {self.parameters['date_format_flag']}")
-		for i, date_value in enumerate(dates_list):
-			sample_name = samples_list[i]
+		required_nanopore = [
+			"nanopore_sequencing_instrument",
+			"nanopore_library_strategy",
+			"nanopore_library_source",
+			"nanopore_library_selection",
+			"nanopore_library_layout",
+			"nanopore_library_name"
+		]
 
-			# Handle missing or empty dates
-			if not date_value:
-				dates_holder['missing_dates'].append(sample_name)
-				self.valid_date_flag = False
-				continue
+		for idx, row in self.metadata_df.iterrows():
+			sample_name = row["sample_name"]
+			illumina_found = pd.notna(row.get("int_illumina_sra_file_path_1", None)) and pd.notna(row.get("int_illumina_sra_file_path_2", None))
+			nanopore_found = pd.notna(row.get("int_nanopore_sra_file_path_1", None))
 
-			try:
-				date_value_str = str(date_value)
+			# Illumina check
+			if illumina_found:
+				illumina_missing = [f for f in required_illumina if not row.get(f)]
+				if row.get("illumina_library_layout") == "paired":
+					if not row.get("int_illumina_sra_file_path_2"):
+						illumina_missing.append("int_illumina_sra_file_path_2")
+				if row.get("illumina_sequencing_instrument") not in self.parameters.get("illumina_instrument_restrictions", []):
+					illumina_missing.append("illumina_sequencing_instrument (invalid or missing)")
+				if illumina_missing:
+					self.sample_log[sample_name].append(
+						f"ERROR: Illumina metadata is incomplete or invalid. Missing/invalid: {', '.join(set(illumina_missing))}"
+					)
+			else:
+				self.sample_log[sample_name].append("INFO: Illumina Not Found")
 
-				# Try matching against each pattern
-				match = None
-				for pattern in date_patterns:
-					match = re.match(pattern, date_value_str)
-					if match:
-						break
+			# Nanopore check
+			if nanopore_found:
+				nanopore_missing = [f for f in required_nanopore if not row.get(f)]
+				if row.get("nanopore_sequencing_instrument") not in self.parameters.get("nanopore_instrument_restrictions", []):
+					nanopore_missing.append("nanopore_sequencing_instrument (invalid or missing)")
+				if nanopore_missing:
+					self.sample_log[sample_name].append(
+						f"ERROR: Nanopore metadata is incomplete or invalid. Missing/invalid: {', '.join(set(nanopore_missing))}"
+					)
+			else:
+				self.sample_log[sample_name].append("INFO: Nanopore Not Found")
 
-				if match:
-					# Extract date components
-					year, month, day, *_ = match.groups()
-					if not month:
-						month = "01"
-					if not day:
-						day = "01"
+	def check_custom_fields(self, json_path: str):
+		"""Validate and process custom fields defined in a JSON config.
+		"""
+		try:
+			with open(json_path, 'r') as f:
+				custom_fields = json.load(f)
+		except (FileNotFoundError, json.JSONDecodeError) as e:
+			self.global_log.append(f"[CustomFields] Error loading JSON: {e}")
+			return
 
-					# Check if the year is only two digits
-					if len(year) == 2:
-						raise ValueError("Two-digit year detected. Use a four-digit year for clarity.")
+		static_columns = {
+			"sample_name", "sequence_name", "ncbi-spuid", "ncbi-bioproject", "title", "description",
+			"authors", "submitting_lab", "submitting_lab_division", "submitting_lab_address", "publication_status", "publication_title",
+			"isolate", "isolation_source", "host_disease", "host", "organism", "collection_date", "country", "state",
+			"collected_by", "sample_type", "lat_lon", "purpose_of_sampling", "host_sex", "host_age", "race", "ethnicity",
+			"assembly_protocol", "assembly_method", "mean_coverage", "fasta_path", "gff_path", "ncbi_sequence_name_sra",
+			"illumina_sequencing_instrument", "illumina_library_strategy", "illumina_library_source", "illumina_library_selection",
+			"illumina_library_layout", "illumina_library_protocol", "illumina_sra_file_path_1", "illumina_sra_file_path_2",
+			"file_location", "fastq_path_1", "fastq_path_2", "nanopore_sequencing_instrument", "nanopore_library_strategy",
+			"nanopore_library_source", "nanopore_library_selection", "nanopore_library_layout", "nanopore_library_protocol",
+			"nanopore_sra_file_path_1", "nanopore_sra_file_path_2"
+		}
 
-					# Normalize month and day to two digits
-					month = month.zfill(2)
-					day = day.zfill(2)
+		existing_cols = set(self.metadata_df.columns)
+		unexpected_fields = existing_cols - static_columns.intersection(existing_cols) - set(custom_fields)
 
-					# Handle 'v' flag for YYYY-MM-DD format
-					if self.parameters['date_format_flag'].lower() == 'v':
-						# Ensure date is in YYYY-MM-DD format
-						dates_list[i] = f"{year}-{month}-{day}"
+		for field, props in custom_fields.items():
+			field_errors = []
 
-					# Handle 's' flag for YYYY-MM format
-					elif self.parameters['date_format_flag'].lower() == 's':
-						# Ensure date is in YYYY-MM format
-						dates_list[i] = f"{year}-{month}"
+			# Replace empty values
+			if 'replace_empty_with' in props and field in self.metadata_df.columns:
+				self.metadata_df[field].fillna(props['replace_empty_with'], inplace=True)
 
-					else:
-						print(f"3: {self.valid_date_flag}")
-						raise ValueError(f"Unknown date_format_flag {self.parameters['date_format_flag']}")
+			# Rename field
+			if 'new_field_name' in props and props['new_field_name']:
+				if field in self.metadata_df.columns:
+					self.metadata_df.rename(columns={field: props['new_field_name']}, inplace=True)
 				else:
-					print(f"4: {self.valid_date_flag}")
-					raise ValueError(f"Invalid date format {date_value_str}")
+					field_errors.append(f"Cannot rename missing field '{field}'")
 
-			except Exception as e:
-				dates_holder['invalid_dates'].append(sample_name)
-				self.valid_date_flag = False
-				print(f"5: {self.valid_date_flag}")
+			# Extra unexpected keys
+			extra_keys = set(props.keys()) - {'replace_empty_with', 'new_field_name'}
+			if extra_keys:
+				field_errors.append(f"Extra keys in '{field}': {', '.join(extra_keys)}")
 
-		# Handle output or logging for missing and invalid dates
-		with open("date_errors.txt", "w") as error_file:
-			if dates_holder['missing_dates']:
-				error_file.write(f"Missing dates for samples: {dates_holder['missing_dates']}\n")
-			if dates_holder['invalid_dates']:
-				error_file.write(f"Invalid dates for samples: {dates_holder['invalid_dates']}\n")
+			# Log field-specific issues
+			if field_errors:
+				self.global_log.append(f"[CustomFields] Issues in '{field}': {'; '.join(field_errors)}")
 
-		if not self.valid_date_flag:
-			print(f"6: {self.valid_date_flag}")
-			raise ValueError("Date validation failed. Check 'date_errors.txt' for details.")
-
-		# Update the dataframe with formatted dates
-		self.metadata_df["collection_date"] = dates_list
-
-	@staticmethod
-	def check_authors(authors):
-		""" Checks to make sure Author is in First Last or F.M. Last name format
-		"""
-		fixed_authors = []
-		for i in range(len(authors)):
-			# clean the name up a little bit
-			remove_nums_spaces = (''.join([i for i in authors[i] if not i.isdigit()])).strip()
-			remove_weird_chars = remove_nums_spaces.replace('...', '').replace('Name:', '').replace('author', '').replace(
-				',', '').replace('dtype:', '').replace(':', '').replace('object', '').replace('\\', '').replace('/', '')
-
-			# if the full name has a length of three
-			if len(remove_weird_chars.split()) == 3 and len(remove_weird_chars.split()[0]) > 1:
-				# change to F.M. Last Name
-				new_name = f'{(remove_weird_chars.split()[0])[0]}.{remove_weird_chars.split()[1]} {remove_weird_chars.split()[-1]}'
-				try:
-					assert len(new_name.split(' ')) == 2
-					assert new_name.count('.') == 2
-				except AssertionError:
-					raise AssertionError(f'Name was not properly converted from First Middle Last to F.M. Last')
-			else:
-				new_name = remove_weird_chars
-			fixed_authors.append(new_name)
-		try:
-			assert len(fixed_authors) == len(authors)
-		except AssertionError:
-			raise AssertionError(f'# of fixed authors does not match the original number of authors')
-		return '; '.join(fixed_authors)
-
-	def check_meta_core(self, sample_line):
-		""" Checks that the necessary metadata is present for the sample line
-		"""
-		try:
-			assert self.meta_core_grade is True
-		except AssertionError:
-			raise AssertionError(f'Meta core grade was not properly reset to True after sample round')
-
-		missing_fields, missing_optionals = [], []
-		# check the required fields
-		for field in self.required_core:
-			if field in sample_line:
-				value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().any() else ""
-				if value == "":
-					sample_line.at[sample_line.index[0], field] = "Not Provided"  # Replace missing value
-					self.sample_error_msg += f"WARNING: {field} is missing for sample {sample_line['sample_name'].values[0]}, setting to 'Not Provided'"  # Log warning
-			else:
-				missing_fields.append(field)  # Report as missing column
-				self.meta_core_grade = False
-
-		# Check the optional fields (at least one required from each group)
-		# Check the optional fields (at least one field in the group must exist as a column)
-		if self.optional_core:
-			for group in self.optional_core:
-				group_present = any(field in sample_line for field in group)
-				if not group_present:
-					self.meta_core_grade = False
-					missing_optionals.append(group)
-					break  # Stop checking once we find a completely missing group (need at least one)
-				else:
-					for field in group:
-						if field in sample_line:
-							value = str(sample_line[field].values[0]).strip() if not sample_line[field].isna().any() else ""
-							if value == "":
-								sample_line.at[sample_line.index[0], field] = "Not Provided"
-								self.sample_error_msg += (
-									f"WARNING: {field} in optional group is missing for sample "
-									f"{sample_line['sample_name'].values[0]}, setting to 'Not Provided'"
-								)
-		if self.meta_core_grade is False:
-			try:
-				assert len(missing_fields) != 0 or len(missing_optionals) != 0 # are there missing required columns?
-			except AssertionError:
-				raise AssertionError(f'Meta core grade is false but did not record any missing fields')
-			self.sample_error_msg += "\n\t\tMissing Required Metadata:  " + ", ".join(missing_fields)
-			if len(missing_optionals) != 0:
-				optional_strs = ["[" + ", ".join(group) + "]" for group in missing_optionals]
-				self.sample_error_msg += "\n\t\tMissing 'At Least One Required' Metadata:  " + ", ".join(optional_strs)
-	
-	def check_meta_case(self, sample_info):
-		""" Checks and removes demographics metadata for cases (sex, age, race, and ethnicity) if present. """
-		try:
-			assert self.meta_case_grade is True
-		except AssertionError:
-			raise AssertionError(f'Meta case grade was not properly reset back to True after sample round')
-		invalid_case_data = []
-		try:
-			for field in self.case_fields:
-				if field in sample_info.columns and str(sample_info[field].values[0]) not in ["", None, "Not Provided"]:
-					invalid_case_data.append(field)
-					# Remove the case data from the dataframe
-					sample_info.at[sample_info.index[0], field] = "Not Provided"  # Replace value with Not Provided string
-		except:
-			self.meta_case_grade = False
-		# Develop error message if case data was found and removed
-		if invalid_case_data: 
-			self.sample_error_msg += (
-				f'\n\t\tPresent Case Data found in: {", ".join(invalid_case_data)}.'
-				f'\n\t\tThe case data has been removed automatically.'
-			)
-		self.metadata_df.update(sample_info)
-		return self.metadata_df
-
-class Check_Illumina_Nanopore_SRA:
-	""" Class constructor for the various checks on instruments
-	"""
-	def __init__(self, sample_info, sra_msg, parameters, meta_nanopore_grade, meta_illumina_grade, nanopore_error_msg, illumina_error_msg):
-		self.sample_info = sample_info
-		self.sra_msg = sra_msg
-		self.parameters = parameters
-		self.project_dir = os.path.abspath(parameters['project_dir'])
-		self.required_illumina = ["illumina_sequencing_instrument", "illumina_library_strategy", "illumina_library_source",
-					 "illumina_library_selection", "illumina_library_layout"]
-		self.required_nanopore = ["nanopore_sequencing_instrument", "nanopore_library_strategy", "nanopore_library_source",
-					   "nanopore_library_selection", "nanopore_library_layout"]
-		self.meta_nanopore_grade = meta_nanopore_grade
-		self.meta_illumina_grade = meta_illumina_grade
-		self.nanopore_error_msg = nanopore_error_msg
-		self.illumina_error_msg = illumina_error_msg
-
-	# A function to detect if SRA filepaths are relative (test data in tostadas/assets) or absolute
-	def resolve_path(self, path):
-		""" Resolve file paths based on projectDir. Only modify relative paths. """
-		if not path or path.strip() == "": 
-			return ""  # Handle empty paths
-		if not os.path.isabs(path):
-			resolved = os.path.join(self.project_dir, path)
-			return resolved
-		return path  # Return as is if absolute
-
-	def handle_sra_submission_check(self):
-		""" Main function for the instrument checks
-		"""
-		# initialize a few file path values
-		illum_file_path1 = self.resolve_path(self.sample_info["illumina_sra_file_path_1"].tolist()[0])
-		illum_file_path2 = self.resolve_path(self.sample_info["illumina_sra_file_path_2"].tolist()[0])
-		nano_file_path1 = self.resolve_path(self.sample_info["nanopore_sra_file_path_1"].tolist()[0])
-
-		# check if the illumina file path for illumina is not empty
-		if illum_file_path1 and illum_file_path2 and illum_file_path1 != "" and illum_file_path1 != "" and illum_file_path2 != "" and illum_file_path2 != '':
-			self.check_instruments(instrument_type='illumina')
-			self.sra_msg += " Illumina Found\t"
-		else:
-			self.sra_msg += " Illumina Not Found\t"
-
-		# check if the nanopore file path for nanopore is not empty
-		if nano_file_path1 and nano_file_path1 != "" and nano_file_path1 != '':
-			self.check_instruments(instrument_type='nanopore')
-			self.sra_msg += " Nanopore Found"
-		else:
-			self.sra_msg += " Nanopore Not found"
-
-	def check_instruments(self, instrument_type):
-		""" General function for checking properties of the illumina and nanopore instrument
-		"""
-		if instrument_type == 'nanopore':
-			try:
-				assert self.meta_nanopore_grade is True
-			except AssertionError:
-				raise AssertionError(f'Meta nanopore grade was not properly reset to default value of True')
-
-			required = self.required_nanopore
-			instrument = self.sample_info['nanopore_sequencing_instrument'].tolist()[0]
-			file_path = self.resolve_path(self.sample_info['nanopore_sra_file_path_1'].tolist()[0])
-			restricted_terms = self.parameters['nanopore_instrument_restrictions']
-
-		elif instrument_type == 'illumina':
-			try:
-				assert self.meta_illumina_grade is True
-			except AssertionError:
-				raise AssertionError(f'Meta illumina grade was not properly reset to default value of True')
-			if str(self.sample_info["illumina_library_layout"]) == "paired":
-				self.required_illumina.append("illumina_sra_file_path_2")
-
-			required = self.required_illumina
-			instrument = self.sample_info['illumina_sequencing_instrument'].tolist()[0]
-			file_path1 = self.resolve_path(self.sample_info["illumina_sra_file_path_1"].tolist()[0])
-			file_path2 = self.resolve_path(self.sample_info["illumina_sra_file_path_2"].tolist()[0])
-			restricted_terms = self.parameters['illumina_instrument_restrictions']
-
-		missing_data, invalid_data = [], []
-		print(f"Available keys in sample_info: {self.sample_info.keys().tolist()}")
-
-		# check if required fields are populated
-		for field in required:
-			if field not in self.sample_info.keys().tolist():
-				missing_data.append(field)
-				if instrument_type == 'nanopore':
-					self.meta_nanopore_grade = False
-				elif instrument_type == 'illumina':
-					self.meta_illumina_grade = False
-			elif self.sample_info[field].isnull().all() or (self.sample_info[field] == "").all():
-				missing_data.append(field)  # Record missing values
-
-		# check if instrument is in the restricted fields
-		if not instrument or instrument not in restricted_terms:  # Ensure instrument is not empty or invalid
-			if instrument_type == 'nanopore':
-				self.meta_nanopore_grade = False
-			elif instrument_type == 'illumina':
-				self.meta_illumina_grade = False
-
-		# check if the SRA file exists for the first file path
-		# todo: I don't think we need to check for valid file paths until we're submitting?  Or check here instead of during submission?
-		path_failed = False
-		'''
-		if instrument_type == 'illumina':
-			if self.sample_info["illumina_library_layout"].tolist()[0] == 'paired':
-				paths = [file_path1, file_path2]
-			else:
-				paths = [file_path1]
-			for path in paths:
-				if not (os.path.isfile(path)):
-					self.illumina_error_msg += f'\n\t\t{path} does not exist or there are permission problems'
-					path_failed = True
-					self.meta_illumina_grade = False
-		elif instrument_type == 'nanopore':
-			if not (os.path.isfile(file_path)):
-				self.nanopore_error_msg += f'\n\t\t{file_path} does not exist or there are permission problems'
-				path_failed = True
-				self.meta_nanopore_grade = False
-		'''
-
-		if instrument_type == 'nanopore' and self.meta_nanopore_grade is False:
-			try:
-				assert True in [len(missing_data) != 0, len(invalid_data) != 0, path_failed]
-			except AssertionError:
-				raise AssertionError(f'Meta nanopore grade set to false even though missing or invalid data was not recorded and instrument paths exist')
-			if len(missing_data) != 0:
-				self.illumina_error_msg += f'\n\t\tNanopore Missing Data: {", ".join(missing_data)}'
-			if len(invalid_data) != 0:
-				self.illumina_error_msg += f'\n\t\tNanopore Invalid Data: {", ".join(invalid_data)}'
-		elif instrument_type == 'illumina' and self.meta_illumina_grade is False:
-			try:
-				assert True in [len(missing_data) != 0, len(invalid_data) != 0, path_failed]
-			except AssertionError:
-				raise AssertionError(f'Meta illumina grade set to false even though missing or invalid data was not recorded and instrument paths exist')
-			if len(missing_data) != 0:
-				self.illumina_error_msg += f'\n\t\tIllumina Missing Data: {", ".join(missing_data)}'
-			if len(invalid_data) != 0:
-				self.illumina_error_msg += f'\n\t\tIllumina Invalid Data: {", ".join(invalid_data)}'
-
-class HandleErrors:
-	""" Class constructor for handling errors at the sample and global levels
-	"""
-	def __init__(self, grades, errors, valid_sample_num, sample_info, sample_flag, parameters, tsv, valid_date_flag):
-		# get the grades from the dictionary that is passed in
-		self.meta_case_grade = grades['meta_case_grade']
-		self.meta_illumina_grade = grades['meta_illumina_grade']
-		self.meta_nanopore_grade = grades['meta_nanopore_grade']
-		self.author_valid = grades['author_valid']
-		self.meta_core_grade = grades['meta_core_grade']
-		# get the errors from dictionary that is passed in
-		self.sample_error_msg = errors['sample_error_msg']
-		self.sra_msg = errors['sra_msg']
-		self.illumina_error_msg = errors['illumina_error_msg']
-		self.nanopore_error_msg = errors['nanopore_error_msg']
-		self.list_of_sample_errors = errors['list_of_sample_errors']
-		# get the other necessary values
-		self.valid_sample_num = valid_sample_num
-		self.sample_info = sample_info
-		# sample_flag
-		self.valid_date_flag = valid_date_flag
-		self.sample_flag = sample_flag
-		# parameters
-		self.parameters = parameters
-		# tsv file 
-		self.tsv = tsv
-
-	def capture_errors_main(self):
-		""" Main function for calling error sub functions
-		"""
-		if self.sample_flag is True:
-			self.capture_errors_per_sample()
-
-	def capture_errors_per_sample(self):
-		""" Handles the errors at the sample level
-		"""
-		# getting flags to check for whether sample passed
-		sample_passed = True
-		# check whether instruments passed
-		if str(self.sample_info["ncbi_sequence_name_sra"]) != "" or str(self.sample_info["ncbi_sequence_name_sra"]) != '':
-			self.sample_error_msg += self.sra_msg
-		# add errors in front of sample 
-		self.sample_error_msg += f"\n\t\tErrors:"
-		if self.meta_illumina_grade is True and self.meta_nanopore_grade is True:
-			self.sample_error_msg += f"\n\t\t\tPassed all sample checks!"
-		else:
-			if self.meta_illumina_grade is False:
-				self.sample_error_msg += self.illumina_error_msg
-				sample_passed = False
-			if self.meta_nanopore_grade is False:
-				self.sample_error_msg += self.nanopore_error_msg
-				sample_passed = False
-		# check the core metadata validation
-		if self.meta_core_grade is False:
-			self.sample_error_msg += f"\n\t\t\tCore metadata validation failed!"
-			sample_passed = False
-		# check the personal information
-		if self.meta_case_grade is False:
-			sample_passed = False
-		# check the author
-		if self.author_valid is False:
-			sample_passed = False
-
-		if sample_passed:
-			self.valid_sample_num += 1
-		self.list_of_sample_errors.append(self.sample_error_msg)
-		self.write_tsv_file(sample_passed)
-
-	def capture_final_error(self, final_error_file, repeat_error, matchup_error,
-							valid_date_flag, date_error_msg, valid_sample_num, metadata_df,
-							list_of_sample_errors, repeated, did_validation_work):
-		""" Handles the final error message
-		"""
-
-		# output the final error message after looping through the samples
-		final_error = ''
-
-		# write the final error for repeats
-		if repeated:
-			did_validation_work = False
-			final_error += repeat_error
-
-		# write the date error message to file
-		if valid_date_flag is False:
-			did_validation_work = False
-			final_error += f"{date_error_msg}\n"
-
-		# Check if any sample validation failed
-		if valid_sample_num < len(metadata_df["sample_name"]):
-			final_error += f"Not all samples passed validation - see below for details\n"
-			did_validation_work = False
-
-		final_error_file.write("General Errors:\n\n")
-		if final_error != '':
-			final_error_file.write(final_error)
-		else:
-			final_error_file.write("\tPassed all global checks!")
-
-		# write the final number of valid samples
-		final_error_file.write(f'\n\nSample Errors:\n')
-		final_error_file.write(f'\n\tNumber of Valid Samples: {str(valid_sample_num)}/{str(len(metadata_df["sample_name"]))}\n')
-		for sample in list_of_sample_errors: 
-			final_error_file.write(f'{sample}\n')
-		
-		# output the tsv file  
-		self.tsv.to_csv(f'{self.parameters["output_dir"]}/{self.parameters["file_name"]}/errors/checks.tsv', sep="\t")
-
-		return did_validation_work
-	
-	def write_tsv_file(self, sample_passed):
-		if sample_passed is True:
-			self.tsv['passed'] = 'Yes'
-		elif sample_passed is False:
-			self.tsv['passed'] = 'No'
-		for x, y in zip(
-			['nanopore', 'illumina', 'core', 'case', 'authors', 'dates'],
-			[self.meta_nanopore_grade, self.meta_illumina_grade, self.meta_core_grade, self.meta_case_grade, self.author_valid, self.valid_date_flag]
-		):
-			if y is True:
-				self.tsv[x] = u'\u2713'
-			elif y is False:
-				self.tsv[x] = 'X'
+		if unexpected_fields:
+			self.global_log.append(f"[CustomFields] Unexpected fields in metadata: {', '.join(unexpected_fields)}")
 
 class HandleDfInserts:
 	""" Class constructor for handling the insert operations on the metadata df once all the checks are completed
 	"""
-	def __init__(self, parameters, filled_df):
+	def __init__(self, filled_df, parameters):
 		self.parameters = parameters
-		self.filled_df = filled_df
-		self.list_of_country = self.filled_df["country"].tolist()
-		self.list_of_state = self.filled_df["state"].tolist()
+		self.metadata_df = filled_df
+		self.list_of_country = self.metadata_df["country"].tolist()
+		self.list_of_state = self.metadata_df["state"].tolist()
 		self.new_combination_list = []
 
 	def handle_df_inserts(self):
@@ -989,15 +632,15 @@ class HandleDfInserts:
 		# adds the Geolocation field
 		self.insert_loc_data()
 		self.insert_additional_columns()
-		self.change_illumina_paths()
 		try:
-			assert 'geo_loc_name' in self.filled_df.columns.values
-			assert True not in [math.isnan(x) for x in self.filled_df['geo_loc_name'].tolist() if isinstance(x, str) is False]
-			assert 'structuredcomment' in self.filled_df.columns.values
-			assert True not in [math.isnan(x) for x in self.filled_df['structuredcomment'].tolist() if
+			assert 'geo_loc_name' in self.metadata_df.columns.values
+			assert True not in [math.isnan(x) for x in self.metadata_df['geo_loc_name'].tolist() if isinstance(x, str) is False]
+			assert 'structuredcomment' in self.metadata_df.columns.values
+			assert True not in [math.isnan(x) for x in self.metadata_df['structuredcomment'].tolist() if
 								isinstance(x, str) is False]
 		except AssertionError:
 			raise AssertionError(f'Columns were not properly inserted into dataframe')
+		return self.metadata_df
 
 	def insert_loc_data(self):
 		""" Inserts modified location data with the country:state into dataframe
@@ -1008,111 +651,14 @@ class HandleDfInserts:
 			else:
 				self.new_combination_list.append(str(self.list_of_country[i]))
 
-		self.filled_df['geo_loc_name'] = self.new_combination_list
+		self.metadata_df['geo_loc_name'] = self.new_combination_list
 
 	def insert_additional_columns(self):
 		""" Inserts additional columns into the metadata dataframe
 		"""
 		# todo: this fx does not include req'd cols for GISAID (see seqsender main config and submission_process.py script)
-		self.filled_df.insert(self.filled_df.shape[1], "structuredcomment", ["Assembly-Data"] * len(self.filled_df.index))
+		self.metadata_df.insert(self.metadata_df.shape[1], "structuredcomment", ["Assembly-Data"] * len(self.metadata_df.index))
 
-	# todo: this is a temporary fx to convert the illumina paths as input to seqsender & tostadas.nf
-	def change_illumina_paths(self):
-		""" Create sra-file_name from illumina_sra_file_path_1 & illumina_sra_file_path_2 
-			Rename illumina_sra_file_path_1 & illumina_sra_file_path_2 to fastq_path_1 & fastq_path_2
-		"""
-		# function to extract file name from path
-		def extract_filename(path):
-			if '/' in path:
-				return path.split('/')[-1] # todo: assume Unix paths ok?
-			else:
-				return path
-		# todo: this and fx above may be no longer needed (create new column 'sra-file_name')
-		#self.filled_df['sra-file_name'] = self.filled_df.apply(lambda row: extract_filename(row['illumina_sra_file_path_1']) + ',' + extract_filename(row['illumina_sra_file_path_2']), axis=1)
-		# rename original columns
-		self.filled_df = self.filled_df.rename(columns={'illumina_sra_file_path_1': 'fastq_path_1', 'illumina_sra_file_path_2': 'fastq_path_2'})
-	# todo: handle multiple tsvs for illumina vs. nanopore - another class?
-
-class CustomFieldsProcessor:
-	def __init__(self, json_file: str, error_file: str):
-		self.json_file = os.path.abspath(json_file)
-		self.error_file = error_file
-
-	def load_json(self) -> Dict[str, Dict[str, Union[str, int]]]:
-		"""Load JSON data from a file."""
-		print(f'Custom file: {self.json_file}')
-		try:
-			with open(self.json_file, 'r') as custom_file:
-				return json.load(custom_file)
-		except FileNotFoundError:
-			raise FileNotFoundError(f"File not found: {self.json_file}")
-		except json.JSONDecodeError as e:
-			raise ValueError(f"Error decoding JSON: {e}")
-		
-	def validate_metadata_fields(self, metadata_df: pd.DataFrame):
-		"""
-		Flag fields in the metadata dataframe that are not present in the JSON custom fields.
-		"""
-		custom_fields_dict = self.load_json()
-		json_keys = set(custom_fields_dict.keys())
-		# Find metadata fields that are not in the JSON keys
-		static_metadata_columns = ["sample_name","sequence_name","ncbi-spuid","ncbi-spuid_namespace","ncbi-bioproject","title","description","authors","submitting_lab",
-			"submitting_lab_division","submitting_lab_address","publication_status","publication_title","isolate", "isolation_source", "host_disease", "host","organism","collection_date",
-			"country","state","collected_by","sample_type","lat_lon","purpose_of_sampling","host_sex","host_age","race","ethnicity","assembly_protocol","assembly_method",
-			"mean_coverage","fasta_path","gff_path","ncbi_sequence_name_sra","illumina_sequencing_instrument","illumina_library_strategy","illumina_library_source",
-			"illumina_library_selection","illumina_library_layout","illumina_library_protocol","illumina_sra_file_path_1", "illumina_sra_file_path_2","file_location",
-			"fastq_path_1","fastq_path_2","nanopore_sequencing_instrument","nanopore_library_strategy","nanopore_library_source","nanopore_library_selection",
-			"nanopore_library_layout","nanopore_library_protocol","nanopore_sra_file_path_1","nanopore_sra_file_path_2"]
-		metadata_columns = set(metadata_df.columns) - set(static_metadata_columns).intersection(metadata_df.columns) # inrtersection method ensures we only compare columns that exist in metadata_df
-		unexpected_fields = metadata_columns - json_keys
-		return unexpected_fields
-	
-	def validate_and_process_fields(
-		self, 
-		custom_fields_dict: Dict[str, Dict[str, Union[str, int]]], 
-		metadata_df: pd.DataFrame,
-		unexpected_fields: set ) -> pd.DataFrame:
-		"""Validate custom fields and integrate with metadata."""
-		errors = []
-		for field_name, properties in custom_fields_dict.items():
-			field_errors = []
-			# Handle "replace_empty_with" key
-			for key in properties:
-				# make backwards compatible with the old custom fields JSON (which includes other keys)
-				if key not in ['replace_empty_with', 'new_field_name']:
-					errors.append(f"Warning: Extra key '{key}' found under field '{field_name}' and will be ignored.")
-			if "replace_empty_with" in properties:
-				replace_value = properties["replace_empty_with"]
-				if field_name in metadata_df.columns:
-					metadata_df[field_name].fillna(replace_value, inplace=True)
-			# Handle "new_field_name" key
-			if "new_field_name" in properties and properties["new_field_name"]:
-				new_field_name = properties["new_field_name"]
-				if field_name in metadata_df.columns:
-					metadata_df.rename(columns={field_name: new_field_name}, inplace=True)
-				else:
-					field_errors.append(f"Field '{field_name}' not found in metadata for renaming.")
-			# Log errors for the current field
-			if field_errors:
-				errors.append({"field_name": field_name, "errors": field_errors})
-		# Include unexpected fields as-is with a warning
-		if unexpected_fields:
-			print(f"WARNING: {unexpected_fields} were not found in the custom fields JSON and were not validated. They are included as-is.")
-		# Write errors to the error file
-		if errors:
-			self.write_errors(errors)
-		return metadata_df
-
-	def write_errors(self, errors: Dict[str, Union[Dict, List]]):
-		"""Write errors to a file."""
-		json.dump(errors, self.error_file, indent=4)
-
-	def process(self, metadata_df: pd.DataFrame) -> pd.DataFrame:
-		"""Main processing function."""
-		# Flag unexpected fields in the metadata file
-		unexpected_fields = self.validate_metadata_fields(metadata_df)
-		data = self.load_json()
-		return self.validate_and_process_fields(data, metadata_df, unexpected_fields)
 
 if __name__ == "__main__":
 	metadata_validation_main()

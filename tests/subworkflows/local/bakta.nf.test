@@ -1,0 +1,31 @@
+nextflow_workflow {
+
+    name "Test Workflow RUN_BAKTA"
+    script "subworkflows/local/bakta.nf"
+    workflow "RUN_BAKTA"
+
+    test("Should run without failures") {
+
+        when {
+            params {
+                download_bakta_db = true
+                bakta_db_type = 'light'
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ batch_id: "batch_1", batch_tsv: file("${projectDir}/tests/subworkflows/local/batch_1_bacteria.tsv"), sample_id: "CP040557" ],
+                    file("${projectDir}/assets/sample_fastas/bacteria/CP040557.fasta")
+                ])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+
+    }
+
+}

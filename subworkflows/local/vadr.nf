@@ -9,32 +9,25 @@ include { VADR_TRIM                                         } from "../../module
 include { VADR_ANNOTATION                                   } from "../../modules/local/vadr_annotation/main"
 include { VADR_POST_CLEANUP                                 } from "../../modules/local/vadr_post_cleanup/main"
 
-
 workflow RUN_VADR {
     take:
-        fasta // meta, metadata, fasta_path, fastq1, fastq2
+        fasta // meta, fasta_path
 
     main:
-        // run vadr processes
-        VADR_TRIM (
-            fasta
-        )
-
-        VADR_ANNOTATION (
-            VADR_TRIM.out.trimmed_fasta,
-            file(params.vadr_models_dir)
-        )
-
-        cleanup_ch = fasta.map { meta, tsv, fa, fq1, fq2 ->
-            [meta, tsv] // drop everything except the tsv for post-cleanup input
-        }
-        cleanup_ch = cleanup_ch.join(VADR_ANNOTATION.out.vadr_outputs)
+        // Step 1: Trim terminal ambiguous nucleotides from fasta
+        VADR_TRIM(fasta)
         
-        VADR_POST_CLEANUP (
-            cleanup_ch
+        // Step 2: Run VADR annotation on trimmed fasta
+        VADR_ANNOTATION(
+            VADR_TRIM.out.trimmed_fasta,
+            params.vadr_models_dir
         )
-    
-    emit:
-        tbl = VADR_POST_CLEANUP.out.tbl
-}
+        
+        // Step 3: Post-process VADR outputs
+        VADR_POST_CLEANUP(VADR_ANNOTATION.out.vadr_outputs)
 
+    emit:
+        gff    = VADR_POST_CLEANUP.out.gff      // tuple val(meta), path('*/gffs/*.gff')
+        errors = VADR_POST_CLEANUP.out.errors   // tuple val(meta), path('*/errors/*.txt')
+        tbl    = VADR_POST_CLEANUP.out.tbl      // tuple val(meta), path('*/tbl/*.tbl')
+}

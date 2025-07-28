@@ -51,11 +51,11 @@ The pipeline outputs appear in `tostadas/test_output`
 
 **Annotate and submit viral reads**
 
-`nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>`
+`nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation --genbank true --sra true --biosample true --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>`
 
 **Annotate and submit bacterial reads**
 
-`nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation --genbank true --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>`
+`nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation --genbank true --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --outdir <path/to/output/dir/>`
 
 Refer to the wiki for more information on input parameters and use cases
 
@@ -73,4 +73,4 @@ new\_field\_name: TOSTADAS will replace the field name in your metadata Excel fi
 
 **Submit to a custom BioSample package**
 
-`nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file <path/to/metadata_custom_fields.json>`
+`nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation --genbank true --sra true --biosample true --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file <path/to/metadata_custom_fields.json>`

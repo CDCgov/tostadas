@@ -1,0 +1,35 @@
+nextflow_workflow {
+
+    name "Test Workflow REPEATMASKER_LIFTOFF"
+    script "subworkflows/local/repeatmasker_liftoff.nf"
+    workflow "REPEATMASKER_LIFTOFF"
+
+    test("Should run without failures") {
+
+        when {
+            params {
+                outdir           = "${outputDir}"
+                species          = "mpxv"
+                ref_fasta_path   = "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.fasta"
+                ref_gff_path     = "${projectDir}/assets/ref/ref.MPXV.NC063383.v7.gff"
+                repeat_library   = "${projectDir}/assets/lib/mpxv_repeats_lib.fasta"
+
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ batch_id: "batch_1", batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv"), sample_id: "NY0006" ],
+                    file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta")
+                ])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+
+    }
+
+}

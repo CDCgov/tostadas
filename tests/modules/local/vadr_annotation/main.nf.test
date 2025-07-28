@@ -1,0 +1,31 @@
+nextflow_process {
+
+    name "Test Process VADR_ANNOTATION"
+    script "modules/local/vadr_annotation/main.nf"
+    process "VADR_ANNOTATION"
+
+    test("Should run without failures") {
+
+        when {
+            params {
+                species = "mpxv"
+
+            }
+            process {
+                """
+                input[0] =  [ [ batch_id: "batch_1",  batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv"), sample_id: "NY0006" ], 
+                               file("${projectDir}/tests/modules/local/vadr_annotation/NY0006.trimmed.fasta") 
+                            ]
+                input[1] = file("${projectDir}/vadr_files/mpxv-models/")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out).match()
+        }
+
+    }
+
+}

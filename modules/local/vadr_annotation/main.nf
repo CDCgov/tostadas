@@ -7,14 +7,14 @@ process VADR_ANNOTATION {
     
     conda(params.vadr_env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/vadr:latest' : 'staphb/vadr:latest' }"
+        'docker.io/staphb/vadr:latest' : 'docker.io/staphb/vadr:latest' }"
 
     input:
 	tuple val(meta), path(fasta_path)
     path vadr_models_dir
 
     output:
-    tuple val(meta), path("${meta.id}_${params.species}"), emit: vadr_outputs
+    tuple val(meta), path("${meta.sample_id}_${params.species}"), emit: vadr_outputs
 
     script:
     """
@@ -34,6 +34,6 @@ process VADR_ANNOTATION {
         --s_overhang 150 \
         --mdir $vadr_models_dir \
         $fasta_path \
-        ${meta.id}_${params.species}
+        ${meta.sample_id}_${params.species}
     """
 }

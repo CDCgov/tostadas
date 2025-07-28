@@ -25,13 +25,9 @@
 /.nextflow/
 /.nextflow.log*
 /nf_test_results
-/tests/work
 /var_work/
 /var_work
 app/environment.yml
-/tests/.nextflow
-/tests/.nextflow
-/tests/.nextflow.log*
 /submission_scripts/upload_log.csv
 
 /bin/.nextflow
@@ -40,13 +36,11 @@ app/environment.yml
 
 /submission_scripts/__pycache__/
 /submission_scripts/upload_log.csv
-tests/__pycache__
 /work
 /mpxv-database-submissions-master
 /aspen_test_results
 /aspen/runs
 /aspen/latest_run
-/test*
 
 # vadr related 
 /vadr
@@ -78,8 +72,6 @@ tests/__pycache__
 # add aspen related stuff
 /aspen/.nextflow.log*
 
-/tests/nf_test_results
-
 /input_files/
 /input_files
 
@@ -104,3 +96,4 @@ bin/.DS_Store
 # Testing related
 /test_main_workflow
 /validation_outputs/
+/test_*

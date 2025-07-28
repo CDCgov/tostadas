@@ -1,0 +1,37 @@
+##gff-version 3
+##sequence-region NY0006 1 197189
+NY0006	RepeatMasker	dispersed_repeat	1	6432	 0.1	-	.	ID=1;Target "Motif:MPOX_ITR1" 1 6419
+NY0006	RepeatMasker	dispersed_repeat	6442	6450	27.6	+	.	ID=2;Target "Motif:(TCATTA)n" 1 13
+NY0006	RepeatMasker	dispersed_repeat	6451	6483	14.4	+	.	ID=3;Target "Motif:(TTA)n" 1 33
+NY0006	RepeatMasker	dispersed_repeat	6484	6522	27.6	+	.	ID=2;Target "Motif:(TCATTA)n" 14 79
+NY0006	RepeatMasker	dispersed_repeat	7494	7555	17.9	+	.	ID=4;Target "Motif:(TAATAAT)n" 1 64
+NY0006	RepeatMasker	dispersed_repeat	10433	10463	 6.8	+	.	ID=5;Target "Motif:(ATTAG)n" 1 32
+NY0006	RepeatMasker	dispersed_repeat	11355	11384	16.0	+	.	ID=6;Target "Motif:(TCAA)n" 1 29
+NY0006	RepeatMasker	dispersed_repeat	12045	12079	16.9	+	.	ID=7;Target "Motif:A-rich" 1 35
+NY0006	RepeatMasker	dispersed_repeat	13939	14106	35.7	-	.	ID=8;Target "Motif:MPOX_ITR1" 865 1041
+NY0006	RepeatMasker	dispersed_repeat	29759	29786	11.7	+	.	ID=9;Target "Motif:(CCATT)n" 1 29
+NY0006	RepeatMasker	dispersed_repeat	33691	33732	18.6	+	.	ID=10;Target "Motif:(AATTAT)n" 1 39
+NY0006	RepeatMasker	dispersed_repeat	41121	41168	19.8	+	.	ID=11;Target "Motif:(TTTCAAT)n" 1 44
+NY0006	RepeatMasker	dispersed_repeat	48123	48185	18.4	+	.	ID=12;Target "Motif:(ATAGT)n" 1 62
+NY0006	RepeatMasker	dispersed_repeat	58617	58668	24.2	+	.	ID=13;Target "Motif:(AAT)n" 1 51
+NY0006	RepeatMasker	dispersed_repeat	116662	116702	23.0	+	.	ID=14;Target "Motif:(TTATTA)n" 1 41
+NY0006	RepeatMasker	dispersed_repeat	125945	125989	20.4	+	.	ID=15;Target "Motif:A-rich" 1 47
+NY0006	RepeatMasker	dispersed_repeat	133088	133113	 0.0	+	.	ID=16;Target "Motif:(T)n" 1 26
+NY0006	RepeatMasker	dispersed_repeat	136514	136570	 1.8	+	.	ID=17;Target "Motif:(ATC)n" 1 57
+NY0006	RepeatMasker	dispersed_repeat	139626	139656	10.5	+	.	ID=18;Target "Motif:(TATTTG)n" 1 33
+NY0006	RepeatMasker	dispersed_repeat	140106	140145	 0.0	+	.	ID=19;Target "Motif:(ATAACAATT)n" 1 40
+NY0006	RepeatMasker	dispersed_repeat	140149	140187	21.7	+	.	ID=20;Target "Motif:(TTATAA)n" 1 38
+NY0006	RepeatMasker	dispersed_repeat	141977	142019	19.3	+	.	ID=21;Target "Motif:(AATGAT)n" 1 43
+NY0006	RepeatMasker	dispersed_repeat	146845	146916	 2.8	+	.	ID=22;Target "Motif:(ATTTTAT)n" 1 78
+NY0006	RepeatMasker	dispersed_repeat	150545	150612	 1.5	+	.	ID=23;Target "Motif:(TATGATGGA)n" 1 69
+NY0006	RepeatMasker	dispersed_repeat	160538	160578	16.4	+	.	ID=24;Target "Motif:A-rich" 1 41
+NY0006	RepeatMasker	dispersed_repeat	163174	163198	 0.0	+	.	ID=25;Target "Motif:(TAAC)n" 1 25
+NY0006	RepeatMasker	dispersed_repeat	166074	166098	 4.1	+	.	ID=26;Target "Motif:(AATT)n" 1 27
+NY0006	RepeatMasker	dispersed_repeat	166099	166129	26.2	+	.	ID=27;Target "Motif:A-rich" 1 57
+NY0006	RepeatMasker	dispersed_repeat	169706	169758	 0.0	+	.	ID=28;Target "Motif:(CAGATA)n" 1 53
+NY0006	RepeatMasker	dispersed_repeat	173260	173305	 0.0	+	.	ID=29;Target "Motif:(AT)n" 1 46
+NY0006	RepeatMasker	dispersed_repeat	174507	174535	 0.0	+	.	ID=30;Target "Motif:(GATGAA)n" 1 29
+NY0006	RepeatMasker	dispersed_repeat	179074	179213	 0.0	+	.	ID=31;Target "Motif:(ATATACATT)n" 1 140
+NY0006	RepeatMasker	dispersed_repeat	186855	186913	16.7	+	.	ID=32;Target "Motif:A-rich" 1 57
+NY0006	RepeatMasker	dispersed_repeat	187323	187695	31.2	+	.	ID=33;Target "Motif:MPOX_ITR1" 4285 4663
+NY0006	RepeatMasker	dispersed_repeat	190758	197189	 0.1	+	.	ID=34;Target "Motif:MPOX_ITR1" 1 6419
