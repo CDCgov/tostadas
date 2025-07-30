@@ -73,28 +73,37 @@ workflow BIOSAMPLE_AND_SRA {
 
 	// Check for valid submission inputs and make batch channel
     submission_batch_ch = sample_ch
-        .map { meta, _fasta, fq1, fq2, nnp, _gff ->
-            def illumina_ok = fq1 && fq2 && file(fq1).exists() && file(fq2).exists()
-            def nanopore_ok = nnp && file(nnp).exists()
-            def has_sra_data = illumina_ok || nanopore_ok
+		.map { batch_id, samples ->
+			def enabledDatabases = [] as Set
+			def sraWarnings = [] as List
 
-            // Only include samples with at least one valid SRA input
-            if (!has_sra_data && params.sra) {
-                log.warn "Skipping sample ${meta.sample_id} in batch ${meta.batch_id} due to missing SRA data"
-                return null
-            }
+			samples.each { s ->
+				def sid = s.meta.sample_id
+				def hasIllumina = s.fq1 && file(s.fq1).exists() && s.fq2 && file(s.fq2).exists()
+				def hasNanopore = s.nnp && file(s.nnp).exists()
 
-            return [meta.batch_id, [meta: meta, fq1: fq1, fq2: fq2, nnp: nnp]]
-        }
-        .filter { it != null }
-        .groupTuple()
-        .map { batch_id, samples ->
-            def meta = [
-                batch_id : batch_id,
-                batch_tsv: samples[0].meta.batch_tsv
-            ]
-            return tuple(meta, samples)
-        }
+				if (params.sra && (hasIllumina || hasNanopore)) {
+					enabledDatabases << "sra"
+				}
+				if (params.sra && !(hasIllumina || hasNanopore)) {
+					sraWarnings << sid
+				}
+				if (params.biosample) {
+					enabledDatabases << "biosample"
+				}
+			}
+
+			if (sraWarnings) {
+				log.warn "SRA submission will be skipped for batch ${batch_id} due to missing data for samples: ${sraWarnings.join(', ')}"
+			}
+
+			def meta = [
+				batch_id: batch_id,
+				batch_tsv: samples[0].meta.batch_tsv 
+			]
+			return tuple(meta, samples, enabledDatabases as List)
+		}
+
 
 	GET_WAIT_TIME(METADATA_VALIDATION.out.tsv_files.collect())
 	SUBMISSION(
