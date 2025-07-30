@@ -159,6 +159,18 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 			remote_subdir = get_remote_submission_dir(identifier, batch_id, db, platform)
 			remote_dir = f"submit/{submission_dir}/{remote_subdir}"
 			logging.info(f'remote dir: {remote_dir}, report local path: {report_local_path}')
+
+			try:
+				submission.client.connect()
+				submission.client.change_dir(remote_dir)
+			except Exception as e:
+				if db == "genbank":
+					logging.warning(f"GenBank folder not found on FTP: {remote_dir}. Skipping.")
+					continue  # Don't raise; just skip genbank (genbank is not always ftp)
+				else:
+					logging.error(f"Critical: Failed to access {db} folder {remote_dir}. Error: {e}")
+					raise  # For biosample/sra, still crash
+
 			success = False
 			while time.time() - start_time < timeout:
 				report_path = submission.fetch_report(remote_dir, report_local_path)
@@ -426,20 +438,21 @@ class Submission:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
 	def fetch_report(self, remote_dir, report_local_path):
 		""" Fetches report.xml from the host site folder submit/<Test|Production>/sample_database/"""
-		self.client.connect()
-		# Navigate to submit/<Test|Production>/<submission_db> folder
-		self.client.change_dir(remote_dir)
-		# Check if report.xml exists and download it
+		#self.client.connect()
+		## Navigate to submit/<Test|Production>/<submission_db> folder
+		#self.client.change_dir(remote_dir)
+		## Check if report.xml exists and download it
 		if os.path.exists(report_local_path):
 			logging.info(f"Report already exists locally: {report_local_path}")
 			return report_local_path
 		elif self.client.file_exists('report.xml'):
 			logging.info(f"Report found on server. Downloading to: {report_local_path}.")
 			self.client.download_file('report.xml', report_local_path)
-			return report_local_path # Report fetched, return its path
+			return report_local_path
 		else:
 			logging.info(f"No report found at {remote_dir}")
 			return False # Report not found, need to try again
+ 
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
 		remote_subdir = get_remote_submission_dir(self.identifier, self.sample.batch_id, type, getattr(self, 'platform', None))
