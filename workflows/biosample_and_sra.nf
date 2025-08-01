@@ -104,23 +104,11 @@ workflow BIOSAMPLE_AND_SRA {
 			return tuple(meta, samples, enabledDatabases as List)
 		}
 
-
 	GET_WAIT_TIME(METADATA_VALIDATION.out.tsv_files.collect())
 	SUBMISSION(
 		submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
 		params.submission_config, 
 		GET_WAIT_TIME.out
 	)
-
-    // Fetch accessions
-    FETCH_ACCESSIONS(
-        SUBMISSION.out.submission_folders,
-        params.submission_config, 
-		GET_WAIT_TIME.out
-        )
-
-	// Append accession_id to TSVs and merge into Excel
-	// e.g., ADD_ACCESSIONS_TO_TSV(FETCH_ACCESSIONS.out.accessions, METADATA_VALIDATION.out.tsv_files)
-	//       CONCATENATE_TSVS_TO_EXCEL(...)
 
 }
