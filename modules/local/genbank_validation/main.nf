@@ -10,10 +10,12 @@ process GENBANK_VALIDATION {
         'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
     input:
-    path meta_path
+    val sample_id
+    path fasta
+    path gff
    
     output:
-    path "*.tsv", emit: tsv
+    //path "*.tsv", emit: tsv_files // undecided whether to include this here
     path "*.fasta", optional: true, emit: fasta
     path "*.gff", optional: true, emit: gff
     path "error.txt", optional: true, emit: errors
@@ -29,6 +31,7 @@ process GENBANK_VALIDATION {
         """
         # placeholder script with some dummy args
         validate_genbank.py \
+            --path_to_batch_json 
             --meta_path $meta_path \
             --output_dir . \
             --config_file $resolved_submission_config \

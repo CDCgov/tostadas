@@ -7,6 +7,10 @@
   "$defs": {
     "Required Parameters": {
       "properties": {
+        "workflow": {
+          "type": "string",
+          "description": "Choose TOSTADAS workflow"
+        },
         "species": {
           "type": "string",
           "description": "Species name for the analysis."
