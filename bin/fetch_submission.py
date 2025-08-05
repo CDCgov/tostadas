@@ -17,8 +17,8 @@ def get_args():
                         help="Original metadata file prefix (identifier for the NCBI submission).")
     parser.add_argument("--batch_id", required=True,
                         help="Batch ID for submission (used for naming files).")
-    parser.add_argument("--databases", required=True, nargs="+",
-                        help="List of databases to fetch reports from (e.g., biosample sra genbank).")
+    #parser.add_argument("--databases", required=True, nargs="+",
+    #                    help="List of databases to fetch reports from (e.g., biosample sra genbank).")
     parser.add_argument("--submission_mode", choices=["ftp", "sftp"], required=False, default="ftp",
                         help="Connect via FTP or SFTP (default: ftp).")
     parser.add_argument("--test", action="store_true",
@@ -45,9 +45,30 @@ def main_fetch():
         print(f"[DRY-RUN] Would fetch submission reports for databases: {params['databases']} in {mode}.")
         return
 
+    databases = []
+    # Check whether user submitted to BioSample/SRA
+    for db in ["biosample", "sra"]:
+        db_path = os.path.join(params["submission_folder"], db)
+        if (db_path / "submission.xml").is_file():
+            databases.append(db)
+    # Check whether user submitted to Genbank (could be top level if SARS or flu, or in sample subdirs)
+    genbank_path = os.path.join(params["submission_folder"], "genbank")
+    if os.path.exists(genbank_path):
+        # Check if submission.xml is directly in genbank/ (i.e., for sars or flu)
+        if os.path.isfile(os.path.join(genbank_path, "submission.xml")):
+            databases.append("genbank")
+        else:
+            # Look for submission.xml in subdirectories
+            for subdir in os.listdir(genbank_path):
+                full_subdir_path = os.path.join(genbank_path, subdir)
+                if os.path.isdir(full_subdir_path) and os.path.isfile(os.path.join(full_subdir_path, "submission.xml")):
+                    databases.append("genbank")
+                    break # Assume for now all samples were submitted via ftp if one found
+
     # Perform actual fetch
     reports_fetched = fetch_all_reports(
-        databases=params["databases"],
+        #databases=params["databases"],
+        databases=databases,
         outdir=params["submission_folder"],
         config_dict=config,
         parameters=params,

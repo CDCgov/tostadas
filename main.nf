@@ -15,14 +15,12 @@ def calc_wait_time() {
 
 workflow BIOSAMPLE_AND_SRA_WORKFLOW {
     BIOSAMPLE_AND_SRA()
-    FETCH_ACCESSIONS(BIOSAMPLE_AND_SRA.out.submission_folders, params.submission_config)
-    // AGGREGATE_REPORTS could go here after FETCH_ACCESSIONS
+    FETCH_ACCESSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config)
 }
 
 workflow GENBANK_WORKFLOW {
     GENBANK()
     FETCH_ACCESSIONS(GENBANK.out.submission_folders, params.submission_config)
-    // AGGREGATE_REPORTS could go here after FETCH_ACCESSIONS
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {
@@ -33,8 +31,8 @@ workflow {
     if (params.workflow == "full_submission") {
         BIOSAMPLE_AND_SRA()
         WAIT( Channel.value( calc_wait_time() ) )
-        FETCH_ACCESSIONS(BIOSAMPLE_AND_SRA.out.submission_folders, params.submission_config)
-        GENBANK(BIOSAMPLE_AND_SRA.out.enriched_tsvs)
+        FETCH_ACCESSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config)
+        GENBANK() // needs to get the updated Excel file, either as a nextflow param or as the output of fetch_accessions subworkflow
         WAIT( Channel.value( calc_wait_time() ) )
         FETCH_ACCESSIONS(GENBANK.out.submission_folders, params.submission_config)
     }
