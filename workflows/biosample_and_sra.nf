@@ -25,13 +25,13 @@ def trimFile(path) {
 
 workflow BIOSAMPLE_AND_SRA {
 	main:
-	// validate input parameters
+	// Validate input parameters
 	validateParameters()
 
-	// print summary of supplied parameters
+	// Print summary of supplied parameters
 	log.info paramsSummaryLog(workflow)
 
-	// run metadata validation process
+	// Run metadata validation process
 	METADATA_VALIDATION ( file(params.meta_path) )
 
 	metadata_batch_ch = METADATA_VALIDATION.out.tsv_files
@@ -43,8 +43,12 @@ workflow BIOSAMPLE_AND_SRA {
 			]
 			[meta, batch_tsv]
 		}
-	metadata_batch_ch.view { "metadata_batch_ch emits: $it" }
 
+	// Aggregate the tsvs for concatenation
+	METADATA_VALIDATION.out.tsv_files
+		.collect()
+		.set { validated_concatenated_tsv }
+		
 	// Generate the (per-sample) fasta and fastq paths
 	sample_ch = metadata_batch_ch.flatMap { meta, _files -> 
 		def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
@@ -62,7 +66,6 @@ workflow BIOSAMPLE_AND_SRA {
 			return [sample_meta, fq1, fq2, nnp]
 		}
 	}
-	sample_ch.view { "sample_ch emits: $it" }
 
 	// Check for valid submission inputs and make batch channel
 	submission_batch_ch = sample_ch
@@ -117,5 +120,6 @@ workflow BIOSAMPLE_AND_SRA {
 	)
 
 	emit:
-    submission_batch_folder = SUBMISSION.out.submission_batch_folder
+	validated_concatenated_tsv = validated_concatenated_tsv // contains data for all batches of samples
+    submission_batch_folder = SUBMISSION.out.submission_batch_folder // one batch submission folder 
 }
