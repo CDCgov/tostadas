@@ -109,56 +109,6 @@ workflow BIOSAMPLE_AND_SRA {
 			return tuple(meta, sample_maps, enabledDatabases as List)
 		}
 
-	// submission_batch_ch = sample_ch
-	// 	.map { meta, fq1, fq2, nnp -> 
-	// 		[meta.batch_id, [meta, fq1, fq2, nnp]] 
-	// 	}
-	// 	.groupTuple()
-	// 	.map { batch_id, sample_tuples ->
-	// 		def enabledDatabases = [] as Set
-	// 		def sraWarnings = [] as List
-
-	// 		def samples = sample_tuples.collect { t ->
-	// 			def meta  = t[0]
-	// 			def fq1   = t[1]
-	// 			def fq2   = t[2]
-	// 			def nnp   = t[3]
-
-	// 			def sid = meta.sample_id
-	// 			//def hasIllumina = fq1 && file(fq1).exists() && fq2 && file(fq2).exists()
-	// 			//def hasNanopore = nnp && file(nnp).exists()
-	// 			def fq1Exists = fq1 && file(fq1).exists()
-	// 			def fq2Exists = fq2 && file(fq2).exists()
-	// 			def nnpExists = nnp && file(nnp).exists()
-
-	// 			def hasIllumina = fq1Exists && fq2Exists
-	// 			def hasNanopore = nnpExists
-
-	// 			log.info "Sample ${sid} | fq1: ${fq1} (exists: ${fq1Exists}) | fq2: ${fq2} (exists: ${fq2Exists}) | nnp: ${nnp} (exists: ${nnpExists})"
-
-	// 			if (params.sra && (hasIllumina || hasNanopore)) {
-	// 				enabledDatabases << "sra"
-	// 			}
-	// 			if (params.sra && !(hasIllumina || hasNanopore)) {
-	// 				sraWarnings << sid
-	// 			}
-	// 			if (params.biosample) {
-	// 				enabledDatabases << "biosample"
-	// 			}
-
-	// 			return [meta, fq1, fq2, nnp]
-	// 		}
-
-	// 		if (sraWarnings) {
-	// 			log.warn "SRA submission will be skipped for batch ${batch_id} due to missing data for samples: ${sraWarnings.join(', ')}"
-	// 		}
-
-	// 		def meta = [
-	// 			batch_id : batch_id,
-	// 			batch_tsv: sample_tuples[0][0].batch_tsv
-	// 		]
-	// 		return tuple(meta, samples, enabledDatabases as List)
-	// 	}
 	submission_batch_ch.view { "submission_batch_ch emits: $it" }
 
 	SUBMISSION(
@@ -167,6 +117,5 @@ workflow BIOSAMPLE_AND_SRA {
 	)
 
 	emit:
-    submission_folders = SUBMISSION.out.submission_folders
-	//submission_folders = metadata_batch_ch
+    submission_batch_folder = SUBMISSION.out.submission_batch_folder
 }
