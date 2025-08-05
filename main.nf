@@ -15,6 +15,7 @@ def calc_wait_time() {
 
 workflow BIOSAMPLE_AND_SRA_WORKFLOW {
     BIOSAMPLE_AND_SRA()
+    BIOSAMPLE_AND_SRA.out.submission_batch_folder.view { "submission_batch_folder emits: $it" }
     FETCH_ACCESSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config)
 }
 

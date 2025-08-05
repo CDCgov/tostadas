@@ -40,16 +40,11 @@ def main_fetch():
     config = SubmissionConfigParser(params).load_config()
     mode = "Test" if params["test"] else "Production"
 
-    if params["dry_run"]:
-        logging.info(f"[DRY-RUN] Would fetch submission reports for databases: {params['databases']} in {mode}.")
-        print(f"[DRY-RUN] Would fetch submission reports for databases: {params['databases']} in {mode}.")
-        return
-
     databases = []
     # Check whether user submitted to BioSample/SRA
     for db in ["biosample", "sra"]:
         db_path = os.path.join(params["submission_folder"], db)
-        if (db_path / "submission.xml").is_file():
+        if os.path.isfile((os.path.join(db_path,"submission.xml"))):
             databases.append(db)
     # Check whether user submitted to Genbank (could be top level if SARS or flu, or in sample subdirs)
     genbank_path = os.path.join(params["submission_folder"], "genbank")
@@ -64,6 +59,12 @@ def main_fetch():
                 if os.path.isdir(full_subdir_path) and os.path.isfile(os.path.join(full_subdir_path, "submission.xml")):
                     databases.append("genbank")
                     break # Assume for now all samples were submitted via ftp if one found
+
+    # Run a dry-run if asked
+    if params["dry_run"]:
+        logging.info(f"[DRY-RUN] Would fetch submission reports for databases: {databases} in {mode}.")
+        print(f"[DRY-RUN] Would fetch submission reports for databases: {databases} in {mode}.")
+        return
 
     # Perform actual fetch
     reports_fetched = fetch_all_reports(
