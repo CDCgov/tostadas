@@ -37,48 +37,43 @@ def metadata_validation_main():
 		sys.exit(1)
 	
 	filled_df = meta_to_df.df
-
-	# handle case where we're only fetching reports
-	if parameters['find_paths']:
-		retrieve_existing_batch_tsvs(filled_df, parameters)
 		
-	# if fetch_reports_only is false, we run validation steps
-	else:
-		# now call the main function for validating the metadata
-		validate_checks = ValidateChecks(filled_df, parameters, parameters_class)
-		validate_checks.validate_main()
-		print(f"Available keys after validate_checks: {filled_df.keys().tolist()}")
+	# call the main function for validating the metadata
+	validate_checks = ValidateChecks(filled_df, parameters, parameters_class)
+	validate_checks.validate_main()
+	print(f"Available keys after validate_checks: {filled_df.keys().tolist()}")
 
-		# insert necessary columns in metadata dataframe
-		insert = HandleDfInserts(filled_df, parameters)
-		final_df = insert.handle_df_inserts() # final updated, validated dataframe
+	# insert necessary columns in metadata dataframe
+	insert = HandleDfInserts(filled_df, parameters)
+	final_df = insert.handle_df_inserts() # final updated, validated dataframe
 
-		# output the batched tsv files  
-		batch_size = parameters['batch_size']
-		output_dir = ("batched_tsvs")
-		os.makedirs(output_dir, exist_ok=True)
+	# output the batched tsv files  
+	batch_size = parameters['batch_size']
+	output_dir = ("batched_tsvs")
+	os.makedirs(output_dir, exist_ok=True)
 
-		total_rows = len(final_df)
-		num_batches = math.ceil(total_rows / batch_size)
-		batch_log = {}
-		print(f"batch size is {parameters['batch_size']} and number of batches is {num_batches}") # debug
+	total_rows = len(final_df)
+	num_batches = math.ceil(total_rows / batch_size)
+	batch_log = {}
+	print(f"batch size is {parameters['batch_size']} and number of batches is {num_batches}") # debug
 	
-		for i in range(num_batches):
-			start_idx = i * batch_size
-			end_idx = min(start_idx + batch_size, total_rows)
-			batch_df = final_df.iloc[start_idx:end_idx]
-			batch_file = os.path.join(output_dir, f'batch_{i+1}.tsv')
-			batch_df.to_csv(batch_file, sep='\t', index=False)
-			batch_log[f"batch_{i+1}.tsv"] = batch_df["sample_name"].tolist()
+	for i in range(num_batches):
+		start_idx = i * batch_size
+		end_idx = min(start_idx + batch_size, total_rows)
+		batch_df = final_df.iloc[start_idx:end_idx]
+		batch_file = os.path.join(output_dir, f'batch_{i+1}.tsv')
+		batch_df.to_csv(batch_file, sep='\t', index=False)
+		batch_log[f"batch_{i+1}.tsv"] = batch_df["sample_name"].tolist()
 
-		# Write the JSON batch-to-sample dictionary 
-		summary_path = os.path.join(output_dir, "batch_summary.json")
-		with open(summary_path, "w") as json_file:
-			json.dump(batch_log, json_file, indent=4)
+	# Write the JSON batch-to-sample dictionary 
+	summary_path = os.path.join(output_dir, "batch_summary.json")
+	with open(summary_path, "w") as json_file:
+		json.dump(batch_log, json_file, indent=4)
 
-		print(f"\n Metadata successfully split into {num_batches} batch file(s) in {output_dir}.\n")
-		print(f"Summary written to: {summary_path}\n")
+	print(f"\n Metadata successfully split into {num_batches} batch file(s) in {output_dir}.\n")
+	print(f"Summary written to: {summary_path}\n")
 
+# Will need to move this somewhere else (before GENBANK runs, need to run this check)
 def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
 	"""Retrieve and verify existing batch TSVs and their associated samples."""
 	summary_path = os.path.join(parameters["path_to_existing_tsvs"], "batched_tsvs", "batch_summary.json")
@@ -121,7 +116,6 @@ def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
 			for sample in missing_samples:
 				print(f"  - {sample}", file=sys.stderr)
 		sys.exit(1)
-
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
@@ -178,8 +172,6 @@ class GetParams:
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
 		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
 		parser.add_argument("--validate_custom_fields", action="store_true", default=True, help="Flag for whether or not validate custom fields ")
-		parser.add_argument("--find_paths", action="store_true", help="Only check for existing TSV file paths (for use with fetch_reports_only)")
-		parser.add_argument("--path_to_existing_tsvs", type=str, required=False, help="Path to existing per-sample TSVs (for use with fetch_reports_only)")
 		parser.add_argument("--config_file", type=str, help="Path to submission config file with a valid BioSample_package key")
 		parser.add_argument("--biosample_fields_key", type=str, help="Path to file with BioSample required fields information")
 		return parser

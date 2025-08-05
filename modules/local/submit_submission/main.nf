@@ -15,7 +15,7 @@ process SUBMIT_SUBMISSION {
     path(submission_config)
 
     output:
-    tuple val(meta), path("${meta.batch_id}"), emit: submission_files
+    tuple val(meta), path("${meta.batch_id}"), emit: submission_batch_folder
     path("${meta.batch_id}/submission.log"), emit: submission_log, optional: true
 
     script:
