@@ -32,15 +32,27 @@ process PREP_SUBMISSION {
     def sample_args_list = samples.collect { sample ->
         def s = [
             "sample_id=${sample.meta.sample_id}",
-            "fq1=${sample.fq1}",
-            "fq2=${sample.fq2}",
-            "nanopore=${sample.nanopore}",
-            "fasta=${sample.fasta}",
-            "gff=${sample.gff}"
-        ].findAll { it.split('=')[1] != "null" }  // remove nulls
+            sample.get("fq1")      ? "fq1=${sample.fq1}"       : null,
+            sample.get("fq2")      ? "fq2=${sample.fq2}"       : null,
+            sample.get("nnp")      ? "nnp=${sample.nanopore}"  : null,
+            sample.get("fasta")    ? "fasta=${sample.fasta}"   : null,
+            sample.get("gff")      ? "gff=${sample.gff}"       : null
+        ].findAll { it != null }
         .join(',')
         return "\"${s}\""
     }
+    // def sample_args_list = samples.collect { sample ->
+    //     def s = [
+    //         "sample_id=${sample.meta.sample_id}",
+    //         "fq1=${sample.fq1}",
+    //         "fq2=${sample.fq2}",
+    //         "nanopore=${sample.nanopore}",
+    //         "fasta=${sample.fasta}",
+    //         "gff=${sample.gff}"
+    //     ].findAll { it.split('=')[1] != "null" }  // remove nulls
+    //     .join(',')
+    //     return "\"${s}\""
+    // }
     def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
 
     """

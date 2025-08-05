@@ -8,13 +8,7 @@ nextflow.enable.dsl=2
 */
 // get the utility processes / subworkflows
 include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
-
-include { GET_WAIT_TIME                                     } from "../modules/local/general_util/get_wait_time/main"
-
-// get metadata validation processes
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
-
-// get submission related process/subworkflows
 include { SUBMISSION		                                } from "../subworkflows/local/submission"
 include { FETCH_ACCESSIONS		                            } from "../subworkflows/local/fetch_accessions"
 
@@ -30,7 +24,7 @@ def trimFile(path) {
 }
 
 workflow BIOSAMPLE_AND_SRA {
-
+	main:
 	// validate input parameters
 	validateParameters()
 
@@ -40,7 +34,6 @@ workflow BIOSAMPLE_AND_SRA {
 	// run metadata validation process
 	METADATA_VALIDATION ( file(params.meta_path) )
 
-	// generate metadata batch channel
 	metadata_batch_ch = METADATA_VALIDATION.out.tsv_files
 		.flatten()
 		.map { batch_tsv ->
@@ -50,37 +43,48 @@ workflow BIOSAMPLE_AND_SRA {
 			]
 			[meta, batch_tsv]
 		}
+	metadata_batch_ch.view { "metadata_batch_ch emits: $it" }
 
 	// Generate the (per-sample) fasta and fastq paths
 	sample_ch = metadata_batch_ch.flatMap { meta, _files -> 
 		def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
 		return rows.collect { row -> 
+			def sample_id = row.sample_name?.trim()
+			def fq1   = row.containsKey('int_illumina_sra_file_path_1') ? trimFile(row.int_illumina_sra_file_path_1) : null
+			def fq2   = row.containsKey('int_illumina_sra_file_path_2') ? trimFile(row.int_illumina_sra_file_path_2) : null
+			def nnp   = row.containsKey('int_nanopore_sra_file_path_1') ? trimFile(row.int_nanopore_sra_file_path_1) : null
+
 			def sample_meta = [
-				batch_id : meta.batch_id,
+				batch_id  : meta.batch_id,
 				batch_tsv: meta.batch_tsv,
-				sample_id : row.sample_name?.trim()
+				sample_id: sample_id
 			]
-
-			def fasta = row.containsKey('fasta_path')        			? trimFile(row.fasta_path)                       : null
-			def fq1   = row.containsKey('int_illumina_sra_file_path_1') ? trimFile(row.int_illumina_sra_file_path_1) 	 : null
-			def fq2   = row.containsKey('int_illumina_sra_file_path_2') ? trimFile(row.int_illumina_sra_file_path_2)	 : null
-			def nnp   = row.containsKey('int_nanopore_sra_file_path_1') ? trimFile(row.int_nanopore_sra_file_path_1)	 : null
-			def gff    = row.containsKey('gff_path')           			? trimFile(row.gff_path)                         : null
-
-			return [sample_meta, fasta, fq1, fq2, nnp, gff]
+			return [sample_meta, fq1, fq2, nnp]
 		}
 	}
+	sample_ch.view { "sample_ch emits: $it" }
 
 	// Check for valid submission inputs and make batch channel
-    submission_batch_ch = sample_ch
-		.map { batch_id, samples ->
+	submission_batch_ch = sample_ch
+		.map { meta, fq1, fq2, nnp ->
+			[meta.batch_id, [meta: meta, fq1: fq1, fq2: fq2, nanopore: nnp]]
+		}
+		.groupTuple()
+		.map { batch_id, sample_maps ->
+
 			def enabledDatabases = [] as Set
 			def sraWarnings = [] as List
 
-			samples.each { s ->
-				def sid = s.meta.sample_id
-				def hasIllumina = s.fq1 && file(s.fq1).exists() && s.fq2 && file(s.fq2).exists()
-				def hasNanopore = s.nnp && file(s.nnp).exists()
+			sample_maps.each { sample ->
+				def sid = sample.meta.sample_id
+				def fq1Exists = sample.fq1 && file(sample.fq1).exists()
+				def fq2Exists = sample.fq2 && file(sample.fq2).exists()
+				def nnpExists = sample.nanopore && file(sample.nanopore).exists()
+
+				def hasIllumina = fq1Exists && fq2Exists
+				def hasNanopore = nnpExists
+
+				log.info "Sample ${sid} | fq1: ${sample.fq1} (exists: ${fq1Exists}) | fq2: ${sample.fq2} (exists: ${fq2Exists}) | nnp: ${sample.nanopore} (exists: ${nnpExists})"
 
 				if (params.sra && (hasIllumina || hasNanopore)) {
 					enabledDatabases << "sra"
@@ -98,17 +102,71 @@ workflow BIOSAMPLE_AND_SRA {
 			}
 
 			def meta = [
-				batch_id: batch_id,
-				batch_tsv: samples[0].meta.batch_tsv 
+				batch_id : batch_id,
+				batch_tsv: sample_maps[0].meta.batch_tsv
 			]
-			return tuple(meta, samples, enabledDatabases as List)
+
+			return tuple(meta, sample_maps, enabledDatabases as List)
 		}
 
-	GET_WAIT_TIME(METADATA_VALIDATION.out.tsv_files.collect())
+	// submission_batch_ch = sample_ch
+	// 	.map { meta, fq1, fq2, nnp -> 
+	// 		[meta.batch_id, [meta, fq1, fq2, nnp]] 
+	// 	}
+	// 	.groupTuple()
+	// 	.map { batch_id, sample_tuples ->
+	// 		def enabledDatabases = [] as Set
+	// 		def sraWarnings = [] as List
+
+	// 		def samples = sample_tuples.collect { t ->
+	// 			def meta  = t[0]
+	// 			def fq1   = t[1]
+	// 			def fq2   = t[2]
+	// 			def nnp   = t[3]
+
+	// 			def sid = meta.sample_id
+	// 			//def hasIllumina = fq1 && file(fq1).exists() && fq2 && file(fq2).exists()
+	// 			//def hasNanopore = nnp && file(nnp).exists()
+	// 			def fq1Exists = fq1 && file(fq1).exists()
+	// 			def fq2Exists = fq2 && file(fq2).exists()
+	// 			def nnpExists = nnp && file(nnp).exists()
+
+	// 			def hasIllumina = fq1Exists && fq2Exists
+	// 			def hasNanopore = nnpExists
+
+	// 			log.info "Sample ${sid} | fq1: ${fq1} (exists: ${fq1Exists}) | fq2: ${fq2} (exists: ${fq2Exists}) | nnp: ${nnp} (exists: ${nnpExists})"
+
+	// 			if (params.sra && (hasIllumina || hasNanopore)) {
+	// 				enabledDatabases << "sra"
+	// 			}
+	// 			if (params.sra && !(hasIllumina || hasNanopore)) {
+	// 				sraWarnings << sid
+	// 			}
+	// 			if (params.biosample) {
+	// 				enabledDatabases << "biosample"
+	// 			}
+
+	// 			return [meta, fq1, fq2, nnp]
+	// 		}
+
+	// 		if (sraWarnings) {
+	// 			log.warn "SRA submission will be skipped for batch ${batch_id} due to missing data for samples: ${sraWarnings.join(', ')}"
+	// 		}
+
+	// 		def meta = [
+	// 			batch_id : batch_id,
+	// 			batch_tsv: sample_tuples[0][0].batch_tsv
+	// 		]
+	// 		return tuple(meta, samples, enabledDatabases as List)
+	// 	}
+	submission_batch_ch.view { "submission_batch_ch emits: $it" }
+
 	SUBMISSION(
 		submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
-		params.submission_config, 
-		GET_WAIT_TIME.out
+	 	params.submission_config
 	)
 
+	emit:
+    submission_folders = SUBMISSION.out.submission_folders
+	//submission_folders = metadata_batch_ch
 }
