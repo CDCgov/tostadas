@@ -10,7 +10,7 @@ def get_args():
     parser = argparse.ArgumentParser(
         description="Add NCBI Accession IDs to the validated metadata file."
     )
-    parser.add_argument('--metadata', required=True, help="Path to TSV metadata file with data for all samples")
+    parser.add_argument('--metadata_tsv', required=True, help="Path to TSV metadata file with data for all samples")
     parser.add_argument('--submission_report', required=True, help="Path to submission_report.csv")
     parser.add_argument('--output', required=True, help="Path to final Excel file to write")
     return parser
@@ -27,7 +27,7 @@ def main():
                   level=logging.DEBUG)
 
     # Load metadata TSV and submission report CSV
-    metadata_df = pd.read_csv(params["metadata"], sep='\t', dtype=str)
+    metadata_df = pd.read_csv(params["metadata_tsv"], sep='\t', dtype=str)
     report_df = pd.read_csv(params["submission_report"], dtype=str)
 
     # Normalize join keys
