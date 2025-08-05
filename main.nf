@@ -3,7 +3,8 @@ params.metadata_basename = file(params.meta_path).baseName
 
 include { BIOSAMPLE_AND_SRA         } from './workflows/biosample_and_sra'
 include { GENBANK                   } from './workflows/genbank'
-include { FETCH_ACCESSIONS          } from './subworkflows/local/fetch_accessions'
+//include { FETCH_ACCESSIONS          } from './subworkflows/local/fetch_accessions' // TODO: delete, no longer used
+include { AGGREGATE_SUBMISSIONS     } from './subworkflows/local/aggregate_submissions'
 include { WAIT                      } from './modules/local/wait/main'
 
 // Function to calculate time to wait between submitting and fetching report.xml
@@ -16,26 +17,30 @@ def calc_wait_time() {
 workflow BIOSAMPLE_AND_SRA_WORKFLOW {
     BIOSAMPLE_AND_SRA()
     BIOSAMPLE_AND_SRA.out.submission_batch_folder.view { "submission_batch_folder emits: $it" }
-    FETCH_ACCESSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config)
+    AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config)
+    //CONSOLIDATE_REPORTS
 }
 
 workflow GENBANK_WORKFLOW {
     GENBANK()
-    FETCH_ACCESSIONS(GENBANK.out.submission_folders, params.submission_config)
+    AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder, params.submission_config)
+
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {
-    FETCH_ACCESSIONS(file(params.submission_results_dir), params.submission_config)
+    // TODO: this won't work because it needs to be at the batch level
+    AGGREGATE_SUBMISSIONS(file(params.submission_results_dir), params.submission_config)
+
 }
 
 workflow {
     if (params.workflow == "full_submission") {
         BIOSAMPLE_AND_SRA()
         WAIT( Channel.value( calc_wait_time() ) )
-        FETCH_ACCESSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config)
+        AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config)
         GENBANK() // needs to get the updated Excel file, either as a nextflow param or as the output of fetch_accessions subworkflow
         WAIT( Channel.value( calc_wait_time() ) )
-        FETCH_ACCESSIONS(GENBANK.out.submission_folders, params.submission_config)
+        AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder, params.submission_config)
     }
     else if (params.workflow == "biosample_and_sra") {
         BIOSAMPLE_AND_SRA_WORKFLOW()

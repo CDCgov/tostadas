@@ -1,0 +1,28 @@
+include { FETCH_REPORTS                              } from '../../modules/local/fetch_reports/main'
+include { AGGREGATE_REPORTS                          } from '../../modules/local/aggregate_reports/main'
+include { JOIN_ACCESSIONS_WITH_METADATA              } from '../../modules/local/join_accessions_with_metadata/main'
+
+workflow FETCH_ACCESSIONS {
+    take:
+      submission_dir
+      submission_config
+      validated_metadata_tsv
+
+    main:
+      FETCH_REPORTS(submission_dir, file(submission_config))
+
+      // Collect the individual batch submission_reports
+      FETCH_REPORTS.out.submission_report
+                .collect()
+                .set { all_report_csvs }
+
+      // Concatenate batch csvs for all samples
+      AGGREGATE_REPORTS(all_report_csvs)
+
+      // Concatenate the batch TSVs, then add the (optional) accession IDs to them
+      JOIN_ACCESSIONS_WITH_METADATA(validated_metadata_tsv, AGGREGATE_REPORTS.out.aggregated_csv)
+
+    emit:
+      all_report_csvs = all_report_csvs
+      accession_augmented_xlsx = JOIN_ACCESSIONS_WITH_METADATA.out.updated_excel
+}

@@ -14,8 +14,8 @@ process FETCH_REPORTS {
     path(submission_config)
 
     output:
-    path("${submission_folder}/fetch_submission.log"), emit: submission_log, optional: true
-    path("${submission_folder}/*.csv"), emit: submission_report
+    path("${submission_folder}/fetch_submission.log"), emit: submission_log, optional: false
+    path("${submission_folder}/*.csv"), emit: submission_report, optional: true
 
     script:
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
