@@ -45,6 +45,8 @@ workflow GENBANK {
 	// Change this to use sample_id, fasta, gff as inputs [leave tsv out]
 
 	// need to parse meta_path into Channel with sample_id, fasta, gff 
+
+	//takes the input (validated excel)
 	// GENBANK_VALIDATION(file(params.excel_with_accessions)) //this is wrong
 	GENBANK_VALIDATION(sample_ch)
 

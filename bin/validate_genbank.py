@@ -3,21 +3,33 @@
 import os
 import sys
 import logging
+import shutil
+import re
+from submission_helper import setup_logging
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
+# Constants
 MAX_FILE_SIZE = 2 * 1024 ** 3  # 2 GB
 MAX_SEQUENCES = 20000
 WARN_SEQUENCES = 10000
 MIN_SEQ_LENGTH = 200
 WARN_SEQ_LENGTH = 1000
 
+HEADER_PATTERN = re.compile(r'^>[\w\-.]+(?:\s+\[.+\])?')  
+PLASMID_NAME_PATTERN = re.compile(r'^p[\w\d\-_]{0,19}$')
+CHROMOSOME_NAME_PATTERN = re.compile(r'^[\w\.\-_]{1,33}$')
+
+used_headers = set()
+
+def check_file_exists(path):
+    if not os.path.isfile(path):
+        logging.error(f"File not found: {path}")
+        sys.exit(1)
+
 def check_file_size(path):
     size = os.path.getsize(path)
     if size > MAX_FILE_SIZE:
-        logging.error(
-            f"File size error: '{path}' is {size / (1024**3):.2f} GB, which exceeds the 2 GB limit."
-        )
+        logging.error(f"File size error: '{path}' is {size / (1024**3):.2f} GB, which exceeds the 2 GB limit.")
         sys.exit(1)
 
 def read_fasta(path):
@@ -45,41 +57,81 @@ def read_fasta(path):
 def clean_sequence(seq):
     return seq.lstrip("Nn").rstrip("Nn")
 
+def validate_header_format(header):
+    if not HEADER_PATTERN.match(header):
+        logging.error(f"Invalid FASTA header format: {header}")
+        sys.exit(1)
+
+def check_unique_header(header):
+    if header in used_headers:
+        logging.error(f"Duplicate header found: {header}")
+        sys.exit(1)
+    used_headers.add(header)
+
+def check_naming_conventions(header):
+    """
+    Check naming rules for chromosome and plasmid names based on GenBank rules.
+    This is best-effort: adjust depending on actual naming patterns used.
+    """
+    plasmid_match = re.search(r'\[plasmid-name=(.*?)\]', header)
+    chrom_match = re.search(r'\[chromosome=(.*?)\]', header)
+
+    if plasmid_match:
+        name = plasmid_match.group(1)
+        if name != 'unnamed' and not PLASMID_NAME_PATTERN.match(name):
+            logging.error(f"Invalid plasmid name '{name}' in header: {header}")
+            sys.exit(1)
+
+    if chrom_match:
+        name = chrom_match.group(1)
+        if 'chr' in name.lower() or 'chromosome' in name.lower() or 'unknown' in name.lower() or name == '0':
+            logging.error(f"Invalid chromosome name '{name}' in header: {header}")
+            sys.exit(1)
+        if not CHROMOSOME_NAME_PATTERN.match(name):
+            logging.error(f"Chromosome name '{name}' does not meet naming rules: {header}")
+            sys.exit(1)
+
+def check_sequence_length(seq, header):
+    cleaned_len = len(seq)
+    if cleaned_len < MIN_SEQ_LENGTH:
+        logging.error(
+            f"Sequence length error: {header} is only {cleaned_len} nt after trimming, "
+            f"which is below the required minimum of {MIN_SEQ_LENGTH} nt."
+        )
+        sys.exit(1)
+    if cleaned_len < WARN_SEQ_LENGTH:
+        logging.warning(
+            f"Sequence warning: {header} is {cleaned_len} nt after trimming, which is short (<{WARN_SEQ_LENGTH} nt)."
+        )
+
 def validate_and_clean_fasta(input_path, output_path):
     check_file_size(input_path)
 
     seq_count = 0
     with open(output_path, 'w') as out_f:
-        for header, seq in read_fasta(input_path):
+        for header, raw_seq in read_fasta(input_path):
             seq_count += 1
-            cleaned_seq = clean_sequence(seq)
-            cleaned_len = len(cleaned_seq)
 
-            if cleaned_len < MIN_SEQ_LENGTH:
-                logging.error(
-                    f"Sequence length error: {header} is only {cleaned_len} nt after trimming, "
-                    f"which is below the required minimum of {MIN_SEQ_LENGTH} nt."
-                )
-                sys.exit(1)
+            # Header checks
+            validate_header_format(header)
+            check_unique_header(header)
+            check_naming_conventions(header)
 
-            if cleaned_len < WARN_SEQ_LENGTH:
-                logging.warning(
-                    f"Sequence warning: {header} is {cleaned_len} nt after trimming, which is short (<{WARN_SEQ_LENGTH} nt)."
-                )
+            # Sequence cleaning and validation
+            cleaned_seq = clean_sequence(raw_seq)
+            check_sequence_length(cleaned_seq, header)
 
+            # Write cleaned sequence
             out_f.write(f"{header}\n")
-            for i in range(0, cleaned_len, 60):
+            for i in range(0, len(cleaned_seq), 60):
                 out_f.write(f"{cleaned_seq[i:i+60]}\n")
 
+    # Check number of sequences
     if seq_count > MAX_SEQUENCES:
-        logging.error(
-            f"Sequence count error: {seq_count} sequences found, which exceeds the limit of {MAX_SEQUENCES}."
-        )
+        logging.error(f"Sequence count error: {seq_count} sequences found, which exceeds the limit of {MAX_SEQUENCES}.")
         sys.exit(1)
     elif seq_count > WARN_SEQUENCES:
-        logging.warning(
-            f"Sequence count warning: {seq_count} sequences found, which exceeds the recommended threshold of {WARN_SEQUENCES}."
-        )
+        logging.warning(f"Sequence count warning: {seq_count} sequences found, which exceeds the recommended threshold of {WARN_SEQUENCES}.")
 
     logging.info(f"Successfully validated and cleaned {seq_count} sequences.")
     logging.info(f"Cleaned FASTA written to: {output_path}")
@@ -87,10 +139,12 @@ def validate_and_clean_fasta(input_path, output_path):
 def validate_gff(input_path, output_path):
     """Copy the GFF file to a new validated GFF file without processing."""
     check_file_size(input_path)
-    os.rename(input_path, output_path)
+    shutil.copy(input_path, output_path)
     logging.info(f"Validated GFF written to: {output_path}")
 
 if __name__ == "__main__":
+    setup_logging(log_file='validate_genbank.log', level=logging.DEBUG)
+
     if len(sys.argv) != 3:
         logging.error("Usage: validate_and_clean_fasta.py <input.fasta> <input.gff>")
         sys.exit(1)
@@ -98,13 +152,8 @@ if __name__ == "__main__":
     input_fasta = sys.argv[1]
     input_gff = sys.argv[2]
 
-    if not os.path.isfile(input_fasta):
-        logging.error(f"FASTA file not found: {input_fasta}")
-        sys.exit(1)
-
-    if not os.path.isfile(input_gff):
-        logging.error(f"GFF file not found: {input_gff}")
-        sys.exit(1)
+    check_file_exists(input_fasta)
+    check_file_exists(input_gff)
 
     base_fasta, ext_fasta = os.path.splitext(input_fasta)
     output_fasta = f"{base_fasta}_cleaned{ext_fasta}"
@@ -113,4 +162,4 @@ if __name__ == "__main__":
     output_gff = f"{base_gff}_validated{ext_gff}"
 
     validate_and_clean_fasta(input_fasta, output_fasta)
-    validate_gff
+    validate_gff(input_gff, output_gff)

@@ -1,6 +1,6 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                RUN METADATA VALIDATION
+                                RUN GENBANK VALIDATION
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 process GENBANK_VALIDATION {
@@ -10,15 +10,10 @@ process GENBANK_VALIDATION {
         'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
     input:
-    val sample_id
-    path fasta
-    path gff
-   
+    tuple val(meta), path(fasta), path(gff) // Fasta and GFF are included in the tuple
+
     output:
-    path "*.tsv", emit: tsv_files // undecided whether to include this here
-    path "*.fasta", optional: true, emit: fasta
-    path "*.gff", optional: true, emit: gff
-    path "error.txt", optional: true, emit: errors
+    tuple path(tsv_files), path("${fasta.baseName}_cleaned.fasta"), path("${gff.baseName}_validated.gff")// Outputs are defined as a single tuple
     
     script:
 
@@ -30,6 +25,6 @@ process GENBANK_VALIDATION {
 
         // Run the Python script for validating and cleaning FASTA files and copying the GFF file
         """
-        python3 validate_and_clean_fasta.py ${fasta} ${gff} > ${resolved_outdir}/error.txt 2>&1
+        validate_genbank.py ${fasta} ${gff} 
         """
 }
