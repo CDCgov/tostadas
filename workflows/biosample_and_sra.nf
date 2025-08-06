@@ -9,8 +9,8 @@ nextflow.enable.dsl=2
 // get the utility processes / subworkflows
 include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
+include { WRITE_VALIDATED_FULL_TSV                          } from "../modules/local/write_validated_full_tsv/main"
 include { SUBMISSION		                                } from "../subworkflows/local/submission"
-include { FETCH_ACCESSIONS		                            } from "../subworkflows/local/fetch_accessions"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,7 +47,9 @@ workflow BIOSAMPLE_AND_SRA {
 	// Aggregate the tsvs for concatenation
 	METADATA_VALIDATION.out.tsv_files
 		.collect()
-		.set { validated_concatenated_tsv }
+		.set { validated_tsvs_list }
+
+	WRITE_VALIDATED_FULL_TSV ( validated_tsvs_list )
 		
 	// Generate the (per-sample) fasta and fastq paths
 	sample_ch = metadata_batch_ch.flatMap { meta, _files -> 
@@ -120,6 +122,6 @@ workflow BIOSAMPLE_AND_SRA {
 	)
 
 	emit:
-	validated_concatenated_tsv = validated_concatenated_tsv // contains data for all batches of samples
+	validated_concatenated_tsv = WRITE_VALIDATED_FULL_TSV.out.validated_concatenated_tsv // contains data for all batches of samples
     submission_batch_folder = SUBMISSION.out.submission_batch_folder // one batch submission folder 
 }
