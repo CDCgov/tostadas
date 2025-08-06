@@ -71,7 +71,6 @@ def check_unique_header(header):
 def check_naming_conventions(header):
     """
     Check naming rules for chromosome and plasmid names based on GenBank rules.
-    This is best-effort: adjust depending on actual naming patterns used.
     """
     plasmid_match = re.search(r'\[plasmid-name=(.*?)\]', header)
     chrom_match = re.search(r'\[chromosome=(.*?)\]', header)
