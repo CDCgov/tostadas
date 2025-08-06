@@ -28,21 +28,19 @@ def write_batched_tsvs(df, batch_size, output_prefix):
     batched_paths = []
     total_rows = len(df)
     num_batches = math.ceil(total_rows / batch_size)
-
     for i in range(num_batches):
         batch_df = df.iloc[i * batch_size : (i + 1) * batch_size]
         batch_path = f"{output_prefix}_batch_{i+1}.tsv"
         batch_df.to_csv(batch_path, sep='\t', index=False)
         batched_paths.append(batch_path)
         logging.debug(f"Wrote {len(batch_df)} rows to {batch_path}")
-
     return batched_paths
 
 def main():
     args = get_args().parse_args()
     params = vars(args)
 
-    setup_logging(log_file='convert_xlsx_to_batched_tsv.log', level=logging.DEBUG)
+    setup_logging(log_file='create_batch_tsvs.log', level=logging.DEBUG)
 
     logging.info(f"Reading Excel file: {params['input']}")
     df = pd.read_excel(params['input'], dtype=str)
