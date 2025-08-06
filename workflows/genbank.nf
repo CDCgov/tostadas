@@ -41,7 +41,6 @@ workflow GENBANK {
 	validateParameters()
 	log.info paramsSummaryLog(workflow)
 
-<<<<<<< Updated upstream
     // Create batches from Excel
     CREATE_BATCH_TSVS(accession_augmented_xlsx, params.batch_size)
 
@@ -77,22 +76,6 @@ workflow GENBANK {
 
 	// Run GenBank validation only on the fasta
     genbank_validated_ch = sample_ch.map { meta, fasta, _gff -> [meta, fasta] } | GENBANK_VALIDATION
-=======
-	// Read metadata file (output of metadata validation; TSV with sample_id, fasta, gff)
-	
-	meta_ch = Channel
-		.fromPath(params.meta_path)
-		.splitCsv(header: true, sep: '\t')
-		.map { row ->
-			def sample_id = row.sample_id
-			def fasta = file(row.fasta.trim())
-			[sample_id, fasta]
-		}
-
-	sample_ch = meta_ch
-
-	GENBANK_VALIDATION(sample_ch)
->>>>>>> Stashed changes
 
 	// Construct the per-sample channel with: sample_id, validated_fasta, validated_gff
     validated_sample_ch = 
