@@ -5,7 +5,6 @@ params.updated_meta_path = params.updated_meta_path ?: "${params.outdir}/${param
 
 include { BIOSAMPLE_AND_SRA         } from './workflows/biosample_and_sra'
 include { GENBANK                   } from './workflows/genbank'
-//include { FETCH_ACCESSIONS          } from './subworkflows/local/fetch_accessions' // TODO: delete, no longer used
 include { AGGREGATE_SUBMISSIONS     } from './subworkflows/local/aggregate_submissions'
 include { WAIT                      } from './modules/local/wait/main'
 
