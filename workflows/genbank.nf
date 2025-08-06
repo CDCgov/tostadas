@@ -54,6 +54,8 @@ workflow GENBANK {
                 [meta, batch_tsv]
             }
 
+    // Todo: We need to run GENBANK_VALIDATION per sample not per batch
+
     // Extract FASTA and GFF file paths from metadata batches
     sample_ch = metadata_batch_ch.flatMap { meta, _batch_tsv ->
         def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
@@ -70,6 +72,7 @@ workflow GENBANK {
             return [sample_meta, fasta, gff]
         }
     }
+    sample_ch.view { "sample_ch emits: $it" }
 
 	// Run GenBank validation
 	GENBANK_VALIDATION(sample_ch)
