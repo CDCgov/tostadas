@@ -136,11 +136,6 @@ def validate_and_clean_fasta(input_path, output_path):
     logging.info(f"Successfully validated and cleaned {seq_count} sequences.")
     logging.info(f"Cleaned FASTA written to: {output_path}")
 
-def validate_gff(input_path, output_path):
-    """Copy the GFF file to a new validated GFF file without processing."""
-    check_file_size(input_path)
-    shutil.copy(input_path, output_path)
-    logging.info(f"Validated GFF written to: {output_path}")
 
 if __name__ == "__main__":
     setup_logging(log_file='validate_genbank.log', level=logging.DEBUG)
@@ -162,4 +157,3 @@ if __name__ == "__main__":
     output_gff = f"{base_gff}_validated{ext_gff}"
 
     validate_and_clean_fasta(input_fasta, output_fasta)
-    validate_gff(input_gff, output_gff)
