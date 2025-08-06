@@ -13,7 +13,7 @@ process GENBANK_VALIDATION {
     tuple val(meta), path(fasta), path(gff) // Fasta and GFF are included in the tuple
 
     output:
-    tuple path(tsv_files), path("${fasta.baseName}_cleaned.fasta"), path("${gff.baseName}_validated.gff")// Outputs are defined as a single tuple
+    tuple val(meta), path("${fasta.baseName}_cleaned.fasta"), path("${gff.baseName}_validated.gff")// Outputs are defined as a single tuple
     
     script:
 

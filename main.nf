@@ -1,5 +1,7 @@
 // Global variable to uniquely identify a run by its metadata filename
 params.metadata_basename = file(params.meta_path).baseName
+// Set default for updated_meta_path if not already defined
+params.updated_meta_path = params.updated_meta_path ?: "${params.outdir}/${params.metadata_basename}/${params.final_submission_output_dir}/${params.metadata_basename}_updated.xlsx"
 
 include { BIOSAMPLE_AND_SRA         } from './workflows/biosample_and_sra'
 include { GENBANK                   } from './workflows/genbank'
@@ -17,19 +19,24 @@ def calc_wait_time() {
 workflow BIOSAMPLE_AND_SRA_WORKFLOW {
     BIOSAMPLE_AND_SRA()
     BIOSAMPLE_AND_SRA.out.submission_batch_folder.view { "submission_batch_folder emits: $it" }
-    AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config)
+    AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, 
+                          params.submission_config,
+                          BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
     //CONSOLIDATE_REPORTS
 }
 
 workflow GENBANK_WORKFLOW {
-    GENBANK()
-    AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder, params.submission_config)
-
+    GENBANK(file(params.updated_meta_path))
+    AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
+                          params.submission_config,
+                          file("${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/validated_metadata_all_samples.tsv"))
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {
     // TODO: this won't work because it needs to be at the batch level
-    AGGREGATE_SUBMISSIONS(file(params.submission_results_dir), params.submission_config)
+    AGGREGATE_SUBMISSIONS(file(params.submission_results_dir),
+                          params.submission_config,
+                          file("${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/validated_metadata_all_samples.tsv"))
 
 }
 
@@ -37,10 +44,11 @@ workflow {
     if (params.workflow == "full_submission") {
         BIOSAMPLE_AND_SRA()
         WAIT( Channel.value( calc_wait_time() ) )
-        AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config)
-        GENBANK() // needs to get the updated Excel file, either as a nextflow param or as the output of fetch_accessions subworkflow
+        AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
+        GENBANK(AGGREGATE_SUBMISSIONS.out.accession_augmented_xlsx) // needs to get the updated Excel file, either as a nextflow param or as the output of fetch_accessions subworkflow
         WAIT( Channel.value( calc_wait_time() ) )
-        AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder, params.submission_config)
+        // TODO: need to check how this will work (with BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
+        AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
     }
     else if (params.workflow == "biosample_and_sra") {
         BIOSAMPLE_AND_SRA_WORKFLOW()

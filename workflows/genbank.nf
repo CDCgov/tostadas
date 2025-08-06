@@ -9,12 +9,10 @@ nextflow.enable.dsl=2
 // get the utility processes / subworkflows
 include { validateParameters; paramsSummaryLog; samplesheetToList 	} from 'plugin/nf-schema'
 
-include { GET_WAIT_TIME                                    			} from "../modules/local/general_util/get_wait_time/main"
-
 // get metadata validation processes
 include { GENBANK_VALIDATION                               			} from "../modules/local/genbank_validation/main"
 
-// get viral annotation process/subworkflows                                          } from "../modules/local/liftoff_annotation/main"
+// get viral annotation process/subworkflows
 include { REPEATMASKER_LIFTOFF                            			} from "../subworkflows/local/repeatmasker_liftoff"
 include { RUN_VADR                                          		} from "../subworkflows/local/vadr"
 
@@ -23,8 +21,6 @@ include { RUN_BAKTA                                         		} from "../subwork
 
 // get submission related process/subworkflows
 include { SUBMISSION		                                		} from "../subworkflows/local/submission"
-include { FETCH_ACCESSIONS		                            		} from "../subworkflows/local/fetch_accessions"
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 									MAIN WORKFLOW
@@ -37,6 +33,9 @@ def trimFile(path) {
 }
 
 workflow GENBANK {
+	take:
+	accession_augmented_xlsx
+
 	main:
 	validateParameters()
 	log.info paramsSummaryLog(workflow)
@@ -44,10 +43,51 @@ workflow GENBANK {
 	// Run GenBank validation
 	// Change this to use sample_id, fasta, gff as inputs [leave tsv out]
 
-	// need to parse meta_path into Channel with sample_id, fasta, gff 
+	// Convert to TSV
+	excel_tsv_ch = Channel.of(accession_augmented_xlsx)
+		.map { excel ->
+			def tsv = excel.getBaseName() + '.tsv'
+			"""
+			mlr --icsv --otsv cat "$excel" > "$tsv"
+			"""
+			return file(tsv)
+		}
 
-	//takes the input (validated excel)
-	// GENBANK_VALIDATION(file(params.excel_with_accessions)) //this is wrong
+	// Split TSV into batches
+	metadata_batch_ch = excel_tsv_ch
+		.splitCsv(header: true, sep: '\t')
+		.collate(params.batch_size)
+		.map { rows ->
+			def batch_id = "batch_" + UUID.randomUUID().toString()[0..7]
+			def batch_tsv = file("${batch_id}.tsv")
+			
+			// Write the batch to TSV
+			batch_tsv.text = rows.join('\n')
+			
+			def meta = [
+				batch_id : batch_id,
+				batch_tsv: batch_tsv
+			]
+			return [meta, batch_tsv]
+		}
+
+	// Extract FASTA and GFF file paths from metadata batches
+	sample_ch = metadata_batch_ch.flatMap { meta, _batch_tsv ->
+		def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
+		return rows.collect { row ->
+			def sample_id = row.sample_name?.trim()
+			def fasta = row.containsKey('fasta_path') ? trimFile(row.fasta_path) : null
+			def gff   = row.containsKey('gff_path')   ? trimFile(row.gff_path)   : null
+
+			def sample_meta = [
+				batch_id : meta.batch_id,
+				batch_tsv: meta.batch_tsv,
+				sample_id: sample_id
+			]
+			return [sample_meta, fasta, gff]
+		}
+	}
+
 	GENBANK_VALIDATION(sample_ch)
 
 	// Construct the per-sample channel with: sample_id, validated_fasta, validated_gff
@@ -149,8 +189,9 @@ workflow GENBANK {
 		.flatten()
 
 	// Run submission using the batch channel
-	SUBMISSION(genbank_batch_ch, params.submission_config)
+	SUBMISSION(genbank_batch_ch, 
+			   params.submission_config)
 
 	emit:
-    submission_folders = SUBMISSION.out.submission_folders
+    submission_batch_folder = SUBMISSION.out.submission_batch_folder
 }
