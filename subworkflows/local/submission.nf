@@ -22,13 +22,6 @@ workflow SUBMISSION {
 
         SUBMIT_SUBMISSION(submission_batch_folder, submission_config_file)
 
-        // // set the channel to only include the log if doing a dry run
-        // submission_result_ch = params.dry_run 
-        //     ? SUBMIT_SUBMISSION.out.submission_log
-        //     : SUBMIT_SUBMISSION.out.submission_batch_folder
-
-        // submission_result_ch.set { submission_output_dir_ch }
-
     emit:
         submission_batch_folder = SUBMIT_SUBMISSION.out.submission_batch_folder
 }
