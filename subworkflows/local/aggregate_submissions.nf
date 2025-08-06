@@ -2,7 +2,7 @@ include { FETCH_REPORTS                              } from '../../modules/local
 include { AGGREGATE_REPORTS                          } from '../../modules/local/aggregate_reports/main'
 include { JOIN_ACCESSIONS_WITH_METADATA              } from '../../modules/local/join_accessions_with_metadata/main'
 
-workflow FETCH_ACCESSIONS {
+workflow AGGREGATE_SUBMISSIONS {
     take:
       submission_dir
       submission_config
@@ -20,7 +20,7 @@ workflow FETCH_ACCESSIONS {
       AGGREGATE_REPORTS(all_report_csvs)
 
       // Concatenate the batch TSVs, then add the (optional) accession IDs to them
-      JOIN_ACCESSIONS_WITH_METADATA(validated_metadata_tsv, AGGREGATE_REPORTS.out.aggregated_csv)
+      JOIN_ACCESSIONS_WITH_METADATA(validated_metadata_tsv, AGGREGATE_REPORTS.out.submission_report)
 
     emit:
       all_report_csvs = all_report_csvs

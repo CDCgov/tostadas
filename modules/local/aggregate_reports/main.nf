@@ -10,7 +10,7 @@ process AGGREGATE_REPORTS {
     path(report_csvs)
 
     output:
-    path("submission_report.csv")
+    path("submission_report.csv"), emit: submission_report
 
     script:
     """
