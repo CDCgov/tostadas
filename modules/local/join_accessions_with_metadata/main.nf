@@ -19,7 +19,7 @@ process JOIN_ACCESSIONS_WITH_METADATA {
 
     script:
         """
-        python join_accessions_to_metadata.py \
+        python join_accessions_with_metadata.py \
         --metadata_tsv ${validated_metadata_tsv} \
         --submission_report ${aggregated_csv} \
         --output ${params.metadata_basename}_updated.xlsx
