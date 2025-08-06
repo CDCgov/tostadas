@@ -4,7 +4,7 @@ process WRITE_VALIDATED_FULL_TSV {
     path validated_tsvs
 
     output:
-    path "validated_concatenated.tsv", emit: validated_concatenated_tsv
+    path "validated_metadata_all_samples.tsv", emit: validated_concatenated_tsv
 
     script:
     """
