@@ -10,6 +10,7 @@ nextflow.enable.dsl=2
 include { validateParameters; paramsSummaryLog; samplesheetToList 	} from 'plugin/nf-schema'
 
 // get metadata validation processes
+include { CREATE_BATCH_TSVS                               			} from "../modules/local/create_batch_tsvs/main"
 include { GENBANK_VALIDATION                               			} from "../modules/local/genbank_validation/main"
 
 // get viral annotation process/subworkflows
@@ -40,156 +41,105 @@ workflow GENBANK {
 	validateParameters()
 	log.info paramsSummaryLog(workflow)
 
+    // Create batches from Excel
+    CREATE_BATCH_TSVS(accession_augmented_xlsx, params.batch_size)
+
+    metadata_batch_ch = CREATE_BATCH_TSVS.out.tsv_files
+        .flatten()
+            .map { batch_tsv ->
+                def meta = [
+                    batch_id: batch_tsv.getBaseName(),
+                    batch_tsv: batch_tsv
+                ]
+                [meta, batch_tsv]
+            }
+
+    // Extract FASTA and GFF file paths from metadata batches
+    sample_ch = metadata_batch_ch.flatMap { meta, _batch_tsv ->
+        def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
+        return rows.collect { row ->
+            def sample_id = row.sample_name?.trim()
+            def fasta = row.containsKey('fasta_path') ? trimFile(row.fasta_path) : null
+            def gff   = row.containsKey('gff_path')   ? trimFile(row.gff_path)   : null
+
+            def sample_meta = [
+                batch_id : meta.batch_id,
+                batch_tsv: meta.batch_tsv,
+                sample_id: sample_id
+            ]
+            return [sample_meta, fasta, gff]
+        }
+    }
+
 	// Run GenBank validation
-	// Change this to use sample_id, fasta, gff as inputs [leave tsv out]
-
-	// Convert to TSV
-	excel_tsv_ch = Channel.of(accession_augmented_xlsx)
-		.map { excel ->
-			def tsv = excel.getBaseName() + '.tsv'
-			"""
-			mlr --icsv --otsv cat "$excel" > "$tsv"
-			"""
-			return file(tsv)
-		}
-
-	// Split TSV into batches
-	metadata_batch_ch = excel_tsv_ch
-		.splitCsv(header: true, sep: '\t')
-		.collate(params.batch_size)
-		.map { rows ->
-			def batch_id = "batch_" + UUID.randomUUID().toString()[0..7]
-			def batch_tsv = file("${batch_id}.tsv")
-			
-			// Write the batch to TSV
-			batch_tsv.text = rows.join('\n')
-			
-			def meta = [
-				batch_id : batch_id,
-				batch_tsv: batch_tsv
-			]
-			return [meta, batch_tsv]
-		}
-
-	// Extract FASTA and GFF file paths from metadata batches
-	sample_ch = metadata_batch_ch.flatMap { meta, _batch_tsv ->
-		def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
-		return rows.collect { row ->
-			def sample_id = row.sample_name?.trim()
-			def fasta = row.containsKey('fasta_path') ? trimFile(row.fasta_path) : null
-			def gff   = row.containsKey('gff_path')   ? trimFile(row.gff_path)   : null
-
-			def sample_meta = [
-				batch_id : meta.batch_id,
-				batch_tsv: meta.batch_tsv,
-				sample_id: sample_id
-			]
-			return [sample_meta, fasta, gff]
-		}
-	}
-
 	GENBANK_VALIDATION(sample_ch)
 
 	// Construct the per-sample channel with: sample_id, validated_fasta, validated_gff
-	validated_fasta_map_ch = GENBANK_VALIDATION.out.fasta
-		.map { f -> 
-			def sid = f.getBaseName().replaceFirst(/\.f(ast)?a$/, '') 
-			[sid, f] 
-		}
+	validated_ch = GENBANK_VALIDATION.out
 
-	validated_gff_map_ch = GENBANK_VALIDATION.out.gff
-		.map { g -> 
-			def sid = g.getBaseName().replaceFirst(/\.gff3?$/, '') 
-			[sid, g] 
-		}
+    // Run annotation if requested
+    if (params.annotation) {
+        annotation_ch = validated_ch.map { meta, fasta, gff -> [meta, fasta] }
 
-	sample_ch = validated_fasta_map_ch
-		.join(validated_gff_map_ch)
-		.map { sid, fasta, gff ->
-			def meta = [id: sid]
-			def out  = [meta, fasta, gff]
-			out
-		}
+        if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
+            if (params.repeatmasker_liftoff && !params.vadr) {
+                REPEATMASKER_LIFTOFF(annotation_ch)
+                annotation_ch = annotation_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+            }
 
-	// Run annotation and override fasta/gff if needed
-	if (params.annotation) {
-		if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
+            if (params.vadr) {
+                RUN_VADR(annotation_ch)
+                annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
+            }
 
-			if (params.repeatmasker_liftoff && !params.vadr) {
-				REPEATMASKER_LIFTOFF(sample_ch)
-				sample_ch = sample_ch
-					| join(REPEATMASKER_LIFTOFF.out.gff)
-					| map { sample_id, tsv, fasta, gff -> [sample_id, tsv, fasta, gff] }
-			}
+        } else if (params.species == 'bacteria' && params.bakta) {
+            RUN_BAKTA(annotation_ch)
+            annotation_ch = annotation_ch
+                | join(RUN_BAKTA.out.gff)
+                | join(RUN_BAKTA.out.fna)
+                | map { meta, _orig_fasta, gff, fasta -> [meta, fasta, gff] }
+        }
 
-			if (params.vadr) {
-				RUN_VADR(sample_ch)
-				sample_ch = sample_ch
-					| join(RUN_VADR.out.tbl)
-					| map { sample_id, tsv, fasta, tbl -> [sample_id, tsv, fasta, tbl] }
-			}
+        // Join annotation results back into full sample tuples
+        sample_ch = sample_ch.map { meta, _fasta, _gff -> [meta] }
+            .join(annotation_ch)
+            .map { meta, fasta, gff -> [meta, fasta, gff] }
+    } else {
+        sample_ch = validated_ch
+    }
 
-		} else if (params.species == 'bacteria' && params.bakta) {
-			RUN_BAKTA(sample_ch)
-			sample_ch = sample_ch
-				| join(RUN_BAKTA.out.gff)
-				| join(RUN_BAKTA.out.fna)
-				| map { sample_id, tsv, _orig_fasta, gff, fasta -> [sample_id, tsv, fasta, gff] }
-		}
-	}
+    // Build final batch-wise submission channel
+    submission_batch_ch = sample_ch
+        .map { meta, fasta, gff -> [meta.batch_id, [meta: meta, fasta: fasta, gff: gff]] }
+        .groupTuple()
+        .map { batch_id, samples ->
+            def missingFiles = [] as Set
 
-	// Recreate the same batches from BIOSAMPLE_AND_SRA workflow
-	def batched_tsv_dir = file("${params.metadata_dir}/batched_tsvs")
-	def batch_summary_json = file("${batched_tsv_dir}/batch_summary.json")
+            samples.each { s ->
+                def sid = s.meta.sample_id
+                if (params.genbank) {
+                    if (!s.fasta || !file(s.fasta).exists()) missingFiles << "${sid}:fasta"
+                    if (!s.gff   || !file(s.gff).exists())   missingFiles << "${sid}:gff"
+                }
+            }
 
-	batch_summary_ch = Channel
-		.fromPath(batch_summary_json)
-		.map { json_file ->
-			def data = new groovy.json.JsonSlurper().parseText(json_file.text)
-			// data: [ "batch_1.tsv": ["IL0005", ...], ... ]
-			data.collectEntries { k, v ->
-				def batch_id = k.replaceFirst(/\.tsv$/, '')
-				def batch_tsv = batched_tsv_dir.resolve(k).toAbsolutePath()
-				[batch_id, [tsv: batch_tsv, sample_ids: v]]
-			}
-		}
+            if (missingFiles) {
+                log.warn "Skipping batch ${batch_id} due to missing files: ${missingFiles.join(', ')}"
+                return null
+            }
 
-	// Create a lookup map for sample_id to fasta and gff
-	annotated_sample_map_ch = sample_ch
-			.collect()
-			.map { samples ->
-				samples.collectEntries { row ->
-					def sample_id = row[0]
-					def fasta     = row[1]
-					def gff       = row[2]
-					[(sample_id): [fasta, gff]]
-				}
-			}
+            def meta = [
+                batch_id : batch_id,
+                batch_tsv: samples[0].meta.batch_tsv
+            ]
+			// todo: only add genbank if files not missing
+            return tuple(meta, samples, ['genbank'])
+        }
+        .filter { it != null }
 
-	// Combine batch meta info with per-sample info to create the submission channel
-	genbank_batch_ch = batch_summary_ch
-		.combine(annotated_sample_map_ch)
-		.map { batch_map, sample_map ->
-
-			batch_map.collect { batch_id, info ->
-				def batch_tsv = file(info.tsv)
-				def sample_ids = info.sample_ids
-
-				def meta = [batch_id: batch_id, batch_tsv: batch_tsv]
-
-				def samples = sample_ids.collect { sid ->
-					def pair = sample_map[sid]
-					if (!pair) throw new IllegalStateException("Missing annotated sample: $sid")
-					[sid, pair[0], pair[1]]  // [sample_id, fasta, gff]
-				}
-
-				[meta, samples]
-			}
-		}
-		.flatten()
 
 	// Run submission using the batch channel
-	SUBMISSION(genbank_batch_ch, 
+	SUBMISSION(submission_batch_ch, 
 			   params.submission_config)
 
 	emit:
