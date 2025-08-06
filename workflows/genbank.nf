@@ -56,7 +56,7 @@ workflow GENBANK {
 
     // Todo: We need to run GENBANK_VALIDATION per sample not per batch
 
-    // Extract FASTA and GFF file paths from metadata batches
+    // Flatten metadata into per-sample tuples
     sample_ch = metadata_batch_ch.flatMap { meta, _batch_tsv ->
         def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
         return rows.collect { row ->
@@ -74,41 +74,50 @@ workflow GENBANK {
     }
     sample_ch.view { "sample_ch emits: $it" }
 
-	// Run GenBank validation
-	GENBANK_VALIDATION(sample_ch)
+	// Run GenBank validation only on the fasta
+    genbank_validated_ch = sample_ch.map { meta, fasta, _gff -> [meta, fasta] } | GENBANK_VALIDATION
 
 	// Construct the per-sample channel with: sample_id, validated_fasta, validated_gff
-	validated_ch = GENBANK_VALIDATION.out
+    validated_sample_ch = 
+        sample_ch
+            .map { meta, _fasta, gff -> [meta.sample_id, gff] }
+            .combine(
+                genbank_validated_ch.map { meta, cleaned_fasta -> [meta.sample_id, [meta, cleaned_fasta]] }
+            )
+            .map { _sample_id, values -> 
+                def gff = values[0]
+                def meta = values[1][0]
+                def cleaned_fasta = values[1][1]
+                return [meta, cleaned_fasta, gff]
+            }
+    validated_sample_ch.view { "validated_sample_ch emits: $it" }
 
     // Run annotation if requested
     if (params.annotation) {
-        annotation_ch = validated_ch.map { meta, fasta, gff -> [meta, fasta] }
+        annotation_input_ch = validated_sample_ch.map { meta, fasta, gff -> [meta, fasta, gff] }
 
         if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
             if (params.repeatmasker_liftoff && !params.vadr) {
-                REPEATMASKER_LIFTOFF(annotation_ch)
-                annotation_ch = annotation_ch.join(REPEATMASKER_LIFTOFF.out.gff)
+                REPEATMASKER_LIFTOFF(annotation_input_ch.map { meta, fasta, gff -> [meta, fasta] })
+                annotation_input_ch = annotation_input_ch.join(REPEATMASKER_LIFTOFF.out.gff)
             }
 
             if (params.vadr) {
-                RUN_VADR(annotation_ch)
-                annotation_ch = annotation_ch.join(RUN_VADR.out.tbl)
+                RUN_VADR(annotation_input_ch.map { meta, fasta, gff -> [meta, fasta] })
+                annotation_input_ch = annotation_input_ch.join(RUN_VADR.out.tbl)
             }
 
         } else if (params.species == 'bacteria' && params.bakta) {
-            RUN_BAKTA(annotation_ch)
-            annotation_ch = annotation_ch
-                | join(RUN_BAKTA.out.gff)
-                | join(RUN_BAKTA.out.fna)
-                | map { meta, _orig_fasta, gff, fasta -> [meta, fasta, gff] }
+            RUN_BAKTA(annotation_input_ch.map { meta, fasta, gff -> [meta, fasta] })
+            annotation_input_ch = annotation_input_ch
+                .join(RUN_BAKTA.out.gff)
+                .join(RUN_BAKTA.out.fna)
+                .map { meta, _orig_fasta, gff, fasta -> [meta, fasta, gff] }
         }
 
-        // Join annotation results back into full sample tuples
-        sample_ch = sample_ch.map { meta, _fasta, _gff -> [meta] }
-            .join(annotation_ch)
-            .map { meta, fasta, gff -> [meta, fasta, gff] }
+        sample_ch = annotation_input_ch
     } else {
-        sample_ch = validated_ch
+        sample_ch = validated_sample_ch
     }
 
     // Build final batch-wise submission channel
@@ -140,6 +149,7 @@ workflow GENBANK {
         }
         .filter { it != null }
 
+    submission_batch_ch.view { "submission_batch_ch emits: $it" }
 
 	// Run submission using the batch channel
 	SUBMISSION(submission_batch_ch, 
