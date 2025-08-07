@@ -197,14 +197,37 @@ def parse_report_xml_to_df(report_path):
 		root = tree.getroot()
 		submission_status = root.get("status", None)
 		submission_id = root.get("submission_id", None)
-
 		tracking_location_tag = root.find("Tracking/SubmissionLocation")
 		tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
 
 		for action in root.findall("Action"):
 			action_id = action.get("action_id", None)
 			target_db = action.get("target_db", "").lower()
+			status = action.get("status", None)
+			# Defaults for response fields
+			response_message = None
+			spuid = None
+			spuid_namespace = None
+			object_id = None
+			response = action.find("Response")
+			if response is not None:
+				# Get <Message>
+				message_tag = response.find("Message")
+				if message_tag is not None:
+					response_message = message_tag.text.strip()
+				else:
+					response_message = response.get("status", "").strip() or (response.text or "").strip()
+				# Get <Object> attributes
+				object_tag = response.find("Object")
+				if object_tag is not None:
+					spuid = object_tag.get("spuid", None)
+					spuid_namespace = object_tag.get("spuid_namespace", None)
+					object_id = object_tag.get("object_id", None)
+			# Initialize a row for this action
 			report = {
+				'spuid': spuid,
+				'spuid_namespace': spuid_namespace,
+				'object_id': object_id,
 				'submission_name': action_id,
 				'submission_status': submission_status,
 				'submission_id': submission_id,
@@ -220,17 +243,7 @@ def parse_report_xml_to_df(report_path):
 				'genbank_release_date': None,
 				'tracking_location': tracking_location,
 			}
-			# Common fields
-			status = action.get("status", None)
-			response = action.find("Response")
-			response_message = None
-			if response is not None:
-				message_tag = response.find("Message")
-				if message_tag is not None:
-					response_message = message_tag.text.strip()
-				else:
-					response_message = response.get("status", "").strip() or (response.text or "").strip()
-			# Fill in based on database
+			# Fill in database-specific fields
 			if target_db == "biosample":
 				report['biosample_status'] = status
 				report['biosample_message'] = response_message
@@ -246,7 +259,15 @@ def parse_report_xml_to_df(report_path):
 		logging.error(f"Report not found: {report_path}")
 	except ET.ParseError:
 		logging.error(f"Error parsing XML report: {report_path}")
+
+	# Final DataFrame
 	df = pd.DataFrame(reports)
+
+	# Ensure column order with spuid first
+	column_order = ['spuid', 'spuid_namespace', 'object_id'] + [col for col in df.columns if col not in {'spuid', 'spuid_namespace', 'object_id'}]
+	df = df[column_order]
+
+	# Normalize NaNs to None
 	df = df.where(pd.notna(df), None)
 	return df
 
