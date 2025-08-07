@@ -68,10 +68,6 @@ def check_unique_header(header):
         sys.exit(1)
     used_headers.add(header)
 
-def check_source_metadata(header):
-    if not any(tag in header for tag in ['[strain=', '[breed=', '[cultivar=', '[isolate=']):
-        logging.error(f"Missing required source metadata (strain, breed, cultivar, isolate) in header: {header}")
-        sys.exit(1)
 
 def check_naming_conventions(header):
     """
