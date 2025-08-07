@@ -26,9 +26,11 @@ workflow BIOSAMPLE_AND_SRA_WORKFLOW {
 
 workflow GENBANK_WORKFLOW {
     GENBANK(file(params.updated_meta_path))
-    AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
-                          params.submission_config,
-                          file("${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/validated_metadata_all_samples.tsv"))
+    if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
+        AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
+                            params.submission_config,
+                            file("${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/validated_metadata_all_samples.tsv"))
+    }
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {
@@ -44,10 +46,12 @@ workflow {
         BIOSAMPLE_AND_SRA()
         WAIT( Channel.value( calc_wait_time() ) )
         AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
-        GENBANK(AGGREGATE_SUBMISSIONS.out.accession_augmented_xlsx) // needs to get the updated Excel file, either as a nextflow param or as the output of fetch_accessions subworkflow
-        WAIT( Channel.value( calc_wait_time() ) )
-        // TODO: need to check how this will work (with BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
-        AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
+        GENBANK(AGGREGATE_SUBMISSIONS.out.accession_augmented_xlsx)
+        if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
+            WAIT( Channel.value( calc_wait_time() ) )
+            // TODO: need to check how this will work (with BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
+            AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
+        }
     }
     else if (params.workflow == "biosample_and_sra") {
         BIOSAMPLE_AND_SRA_WORKFLOW()
