@@ -97,9 +97,6 @@ def check_naming_conventions(header):
         if 'linkage' in header.lower() and 'lg' not in name.lower():
             logging.warning(f"Chromosome '{name}' may represent a linkage group but does not contain 'LG': {header}")
 
-    if organelle_match:
-        organelle = organelle_match.group(1).lower()
-        logging.info(f"Organelle detected: {organelle}")
 
 def check_sequence_length(seq, header):
     cleaned_len = len(seq)
@@ -111,8 +108,7 @@ def check_sequence_length(seq, header):
         sys.exit(1)
     if cleaned_len < WARN_SEQ_LENGTH:
         logging.warning(
-            f"Sequence warning: {header} is {cleaned_len} nt after trimming, which is short (<{WARN_SEQ_LENGTH} nt)."
-        )
+            f"Warning: Sequence '{header}' is {cleaned_len} nt after trimming. Lengths between 200 and 1000 nt may indicate the presence of contaminants."        )
 
 def validate_and_clean_fasta(input_path, output_path):
     check_file_size(input_path)
@@ -125,7 +121,6 @@ def validate_and_clean_fasta(input_path, output_path):
             # Header checks
             validate_header_format(header)
             check_unique_header(header)
-            check_source_metadata(header)
             check_naming_conventions(header)
 
             # Sequence cleaning and validation
