@@ -146,7 +146,7 @@ def validate_and_clean_fasta(input_path, output_path):
 if __name__ == "__main__":
     setup_logging(log_file='validate_genbank.log', level=logging.DEBUG)
 
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 2:
         logging.error("Usage: validate_and_clean_fasta.py <input.fasta>")
         sys.exit(1)
 
