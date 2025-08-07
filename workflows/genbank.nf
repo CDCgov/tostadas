@@ -74,22 +74,17 @@ workflow GENBANK {
     }
     sample_ch.view { "sample_ch emits: $it" }
 
-	// Run GenBank validation only on the fasta
+    // Run GenBank validation only on the fasta
     genbank_validated_ch = sample_ch.map { meta, fasta, _gff -> [meta, fasta] } | GENBANK_VALIDATION
 
-	// Construct the per-sample channel with: sample_id, validated_fasta, validated_gff
-    validated_sample_ch = 
-        sample_ch
-            .map { meta, _fasta, gff -> [meta.sample_id, gff] }
-            .combine(
-                genbank_validated_ch.map { meta, cleaned_fasta -> [meta.sample_id, [meta, cleaned_fasta]] }
-            )
-            .map { _sample_id, values -> 
-                def gff = values[0]
-                def meta = values[1][0]
-                def cleaned_fasta = values[1][1]
-                return [meta, cleaned_fasta, gff]
-            }
+    // Replace the original fasta with the validated one
+    validated_sample_ch = sample_ch
+        .map { meta, fasta, gff -> [meta.sample_id, meta, fasta, gff] }
+        .join(
+            genbank_validated_ch.map { meta, validated_fasta -> [meta.sample_id, validated_fasta] }
+        )
+        .map { sample_id, meta, original_fasta, gff, validated_fasta -> [meta, validated_fasta, gff] }
+
     validated_sample_ch.view { "validated_sample_ch emits: $it" }
 
     // Run annotation if requested
