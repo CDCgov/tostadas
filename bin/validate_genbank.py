@@ -156,20 +156,16 @@ if __name__ == "__main__":
     setup_logging(log_file='validate_genbank.log', level=logging.DEBUG)
 
     if len(sys.argv) != 3:
-        logging.error("Usage: validate_and_clean_fasta.py <input.fasta> <input.gff>")
+        logging.error("Usage: validate_and_clean_fasta.py <input.fasta>")
         sys.exit(1)
 
     input_fasta = sys.argv[1]
-    input_gff = sys.argv[2]
 
     check_file_exists(input_fasta)
-    check_file_exists(input_gff)
 
     # Derive cleaned output with .fsa extension
     base_fasta = os.path.splitext(os.path.basename(input_fasta))[0]
     output_fasta = os.path.join(os.path.dirname(input_fasta), f"{base_fasta}_cleaned.fsa")
 
-    base_gff, ext_gff = os.path.splitext(input_gff)
-    output_gff = f"{base_gff}_validated{ext_gff}"
 
     validate_and_clean_fasta(input_fasta, output_fasta)
