@@ -7,7 +7,6 @@ import shutil
 import re
 from submission_helper import setup_logging
 
-
 # Constants
 MAX_FILE_SIZE = 2 * 1024 ** 3  # 2 GB
 MAX_SEQUENCES = 20000
@@ -15,8 +14,9 @@ WARN_SEQUENCES = 10000
 MIN_SEQ_LENGTH = 200
 WARN_SEQ_LENGTH = 1000
 
-HEADER_PATTERN = re.compile(r'^>[\w\-.]+(?:\s+\[.+\])?')  
+HEADER_PATTERN = re.compile(r'^>[\w\-.]+(?:\s+\[.+\])?')
 PLASMID_NAME_PATTERN = re.compile(r'^p[\w\d\-_]{0,19}$')
+PLASMID_UNNAMED_PATTERN = re.compile(r'^unnamed\d*$')  
 CHROMOSOME_NAME_PATTERN = re.compile(r'^[\w\.\-_]{1,33}$')
 
 used_headers = set()
@@ -68,27 +68,42 @@ def check_unique_header(header):
         sys.exit(1)
     used_headers.add(header)
 
+def check_source_metadata(header):
+    if not any(tag in header for tag in ['[strain=', '[breed=', '[cultivar=', '[isolate=']):
+        logging.error(f"Missing required source metadata (strain, breed, cultivar, isolate) in header: {header}")
+        sys.exit(1)
+
 def check_naming_conventions(header):
     """
     Check naming rules for chromosome and plasmid names based on GenBank rules.
     """
     plasmid_match = re.search(r'\[plasmid-name=(.*?)\]', header)
     chrom_match = re.search(r'\[chromosome=(.*?)\]', header)
+    organelle_match = re.search(r'\[organelle=(.*?)\]', header)
 
     if plasmid_match:
         name = plasmid_match.group(1)
-        if name != 'unnamed' and not PLASMID_NAME_PATTERN.match(name):
+        if 'plasmid' in name.lower():
+            logging.error(f"Invalid plasmid name '{name}' contains the word 'plasmid': {header}")
+            sys.exit(1)
+        if not (name == 'unnamed' or PLASMID_UNNAMED_PATTERN.match(name) or PLASMID_NAME_PATTERN.match(name)):
             logging.error(f"Invalid plasmid name '{name}' in header: {header}")
             sys.exit(1)
 
     if chrom_match:
         name = chrom_match.group(1)
-        if 'chr' in name.lower() or 'chromosome' in name.lower() or 'unknown' in name.lower() or name == '0':
+        if 'chr' in name.lower() or 'chromosome' in name.lower() or 'unknown' in name.lower() or name.lower() in ['un', 'unk', '0']:
             logging.error(f"Invalid chromosome name '{name}' in header: {header}")
             sys.exit(1)
         if not CHROMOSOME_NAME_PATTERN.match(name):
             logging.error(f"Chromosome name '{name}' does not meet naming rules: {header}")
             sys.exit(1)
+        if 'linkage' in header.lower() and 'lg' not in name.lower():
+            logging.warning(f"Chromosome '{name}' may represent a linkage group but does not contain 'LG': {header}")
+
+    if organelle_match:
+        organelle = organelle_match.group(1).lower()
+        logging.info(f"Organelle detected: {organelle}")
 
 def check_sequence_length(seq, header):
     cleaned_len = len(seq)
@@ -114,6 +129,7 @@ def validate_and_clean_fasta(input_path, output_path):
             # Header checks
             validate_header_format(header)
             check_unique_header(header)
+            check_source_metadata(header)
             check_naming_conventions(header)
 
             # Sequence cleaning and validation
@@ -134,20 +150,26 @@ def validate_and_clean_fasta(input_path, output_path):
 
     logging.info(f"Successfully validated and cleaned {seq_count} sequences.")
     logging.info(f"Cleaned FASTA written to: {output_path}")
-
+    logging.info("Note: For bacterial genomes, include gcode via table2asn if needed.")
 
 if __name__ == "__main__":
     setup_logging(log_file='validate_genbank.log', level=logging.DEBUG)
 
-    if len(sys.argv) != 2:
-        logging.error("Usage: validate_and_clean_fasta.py <input.fasta>")
+    if len(sys.argv) != 3:
+        logging.error("Usage: validate_and_clean_fasta.py <input.fasta> <input.gff>")
         sys.exit(1)
 
     input_fasta = sys.argv[1]
+    input_gff = sys.argv[2]
 
     check_file_exists(input_fasta)
+    check_file_exists(input_gff)
 
-    base_fasta, ext_fasta = os.path.splitext(input_fasta)
-    output_fasta = f"{base_fasta}_cleaned{ext_fasta}"
+    # Derive cleaned output with .fsa extension
+    base_fasta = os.path.splitext(os.path.basename(input_fasta))[0]
+    output_fasta = os.path.join(os.path.dirname(input_fasta), f"{base_fasta}_cleaned.fsa")
+
+    base_gff, ext_gff = os.path.splitext(input_gff)
+    output_gff = f"{base_gff}_validated{ext_gff}"
 
     validate_and_clean_fasta(input_fasta, output_fasta)
