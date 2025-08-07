@@ -89,7 +89,7 @@ def main():
 
     # Write to Excel
     merged_df.to_excel(params["output"], index=False)
-    logging.info(f"Final Excel file written to: {params["output"]}")
+    logging.info(f'Final Excel file written to: {params["output"]}')
 
 
 if __name__ == '__main__':
