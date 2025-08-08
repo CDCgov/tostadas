@@ -14,6 +14,7 @@ import math  # Required for isnan check
 import time
 import shlex
 import subprocess
+from typing import Optional, List
 import pandas as pd
 from abc import ABC, abstractmethod
 import paramiko
@@ -314,6 +315,8 @@ class GetParams:
 		parser.add_argument("--species", help="Type of organism data", required=True)
 		parser.add_argument('--sample', action='append', help='Comma-separated sample attributes')
 		# optional parameters
+		parser.add_argument("--wastewater", default=False, type=bool, 
+                            help="Prepare submission with wastewater specific metadata")
 		parser.add_argument("-o", "--outdir", type=str, default='submission_outputs',
 							help="Output Directory for final Files, default is current directory")
 		parser.add_argument("--test", help="Whether to perform a test submission.", required=False,	action="store_const", default=False, const=True)
@@ -708,102 +711,387 @@ class XMLSubmissionMixin(ABC):
 		"""Add the attributes block, which differs between submissions."""
 		pass
 
+# Allowed wastewater BioSample attribute names (from wastewater_NWSSv1.9 package)
+# Excludes sample_title (written as <Descriptor><Title>) and bioproject_accession (handled via <BioProject>)
+_WW_ALLOWED_ATTRS = {
+	# core/collection
+	"organism", "collection_date", "collection_time", "geo_loc_name", "isolation_source", "collection_site_id",
+	"project_name", "collected_by", "description",
+	# wastewater sampling context
+	"purpose_of_ww_sampling", "ww_sample_site", "ww_flow", "instantaneous_flow", "ww_population",
+	"ww_surv_jurisdiction", "ww_population_source", "ww_sample_matrix", "ww_sample_type",
+	"collection_volume", "ww_sample_duration", "ww_temperature", "ww_ph", "ww_industrial_effluent_percent",
+	"ww_sample_salinity", "ww_total_suspended_solids", "ww_surv_system_sample_id", "ww_pre_treatment",
+	"ww_primary_sludge_retention_time",
+	# processing/controls
+	"specimen_processing", "specimen_processing_id", "specimen_processing_details", "ww_processing_protocol",
+	"concentration_method", "extraction_method", "extraction_control",
+	"ww_endog_control_1", "ww_endog_control_1_conc", "ww_endog_control_1_protocol", "ww_endog_control_1_units",
+	"ww_endog_control_2", "ww_endog_control_2_conc", "ww_endog_control_2_protocol", "ww_endog_control_2_units",
+	# targets
+	"ww_surv_target_1", "ww_surv_target_1_known_present", "ww_surv_target_1_protocol",
+	"ww_surv_target_1_conc", "ww_surv_target_1_conc_unit", "ww_surv_target_1_gene",
+	"ww_surv_target_2", "ww_surv_target_2_conc", "ww_surv_target_2_conc_unit",
+	"ww_surv_target_2_gene", "ww_surv_target_2_known_present",
+	# sequencing purpose (kept as BioSample attr in WW package)
+	"purpose_of_ww_sequencing", "sequenced_by"
+}
+
+# Columns that should never be emitted as BioSample attributes (envelope or SRA-only)
+_BIOSAMPLE_SKIP = {
+	"sample_name", "ncbi-spuid", "ncbi-spuid_namespace", "ncbi-bioproject",
+	"title", "sample_title", "bioproject_accession", "authors",
+	"submitting_lab", "submitting_lab_division", "submitting_lab_address",
+	"publication_status", "publication_title", "ncbi_sequence_name_sra",
+	"file_location", "illumina_sra_file_path_1", "illumina_sra_file_path_2",
+	"nanopore_sra_file_path_1", "nanopore_sra_file_path_2",
+	"illumina_sequencing_instrument", "illumina_library_strategy", "illumina_library_source",
+	"illumina_library_selection", "illumina_library_layout", "illumina_library_protocol", "illumina_library_name",
+	"nanopore_sequencing_instrument", "nanopore_library_strategy", "nanopore_library_source",
+	"nanopore_library_selection", "nanopore_library_layout", "nanopore_library_protocol", "nanopore_library_name",
+	"enrichment_kit", "amplicon_PCR_primer_scheme", "library_preparation_kit", "amplicon_size",
+	"quality_control_method", "quality_control_method_version", "quality_control_determination",
+	"quality_control_issues", "quality_control_details", "dehosting_method",
+	"sequence_submitter_contact_email", "raw_sequence_data_processing_method",
+	# internal renames sometimes present in DF
+	"int_illumina_sra_file_path_1", "int_illumina_sra_file_path_2", "int_nanopore_sra_file_path_1"
+}
+
 class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, sample, accession_id = None, identifier = None):
-		# Properly initialize the base classes 
-		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample) 
-		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier) 
+	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
+				 submission_dir, type, sample, accession_id=None, identifier=None, wastewater=False):
+		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample)
+		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
+		self.wastewater = bool(wastewater)
 		os.makedirs(self.outdir, exist_ok=True)
+
+	# ---------- helpers ----------
+	def _normalize_latlon(self, val):
+		if not val: return val
+		s = str(val).strip().replace(",", " ")
+		parts = s.split()
+		try:
+			if len(parts) == 2:
+				float(parts[0]); float(parts[1])
+				return f"{parts[0]} {parts[1]}"
+		except Exception:
+			pass
+		return s
+
+	def _yn_norm(self, v):
+		s = str(v).strip().lower()
+		if s in {"y", "yes", "true", "1"}: return "yes"
+		if s in {"n", "no", "false", "0"}: return "no"
+		return v
+
+	def _derive_geo_loc_name(self):
+		# prefer existing geo_loc_name; else derive "Country: State"
+		val = self.biosample_metadata.get("geo_loc_name")
+		if val and str(val).strip(): return str(val).strip()
+		country = (self.top_metadata.get("country") or self.biosample_metadata.get("country") or "").strip()
+		state = (self.top_metadata.get("state") or self.biosample_metadata.get("state") or "").strip()
+		return f"{country}: {state}" if country and state else (country or state)
+
+	def _apply_wastewater_profile(self):
+		# Organism: metagenome
+		self.biosample_metadata["organism"] = "metagenome"
+		# geo_loc_name normalize/derive
+		self.biosample_metadata["geo_loc_name"] = self._derive_geo_loc_name()
+		# isolation_source default if missing
+		if not str(self.biosample_metadata.get("isolation_source", "")).strip():
+			site = str(self.biosample_metadata.get("ww_sample_site", "") or "").strip()
+			matrix = str(self.biosample_metadata.get("ww_sample_matrix", "") or "").strip()
+			parts = [p for p in ["wastewater", site, matrix] if p]
+			if parts:
+				self.biosample_metadata["isolation_source"] = "; ".join(parts)
+		# lat_lon to attribute only if your package includes it (NWSS generally uses geo_loc_name, but keep normalized for consistency)
+		if "lat_lon" in self.biosample_metadata and self.biosample_metadata["lat_lon"]:
+			self.biosample_metadata["lat_lon"] = self._normalize_latlon(self.biosample_metadata["lat_lon"])
+		# pre-treatment normalize
+		if "ww_pre_treatment" in self.biosample_metadata and self.biosample_metadata["ww_pre_treatment"] is not None:
+			self.biosample_metadata["ww_pre_treatment"] = self._yn_norm(self.biosample_metadata["ww_pre_treatment"])
+
+	# ---------- XML writers ----------
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, 'Action')
 		add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
 		data = ET.SubElement(add_data, 'Data', {'content_type': 'xml'})
 		xml_content = ET.SubElement(data, 'XmlContent')
+
 		# BioSample XML block
 		biosample = ET.SubElement(xml_content, 'BioSample', {'schema_version': '2.0'})
+
 		# SampleId with SPUID
-		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
+		spuid_ns = self.safe_text(self.submission_config['NCBI_Namespace'])
 		sample_id = ET.SubElement(biosample, 'SampleId')
-		spuid = ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
-		spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
-		# Descriptor with Title
-		descriptor = ET.SubElement(biosample, 'Descriptor')
-		if 'title' in self.top_metadata and self.top_metadata['title']:
-			title = ET.SubElement(descriptor, 'Title')
-			title.text = self.safe_text(self.top_metadata['title'])
+		ET.SubElement(sample_id, 'SPUID', {'spuid_namespace': spuid_ns}).text = self.safe_text(self.top_metadata['ncbi-spuid'])
+
+		# Descriptor/Title maps to 'sample_title' in the WW template
+		if self.top_metadata.get('title'):
+			desc = ET.SubElement(biosample, 'Descriptor')
+			ET.SubElement(desc, 'Title').text = self.safe_text(self.top_metadata['title'])
+
 		# Organism section
 		organism = ET.SubElement(biosample, 'Organism')
-		organism_name = ET.SubElement(organism, 'OrganismName')
-		organism_name.text = self.safe_text(self.biosample_metadata['organism'])
-		# BioProject reference
+		if self.wastewater:
+			ET.SubElement(organism, 'OrganismName').text = "metagenome"
+		else:
+			ET.SubElement(organism, 'OrganismName').text = self.safe_text(self.biosample_metadata.get('organism', ''))
+
+		# BioProject reference (bioproject_accession)
 		bioproject = ET.SubElement(biosample, 'BioProject')
-		primary_id = ET.SubElement(bioproject, 'PrimaryId', {'db': 'BioProject'})
-		primary_id.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
+		ET.SubElement(bioproject, 'PrimaryId', {'db': 'BioProject'}).text = self.safe_text(self.top_metadata['ncbi-bioproject'])
+
 		# Package
 		bs_package = ET.SubElement(biosample, 'Package')
-		bs_package.text = self.safe_text(self.submission_config['BioSample_package'])
-		# Identifier for initial submission 
-		# Include optional Accession link if updating a BioSample
+		if self.wastewater:
+			# Force the wastewater package as requested
+			pkg = 'wastewater_NWSSv1.9'
+		else:
+			pkg = self.submission_config.get('BioSample_package') or 'Pathogen.cl.1.0'
+		bs_package.text = self.safe_text(pkg)
+
+		# Identifier for initial submission vs update
 		identifier = ET.SubElement(add_data, 'Identifier')
 		if not self.accession_id:
-			spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': spuid_namespace_value})
-			spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+			ET.SubElement(identifier, 'SPUID', {'spuid_namespace': spuid_ns}).text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		else:
-			primary_id = ET.SubElement(identifier, 'PrimaryId', {'db': 'BioSample'})
-			primary_id.text = self.accession_id
+			ET.SubElement(identifier, 'PrimaryId', {'db': 'BioSample'}).text = self.accession_id
+
 		return biosample
+
 	def add_attributes_block(self, biosample):
+		# Apply WW profile (organism=metagenome, geo_loc_name, isolation_source, lat_lon cleanup, yes/no)
+		if self.wastewater:
+			self._apply_wastewater_profile()
+
 		attributes = ET.SubElement(biosample, 'Attributes')
-		for attr_name, attr_value in self.biosample_metadata.items():
-			# organism already added to XML in add_action_block, also ignore the test fields in the custom metadata JSON
-			ignored_fields = ['organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2']
-			if attr_name not in ignored_fields:
-				attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
-				attribute.text = self.safe_text(attr_value)
+
+		# If wastewater, do not include 'host' in BioSample XML
+		skip = set(_BIOSAMPLE_SKIP)
+		if self.wastewater:
+			skip.add("host")
+
+		# Always include 'geo_loc_name' attribute (derive if absent)
+		if self.wastewater:
+			self.biosample_metadata["geo_loc_name"] = self._derive_geo_loc_name()
+
+		# Emit only allowed wastewater attributes (from _WW_ALLOWED_ATTRS), intersecting with provided metadata
+		for meta_key, meta_val in self.biosample_metadata.items():
+			if meta_key in skip:
+				continue
+			# Restrict to allowed WW attributes when wastewater=True; otherwise include everything except skip (legacy behavior)
+			if self.wastewater and (meta_key not in _WW_ALLOWED_ATTRS):
+				continue
+			# Skip empty values
+			if meta_val is None or str(meta_val).strip() == "":
+				continue
+			# Finally write as <Attribute attribute_name="meta_key">value</Attribute>
+			ET.SubElement(attributes, 'Attribute', {'attribute_name': meta_key}).text = self.safe_text(meta_val)
+
+# Required SRA fields you asked to include as attributes (and used to build <File> nodes)
+_SRA_REQUIRED = [
+	"sample_name",
+	"library_ID",
+	"title",
+	"library_strategy",
+	"library_source",
+	"library_selection",
+	"library_layout",          # SINGLE | PAIRED
+	"platform",               # ILLUMINA | OXFORD_NANOPORE | ...
+	"instrument_model",
+	"design_description",
+	"filetype",               # e.g., fastq, generic-data
+	"filename",               # one or more (semicolon-separated) -> <File> nodes
+	"enrichment_kit",
+	"amplicon_PCR_primer_scheme",
+	"library_preparation_kit",
+	"dehosting_method",
+	"raw_sequence_data_processing_method"
+]
+
+# Metadata keys we do NOT want to echo as SRA attributes (handled elsewhere)
+_SRA_SKIP = {
+	# BioSample/BioProject and submission envelope fields:
+	"ncbi-spuid", "ncbi-spuid_namespace", "ncbi-bioproject",
+	# internal or non-SRA fields:
+	"file_location",
+	"illumina_sra_file_path_1", "illumina_sra_file_path_2",
+	"nanopore_sra_file_path_1", "nanopore_sra_file_path_2",
+	"int_illumina_sra_file_path_1", "int_illumina_sra_file_path_2",
+	"int_nanopore_sra_file_path_1",
+	# These are captured as specific required attributes above:
+	"sample_name", "library_ID", "title", "library_strategy", "library_source", "library_selection",
+	"library_layout", "platform", "instrument_model", "design_description",
+	"filetype", "filename",
+	"enrichment_kit", "amplicon_PCR_primer_scheme", "library_preparation_kit",
+	"dehosting_method", "raw_sequence_data_processing_method"
+}
+
+def _first_nonempty(d, keys: List[str], default: str = "") -> str:
+	for k in keys:
+		val = d.get(k)
+		if val is not None and str(val).strip() != "":
+			return str(val).strip()
+	return default
+
+def _norm_layout(layout: str) -> str:
+	s = str(layout or "").strip().lower()
+	if s in {"paired", "pair", "pe"}: return "PAIRED"
+	return "SINGLE"
+
+def _infer_platform_and_model(row: dict) -> (str, str):
+	# Prefer explicit fields; otherwise infer from illumina_/nanopore_ cols
+	plat = _first_nonempty(row, ["platform"])
+	model = _first_nonempty(row, ["instrument_model"])
+	if plat and model:
+		return plat, model
+	illum = _first_nonempty(row, ["illumina_sequencing_instrument"])
+	if illum:
+		return "ILLUMINA", illum
+	nano = _first_nonempty(row, ["nanopore_sequencing_instrument"])
+	if nano:
+		return "OXFORD_NANOPORE", nano
+	# Fallback
+	return ("ILLUMINA", "Illumina NovaSeq 6000")
+
+def _infer_library_id(row: dict) -> str:
+	return _first_nonempty(row, ["library_ID", "illumina_library_name", "nanopore_library_name"]) or \
+		(f"{_first_nonempty(row, ['sample_name'], 'sample')}_LIB")
+
+def _infer_design(row: dict) -> str:
+	# Use design_description if present; else derive a concise wastewater context
+	dd = _first_nonempty(row, ["design_description"])
+	if dd:
+		return dd
+	parts = []
+	for f in ("purpose_of_ww_sequencing","isolation_source","ww_sample_matrix","ww_sample_type","ww_sample_site","ww_surv_jurisdiction"):
+		v = row.get(f)
+		if v and str(v).strip():
+			parts.append(f"{f}={str(v).strip()}")
+	return "; ".join(parts)
+
+def _split_filenames(val: str) -> List[str]:
+	if not val: return []
+	names = [p.strip() for p in str(val).split(";") if p.strip()]
+	return names
 
 class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
-		# Properly initialize the base classes 
-		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample) 
+	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
+				 submission_dir, type, samples, sample, accession_id=None, identifier=None, wastewater=False):
+		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample)
 		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
 		self.samples = samples
+		self.wastewater = bool(wastewater)
 		os.makedirs(self.outdir, exist_ok=True)
+
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, "Action")
 		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
-		ext1 = get_compound_extension(self.sample.fastq1)
-		ext2 = get_compound_extension(self.sample.fastq2)
-		fastq1 = f"{self.sample.sample_id}_R1{ext1}"
-		fastq2 = f"{self.sample.sample_id}_R2{ext2}"
-		file1 = ET.SubElement(add_files, "File", file_path=fastq1)
-		data_type1 = ET.SubElement(file1, "DataType")
-		data_type1.text = "generic-data"
-		file2 = ET.SubElement(add_files, "File", file_path=fastq2)
-		data_type2 = ET.SubElement(file2, "DataType")
-		data_type2.text = "generic-data"
+
+		# Build files from metadata if provided; else fallback to Sample object
+		filetype = _first_nonempty(self.sra_metadata, ["filetype"]) or "generic-data"
+		filenames = _split_filenames(_first_nonempty(self.sra_metadata, ["filename"]))
+
+		if filenames:
+			for fn in filenames:
+				file_el = ET.SubElement(add_files, "File", file_path=fn)
+				ET.SubElement(file_el, "DataType").text = filetype
+		else:
+			# fallback from Sample (Illumina paired or single, or Nanopore single)
+			if getattr(self.sample, "fastq1", None):
+				ext1 = get_compound_extension(self.sample.fastq1)
+				fn1 = f"{self.sample.sample_id}_R1{ext1}"
+				file1 = ET.SubElement(add_files, "File", file_path=fn1)
+				ET.SubElement(file1, "DataType").text = filetype
+			if getattr(self.sample, "fastq2", None):
+				ext2 = get_compound_extension(self.sample.fastq2)
+				fn2 = f"{self.sample.sample_id}_R2{ext2}"
+				file2 = ET.SubElement(add_files, "File", file_path=fn2)
+				ET.SubElement(file2, "DataType").text = filetype
+			if getattr(self.sample, "nanopore", None) and not getattr(self.sample, "fastq1", None):
+				ext = get_compound_extension(self.sample.nanopore)
+				fn = f"{self.sample.sample_id}{ext}"
+				file_np = ET.SubElement(add_files, "File", file_path=fn)
+				ET.SubElement(file_np, "DataType").text = filetype
+
 		return add_files
+
 	def add_attributes_block(self, add_files):
-		for attr_name, attr_value in self.sra_metadata.items():
-			attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
-			attribute.text = self.safe_text(attr_value)
-		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
+		"""
+		Write SRA attributes ensuring required fields are present.
+		Also attaches BioProject/BioSample refs and an SPUID Identifier.
+		"""
+		row = dict(self.sra_metadata)
+
+		# Required fields (derive when not explicitly present)
+		row.setdefault("sample_name", _first_nonempty(self.top_metadata, ["sample_name"], "sample"))
+		row.setdefault("title", _first_nonempty(row, ["title", "ncbi_sequence_name_sra", "sample_name"]))
+		row.setdefault("library_strategy", _first_nonempty(row, ["library_strategy", "illumina_library_strategy", "nanopore_library_strategy"], "WGS"))
+		row.setdefault("library_source", _first_nonempty(row, ["library_source", "illumina_library_source", "nanopore_library_source"], "GENOMIC"))
+		row.setdefault("library_selection", _first_nonempty(row, ["library_selection", "illumina_library_selection", "nanopore_library_selection"], "RANDOM"))
+		# layout from explicit or inferred by presence of fastq2
+		layout = _first_nonempty(row, ["library_layout", "illumina_library_layout", "nanopore_library_layout"])
+		if not layout:
+			layout = "PAIRED" if getattr(self.sample, "fastq1", None) and getattr(self.sample, "fastq2", None) else "SINGLE"
+		row["library_layout"] = _norm_layout(layout)
+		# platform + model
+		plat, model = _infer_platform_and_model(row)
+		row["platform"] = plat
+		row["instrument_model"] = model
+		# library_ID
+		row["library_ID"] = _infer_library_id(row)
+		# design_description
+		row["design_description"] = _infer_design(row)
+		# filetype & filename required: if not present, reconstruct from Sample fallback
+		if not _first_nonempty(row, ["filetype"]):
+			row["filetype"] = "generic-data"
+		if not _first_nonempty(row, ["filename"]):
+			# create semicolon-separated list like the file nodes we wrote
+			names = []
+			if getattr(self.sample, "fastq1", None):
+				names.append(f"{self.sample.sample_id}_R1{get_compound_extension(self.sample.fastq1)}")
+			if getattr(self.sample, "fastq2", None):
+				names.append(f"{self.sample.sample_id}_R2{get_compound_extension(self.sample.fastq2)}")
+			if getattr(self.sample, "nanopore", None) and not getattr(self.sample, "fastq1", None):
+				names.append(f"{self.sample.sample_id}{get_compound_extension(self.sample.nanopore)}")
+			row["filename"] = ";".join(names)
+
+		# Ensure enrichment_kit / amplicon scheme / lib prep / dehosting / raw processing exist (empty allowed but present)
+		for k in ["enrichment_kit", "amplicon_PCR_primer_scheme", "library_preparation_kit",
+				  "dehosting_method", "raw_sequence_data_processing_method"]:
+			row.setdefault(k, _first_nonempty(row, [k], ""))
+
+		# Emit required attributes first (always present even if empty)
+		for k in _SRA_REQUIRED:
+			val = row.get(k, "")
+			attr = ET.SubElement(add_files, "Attribute", name=k)
+			attr.text = self.safe_text(val)
+
+		# Emit optional attributes: pass through any other metadata fields that have data and aren't on skip list
+		for k, v in row.items():
+			if k in _SRA_REQUIRED or k in _SRA_SKIP:
+				continue
+			if v is None or str(v).strip() == "":
+				continue
+			ET.SubElement(add_files, "Attribute", name=k).text = self.safe_text(v)
+
 		# BioProject reference
-		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
-		refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
-		primaryid_bioproject = ET.SubElement(refid_bioproject, "PrimaryId")
-		primaryid_bioproject.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
-		# BioSample reference
-		attribute_ref_id_biosample = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
-		refid_biosample = ET.SubElement(attribute_ref_id_biosample, "RefId")
-		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
-		spuid_biosample.text = self.safe_text(self.top_metadata['ncbi-spuid'])
-		# Identifier
-		identifier = ET.SubElement(add_files, 'Identifier')
-		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
-		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi-spuid']}_SRA")
-		# todo: add attribute ref ID for BioSample
+		spuid_ns = self.safe_text(self.submission_config['NCBI_Namespace'])
+		attr_proj = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
+		refid_proj = ET.SubElement(attr_proj, "RefId")
+		ET.SubElement(refid_proj, "PrimaryId").text = self.safe_text(self.top_metadata['ncbi-bioproject'])
+
+		# BioSample reference by SPUID
+		attr_bs = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
+		refid_bs = ET.SubElement(attr_bs, "RefId")
+		ET.SubElement(refid_bs, "SPUID", {'spuid_namespace': spuid_ns}).text = self.safe_text(self.top_metadata['ncbi-spuid'])
+
+		# Identifier (SRA object SPUID)
+		ident = ET.SubElement(add_files, "Identifier")
+		ET.SubElement(ident, "SPUID", {'spuid_namespace': spuid_ns}).text = self.safe_text(f"{self.top_metadata['ncbi-spuid']}_SRA")
 
 class GenbankSubmission(XMLSubmission, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):

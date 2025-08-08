@@ -42,17 +42,18 @@ def main_prepare():
 	identifier = params['identifier']
 	submission_dir = 'Test' if params['test'] else 'Production'
 	output_root = params['outdir']
+
 	# build sample objects
 	samples = []
 	for s in params['sample']:
 		d = dict(item.split('=') for item in s.split(','))
 		samples.append(Sample(
 			sample_id   = d['sample_id'],
-			batch_id    = batch_id,
-			fastq1      = d.get('fq1'),
-			fastq2      = d.get('fq2'),
-			nanopore    = d.get('nanopore'),
-			species     = params['species'],
+			batch_id	= batch_id,
+			fastq1	  = d.get('fq1'),
+			fastq2	  = d.get('fq2'),
+			nanopore	= d.get('nanopore'),
+			species	 = params['species'],
 			databases   = [db for db in params if params[db] and db in ['biosample','sra','genbank']],
 			fasta_file  = d.get('fasta'),
 			annotation_file = d.get('gff')
@@ -72,11 +73,12 @@ def main_prepare():
 			type='biosample',
 			sample=None,
 			accession_id=None,
-			identifier=identifier
+			identifier=identifier,
+			wastewater=params.get('wastewater', False)  # <-- pass wastewater flag
 		)
 		bs.init_xml_root()
 		for s in samples:
-			md = metadata_df[metadata_df['sample_name']==s.sample_id]
+			md = metadata_df[metadata_df['sample_name'] == s.sample_id]
 			bs.add_sample(s, md)
 		bs.finalize_xml()
 		# write submit.ready
@@ -86,10 +88,10 @@ def main_prepare():
 	if params['sra']:
 		illum = [s for s in samples if s.fastq1 and s.fastq2]
 		nano  = [s for s in samples if s.nanopore]
-		platforms = (('illumina',illum),('nanopore',nano)) if illum and nano else [(None, illum or nano)]
+		platforms = (('illumina', illum), ('nanopore', nano)) if illum and nano else [(None, illum or nano)]
 		for platform, samp_list in platforms:
 			# submission_dir needs to be unique if submitting both illumina and nanopore
-			submission_dir = os.path.join(output_root,'sra',platform) if platform else os.path.join(output_root,'sra')
+			submission_dir = os.path.join(output_root, 'sra', platform) if platform else os.path.join(output_root, 'sra')
 			os.makedirs(submission_dir, exist_ok=True)
 			sra = SRASubmission(
 				parameters=params,
@@ -102,18 +104,19 @@ def main_prepare():
 				samples=samp_list,
 				sample=None,
 				accession_id=None,
-				identifier=identifier
+				identifier=identifier,
+				wastewater=params.get('wastewater', False)  # <-- pass wastewater flag
 			)
 			sra.init_xml_root()
 			for s in samp_list:
-				md = metadata_df[metadata_df['sample_name']==s.sample_id]
-				sra.add_sample(s, md, platform)
+				md = metadata_df[metadata_df['sample_name'] == s.sample_id]
+				sra.add_sample(s, md, platform)  # existing signature
 			sra.finalize_xml()
 			# write submit.ready
 			open(os.path.join(submission_dir,'submit.ready'),'w').close()
 			# copy/Symlink raw files to SRA folder
 			prepare_sra_fastqs(samp_list, submission_dir, copy=False)
-
+			
 	# 3) Prepare GenBank submission, per-sample
 	if params['genbank']:
 		for s in samples:
