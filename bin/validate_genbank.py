@@ -20,17 +20,20 @@ PLASMID_UNNAMED_PATTERN = re.compile(r'^unnamed\d*$')
 CHROMOSOME_NAME_PATTERN = re.compile(r'^[\w\.\-_]{1,33}$')
 
 used_headers = set()
+errors = []
 
 def check_file_exists(path):
     if not os.path.isfile(path):
-        logging.error(f"File not found: {path}")
-        sys.exit(1)
+        msg = f"File not found: {path}"
+        logging.error(msg)
+        errors.append(msg)
 
 def check_file_size(path):
     size = os.path.getsize(path)
     if size > MAX_FILE_SIZE:
-        logging.error(f"File size error: '{path}' is {size / (1024**3):.2f} GB, which exceeds the 2 GB limit.")
-        sys.exit(1)
+        msg = f"File size error: '{path}' is {size / (1024**3):.2f} GB, which exceeds the 2 GB limit."
+        logging.error(msg)
+        errors.append(msg)
 
 def read_fasta(path):
     """Yield (header, sequence) tuples from FASTA file"""
@@ -48,8 +51,10 @@ def read_fasta(path):
                 seq_lines = []
             else:
                 if not header:
-                    logging.error(f"FASTA format error: Sequence found before header at line {line_num}")
-                    sys.exit(1)
+                    msg = f"FASTA format error: Sequence found before header at line {line_num}"
+                    logging.error(msg)
+                    errors.append(msg)
+                    continue
                 seq_lines.append(line)
         if header:
             yield header, ''.join(seq_lines)
@@ -59,56 +64,59 @@ def clean_sequence(seq):
 
 def validate_header_format(header):
     if not HEADER_PATTERN.match(header):
-        logging.error(f"Invalid FASTA header format: {header}")
-        sys.exit(1)
+        msg = f"Invalid FASTA header format: {header}"
+        logging.error(msg)
+        errors.append(msg)
 
 def check_unique_header(header):
     if header in used_headers:
-        logging.error(f"Duplicate header found: {header}")
-        sys.exit(1)
+        msg = f"Duplicate header found: {header}"
+        logging.error(msg)
+        errors.append(msg)
     used_headers.add(header)
 
-
 def check_naming_conventions(header):
-    """
-    Check naming rules for chromosome and plasmid names based on GenBank rules.
-    """
-    plasmid_match = re.search(r'\[plasmid-name=(.*?)\]', header)
-    chrom_match = re.search(r'\[chromosome=(.*?)\]', header)
-    organelle_match = re.search(r'\[organelle=(.*?)\]', header)
+    plasmid_match = re.search(r'\bplasmid\b[:\s]*([\w\.\-]+)', header, re.IGNORECASE)
+    chrom_match = re.search(r'\bchromosome\b[:\s]*([\w\.\-]+)', header, re.IGNORECASE)
 
     if plasmid_match:
         name = plasmid_match.group(1)
         if 'plasmid' in name.lower():
-            logging.error(f"Invalid plasmid name '{name}' contains the word 'plasmid': {header}")
-            sys.exit(1)
-        if not (name == 'unnamed' or PLASMID_UNNAMED_PATTERN.match(name) or PLASMID_NAME_PATTERN.match(name)):
-            logging.error(f"Invalid plasmid name '{name}' in header: {header}")
-            sys.exit(1)
+            msg = f"Invalid plasmid name '{name}' contains the word 'plasmid': {header}"
+            logging.error(msg)
+            errors.append(msg)
+        elif not (name == 'unnamed' or PLASMID_UNNAMED_PATTERN.match(name) or PLASMID_NAME_PATTERN.match(name)):
+            msg = f"Invalid plasmid name '{name}' in header: {header}"
+            logging.error(msg)
+            errors.append(msg)
 
     if chrom_match:
         name = chrom_match.group(1)
-        if 'chr' in name.lower() or 'chromosome' in name.lower() or 'unknown' in name.lower() or name.lower() in ['un', 'unk', '0']:
-            logging.error(f"Invalid chromosome name '{name}' in header: {header}")
-            sys.exit(1)
-        if not CHROMOSOME_NAME_PATTERN.match(name):
-            logging.error(f"Chromosome name '{name}' does not meet naming rules: {header}")
-            sys.exit(1)
-        if 'linkage' in header.lower() and 'lg' not in name.lower():
+        if any(sub in name.lower() for sub in ['chr', 'chromosome', 'unknown']) or name.lower() in ['un', 'unk', '0']:
+            msg = f"Invalid chromosome name '{name}' in header: {header}"
+            logging.error(msg)
+            errors.append(msg)
+        elif not CHROMOSOME_NAME_PATTERN.match(name):
+            msg = f"Chromosome name '{name}' does not meet naming rules: {header}"
+            logging.error(msg)
+            errors.append(msg)
+        elif 'linkage' in header.lower() and 'lg' not in name.lower():
             logging.warning(f"Chromosome '{name}' may represent a linkage group but does not contain 'LG': {header}")
-
 
 def check_sequence_length(seq, header):
     cleaned_len = len(seq)
     if cleaned_len < MIN_SEQ_LENGTH:
-        logging.error(
+        msg = (
             f"Sequence length error: {header} is only {cleaned_len} nt after trimming, "
             f"which is below the required minimum of {MIN_SEQ_LENGTH} nt."
         )
-        sys.exit(1)
-    if cleaned_len < WARN_SEQ_LENGTH:
+        logging.error(msg)
+        errors.append(msg)
+    elif cleaned_len < WARN_SEQ_LENGTH:
         logging.warning(
-            f"Warning: Sequence '{header}' is {cleaned_len} nt after trimming. Lengths between 200 and 1000 nt may indicate the presence of contaminants."        )
+            f"Warning: Sequence '{header}' is {cleaned_len} nt after trimming. "
+            "Lengths between 200 and 1000 nt may indicate the presence of contaminants."
+        )
 
 def validate_and_clean_fasta(input_path, output_path):
     check_file_size(input_path)
@@ -134,8 +142,9 @@ def validate_and_clean_fasta(input_path, output_path):
 
     # Check number of sequences
     if seq_count > MAX_SEQUENCES:
-        logging.error(f"Sequence count error: {seq_count} sequences found, which exceeds the limit of {MAX_SEQUENCES}.")
-        sys.exit(1)
+        msg = f"Sequence count error: {seq_count} sequences found, which exceeds the limit of {MAX_SEQUENCES}."
+        logging.error(msg)
+        errors.append(msg)
     elif seq_count > WARN_SEQUENCES:
         logging.warning(f"Sequence count warning: {seq_count} sequences found, which exceeds the recommended threshold of {WARN_SEQUENCES}.")
 
@@ -151,12 +160,15 @@ if __name__ == "__main__":
         sys.exit(1)
 
     input_fasta = sys.argv[1]
-
     check_file_exists(input_fasta)
 
-    # Derive cleaned output with .fsa extension
     base_fasta = os.path.splitext(os.path.basename(input_fasta))[0]
     output_fasta = os.path.join(os.path.dirname(input_fasta), f"{base_fasta}_cleaned.fsa")
 
-
     validate_and_clean_fasta(input_fasta, output_fasta)
+
+    if errors:
+        logging.error("\nValidation completed with errors:")
+        for e in errors:
+            logging.error(f" - {e}")
+        sys.exit(1)
