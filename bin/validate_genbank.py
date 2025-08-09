@@ -76,32 +76,37 @@ def check_unique_header(header):
     used_headers.add(header)
 
 def check_naming_conventions(header):
-    plasmid_match = re.search(r'\bplasmid\b[:\s]*([\w\.\-]+)', header, re.IGNORECASE)
-    chrom_match = re.search(r'\bchromosome\b[:\s]*([\w\.\-]+)', header, re.IGNORECASE)
+    # Extract plasmid/chromosome names from natural text headers
+    plasmid_match = re.search(r'\bplasmid\b[:\s]*([^\],]+)', header, re.IGNORECASE)
+    chrom_match = re.search(r'\bchromosome\b[:\s]*([^\],]+)', header, re.IGNORECASE)
 
     if plasmid_match:
-        name = plasmid_match.group(1)
+        name = plasmid_match.group(1).strip()
         if 'plasmid' in name.lower():
             msg = f"Invalid plasmid name '{name}' contains the word 'plasmid': {header}"
             logging.error(msg)
             errors.append(msg)
-        elif not (name == 'unnamed' or PLASMID_UNNAMED_PATTERN.match(name) or PLASMID_NAME_PATTERN.match(name)):
+        elif not (
+            name == 'unnamed'
+            or PLASMID_UNNAMED_PATTERN.match(name)
+            or PLASMID_NAME_PATTERN.match(name)
+        ):
             msg = f"Invalid plasmid name '{name}' in header: {header}"
             logging.error(msg)
             errors.append(msg)
 
     if chrom_match:
-        name = chrom_match.group(1)
+        name = chrom_match.group(1).strip()
         if any(sub in name.lower() for sub in ['chr', 'chromosome', 'unknown']) or name.lower() in ['un', 'unk', '0']:
             msg = f"Invalid chromosome name '{name}' in header: {header}"
             logging.error(msg)
             errors.append(msg)
-        elif not CHROMOSOME_NAME_PATTERN.match(name):
+        elif not CHROMOSOME_NAME_PATTERN.match(name.replace(" ", "")):  # allow spaces in LG names
             msg = f"Chromosome name '{name}' does not meet naming rules: {header}"
             logging.error(msg)
             errors.append(msg)
-        elif 'linkage' in header.lower() and 'lg' not in name.lower():
-            logging.warning(f"Chromosome '{name}' may represent a linkage group but does not contain 'LG': {header}")
+        elif re.search(r'\blg\b', name.lower()):
+            logging.info(f"Chromosome '{name}' appears to represent a linkage group (LG): {header}")
 
 def check_sequence_length(seq, header):
     cleaned_len = len(seq)
