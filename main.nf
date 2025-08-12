@@ -21,7 +21,6 @@ workflow BIOSAMPLE_AND_SRA_WORKFLOW {
     AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, 
                           params.submission_config,
                           BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
-    //CONSOLIDATE_REPORTS
 }
 
 workflow GENBANK_WORKFLOW {
