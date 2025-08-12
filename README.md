@@ -92,11 +92,21 @@ This section outlines the primary parameters available for configuring and runni
 
 | Parameter               | Description                                                                                       | Input Required           |
 |-------------------------|---------------------------------------------------------------------------------------------------|--------------------------|
-| `--validate_params`     | Flag to enable or disable parameter validation                                                    | No (true/false as bool)  |
 | `--annotation`          | Toggle for running annotation                                                                     | Yes (true/false as bool) |
 | `--submission`          | Toggle for running submission                                                                     | Yes (true/false as bool) |
-| `--update_submission`   | Toggle to update data for existing BioSample or SRA records                                       | Yes (true/false as bool) |
-| `--fetch_reports_only`  | Toggle for only fetching submission reports                                                       | Yes (true/false as bool) |
+| `--update_submission`   | Toggle to update data for existing BioSample or SRA records(currently in progress)                                       | Yes (true/false as bool) |
+| `--workflow`            | Specifies the workflow to execute, allowing users to choose the appropriate processing method.   | Yes (string)             |
+
+#### Workflow Options
+
+The following workflows are available for the `--workflow` parameter:
+
+- **biosample_and_sra**: Runs a submission to BioSample and SRA.
+- **genbank**: Runs a GenBank submission.
+- **fetch_accessions**: Fetches reports and updates the metadata file.
+- **full_submission**: Executes BioSample and SRA submissions, waits 60 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
+
+**Note**: The GenBank submission cannot complete without a BioSample accession ID.
 
 For more detailed information on each parameter and additional configurations, please refer to the [TOSTADAS documentation](https://github.com/CDCgov/tostadas/wiki).
 

@@ -42,11 +42,6 @@
     },
     "Pipeline Configuration Modes": {
       "properties": {
-        "validate_params": {
-          "type": "boolean",
-          "description": "Flag to enable or disable parameter validation.",
-          "default": true
-        },
         "annotation": {
           "description": "Toggle for running annotation",
           "type": "boolean",
