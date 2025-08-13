@@ -33,7 +33,6 @@ process METADATA_VALIDATION {
             --date_format_flag $params.date_format_flag \
             $remove_demographic_info $validate_custom_fields \
             --config_file $resolved_submission_config \
-            --biosample_fields_key $params.biosample_fields_key \
-            --wastewater $params.wastewater
+            --biosample_fields_key $params.biosample_fields_key
         """
 }
