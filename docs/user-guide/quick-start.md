@@ -12,14 +12,14 @@ Expected Output:
 
 Bacterial and viral submission configurations are provided in the repo for testing purposes, but you will not be able to perform a submission without providing a personal submission configuration.
 
-More information on running the submission sub-workflow can be found here: [More Information on Submission](https://github.com/CDCgov/tostadas/wiki/Profile-Options-&-Input-Files#running-submission-only)
+More information on running the submission sub-workflow can be found here: [More Information on Submission](../user-guide/submission_config_guide.md)
 
 ## Pipeline Execution Examples
 
 We describe a few use-cases of the pipeline below. For more information on input parameters, refer to the documentation found in the following pages:
 
-*   [Profile Options and Input Files](https://github.com/CDCgov/tostadas/wiki/Profile-Options-&-Input-Files)
-*   [Parameters](https://github.com/CDCgov/tostadas/wiki/Parameters)
+*   [Profile Options and Input Files](../user-guide/profile.md)
+*   [Parameters](../user-guide/parameters.md)
 
 ❗ The paths to the required files must be specified in the nextflow.config file or the params.yaml file.
 

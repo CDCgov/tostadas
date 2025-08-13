@@ -19,7 +19,19 @@ Default parameters are given in the nextflow.config file. This table lists the p
 | \--submission | Toggle for running submission | Yes (true/false as bool) |
 | \--annotation | Toggle for running annotation | Yes (true/false as bool) |
 | \--cleanup | Toggle for running cleanup subworkflows | Yes (true/false as bool) |
-| \--fetch\_reports\_only | Toggle for only fetching submission reports | Yes (true/false as bool) |
+| `--workflow`            | Specifies the workflow to execute, allowing users to choose the appropriate processing method.   | Yes (string)             |
+
+#### Workflow Options
+
+The following workflows are available for the `--workflow` parameter:
+
+- **biosample_and_sra**: Runs a submission to BioSample and SRA.
+- **genbank**: Runs a GenBank submission.
+- **fetch_accessions**: Fetches reports and updates the metadata file.
+- **full_submission**: Executes BioSample and SRA submissions, waits 60 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
+
+**Note**: The GenBank submission cannot complete without a BioSample accession ID.
+
 
 ## General Settings
 
@@ -52,7 +64,6 @@ Default parameters are given in the nextflow.config file. This table lists the p
 | \--val\_output\_dir | File path for outputs specific to validate sub-workflow | Yes (folder name as string) |
 | \--validate\_custom\_fields | Toggle checks/transformations for custom metadata fields on/off | No (true/false as bool) |
 | \--custom\_fields\_file | Path to the JSON file containing custom metadata fields and their information | No (path as string) |
-| \--validate\_params | Flag to enable or disable parameter validation | No (true/false as bool) |
 
 ## Liftoff
 

@@ -5,7 +5,7 @@
 <!-- [![GitHub Downloads](https://img.shields.io/github/downloads/CDCgov/tostadas/total.svg?style=social&logo=github&label=Download)](https://github.com/CDCgov/tostadas/releases) -->
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
-For the complete TOSTADAS documentation, please see the [Wiki](https://github.com/CDCgov/tostadas/wiki)
+For the complete TOSTADAS documentation, please see the [Complete Documentation](https://cdcgov.github.io/tostadas/)
 
 ## Warnings
 ### Plugin Compatibility Warning
@@ -24,7 +24,7 @@ A portable, open-source pipeline designed to streamline submission of pathogen g
 TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses and select bacteria. Testing for additional pathogen is planned for future releases.
 
 ## Installation and Quick Start
-❗ Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide)
+❗ Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](./docs/user-guide/cdc-user-guide.md)
 
 For non-CDC users, please follow the instructions below.
 ### 1. Clone the repository to your local machine
@@ -71,7 +71,7 @@ nextflow run main.nf -profile <docker|singularity> --species virus --submission 
 ```
 nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation  --genbank true --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>
 ```
-Refer to the wiki for more information on input parameters and use cases
+Refer to the documentation site for more information on input parameters and use cases.
 
 ### 7. Custom metadata validation and custom BioSample package
 
@@ -108,7 +108,7 @@ The following workflows are available for the `--workflow` parameter:
 
 **Note**: The GenBank submission cannot complete without a BioSample accession ID.
 
-For more detailed information on each parameter and additional configurations, please refer to the [TOSTADAS documentation](https://github.com/CDCgov/tostadas/wiki).
+For more detailed information on each parameter and additional configurations, please refer to the [TOSTADAS documentation](https://cdcgov.github.io/tostadas/).
 
 ## Troubleshooting
 
