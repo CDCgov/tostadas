@@ -114,8 +114,6 @@ workflow BIOSAMPLE_AND_SRA {
 			return tuple(meta, sample_maps, enabledDatabases as List)
 		}
 
-	submission_batch_ch.view { "submission_batch_ch emits: $it" }
-
 	SUBMISSION(
 		submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
 	 	params.submission_config
