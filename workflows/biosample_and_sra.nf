@@ -89,7 +89,7 @@ workflow BIOSAMPLE_AND_SRA {
 				def hasIllumina = fq1Exists && fq2Exists
 				def hasNanopore = nnpExists
 
-				log.info "Sample ${sid} | fq1: ${sample.fq1} (exists: ${fq1Exists}) | fq2: ${sample.fq2} (exists: ${fq2Exists}) | nnp: ${sample.nanopore} (exists: ${nnpExists})"
+				//log.info "Sample ${sid} | fq1: ${sample.fq1} (exists: ${fq1Exists}) | fq2: ${sample.fq2} (exists: ${fq2Exists}) | nnp: ${sample.nanopore} (exists: ${nnpExists})"
 
 				if (params.sra && (hasIllumina || hasNanopore)) {
 					enabledDatabases << "sra"
