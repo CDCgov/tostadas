@@ -23,11 +23,17 @@ We describe a few use-cases of the pipeline below. For more information on input
 
 ❗ The paths to the required files must be specified in the nextflow.config file or the params.yaml file.
 
+## Warnings
+### Plugin Compatibility Warning
+❗ Important Note: This pipeline uses the nf-schema plugin to validate pipeline parameters. Users with Nextflow version 24 or later may encounter a warning message indicating that the plugin must be installed. To resolve this warning message, please install the plugin manually by following the instructions found in this [link](https://www.nextflow.io/docs/latest/plugins.html#offline-usage)
+
 ## Basic Usage:
 
 Before we dive into the more complex use-cases of the pipeline, let's look at the most basic way the pipeline can be run:
 
-`nextflow run main.nf -profile <test(optional)>,<singularity|docker|conda> --<virus|bacteria>` `-profile <test(optional)>,<singularity|docker|conda>` Specify the run-time environment (singularity, docker or conda). The conda implementation is less stable so using singularity or docker is recommended if available on your system. You may specify the optional `-profile` argument `test` to force the pipeline to ignore the custom configuration found in your nextflow.config file and instead run using a pre-configured test data set and configuration. `--<virus|bacteria>`: The pathogen type must be specified for the pipeline to run.
+`nextflow run main.nf -profile <test(optional)>,<singularity|docker|conda> --<virus|bacteria>` 
+
+`-profile <test(optional)>,<singularity|docker|conda>` Specify the run-time environment (singularity, docker or conda). The conda implementation is less stable so using singularity or docker is recommended if available on your system. You may specify the optional `-profile` argument `test` to force the pipeline to ignore the custom configuration found in your nextflow.config file and instead run using a pre-configured test data set and configuration. `--<virus|bacteria>`: The pathogen type must be specified for the pipeline to run.
 
 ❗ Important note on arguments: Arguments with a single “-“, such as -profile, are arguments to nextflow. Arguments with a double “--“, such as --virus or –-bacteria are arguments to the TOSTADAS pipeline.
 
@@ -107,4 +113,24 @@ Database targets are specified at run time. You can specify more than one target
 
 #### (1) Submit fastqs to SRA
 
-`nextflow run main.nf -profile singularity --virus --annotation false --sra –submission --meta_path </path/to/meta_data/file> --fastq_path </path/to/fastq/file/directory>` `--annotation false` Disable annotation
+`nextflow run main.nf -profile singularity --virus --annotation false --sra –submission --meta_path </path/to/meta_data/file> --fastq_path </path/to/fastq/file/directory>` 
+
+`--annotation false`: Disable annotation
+
+## Troubleshooting
+
+If you encounter issues while using the TOSTADAS pipeline, refer to the following troubleshooting steps to resolve common problems:
+
+### Common Issues and Solutions
+
+#### 1. Errors with 'table2asn not on PATH' or a Python library missing when using the `singularity` or `docker` profiles
+
+**Issue:** Nextflow is using an outdated cached image.
+
+**Solution:** Locate the image (e.g., `$HOME/.singularity/staphb-tostadas-latest.img`) and delete it. This will force Nextflow to pull the latest version.
+
+#### 2. Pipeline hangs indefinitely during the submission step, or you get a "duplicate BioSeq ID error"  
+
+**Issue:** This may be caused by duplicate sample IDs in the FASTA file (e.g., a multicontig FASTA). This is only a problem for submissions to Genbank using `table2asn`.
+
+**Solution:** Review the sequence headers in the sample FASTA files and ensure that each header is unique.
