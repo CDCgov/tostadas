@@ -158,22 +158,28 @@ class GetParams:
 		# initialize parser
 		parser = argparse.ArgumentParser(description="Parameters for Running Metadata Validation")
 		# required parameters (do not have default)
-		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for MetaData")
+		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for Metadata")
 		# optional parameters
-		parser.add_argument("--batch_size", type=int, default=1, help="Number of samples to process per batch")
+		parser.add_argument("--batch_size", type=int, default=1, 
+					  		help="Number of samples to process per batch")
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
-							help="Output Directory for final Files, default is current directory")
-		parser.add_argument("--overwrite_output_files", action="store_true", default=True, help='Flag for whether to overwrite the output dir')
+							help="Output Directory for final files, default is current directory")
+		parser.add_argument("--overwrite_output_files", action="store_true", default=True, 
+					  		help='Flag for whether to overwrite the output dir')
 		parser.add_argument("-k", "--remove_demographic_info", action="store_true", default=False,
 							help="Flag to remove potentially identifying demographic info if provided otherwise no change will be made " +
 								 "Applies to host_sex, host_age, race, ethnicity.")
 		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v'],
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
-		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
-		parser.add_argument("--validate_custom_fields", action="store_true", default=True, help="Flag for whether or not validate custom fields ")
-		parser.add_argument("--config_file", type=str, help="Path to submission config file with a valid BioSample_package key")
-		parser.add_argument("--biosample_fields_key", type=str, help="Path to file with BioSample required fields information")
+		parser.add_argument("--custom_fields_file", type=str, 
+					  		help="File containing custom fields, datatypes, and which samples to check")
+		parser.add_argument("--validate_custom_fields", action="store_true", default=True, 
+					  		help="Flag for whether or not validate custom fields ")
+		parser.add_argument("--config_file", type=str, 
+					  		help="Path to submission config file with a valid BioSample_package key")
+		parser.add_argument("--biosample_fields_key", type=str, 
+					  		help="Path to file with BioSample required fields information")
 		return parser
 
 	def get_restrictions(self):
@@ -199,14 +205,10 @@ class GetParams:
 		self.parameters['restricted_terms'] = [strategy_restrictions, source_restrictions,
 											   selection_restrictions, layout_restrictions]
 		self.parameters['illumina_instrument_restrictions'] = ["HiSeq X Five", "HiSeq X Ten", "Illumina Genome Analyzer",
-									 "Illumina Genome Analyzer II",
-									 "Illumina Genome Analyzer IIx", "Illumina HiScanSQ", "Illumina HiSeq 1000",
-									 "Illumina HiSeq 1500", "Illumina HiSeq 2000", "Illumina HiSeq 2500",
-									 "Illumina HiSeq 3000",
-									 "Illumina HiSeq 4000", "Illumina iSeq 100", "Illumina NovaSeq 6000",
-									 "Illumina MiniSeq",
-									 "Illumina MiSeq", "NextSeq 500", "NextSeq 550", "NextSeq 1000", "NextSeq 2000",
-									 "Illumina HiSeq X"]
+									 "Illumina Genome Analyzer II", "Illumina Genome Analyzer IIx", "Illumina HiScanSQ", "Illumina HiSeq 1000",
+									 "Illumina HiSeq 1500", "Illumina HiSeq 2000", "Illumina HiSeq 2500", "Illumina HiSeq 3000",
+									 "Illumina HiSeq 4000", "Illumina iSeq 100", "Illumina NovaSeq 6000", "Illumina MiniSeq", 
+									 "Illumina MiSeq", "NextSeq 500", "NextSeq 550", "NextSeq 1000", "NextSeq 2000", "Illumina HiSeq X"]
 		self.parameters['nanopore_instrument_restrictions'] = ["GridION", "MinION", "PromethION"]
 
 
@@ -386,11 +388,7 @@ class ValidateChecks:
 			# Convert First Middle Last to F.M. Last
 			if len(parts) == 3 and len(parts[0]) > 1:
 				new_name = f"{parts[0][0]}.{parts[1][0]}. {parts[2]}"
-				if not (new_name.count('.') == 2 and len(new_name.split()) == 2):
-					return cleaned  # fallback
-				return new_name
-			else:
-				return cleaned
+				return new_name if (new_name.count('.') == 2 and len(new_name.split()) == 2) else cleaned
 
 		# Apply to the full dataframe
 		for idx, row in self.metadata_df.iterrows():
@@ -414,15 +412,11 @@ class ValidateChecks:
 		"""
 		# Drop any columns containing 'test_field' 
 		self.metadata_df.drop(
-					columns=[
-						col for col in self.metadata_df.columns
-						if 'test_field' in col.lower()
-					],
-					inplace=True
-				)
+			columns=[c for c in self.metadata_df.columns if 'test_field' in c.lower()],
+			inplace=True, errors='ignore'
+		)
 
-		missing_fields = []
-		missing_optionals = []
+		missing_fields, missing_optionals = [], []
 
 		# Ensure all required columns are present
 		for field in self.required_core:
@@ -463,12 +457,32 @@ class ValidateChecks:
 		if missing_optionals:
 			opt_str = ["[" + ", ".join(group) + "]" for group in missing_optionals]
 			self.global_log.append("Missing optional field groups: " + ", ".join(opt_str))
+
+		# Check lat_lon field
+		if 'lat_lon' in self.metadata_df.columns:
+			for _, row in self.metadata_df.iterrows():
+				sample_name = row.get('sample_name', 'UNKNOWN_SAMPLE')
+				latlon_val = row.get('lat_lon', '')
+				if not self._valid_latlon(latlon_val):
+					self.sample_log[sample_name].append(
+						f"WARNING: lat_lon looks misformatted: '{latlon_val}' (expected 'lat lon')\n"
+					)
+
+	def _valid_latlon(self, s: str) -> bool:
+		"""Return True if s is a valid 'latitude longitude' string in decimal degrees."""
+		try:
+			lat_str, lon_str = map(str.strip, s.split())
+			lat = float(lat_str)
+			lon = float(lon_str)
+			return -90 <= lat <= 90 and -180 <= lon <= 180
+		except (ValueError, AttributeError):
+			return False
 	
 	def check_meta_case(self):
 		"""Checks and removes demographics metadata for cases (sex, age, race, and ethnicity) if present.
 		"""
 		try:
-			invalid_mask = pd.DataFrame(False, index=df.index, columns=self.case_fields)
+			invalid_mask = pd.DataFrame(False, index=self.metadata_df.index, columns=self.case_fields)
 
 			for field in self.case_fields:
 				if field in self.metadata_df.columns:
@@ -614,22 +628,22 @@ class HandleDfInserts:
 	def __init__(self, filled_df, parameters):
 		self.parameters = parameters
 		self.metadata_df = filled_df
-		self.list_of_country = self.metadata_df["country"].tolist()
-		self.list_of_state = self.metadata_df["state"].tolist()
+		self.list_of_country = self.metadata_df["country"].tolist() if "country" in self.metadata_df.columns else []
+		self.list_of_state = self.metadata_df["state"].tolist() if "state" in self.metadata_df.columns else []
 		self.new_combination_list = []
 
 	def handle_df_inserts(self):
 		""" Main function to call sub-insert routines and return the final metadata dataframe
 		"""
 		# adds the Geolocation field
-		self.insert_loc_data()
+		if self.list_of_country:
+			self.insert_loc_data()
 		self.insert_additional_columns()
 		try:
 			assert 'geo_loc_name' in self.metadata_df.columns.values
 			assert True not in [math.isnan(x) for x in self.metadata_df['geo_loc_name'].tolist() if isinstance(x, str) is False]
 			assert 'structuredcomment' in self.metadata_df.columns.values
-			assert True not in [math.isnan(x) for x in self.metadata_df['structuredcomment'].tolist() if
-								isinstance(x, str) is False]
+			assert True not in [math.isnan(x) for x in self.metadata_df['structuredcomment'].tolist() if isinstance(x, str) is False]
 		except AssertionError:
 			raise AssertionError(f'Columns were not properly inserted into dataframe')
 		return self.metadata_df
@@ -638,7 +652,7 @@ class HandleDfInserts:
 		""" Inserts modified location data with the country:state into dataframe
 		"""
 		for i in range(len(self.list_of_country)):
-			if self.list_of_state[i] != "" and self.list_of_state[i] != '' and self.list_of_state[i] is not None:
+			if i < len(self.list_of_state) and self.list_of_state[i] not in ("", None):
 				self.new_combination_list.append(f'{self.list_of_country[i]}: {self.list_of_state[i]}')
 			else:
 				self.new_combination_list.append(str(self.list_of_country[i]))
