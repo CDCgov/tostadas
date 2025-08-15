@@ -22,9 +22,9 @@ Expected Output:
 
 `# update this config file (you don't have to use vim)` 
 
-`vim bin/config_files/default_config.yaml` 
+`vim bin/config_files/submission_config.yaml` 
 
 `# for virus reads` 
-`nextflow run main.nf -profile test,<singularity/docker/conda> --virus` 
+`nextflow run main.nf -profile test,singularity --species virus` 
 
-The outputs of the pipeline will appear in the `test_output` folder within the project directory. You can specify an output directory in the config file or by supplying a path to the `--output_dir` flag in your `nextflow run` command.
+The outputs of the pipeline will appear in the `test_output` folder within the project directory. You can specify an output directory in the config file or by supplying a path to the `--outdir` flag in your `nextflow run` command.
