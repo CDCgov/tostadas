@@ -35,14 +35,14 @@ Before we dive into the more complex use-cases of the pipeline, let's look at th
 
 `-profile <test(optional)>,<singularity|docker|conda>` Specify the run-time environment (singularity, docker or conda). The conda implementation is less stable so using singularity or docker is recommended if available on your system. You may specify the optional `-profile` argument `test` to force the pipeline to ignore the custom configuration found in your nextflow.config file and instead run using a pre-configured test data set and configuration. `--species <virus|bacteria>`: The pathogen type must be specified for the pipeline to run. For submission, the species type determines the GenBank workflow (`<virus|bacteria|eukaryote>`).  For annotation, species type determines the annotation tool reference files. For example, `--species mpxv` will use the mpxv repeats library for annotation and the virus workflow for GenBank submission.
 
-❗ Important note on arguments: Arguments with a single “-“, such as -profile, are arguments to nextflow. Arguments with a double “--“, such as --virus or –-bacteria are arguments to the TOSTADAS pipeline.
+❗ Important note on arguments: Arguments with a single “-“, such as -profile, are arguments to nextflow. Arguments with a double “--“, such as --species virus or –-species bacteria are arguments to the TOSTADAS pipeline.
 
 ### Breakdown:
 
 *   `-profile test,singularity`
     *   Set compute environment to singularity
     *   Run with test configuration
-*   \--virus
+*   \--species virus
     *   Viral sample Overriding parameters through the command line: Any parameter defined in nexflow.config can be overridden at runtime by providing the parameter as a command line argument with the “--” prefix.
 
 ### Example: Modifying the output directory
