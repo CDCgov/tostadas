@@ -31,15 +31,11 @@ We describe a few use-cases of the pipeline below. For more information on input
 
 Before we dive into the more complex use-cases of the pipeline, let's look at the most basic way the pipeline can be run:
 
-`nextflow run main.nf -profile <test(optional)>,<singularity|docker|conda> --<virus|bacteria>` 
+`nextflow run main.nf -profile <test(optional)>,<singularity|docker|conda> --species <virus|bacteria|eukaryote|mpxv|rsv>` 
 
-`-profile <test(optional)>,<singularity|docker|conda>` Specify the run-time environment (singularity, docker or conda). The conda implementation is less stable so using singularity or docker is recommended if available on your system. You may specify the optional `-profile` argument `test` to force the pipeline to ignore the custom configuration found in your nextflow.config file and instead run using a pre-configured test data set and configuration. `--<virus|bacteria>`: The pathogen type must be specified for the pipeline to run.
+`-profile <test(optional)>,<singularity|docker|conda>` Specify the run-time environment (singularity, docker or conda). The conda implementation is less stable so using singularity or docker is recommended if available on your system. You may specify the optional `-profile` argument `test` to force the pipeline to ignore the custom configuration found in your nextflow.config file and instead run using a pre-configured test data set and configuration. `--species <virus|bacteria>`: The pathogen type must be specified for the pipeline to run. For submission, the species type determines the GenBank workflow (`<virus|bacteria|eukaryote>`).  For annotation, species type determines the annotation tool reference files. For example, `--species mpxv` will use the mpxv repeats library for annotation and the virus workflow for GenBank submission.
 
 ❗ Important note on arguments: Arguments with a single “-“, such as -profile, are arguments to nextflow. Arguments with a double “--“, such as --virus or –-bacteria are arguments to the TOSTADAS pipeline.
-
-Example:
-
-`nextflow run main.nf -profile test,singularity --virus`
 
 ### Breakdown:
 
@@ -53,7 +49,7 @@ Example:
 
 By default, the pipeline will create and store pipeline outputs in the test\_output directory. You can modify the location output files are stored by adding the `--outdir` flag to the command line and providing the new path as a string.
 
-`nextflow run main.nf -profile test,singularity –-virus --outdir </path/to/output/dir>`
+`nextflow run main.nf -profile test,singularity –-species virus --outdir </path/to/output/dir>`
 
 ### Running Annotation and Submission
 
@@ -61,13 +57,13 @@ By default, the pipeline will create and store pipeline outputs in the test\_out
 
 Database targets are specified at run time. You can specify more than one target by adding additional arguments to the command line.
 
-`nextflow run main.nf -profile singularity --virus --annotation --submission --genbank --sra --meta_path </path/to/meta_data/file> –-fastq_path </path/to/fastq/file/directory> --fasta_path </path/to/fasta/file/directory>`
+`nextflow run main.nf -profile singularity --species virus --annotation --submission --genbank --sra --meta_path </path/to/meta_data/file>`
 
 ##### Breakdown:
 
 *   `-profile singularity`
     *   Set compute environment to singularity
-*   `--virus`
+*   `--species virus`
     *   Viral sample
 *   `--sra`
     *   Prepare an SRA submission
@@ -77,10 +73,6 @@ Database targets are specified at run time. You can specify more than one target
     *   Run annotation
 *   `--submission`
     *   Run submission
-*   `--fasta_path`
-    *   Provide path to directory containing your fasta files
-*   `--fastq_path`
-    *   Provide path to directory containing your fastq files
 *   `--meta_path`
     *   Provide path to your meta-data file
 
@@ -90,15 +82,15 @@ Database targets are specified at run time. You can specify more than one target
 
 #### (A) Download Bakta database
 
-`nextflow run main.nf -profile singularity --bacteria --genbank --sra --download_bakta_db true --bakta_db_type <light|full> --submission –annotation --meta_path /path/to/meta_data/file –fastq_path /path/to/fastq/file/directory --fasta_path /path/to/fasta/file/directory`
+`nextflow run main.nf -profile singularity --species bacteria --genbank --sra --download_bakta_db true --bakta_db_type <light|full> --submission –annotation --meta_path /path/to/meta_data/file`
 
 #### (B) Provide path to existing Bakta database
 
-`nextflow run main.nf -profile singularity –-bacteria ––annotation --submission -–genbank --sra --bakta_db_path <path/to/bakta/db> --meta_path </path/to/meta_data/file> --fastq_path </path/to/fastq/file/directory> --fasta_path </path/to/fasta/file/directory>`
+`nextflow run main.nf -profile singularity –-species bacteria ––annotation --submission -–genbank --sra --bakta_db_path <path/to/bakta/db> --meta_path </path/to/meta_data/file>`
 
 ##### Breakdown:
 
-*   `--bacteria`
+*   `--species bacteria`
     *   Bacterial sample
 *   `--download_bakta_db true`
     *   Download or refresh the Bakta database
@@ -113,7 +105,7 @@ Database targets are specified at run time. You can specify more than one target
 
 #### (1) Submit fastqs to SRA
 
-`nextflow run main.nf -profile singularity --virus --annotation false --sra –submission --meta_path </path/to/meta_data/file> --fastq_path </path/to/fastq/file/directory>` 
+`nextflow run main.nf -profile singularity --species virus --annotation false --sra –submission --meta_path </path/to/meta_data/file>` 
 
 `--annotation false`: Disable annotation
 
