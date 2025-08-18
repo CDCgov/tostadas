@@ -474,6 +474,7 @@ class ValidateChecks:
 			lat_str, lon_str = map(str.strip, s.split())
 			lat = float(lat_str)
 			lon = float(lon_str)
+			
 			return -90 <= lat <= 90 and -180 <= lon <= 180
 		except (ValueError, AttributeError):
 			return False
