@@ -72,7 +72,6 @@ workflow GENBANK {
             return [sample_meta, fasta, gff]
         }
     }
-    sample_ch.view { "sample_ch emits: $it" }
 
     // Run GenBank validation only on the fasta
     genbank_validated_ch = sample_ch.map { meta, fasta, _gff -> [meta, fasta] } | GENBANK_VALIDATION
@@ -84,8 +83,6 @@ workflow GENBANK {
             genbank_validated_ch.map { meta, validated_fasta -> [meta.sample_id, validated_fasta] }
         )
         .map { sample_id, meta, original_fasta, gff, validated_fasta -> [meta, validated_fasta, gff] }
-
-    validated_sample_ch.view { "validated_sample_ch emits: $it" }
 
     // Run annotation if requested
     if (params.annotation) {
@@ -121,7 +118,6 @@ workflow GENBANK {
     } else {
         sample_ch = validated_sample_ch
     }
-    sample_ch.view { "sample_ch emits: $it" }
 
     // Build final batch-wise submission channel
     submission_batch_ch = sample_ch
@@ -151,8 +147,6 @@ workflow GENBANK {
             return tuple(meta, samples, ['genbank'])
         }
         .filter { it != null }
-
-    submission_batch_ch.view { "submission_batch_ch emits: $it" }
 
 	// Run submission using the batch channel
 	SUBMISSION(submission_batch_ch, 

@@ -89,7 +89,7 @@ workflow BIOSAMPLE_AND_SRA {
 				def hasIllumina = fq1Exists && fq2Exists
 				def hasNanopore = nnpExists
 
-				log.info "Sample ${sid} | fq1: ${sample.fq1} (exists: ${fq1Exists}) | fq2: ${sample.fq2} (exists: ${fq2Exists}) | nnp: ${sample.nanopore} (exists: ${nnpExists})"
+				//log.info "Sample ${sid} | fq1: ${sample.fq1} (exists: ${fq1Exists}) | fq2: ${sample.fq2} (exists: ${fq2Exists}) | nnp: ${sample.nanopore} (exists: ${nnpExists})"
 
 				if (params.sra && (hasIllumina || hasNanopore)) {
 					enabledDatabases << "sra"
@@ -113,8 +113,6 @@ workflow BIOSAMPLE_AND_SRA {
 
 			return tuple(meta, sample_maps, enabledDatabases as List)
 		}
-
-	submission_batch_ch.view { "submission_batch_ch emits: $it" }
 
 	SUBMISSION(
 		submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)

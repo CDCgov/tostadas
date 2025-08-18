@@ -16,6 +16,18 @@ def get_args():
     parser.add_argument('--output', required=True, help="Path to final Excel file to write")
     return parser
 
+def read_and_clean(path, sep=None):
+    """
+    Reads a CSV/TSV and removes repeated header rows.
+    Automatically detects if rows are exact duplicates of the header row.
+    """
+    df = pd.read_csv(path, sep=sep, dtype=str, skip_blank_lines=True)
+
+    # Drop any rows where all values match the column names
+    df = df[~df.eq(df.columns).all(axis=1)]
+
+    return df
+
 def extract_sample_matches(report_df, metadata_df):
     """
     For each row in the report, find a sample_name from metadata that appears as a substring
@@ -57,9 +69,9 @@ def main():
     setup_logging(log_file='join_accessions_with_metadata.log',
                   level=logging.DEBUG)
 
-    # Load metadata TSV and submission report CSV
-    metadata_df = pd.read_csv(params["metadata_tsv"], sep='\t', dtype=str)
-    report_df = pd.read_csv(params["submission_report"], dtype=str)
+    # Load metadata TSV and submission report CSV, and clean both files
+    metadata_df = read_and_clean(params["metadata_tsv"], sep='\t')
+    report_df = read_and_clean(params["submission_report"])
 
     # Preserve original sample name capitalization
     metadata_df['original_sample_name'] = metadata_df['sample_name']

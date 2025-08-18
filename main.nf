@@ -17,11 +17,9 @@ def calc_wait_time() {
 
 workflow BIOSAMPLE_AND_SRA_WORKFLOW {
     BIOSAMPLE_AND_SRA()
-    BIOSAMPLE_AND_SRA.out.submission_batch_folder.view { "submission_batch_folder emits: $it" }
     AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, 
                           params.submission_config,
                           BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
-    //CONSOLIDATE_REPORTS
 }
 
 workflow GENBANK_WORKFLOW {
@@ -47,11 +45,11 @@ workflow {
         WAIT( Channel.value( calc_wait_time() ) )
         AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
         GENBANK(AGGREGATE_SUBMISSIONS.out.accession_augmented_xlsx)
-        if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
-            WAIT( Channel.value( calc_wait_time() ) )
-            // TODO: need to check how this will work (with BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
-            AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
-        }
+        // // TODO: GenBank accessions columns not added to parsing yet
+        // if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
+        //     WAIT( Channel.value( calc_wait_time() ) )
+        //     AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
+        // }
     }
     else if (params.workflow == "biosample_and_sra") {
         BIOSAMPLE_AND_SRA_WORKFLOW()

@@ -188,103 +188,142 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 	return reports_fetched
 
 def parse_report_xml_to_df(report_path):
-	"""
-	Parses a report.xml file containing multiple samples.
-	Returns a DataFrame with one row per action_id (i.e., per sample).
-	"""
-	reports = []
-	try:
-		tree = ET.parse(report_path)
-		root = tree.getroot()
-		submission_status = root.get("status", None)
-		submission_id = root.get("submission_id", None)
-		tracking_location_tag = root.find("Tracking/SubmissionLocation")
-		tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
+    """
+    Parses a report.xml file containing multiple samples.
+    Returns a DataFrame with one row per sample_id.
+    """
+    reports = []
+    try:
+        tree = ET.parse(report_path)
+        root = tree.getroot()
+        submission_status = root.get("status", None)
+        submission_id = root.get("submission_id", None)
+        tracking_location_tag = root.find("Tracking/SubmissionLocation")
+        tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
 
-		for action in root.findall("Action"):
-			action_id = action.get("action_id", None)
-			target_db = action.get("target_db", "").lower()
-			status = action.get("status", None)
-			# Defaults for response fields
-			response_message = None
-			spuid = None
-			spuid_namespace = None
-			object_id = None
-			response = action.find("Response")
-			if response is not None:
-				# Get <Message>
-				message_tag = response.find("Message")
-				if message_tag is not None:
-					response_message = message_tag.text.strip()
-				else:
-					response_message = response.get("status", "").strip() or (response.text or "").strip()
-				# Get <Object> attributes
-				object_tag = response.find("Object")
-				if object_tag is not None:
-					spuid = object_tag.get("spuid", None)
-					spuid_namespace = object_tag.get("spuid_namespace", None)
-					object_id = object_tag.get("object_id", None)
-			# Initialize a row for this action
-			report = {
-				'spuid': spuid,
-				'spuid_namespace': spuid_namespace,
-				'object_id': object_id,
-				'submission_name': action_id,
-				'submission_status': submission_status,
-				'submission_id': submission_id,
-				'biosample_status': None,
-				'biosample_accession': None,
-				'biosample_message': None,
-				'sra_status': None,
-				'sra_accession': None,
-				'sra_message': None,
-				'genbank_status': None,
-				'genbank_accession': None,
-				'genbank_message': None,
-				'genbank_release_date': None,
-				'tracking_location': tracking_location,
-			}
-			# Fill in database-specific fields
-			if target_db == "biosample":
-				report['biosample_status'] = status
-				report['biosample_message'] = response_message
-			elif target_db == "sra":
-				report['sra_status'] = status
-				report['sra_message'] = response_message
-			elif target_db == "genbank":
-				report['genbank_status'] = status
-				report['genbank_message'] = response_message
-				report['genbank_release_date'] = action.get("release_date", None)
-			reports.append(report)
-	except FileNotFoundError:
-		logging.error(f"Report not found: {report_path}")
-	except ET.ParseError:
-		logging.error(f"Error parsing XML report: {report_path}")
+        actions = root.findall("Action")
+        if not actions:
+            logging.warning(f"No <Action> elements found in {report_path}. Skipping this report.")
+            return pd.DataFrame()  # Empty — caller will skip
 
-	# Final DataFrame
-	df = pd.DataFrame(reports)
+        for action in actions:
+            action_id = action.get("action_id", None)
+            target_db = action.get("target_db", "").lower()
+            status = action.get("status", None)
 
-	# Ensure column order with spuid first
-	column_order = ['spuid', 'spuid_namespace', 'object_id'] + [col for col in df.columns if col not in {'spuid', 'spuid_namespace', 'object_id'}]
-	df = df[column_order]
+            # Defaults
+            response_message = None
+            spuid = None
+            spuid_namespace = None
+            object_id = None
+            sample_id = None
 
-	# Normalize NaNs to None
-	df = df.where(pd.notna(df), None)
-	return df
+            # Extract info from <Response>
+            response = action.find("Response")
+            if response is not None:
+                message_tag = response.find("Message")
+                if message_tag is not None:
+                    response_message = message_tag.text.strip()
+                else:
+                    response_message = response.get("status", "").strip() or (response.text or "").strip()
+
+                object_tag = response.find("Object")
+                if object_tag is not None:
+                    spuid = object_tag.get("spuid", None)
+                    spuid_namespace = object_tag.get("spuid_namespace", None)
+                    object_id = object_tag.get("object_id", None)
+
+            # Determine sample_id
+            if spuid:  
+                sample_id = spuid
+            elif action_id:
+                # Expect format {submission}_{sample_id}_sra
+                parts = action_id.split("_")
+                if len(parts) >= 3:
+                    sample_id = parts[1]  # middle part
+                else:
+                    sample_id = action_id  # fallback: store raw action_id
+
+            if not sample_id:
+                logging.warning(f"Could not determine sample_id for action in {report_path}. Skipping this action.")
+                continue
+
+            # Initialize row
+            report = {
+                'sample_id': sample_id,
+                'spuid': spuid,
+                'spuid_namespace': spuid_namespace,
+                'object_id': object_id,
+                'submission_name': action_id,
+                'submission_status': submission_status,
+                'submission_id': submission_id,
+                'biosample_status': None,
+                'biosample_accession': None,
+                'biosample_message': None,
+                'sra_status': None,
+                'sra_accession': None,
+                'sra_message': None,
+                'tracking_location': tracking_location,
+            }
+
+            # Fill in database-specific fields
+            if target_db == "biosample":
+                report['biosample_status'] = status
+                report['biosample_message'] = response_message
+                if object_id:
+                    report['biosample_accession'] = object_id
+            elif target_db == "sra":
+                report['sra_status'] = status
+                report['sra_message'] = response_message
+                if object_id:
+                    report['sra_accession'] = object_id
+
+            reports.append(report)
+
+    except FileNotFoundError:
+        logging.error(f"Report not found: {report_path}")
+    except ET.ParseError:
+        logging.error(f"Error parsing XML report: {report_path}")
+
+    # Build DataFrame
+    df = pd.DataFrame(reports)
+
+    if not df.empty:
+        # Deduplicate so only one row per sample_id remains
+        df = df.groupby('sample_id', as_index=False).first()
+
+        # Ensure column order
+        column_order = ['sample_id', 'spuid', 'spuid_namespace', 'object_id'] + \
+                       [col for col in df.columns if col not in {'sample_id', 'spuid', 'spuid_namespace', 'object_id'}]
+        df = df[column_order]
+
+        # Normalize NaNs to None
+        df = df.where(pd.notna(df), None)
+    return df
 
 def parse_and_save_reports(reports_fetched, outdir, batch_id):
-	all_reports = pd.DataFrame()
-	for db, report_paths in reports_fetched.items():
-		for report_path in report_paths:
-			if report_path and os.path.exists(report_path):
-				df = parse_report_xml_to_df(report_path)
-				all_reports = pd.concat([all_reports, df], ignore_index=True)
-	report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
-	try:
-		all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
-		logging.info(f"Report table saved to: {report_csv_file}")
-	except Exception as e:
-		raise ValueError(f"Failed to save report CSV: {e}")
+    all_reports = pd.DataFrame()
+
+    for db, report_paths in reports_fetched.items():
+        for report_path in report_paths:
+            if report_path and os.path.exists(report_path):
+                df = parse_report_xml_to_df(report_path)
+                if not df.empty:
+                    all_reports = pd.concat([all_reports, df], ignore_index=True)
+
+    if all_reports.empty:
+        logging.warning(f"No sample data found in any reports for batch {batch_id}.")
+        return
+
+    # Deduplicate final CSV by sample_id
+    all_reports = all_reports.groupby('sample_id', as_index=False).first()
+
+    report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
+    try:
+        all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
+        logging.info(f"Report table saved to: {report_csv_file}")
+    except Exception as e:
+        raise ValueError(f"Failed to save report CSV: {e}")
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
 	"""
