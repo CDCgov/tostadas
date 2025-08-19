@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import shutil
-import sys
+import logging
 import pandas as pd
 from submission_helper import (
 	GetParams,
@@ -10,7 +10,8 @@ from submission_helper import (
 	BiosampleSubmission,
 	SRASubmission,
 	GenbankSubmission,
-	get_compound_extension
+	get_compound_extension,
+	setup_logging
 )
 
 def prepare_sra_fastqs(samples, outdir, copy=False):
@@ -34,6 +35,9 @@ def prepare_sra_fastqs(samples, outdir, copy=False):
 def main_prepare():
 	# parse exactly the same CLI args you already have
 	params = GetParams().parameters
+
+	setup_logging(log_file=f'prep_submission.log',
+				  level=logging.DEBUG)
 
 	# load config & metadata
 	config = SubmissionConfigParser(params).load_config()
@@ -74,7 +78,7 @@ def main_prepare():
 			sample=None,
 			accession_id=None,
 			identifier=identifier,
-			wastewater=params.get('wastewater', False)  # <-- pass wastewater flag
+			wastewater=params.get('wastewater', False)
 		)
 		bs.init_xml_root()
 		for s in samples:
@@ -105,7 +109,7 @@ def main_prepare():
 				sample=None,
 				accession_id=None,
 				identifier=identifier,
-				wastewater=params.get('wastewater', False)  # <-- pass wastewater flag
+				wastewater=params.get('wastewater', False)
 			)
 			sra.init_xml_root()
 			for s in samp_list:

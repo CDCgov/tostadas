@@ -354,8 +354,6 @@ class GetParams:
 		parser.add_argument("--species", help="Type of organism data", required=True)
 		parser.add_argument('--sample', action='append', help='Comma-separated sample attributes')
 		# optional parameters
-		parser.add_argument("--wastewater", default=False, type=bool, 
-                            help="Prepare submission with wastewater specific metadata")
 		parser.add_argument("-o", "--outdir", type=str, default='submission_outputs',
 							help="Output Directory for final Files, default is current directory")
 		parser.add_argument("--test", help="Whether to perform a test submission.", required=False,	action="store_const", default=False, const=True)
@@ -364,7 +362,7 @@ class GetParams:
 		parser.add_argument("--genbank", help="Optional flag to run Genbank submission", action="store_const", default=False, const=True)
 		parser.add_argument("--biosample", help="Optional flag to run BioSample submission", action="store_const", default=False, const=True)
 		parser.add_argument("--sra", help="Optional flag to run SRA submission", action="store_const", default=False, const=True)
-		parser.add_argument("--gisaid", help="Optional flag to run GISAID submission", action="store_const", default=False, const=True)
+		parser.add_argument("--wastewater", action="store_true", help="Prepare submission with wastewater specific metadata")
 		parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
 		return parser
 class SubmissionConfigParser:
@@ -458,7 +456,10 @@ class MetadataParser:
     		"purpose_of_ww_sequencing", "sequenced_by" ]
 		all_columns = columns + self.custom_columns 
 		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
-		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+		record = self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+    	# Filter out empty/NaN values
+		return {k: v for k, v in record.items() if pd.notna(v) and v != ""}
+	
 	def extract_sra_metadata(self):
 		rename_fields = {
 			'sequencing_instrument': 'instrument_model',
@@ -815,7 +816,8 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		attributes = ET.SubElement(biosample, 'Attributes')
 		# Select the appropriate metadata source
 		metadata = self.wastewater_metadata if self.wastewater else self.biosample_metadata
-		
+		logging.debug(f'wastewater set to {self.wastewater}')
+		logging.debug(metadata)
 		# Fields to ignore when adding attributes
 		ignored_fields = {'organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2'}
 		
@@ -824,8 +826,6 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 			if attr_name not in ignored_fields:
 				attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 				attribute.text = self.safe_text(attr_value)
-
-
 class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
 				 submission_dir, type, samples, sample, accession_id=None, identifier=None, wastewater=False):
@@ -1143,7 +1143,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		symlink_or_copy(self.sample.fasta_file, renamed_fasta)
 		# Run table2asn 
 		self.run_table2asn()
-		print(f"Genbank files prepared for {self.sample.sample_id}")
+		logging.info(f"Genbank files prepared for {self.sample.sample_id}")
 
 	def prep_zip_folder(self):
 		""" Prepare files for manual upload to GenBank because FTP support not available 
@@ -1188,7 +1188,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 	def genbank_submission_driver(self):
 		""" Runs the appropriate workflow to prepare the GenBank submission
 		"""
-		print(f"Preparing GenBank submission of type: {self.sample.species}")
+		logging.info(f"Preparing GenBank submission of type: {self.sample.species}")
 		if self.sample.species in ['sars','flu']:
 			self._workflow_bankit()
 		elif self.sample.species in ['bacteria', 'eukaryote']:
@@ -1196,7 +1196,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		elif self.sample.species in ['virus','rsv','mpxv']:
 			self._workflow_virus()
 		else:
-			print(f"{self.sample.species} must be one of: sars, flu, bacteria, eukaryote, virus")
+			logging.debug(f"{self.sample.species} must be one of: sars, flu, bacteria, eukaryote, virus")
 
 	# Functions for running table2asn
 	def get_gff_locus_tag(self):
@@ -1235,7 +1235,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		"""
 		Executes table2asn with appropriate flags and handles errors.
 		"""
-		print("Running table2asn...")
+		logging.info("Running table2asn...")
 		# Check if table2asn executable exists in PATH
 		table2asn_path = shutil.which('table2asn')
 		if not table2asn_path:
@@ -1267,10 +1267,10 @@ class GenbankSubmission(XMLSubmission, Submission):
 			cmd.append("-src-file")
 			cmd.append(f"{self.outdir}/source.src")
 		# Run the command and capture errors
-		print(f'table2asn command: {shlex.join(cmd)}')
+		logging.info(f'table2asn command: {shlex.join(cmd)}')
 		try:
 			result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-			print(f"table2asn output: {result.stdout}")
+			logging.info(f"table2asn output: {result.stdout}")
 		except subprocess.CalledProcessError as e:
-			print(f"Error running table2asn: {e.stderr}")
+			logging.debug(f"Error running table2asn: {e.stderr}")
 			raise
