@@ -27,6 +27,7 @@ process PREP_SUBMISSION {
     def biosample = params.biosample == true ? '--biosample' : ''
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
+    def wastewater = params.wastewater == true ? '--wastewater' : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
@@ -41,18 +42,6 @@ process PREP_SUBMISSION {
         .join(',')
         return "\"${s}\""
     }
-    // def sample_args_list = samples.collect { sample ->
-    //     def s = [
-    //         "sample_id=${sample.meta.sample_id}",
-    //         "fq1=${sample.fq1}",
-    //         "fq2=${sample.fq2}",
-    //         "nanopore=${sample.nanopore}",
-    //         "fasta=${sample.fasta}",
-    //         "gff=${sample.gff}"
-    //     ].findAll { it.split('=')[1] != "null" }  // remove nulls
-    //     .join(',')
-    //     return "\"${s}\""
-    // }
     def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
 
     """
@@ -68,6 +57,7 @@ process PREP_SUBMISSION {
         $test_flag \
         $send_submission_email \
         $genbank $sra $biosample \
+        $wastewater \
         $dry_run
     """
 }
