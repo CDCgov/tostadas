@@ -47,6 +47,9 @@ def metadata_validation_main():
 	insert = HandleDfInserts(filled_df, parameters)
 	final_df = insert.handle_df_inserts() # final updated, validated dataframe
 
+	# normalize all values here before batching
+	final_df = final_df.applymap(validate_checks.normalize_value)
+
 	# output the batched tsv files  
 	batch_size = parameters['batch_size']
 	output_dir = ("batched_tsvs")
@@ -474,7 +477,7 @@ class ValidateChecks:
 			lat_str, lon_str = map(str.strip, s.split())
 			lat = float(lat_str)
 			lon = float(lon_str)
-			
+
 			return -90 <= lat <= 90 and -180 <= lon <= 180
 		except (ValueError, AttributeError):
 			return False
@@ -622,6 +625,19 @@ class ValidateChecks:
 
 		if unexpected_fields:
 			self.global_log.append(f"[CustomFields] Unexpected fields in metadata: {', '.join(unexpected_fields)}")
+
+	def normalize_value(self, val):
+		"""
+		Normalize placeholder/empty metadata values.
+		Converts Not Provided, NA, N/A, empty strings, and non-breaking spaces to None.
+		"""
+		if pd.isna(val):
+			return None
+		if isinstance(val, str):
+			val = val.replace("\u00A0", " ").strip()  # normalize NBSP
+			if val == "" or val.lower() in {"not provided", "na", "n/a"}:
+				return None
+		return val
 
 class HandleDfInserts:
 	""" Class constructor for handling the insert operations on the metadata df once all the checks are completed
