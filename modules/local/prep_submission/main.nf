@@ -16,6 +16,7 @@ process PREP_SUBMISSION {
     
     output:
     tuple val(meta), path("${meta.batch_id}"), emit: submission_files
+    path("${meta.batch_id}/prep_submission.log"), emit: submission_log, optional: true
 
     when:
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases

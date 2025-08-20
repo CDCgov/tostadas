@@ -18,6 +18,8 @@ workflow SUBMISSION {
         submission_config_file = file(submission_config)
 
         PREP_SUBMISSION(submission_ch, submission_config_file)
+
+        PREP_SUBMISSION.out.submission_files
             .set { submission_batch_folder }
 
         SUBMIT_SUBMISSION(submission_batch_folder, submission_config_file)
