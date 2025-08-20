@@ -36,8 +36,7 @@ def main_prepare():
 	# parse exactly the same CLI args you already have
 	params = GetParams().parameters
 
-	setup_logging(log_file=f'prep_submission.log',
-				  level=logging.DEBUG)
+	setup_logging(log_file=f'prep_submission.log', level=logging.DEBUG)
 
 	# load config & metadata
 	config = SubmissionConfigParser(params).load_config()

@@ -7,7 +7,6 @@ from submission_helper import (
 	SubmissionConfigParser,
 	FTPClient,
 	SFTPClient,
-	GenbankSubmission,
 	setup_logging,
 	sendemail
 )
