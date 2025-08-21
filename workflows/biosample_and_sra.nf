@@ -9,6 +9,7 @@ nextflow.enable.dsl=2
 // get the utility processes / subworkflows
 include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
+include { CHECK_VALIDATION_ERRORS							} from "../modules/local/check_validation_errors/main.nf"
 include { WRITE_VALIDATED_FULL_TSV                          } from "../modules/local/write_validated_full_tsv/main"
 include { SUBMISSION		                                } from "../subworkflows/local/submission"
 
@@ -33,6 +34,17 @@ workflow BIOSAMPLE_AND_SRA {
 
 	// Run metadata validation process
 	METADATA_VALIDATION ( file(params.meta_path) )
+
+	// Enforce error checking before anything else continues
+    CHECK_VALIDATION_ERRORS(METADATA_VALIDATION.out.errors)
+
+    // Get status from the check
+	CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
+		if (status == "ERROR") {
+			println "❌ Validation failed. Please check ${params.outdir}/${params.val_output_dir}/error.txt"
+			workflow.abort()
+		}
+	}
 
 	metadata_batch_ch = METADATA_VALIDATION.out.tsv_files
 		.flatten()
