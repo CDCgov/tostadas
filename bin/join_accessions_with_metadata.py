@@ -3,7 +3,7 @@
 import argparse
 import logging
 import pandas as pd
-from utils import setup_logging  # assuming you already have this helper
+from submission_helper import setup_logging  # assuming you already have this helper
 
 def get_args():
     """Expected args from user for fetching reports"""
@@ -28,7 +28,7 @@ def log_missing_accessions(df, logger):
     accession_cols = ['biosample_accession', 'sra_accession', 'genbank_accession']
     for col in accession_cols:
         missing_mask = df[col].isna() | ~df[col].astype(str).str.fullmatch(r'\w+')
-        missing_spuids = df.loc[missing_mask, 'ncbi_spuid'].tolist()
+        missing_spuids = df.loc[missing_mask, 'ncbi-spuid'].tolist()
         if missing_spuids:
             logger.info(
                 f"No valid {col} found for {len(missing_spuids)} record(s) "
@@ -49,7 +49,7 @@ def main():
     report_df = read_and_clean(params["submission_report"], sep=',')
 
     # Normalize casing and strip whitespace on join keys
-    metadata_df['ncbi_spuid'] = metadata_df['ncbi_spuid'].str.strip().str.lower()
+    metadata_df['ncbi-spuid'] = metadata_df['ncbi-spuid'].str.strip().str.lower()
     report_df['spuid'] = report_df['spuid'].str.strip().str.lower()
 
     # Merge directly on spuid
@@ -64,8 +64,8 @@ def main():
     # Log missing accessions
     log_missing_accessions(merged_df, logger)
 
-    # Move accession columns next to ncbi_spuid
-    insert_after = 'ncbi_spuid'
+    # Move accession columns next to ncbi-spuid
+    insert_after = 'ncbi-spuid'
     for col in ['biosample_accession', 'sra_accession', 'genbank_accession'][::-1]:
         col_data = merged_df.pop(col)
         merged_df.insert(merged_df.columns.get_loc(insert_after) + 1, col, col_data)
