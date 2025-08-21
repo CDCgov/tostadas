@@ -278,6 +278,9 @@ class ValidateChecks:
 	def validate_main(self):
 		""" Main function that performs metadata validation
 		"""
+		# check ncbi-spuid uniqueness
+		self.check_unique_spuid()
+
 		# checks date
 		if self.parameters['date_format_flag'].lower() != 'o':
 			self.check_date()
@@ -340,6 +343,23 @@ class ValidateChecks:
 			self.metadata_df['authors'] = self.metadata_df['authors'].fillna(self.metadata_df['author'])
 			self.metadata_df.drop(columns=['author'], inplace=True)
 	
+	def check_unique_spuid(self):
+		"""Ensure all ncbi-spuid values are unique across the metadata."""
+		if 'ncbi-spuid' not in self.metadata_df.columns:
+			self.global_log.append("ERROR: Metadata is missing required column 'ncbi-spuid'.")
+			return
+
+		duplicates = self.metadata_df[self.metadata_df.duplicated(subset=['ncbi-spuid'], keep=False)]
+		if not duplicates.empty:
+			dup_values = duplicates['ncbi-spuid'].tolist()
+			self.global_log.append(
+				f"ERROR: Duplicate ncbi-spuid values found: {set(dup_values)}"
+			)
+			for _, row in duplicates.iterrows():
+				sample = row['sample_name']
+				spuid = row['ncbi-spuid']
+				self.sample_log[sample].append(f"ERROR: Duplicate ncbi-spuid '{spuid}'")
+
 	def check_date(self):
 		""" Validates and reformats dates based on date_format_flag value
 		"""
