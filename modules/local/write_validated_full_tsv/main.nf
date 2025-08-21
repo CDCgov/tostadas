@@ -26,9 +26,5 @@ process WRITE_VALIDATED_FULL_TSV {
     final_df = pd.concat(dfs, ignore_index=True)
     final_df.to_csv(output, sep="\\t", index=False)
     EOF
-
-    # Keep the first file's header, skip headers from subsequent files
-    #awk 'FNR==1 && NR!=1 { next } { print }' ${validated_tsvs.join(' ')} \
-    #    > validated_metadata_all_samples.tsv
     """
 }
