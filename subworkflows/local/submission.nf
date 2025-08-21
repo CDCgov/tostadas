@@ -24,6 +24,11 @@ workflow SUBMISSION {
 
         SUBMIT_SUBMISSION(submission_batch_folder, submission_config_file)
 
+        // Print message if dry_run is enabled
+        if (params.dry_run) {
+            log.info "Workflow ends here because dry_run is set to true. Please see submission log files for details."
+        }
+
     emit:
         submission_batch_folder = SUBMIT_SUBMISSION.out.submission_batch_folder
 }
