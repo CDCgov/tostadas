@@ -1,15 +1,7 @@
 {
-  "collection_date": {
-    "replace_empty_with": "Not Provided",
-    "new_field_name": "collection_date"
-  },
   "collection_time": {
     "replace_empty_with": "Not Provided",
     "new_field_name": "collection_time"
-  },
-  "isolation_source": {
-    "replace_empty_with": "Not Provided",
-    "new_field_name": "isolation_source"
   },
   "collection_site_id": {
     "replace_empty_with": "Not Provided",
