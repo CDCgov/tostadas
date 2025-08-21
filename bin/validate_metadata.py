@@ -564,8 +564,8 @@ class ValidateChecks:
 
 		for idx, row in self.metadata_df.iterrows():
 			sample_name = row["sample_name"]
-			illumina_found = pd.notna(row.get("int_illumina_sra_file_path_1", None)) and pd.notna(row.get("int_illumina_sra_file_path_2", None))
-			nanopore_found = pd.notna(row.get("int_nanopore_sra_file_path_1", None))
+			illumina_found = bool(row.get("int_illumina_sra_file_path_1")) and bool(row.get("int_illumina_sra_file_path_2"))
+			nanopore_found = bool(row.get("int_nanopore_sra_file_path_1"))
 
 			# Illumina check
 			if illumina_found:
