@@ -25,7 +25,7 @@ def read_and_clean(path, sep=None):
     return df
 
 def log_missing_accessions(df, logger):
-    accession_cols = ['biosample_accession', 'sra_accession', 'genbank_accession']
+    accession_cols = ['biosample_accession', 'sra_accession']
     for col in accession_cols:
         missing_mask = df[col].isna() | ~df[col].astype(str).str.fullmatch(r'\w+')
         missing_spuids = df.loc[missing_mask, 'ncbi-spuid'].tolist()
@@ -66,7 +66,7 @@ def main():
 
     # Move accession columns next to ncbi-spuid
     insert_after = 'ncbi-spuid'
-    for col in ['biosample_accession', 'sra_accession', 'genbank_accession'][::-1]:
+    for col in ['biosample_accession', 'sra_accession'][::-1]:
         col_data = merged_df.pop(col)
         merged_df.insert(merged_df.columns.get_loc(insert_after) + 1, col, col_data)
 
