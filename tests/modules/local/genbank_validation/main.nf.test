@@ -1,0 +1,31 @@
+nextflow_process {
+
+    name "Test Process GENBANK_VALIDATION"
+    script "modules/local/genbank_validation/main.nf"
+    process "GENBANK_VALIDATION"
+
+    test("Should clean and validate the FASTA file") {
+
+        when {
+            params {
+            }
+
+            process {
+                """
+                // Inputs
+                input[0] = [ [ sample_id: "MZ568967" ], file("${projectDir}/assets/sample_fastas/rsv/MZ568967.fasta") ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            // Extract output tuple
+            def (meta, cleaned_fasta) = process.out[0]
+
+            // Snapshot test
+            assert snapshot(cleaned_fasta).match()
+        }
+    }
+}

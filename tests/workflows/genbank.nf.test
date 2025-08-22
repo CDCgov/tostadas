@@ -1,0 +1,48 @@
+nextflow_workflow {
+
+    name "Test Workflow GENBANK"
+    script "workflows/genbank.nf"
+    workflow "GENBANK"
+
+test("Should run GenBank validation and submission from accession-augmented metadata") {
+    when {
+        params {
+            outdir = "${projectDir}/results"
+
+            annotation = false
+            submission = true
+            genbank = true
+            dry_run = true
+            species = "rsv"
+            bakta = false
+            vadr = false
+            repeatmasker_liftoff = false
+
+            submission_config = "${projectDir}/conf/submission_config.yaml"
+        }
+        workflow {
+            """
+            input[0] = file("${projectDir}/assets/sample_metadata/test_genbank.xlsx")
+            """
+        }
+    }
+
+    then {
+        assert workflow.success
+
+        def validationTasks = workflow.trace.tasks().findAll {
+            it.name.contains("GENBANK_VALIDATION")
+        }
+        assert validationTasks.size() > 0
+
+        def submissionTasks = workflow.trace.tasks().findAll {
+            it.name.contains("SUBMISSION")
+        }
+        assert submissionTasks.size() > 0
+
+        assert snapshot(workflow.out).match()
+    }
+}
+}
+
+

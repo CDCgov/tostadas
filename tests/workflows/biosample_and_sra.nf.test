@@ -1,0 +1,43 @@
+nextflow_workflow {
+
+    name "Test Workflow BIOSAMPLE_AND_SRA"
+    script "workflows/biosample_and_sra.nf"
+    workflow "BIOSAMPLE_AND_SRA"
+
+test("Should run BioSample and SRA submission from validated metadata and templates") {
+        when {
+            params {
+                meta_path = "${projectDir}/assets/sample_metadata/rsv_test_metadata.xlsx"
+                outdir = "${projectDir}/results"
+                
+                annotation = false
+                submission = true
+                sra = true
+                biosample = true
+                genbank = false
+                dry_run = true
+                species = 'rsv'
+
+                submission_config = "${projectDir}/conf/submission_config.yaml"
+                help = false
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def submissionTasks = workflow.trace.tasks().findAll {
+                it.name.contains("SUBMISSION")
+            }
+            assert submissionTasks.size() > 0
+
+            def metadataValidationTasks = workflow.trace.tasks().findAll {
+                it.name.contains("METADATA_VALIDATION")
+            }
+            assert metadataValidationTasks.size() > 0
+
+            assert snapshot(workflow.out).match()
+        }
+    }
+
+}

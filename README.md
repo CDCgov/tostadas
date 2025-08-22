@@ -65,13 +65,22 @@ The pipeline outputs appear in `tostadas/test_output`
 
 **Annotate and submit viral reads**
 ```
-nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
+nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank false --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
 ```
 **Annotate and submit bacterial reads**
 ```
-nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation  --genbank true --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>
+nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation  --genbank false --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>
 ```
-Refer to the wiki for more information on input parameters and use cases
+**Submit Reads to GenBank**
+
+GenBank submission requires a modified metadata file that includes the GenBank accession ID. This file will be generated as an output of the biosample and SRA workflow and can be found in the results directory, for example: test_output/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx.
+
+To submit reads to GenBank, use the following command:
+
+```
+nextflow run main.nf -profile <docker|singularity> --workflow genbank --genbank true --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --updated_meta_path <path/to/updated/metadata/file>
+```
+Refer to the github pages website for more information on input parameters and use cases. 
 
 ### 7. Custom metadata validation and custom BioSample package
 

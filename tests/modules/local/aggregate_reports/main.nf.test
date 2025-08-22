@@ -1,0 +1,29 @@
+nextflow_process {
+
+    name "Test Process AGGREGATE_REPORTS"
+    script "modules/local/aggregate_reports/main.nf"
+    process "AGGREGATE_REPORTS"
+
+    test("Should aggregate one or more batch CSVs into a single report") {
+
+        when {
+            params {
+
+            }
+
+            process {
+                """
+                input[0] = [ 
+                    file("${projectDir}/tests/modules/local/aggregate_reports/batch_1.csv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert file("${process.out.submission_report[0]}").exists()
+            assert snapshot(file("${process.out.submission_report[0]}")).match()
+        }
+    }
+}
