@@ -31,7 +31,12 @@ def main_fetch():
     params = vars(args)
 
     # Setup logging
-    setup_logging(log_file=f'{params["submission_folder"]}/fetch_submission.log', level=logging.DEBUG)
+    os.makedirs(params["submission_folder"], exist_ok=True)
+
+    log_file_path = os.path.join(params["submission_folder"], "fetch_submission.log")
+    setup_logging(log_file=log_file_path, level=logging.DEBUG)
+
+    logging.info("Started fetching reports.")
 
     # Load submission configuration
     config = SubmissionConfigParser(params).load_config()
