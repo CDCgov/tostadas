@@ -4,12 +4,12 @@ include { JOIN_ACCESSIONS_WITH_METADATA              } from '../../modules/local
 
 workflow AGGREGATE_SUBMISSIONS {
     take:
-      submission_dir
+      submission_dirs // works for one or more batch_dir(s)
       submission_config
       validated_metadata_tsv
 
     main:
-      FETCH_REPORTS(submission_dir, file(submission_config))
+      FETCH_REPORTS(submission_dirs, file(submission_config))
 
       // Collect the individual batch submission_reports
       FETCH_REPORTS.out.submission_report
