@@ -15,6 +15,11 @@
           "type": "string",
           "description": "Species name for the analysis."
         },
+        "wastewater": {
+          "type": "boolean",
+          "default": false,
+          "description": "Boolean flag for indicating wastewater data."
+        },
         "meta_path": {
           "type": "string",
           "format": "file-path",
