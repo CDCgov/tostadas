@@ -16,6 +16,7 @@ process PREP_SUBMISSION {
     
     output:
     tuple val(meta), path("${meta.batch_id}"), emit: submission_files
+    path("${meta.batch_id}/prep_submission.log"), emit: submission_log, optional: true
 
     when:
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
@@ -27,17 +28,18 @@ process PREP_SUBMISSION {
     def biosample = params.biosample == true ? '--biosample' : ''
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
+    def wastewater = params.wastewater == true ? '--wastewater' : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
         def s = [
             "sample_id=${sample.meta.sample_id}",
-            "fq1=${sample.fq1}",
-            "fq2=${sample.fq2}",
-            "nanopore=${sample.nanopore}",
-            "fasta=${sample.fasta}",
-            "gff=${sample.gff}"
-        ].findAll { it.split('=')[1] != "null" }  // remove nulls
+            sample.get("fq1")      ? "fq1=${sample.fq1}"       : null,
+            sample.get("fq2")      ? "fq2=${sample.fq2}"       : null,
+            sample.get("nnp")      ? "nnp=${sample.nanopore}"  : null,
+            sample.get("fasta")    ? "fasta=${sample.fasta}"   : null,
+            sample.get("gff")      ? "gff=${sample.gff}"       : null
+        ].findAll { it != null }
         .join(',')
         return "\"${s}\""
     }
@@ -56,6 +58,7 @@ process PREP_SUBMISSION {
         $test_flag \
         $send_submission_email \
         $genbank $sra $biosample \
+        $wastewater \
         $dry_run
     """
 }

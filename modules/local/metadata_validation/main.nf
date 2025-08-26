@@ -18,9 +18,6 @@ process METADATA_VALIDATION {
     path "error.txt", optional: true, emit: errors
     
     script:
-
-        // get absolute path if relative dir passed
-        def resolved_outdir = params.outdir.startsWith('/') ? params.outdir : "${baseDir}/${params.outdir}"
         def remove_demographic_info = params.remove_demographic_info == true ? '--remove_demographic_info' : ''
         def validate_custom_fields = params.validate_custom_fields == true ? '--validate_custom_fields' : ''
 
@@ -35,8 +32,6 @@ process METADATA_VALIDATION {
             --custom_fields_file $params.custom_fields_file \
             --date_format_flag $params.date_format_flag \
             $remove_demographic_info $validate_custom_fields \
-            ${params.fetch_reports_only ? "--find_paths" : ""} \
-            ${params.fetch_reports_only ? "--path_to_existing_tsvs ${resolved_outdir}/${params.val_output_dir}" : ""} \
             --config_file $resolved_submission_config \
             --biosample_fields_key $params.biosample_fields_key
         """

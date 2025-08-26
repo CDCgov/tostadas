@@ -1,28 +1,24 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                            SUMMARIZE SUBMISSION REPORTS
+                                RUN CREATE_BATCH_TSVS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+process CREATE_BATCH_TSVS {
 
-process AGGREGATE_REPORTS {
-    
     conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
-
     input:
-    path(report_csvs)
+    path xlsx_file
+    val batch_size
 
     output:
-    path("submission_report.csv"), emit: submission_report
+    path "*.tsv", emit: tsv_files
 
     script:
     """
-    set -x
-    cat ${report_csvs.join(' ')} | head -n 1 > submission_report.csv
-    for f in ${report_csvs.join(' ')}; do
-        tail -n +2 "\$f" >> submission_report.csv
-    done
+    create_batch_tsvs.py --input $xlsx_file --batch_size $batch_size --output_prefix "genbank"
     """
 }
+

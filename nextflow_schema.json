@@ -7,9 +7,18 @@
   "$defs": {
     "Required Parameters": {
       "properties": {
+        "workflow": {
+          "type": "string",
+          "description": "Choose TOSTADAS workflow"
+        },
         "species": {
           "type": "string",
           "description": "Species name for the analysis."
+        },
+        "wastewater": {
+          "type": "boolean",
+          "default": false,
+          "description": "Boolean flag for indicating wastewater data."
         },
         "meta_path": {
           "type": "string",
@@ -52,9 +61,9 @@
           "description": "Toggle for running submission",
           "default": true
         },
-        "fetch_reports_only": {
-          "type": "boolean",
-          "description": "Toggle for only fetching submission reports.",
+        "updated_meta_path": {
+          "type": "string",
+          "description": "Path to validated metadata Excel file with biosample_accession, sra_accession, genbank_accession columns.",
           "default": false
         },
         "update_submission": {

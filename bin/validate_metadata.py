@@ -37,48 +37,46 @@ def metadata_validation_main():
 		sys.exit(1)
 	
 	filled_df = meta_to_df.df
-
-	# handle case where we're only fetching reports
-	if parameters['find_paths']:
-		retrieve_existing_batch_tsvs(filled_df, parameters)
 		
-	# if fetch_reports_only is false, we run validation steps
-	else:
-		# now call the main function for validating the metadata
-		validate_checks = ValidateChecks(filled_df, parameters, parameters_class)
-		validate_checks.validate_main()
-		print(f"Available keys after validate_checks: {filled_df.keys().tolist()}")
+	# call the main function for validating the metadata
+	validate_checks = ValidateChecks(filled_df, parameters, parameters_class)
+	validate_checks.validate_main()
+	print(f"Available keys after validate_checks: {filled_df.keys().tolist()}")
 
-		# insert necessary columns in metadata dataframe
-		insert = HandleDfInserts(filled_df, parameters)
-		final_df = insert.handle_df_inserts() # final updated, validated dataframe
+	# insert necessary columns in metadata dataframe
+	insert = HandleDfInserts(filled_df, parameters)
+	final_df = insert.handle_df_inserts() # final updated, validated dataframe
 
-		# output the batched tsv files  
-		batch_size = parameters['batch_size']
-		output_dir = ("batched_tsvs")
-		os.makedirs(output_dir, exist_ok=True)
+	# normalize all values here before batching
+	final_df = final_df.applymap(validate_checks.normalize_value)
 
-		total_rows = len(final_df)
-		num_batches = math.ceil(total_rows / batch_size)
-		batch_log = {}
-		print(f"batch size is {parameters['batch_size']} and number of batches is {num_batches}") # debug
+	# output the batched tsv files  
+	batch_size = parameters['batch_size']
+	output_dir = ("batched_tsvs")
+	os.makedirs(output_dir, exist_ok=True)
+
+	total_rows = len(final_df)
+	num_batches = math.ceil(total_rows / batch_size)
+	batch_log = {}
+	print(f"batch size is {parameters['batch_size']} and number of batches is {num_batches}") # debug
 	
-		for i in range(num_batches):
-			start_idx = i * batch_size
-			end_idx = min(start_idx + batch_size, total_rows)
-			batch_df = final_df.iloc[start_idx:end_idx]
-			batch_file = os.path.join(output_dir, f'batch_{i+1}.tsv')
-			batch_df.to_csv(batch_file, sep='\t', index=False)
-			batch_log[f"batch_{i+1}.tsv"] = batch_df["sample_name"].tolist()
+	for i in range(num_batches):
+		start_idx = i * batch_size
+		end_idx = min(start_idx + batch_size, total_rows)
+		batch_df = final_df.iloc[start_idx:end_idx]
+		batch_file = os.path.join(output_dir, f'batch_{i+1}.tsv')
+		batch_df.to_csv(batch_file, sep='\t', index=False)
+		batch_log[f"batch_{i+1}.tsv"] = batch_df["sample_name"].tolist()
 
-		# Write the JSON batch-to-sample dictionary 
-		summary_path = os.path.join(output_dir, "batch_summary.json")
-		with open(summary_path, "w") as json_file:
-			json.dump(batch_log, json_file, indent=4)
+	# Write the JSON batch-to-sample dictionary 
+	summary_path = os.path.join(output_dir, "batch_summary.json")
+	with open(summary_path, "w") as json_file:
+		json.dump(batch_log, json_file, indent=4)
 
-		print(f"\n Metadata successfully split into {num_batches} batch file(s) in {output_dir}.\n")
-		print(f"Summary written to: {summary_path}\n")
+	print(f"\n Metadata successfully split into {num_batches} batch file(s) in {output_dir}.\n")
+	print(f"Summary written to: {summary_path}\n")
 
+# Will need to move this somewhere else (before GENBANK runs, need to run this check)
 def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
 	"""Retrieve and verify existing batch TSVs and their associated samples."""
 	summary_path = os.path.join(parameters["path_to_existing_tsvs"], "batched_tsvs", "batch_summary.json")
@@ -122,7 +120,6 @@ def retrieve_existing_batch_tsvs(filled_df: pd.DataFrame, parameters: dict):
 				print(f"  - {sample}", file=sys.stderr)
 		sys.exit(1)
 
-
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
 	"""
@@ -164,24 +161,28 @@ class GetParams:
 		# initialize parser
 		parser = argparse.ArgumentParser(description="Parameters for Running Metadata Validation")
 		# required parameters (do not have default)
-		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for MetaData")
+		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for Metadata")
 		# optional parameters
-		parser.add_argument("--batch_size", type=int, default=1, help="Number of samples to process per batch")
+		parser.add_argument("--batch_size", type=int, default=1, 
+					  		help="Number of samples to process per batch")
 		parser.add_argument("-o", "--output_dir", type=str, default='validation_outputs',
-							help="Output Directory for final Files, default is current directory")
-		parser.add_argument("--overwrite_output_files", action="store_true", default=True, help='Flag for whether to overwrite the output dir')
+							help="Output Directory for final files, default is current directory")
+		parser.add_argument("--overwrite_output_files", action="store_true", default=True, 
+					  		help='Flag for whether to overwrite the output dir')
 		parser.add_argument("-k", "--remove_demographic_info", action="store_true", default=False,
 							help="Flag to remove potentially identifying demographic info if provided otherwise no change will be made " +
 								 "Applies to host_sex, host_age, race, ethnicity.")
 		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v'],
 							help="Flag to differ date output, s = default (YYYY-MM), " +
 								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
-		parser.add_argument("--custom_fields_file", type=str, help="File containing custom fields, datatypes, and which samples to check")
-		parser.add_argument("--validate_custom_fields", action="store_true", default=True, help="Flag for whether or not validate custom fields ")
-		parser.add_argument("--find_paths", action="store_true", help="Only check for existing TSV file paths (for use with fetch_reports_only)")
-		parser.add_argument("--path_to_existing_tsvs", type=str, required=False, help="Path to existing per-sample TSVs (for use with fetch_reports_only)")
-		parser.add_argument("--config_file", type=str, help="Path to submission config file with a valid BioSample_package key")
-		parser.add_argument("--biosample_fields_key", type=str, help="Path to file with BioSample required fields information")
+		parser.add_argument("--custom_fields_file", type=str, 
+					  		help="File containing custom fields, datatypes, and which samples to check")
+		parser.add_argument("--validate_custom_fields", action="store_true", default=True, 
+					  		help="Flag for whether or not validate custom fields ")
+		parser.add_argument("--config_file", type=str, 
+					  		help="Path to submission config file with a valid BioSample_package key")
+		parser.add_argument("--biosample_fields_key", type=str, 
+					  		help="Path to file with BioSample required fields information")
 		return parser
 
 	def get_restrictions(self):
@@ -207,14 +208,10 @@ class GetParams:
 		self.parameters['restricted_terms'] = [strategy_restrictions, source_restrictions,
 											   selection_restrictions, layout_restrictions]
 		self.parameters['illumina_instrument_restrictions'] = ["HiSeq X Five", "HiSeq X Ten", "Illumina Genome Analyzer",
-									 "Illumina Genome Analyzer II",
-									 "Illumina Genome Analyzer IIx", "Illumina HiScanSQ", "Illumina HiSeq 1000",
-									 "Illumina HiSeq 1500", "Illumina HiSeq 2000", "Illumina HiSeq 2500",
-									 "Illumina HiSeq 3000",
-									 "Illumina HiSeq 4000", "Illumina iSeq 100", "Illumina NovaSeq 6000",
-									 "Illumina MiniSeq",
-									 "Illumina MiSeq", "NextSeq 500", "NextSeq 550", "NextSeq 1000", "NextSeq 2000",
-									 "Illumina HiSeq X"]
+									 "Illumina Genome Analyzer II", "Illumina Genome Analyzer IIx", "Illumina HiScanSQ", "Illumina HiSeq 1000",
+									 "Illumina HiSeq 1500", "Illumina HiSeq 2000", "Illumina HiSeq 2500", "Illumina HiSeq 3000",
+									 "Illumina HiSeq 4000", "Illumina iSeq 100", "Illumina NovaSeq 6000", "Illumina MiniSeq", 
+									 "Illumina MiSeq", "NextSeq 500", "NextSeq 550", "NextSeq 1000", "NextSeq 2000", "Illumina HiSeq X"]
 		self.parameters['nanopore_instrument_restrictions'] = ["GridION", "MinION", "PromethION"]
 
 
@@ -281,6 +278,9 @@ class ValidateChecks:
 	def validate_main(self):
 		""" Main function that performs metadata validation
 		"""
+		# check ncbi-spuid uniqueness
+		self.check_unique_spuid()
+
 		# checks date
 		if self.parameters['date_format_flag'].lower() != 'o':
 			self.check_date()
@@ -343,6 +343,23 @@ class ValidateChecks:
 			self.metadata_df['authors'] = self.metadata_df['authors'].fillna(self.metadata_df['author'])
 			self.metadata_df.drop(columns=['author'], inplace=True)
 	
+	def check_unique_spuid(self):
+		"""Ensure all ncbi-spuid values are unique across the metadata."""
+		if 'ncbi-spuid' not in self.metadata_df.columns:
+			self.global_log.append("ERROR: Metadata is missing required column 'ncbi-spuid'.")
+			return
+
+		duplicates = self.metadata_df[self.metadata_df.duplicated(subset=['ncbi-spuid'], keep=False)]
+		if not duplicates.empty:
+			dup_values = duplicates['ncbi-spuid'].tolist()
+			self.global_log.append(
+				f"ERROR: Duplicate ncbi-spuid values found: {set(dup_values)}"
+			)
+			for _, row in duplicates.iterrows():
+				sample = row['sample_name']
+				spuid = row['ncbi-spuid']
+				self.sample_log[sample].append(f"ERROR: Duplicate ncbi-spuid '{spuid}'")
+
 	def check_date(self):
 		""" Validates and reformats dates based on date_format_flag value
 		"""
@@ -394,11 +411,7 @@ class ValidateChecks:
 			# Convert First Middle Last to F.M. Last
 			if len(parts) == 3 and len(parts[0]) > 1:
 				new_name = f"{parts[0][0]}.{parts[1][0]}. {parts[2]}"
-				if not (new_name.count('.') == 2 and len(new_name.split()) == 2):
-					return cleaned  # fallback
-				return new_name
-			else:
-				return cleaned
+				return new_name if (new_name.count('.') == 2 and len(new_name.split()) == 2) else cleaned
 
 		# Apply to the full dataframe
 		for idx, row in self.metadata_df.iterrows():
@@ -422,15 +435,11 @@ class ValidateChecks:
 		"""
 		# Drop any columns containing 'test_field' 
 		self.metadata_df.drop(
-					columns=[
-						col for col in self.metadata_df.columns
-						if 'test_field' in col.lower()
-					],
-					inplace=True
-				)
+			columns=[c for c in self.metadata_df.columns if 'test_field' in c.lower()],
+			inplace=True, errors='ignore'
+		)
 
-		missing_fields = []
-		missing_optionals = []
+		missing_fields, missing_optionals = [], []
 
 		# Ensure all required columns are present
 		for field in self.required_core:
@@ -471,12 +480,33 @@ class ValidateChecks:
 		if missing_optionals:
 			opt_str = ["[" + ", ".join(group) + "]" for group in missing_optionals]
 			self.global_log.append("Missing optional field groups: " + ", ".join(opt_str))
+
+		# Check lat_lon field
+		if 'lat_lon' in self.metadata_df.columns:
+			for _, row in self.metadata_df.iterrows():
+				sample_name = row.get('sample_name', 'UNKNOWN_SAMPLE')
+				latlon_val = row.get('lat_lon', '')
+				if not self._valid_latlon(latlon_val):
+					self.sample_log[sample_name].append(
+						f"WARNING: lat_lon looks misformatted: '{latlon_val}' (expected 'lat lon')\n"
+					)
+
+	def _valid_latlon(self, s: str) -> bool:
+		"""Return True if s is a valid 'latitude longitude' string in decimal degrees."""
+		try:
+			lat_str, lon_str = map(str.strip, s.split())
+			lat = float(lat_str)
+			lon = float(lon_str)
+
+			return -90 <= lat <= 90 and -180 <= lon <= 180
+		except (ValueError, AttributeError):
+			return False
 	
 	def check_meta_case(self):
 		"""Checks and removes demographics metadata for cases (sex, age, race, and ethnicity) if present.
 		"""
 		try:
-			invalid_mask = pd.DataFrame(False, index=df.index, columns=self.case_fields)
+			invalid_mask = pd.DataFrame(False, index=self.metadata_df.index, columns=self.case_fields)
 
 			for field in self.case_fields:
 				if field in self.metadata_df.columns:
@@ -534,32 +564,42 @@ class ValidateChecks:
 
 		for idx, row in self.metadata_df.iterrows():
 			sample_name = row["sample_name"]
-			illumina_found = pd.notna(row.get("int_illumina_sra_file_path_1", None)) and pd.notna(row.get("int_illumina_sra_file_path_2", None))
-			nanopore_found = pd.notna(row.get("int_nanopore_sra_file_path_1", None))
+			illumina_found = bool(row.get("int_illumina_sra_file_path_1")) and bool(row.get("int_illumina_sra_file_path_2"))
+			nanopore_found = bool(row.get("int_nanopore_sra_file_path_1"))
 
 			# Illumina check
 			if illumina_found:
-				illumina_missing = [f for f in required_illumina if not row.get(f)]
-				if row.get("illumina_library_layout") == "paired":
-					if not row.get("int_illumina_sra_file_path_2"):
-						illumina_missing.append("int_illumina_sra_file_path_2")
+				for field in required_illumina:
+					if not row.get(field):  # missing or empty
+						self.metadata_df.at[idx, field] = "Not Provided"
+						self.sample_log[sample_name].append(f"INFO: Filled missing {field} with 'Not Provided'")
+				
+				illumina_invalid = []
+				if row.get("illumina_library_layout") == "paired" and not row.get("int_illumina_sra_file_path_2"):
+					illumina_invalid.append("int_illumina_sra_file_path_2 (missing for paired layout)")
 				if row.get("illumina_sequencing_instrument") not in self.parameters.get("illumina_instrument_restrictions", []):
-					illumina_missing.append("illumina_sequencing_instrument (invalid or missing)")
-				if illumina_missing:
+					illumina_invalid.append("illumina_sequencing_instrument (invalid or missing)")
+				if illumina_invalid:
 					self.sample_log[sample_name].append(
-						f"ERROR: Illumina metadata is incomplete or invalid. Missing/invalid: {', '.join(set(illumina_missing))}"
+						f"ERROR: Illumina metadata is incomplete or invalid. Issues: {', '.join(set(illumina_invalid))}"
 					)
 			else:
 				self.sample_log[sample_name].append("INFO: Illumina Not Found")
 
 			# Nanopore check
 			if nanopore_found:
-				nanopore_missing = [f for f in required_nanopore if not row.get(f)]
+				for field in required_nanopore:
+					if not row.get(field):  # missing or empty
+						self.metadata_df.at[idx, field] = "Not Provided"
+						self.sample_log[sample_name].append(f"INFO: Filled missing {field} with 'Not Provided'")
+
+				nanopore_invalid = []
 				if row.get("nanopore_sequencing_instrument") not in self.parameters.get("nanopore_instrument_restrictions", []):
-					nanopore_missing.append("nanopore_sequencing_instrument (invalid or missing)")
-				if nanopore_missing:
+					nanopore_invalid.append("nanopore_sequencing_instrument (invalid or missing)")
+
+				if nanopore_invalid:
 					self.sample_log[sample_name].append(
-						f"ERROR: Nanopore metadata is incomplete or invalid. Missing/invalid: {', '.join(set(nanopore_missing))}"
+						f"ERROR: Nanopore metadata is incomplete or invalid. Issues: {', '.join(set(nanopore_invalid))}"
 					)
 			else:
 				self.sample_log[sample_name].append("INFO: Nanopore Not Found")
@@ -581,10 +621,10 @@ class ValidateChecks:
 			"collected_by", "sample_type", "lat_lon", "purpose_of_sampling", "host_sex", "host_age", "race", "ethnicity",
 			"assembly_protocol", "assembly_method", "mean_coverage", "fasta_path", "gff_path", "ncbi_sequence_name_sra",
 			"illumina_sequencing_instrument", "illumina_library_strategy", "illumina_library_source", "illumina_library_selection",
-			"illumina_library_layout", "illumina_library_protocol", "illumina_sra_file_path_1", "illumina_sra_file_path_2",
+			"illumina_library_layout", "illumina_library_protocol", "illumina_library_name", "illumina_sra_file_path_1", "illumina_sra_file_path_2",
 			"file_location", "fastq_path_1", "fastq_path_2", "nanopore_sequencing_instrument", "nanopore_library_strategy",
 			"nanopore_library_source", "nanopore_library_selection", "nanopore_library_layout", "nanopore_library_protocol",
-			"nanopore_sra_file_path_1", "nanopore_sra_file_path_2"
+			"nanopore_library_name", "nanopore_sra_file_path_1", "nanopore_sra_file_path_2"
 		}
 
 		existing_cols = set(self.metadata_df.columns)
@@ -616,28 +656,41 @@ class ValidateChecks:
 		if unexpected_fields:
 			self.global_log.append(f"[CustomFields] Unexpected fields in metadata: {', '.join(unexpected_fields)}")
 
+	def normalize_value(self, val):
+		"""
+		Normalize placeholder/empty metadata values.
+		Converts Not Provided, NA, N/A, empty strings, and non-breaking spaces to None.
+		"""
+		if pd.isna(val):
+			return None
+		if isinstance(val, str):
+			val = val.replace("\u00A0", " ").strip()  # normalize NBSP
+			if val == "":
+				return None
+		return val
+
 class HandleDfInserts:
 	""" Class constructor for handling the insert operations on the metadata df once all the checks are completed
 	"""
 	def __init__(self, filled_df, parameters):
 		self.parameters = parameters
 		self.metadata_df = filled_df
-		self.list_of_country = self.metadata_df["country"].tolist()
-		self.list_of_state = self.metadata_df["state"].tolist()
+		self.list_of_country = self.metadata_df["country"].tolist() if "country" in self.metadata_df.columns else []
+		self.list_of_state = self.metadata_df["state"].tolist() if "state" in self.metadata_df.columns else []
 		self.new_combination_list = []
 
 	def handle_df_inserts(self):
 		""" Main function to call sub-insert routines and return the final metadata dataframe
 		"""
 		# adds the Geolocation field
-		self.insert_loc_data()
+		if self.list_of_country:
+			self.insert_loc_data()
 		self.insert_additional_columns()
 		try:
 			assert 'geo_loc_name' in self.metadata_df.columns.values
 			assert True not in [math.isnan(x) for x in self.metadata_df['geo_loc_name'].tolist() if isinstance(x, str) is False]
 			assert 'structuredcomment' in self.metadata_df.columns.values
-			assert True not in [math.isnan(x) for x in self.metadata_df['structuredcomment'].tolist() if
-								isinstance(x, str) is False]
+			assert True not in [math.isnan(x) for x in self.metadata_df['structuredcomment'].tolist() if isinstance(x, str) is False]
 		except AssertionError:
 			raise AssertionError(f'Columns were not properly inserted into dataframe')
 		return self.metadata_df
@@ -646,7 +699,7 @@ class HandleDfInserts:
 		""" Inserts modified location data with the country:state into dataframe
 		"""
 		for i in range(len(self.list_of_country)):
-			if self.list_of_state[i] != "" and self.list_of_state[i] != '' and self.list_of_state[i] is not None:
+			if i < len(self.list_of_state) and self.list_of_state[i] not in ("", None):
 				self.new_combination_list.append(f'{self.list_of_country[i]}: {self.list_of_state[i]}')
 			else:
 				self.new_combination_list.append(str(self.list_of_country[i]))

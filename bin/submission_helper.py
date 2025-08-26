@@ -14,6 +14,7 @@ import math  # Required for isnan check
 import time
 import shlex
 import subprocess
+from typing import Optional, List
 import pandas as pd
 from abc import ABC, abstractmethod
 import paramiko
@@ -161,6 +162,18 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 			remote_subdir = get_remote_submission_dir(identifier, batch_id, db, platform)
 			remote_dir = f"submit/{submission_dir}/{remote_subdir}"
 			logging.info(f'remote dir: {remote_dir}, report local path: {report_local_path}')
+
+			try:
+				submission.client.connect()
+				submission.client.change_dir(remote_dir)
+			except Exception as e:
+				if db == "genbank":
+					logging.warning(f"GenBank folder not found on FTP: {remote_dir}. Skipping.")
+					continue  # Don't raise; just skip genbank (genbank is not always ftp)
+				else:
+					logging.error(f"Critical: Failed to access {db} folder {remote_dir}. Error: {e}")
+					raise  # For biosample/sra, still crash
+
 			success = False
 			while time.time() - start_time < timeout:
 				report_path = submission.fetch_report(remote_dir, report_local_path)
@@ -177,82 +190,143 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 	return reports_fetched
 
 def parse_report_xml_to_df(report_path):
-	"""
-	Parses a report.xml file containing multiple samples.
-	Returns a DataFrame with one row per action_id (i.e., per sample).
-	"""
-	reports = []
-	try:
-		tree = ET.parse(report_path)
-		root = tree.getroot()
-		submission_status = root.get("status", None)
-		submission_id = root.get("submission_id", None)
+    """
+    Parses a report.xml file containing multiple samples.
+    Returns a DataFrame with one row per sample_id.
+    """
+    reports = []
+    try:
+        tree = ET.parse(report_path)
+        root = tree.getroot()
+        submission_status = root.get("status", None)
+        submission_id = root.get("submission_id", None)
+        tracking_location_tag = root.find("Tracking/SubmissionLocation")
+        tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
 
-		tracking_location_tag = root.find("Tracking/SubmissionLocation")
-		tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
+        actions = root.findall("Action")
+        if not actions:
+            logging.warning(f"No <Action> elements found in {report_path}. Skipping this report.")
+            return pd.DataFrame()  # Empty — caller will skip
 
-		for action in root.findall("Action"):
-			action_id = action.get("action_id", None)
-			target_db = action.get("target_db", "").lower()
-			report = {
-				'submission_name': action_id,
-				'submission_status': submission_status,
-				'submission_id': submission_id,
-				'biosample_status': None,
-				'biosample_accession': None,
-				'biosample_message': None,
-				'sra_status': None,
-				'sra_accession': None,
-				'sra_message': None,
-				'genbank_status': None,
-				'genbank_accession': None,
-				'genbank_message': None,
-				'genbank_release_date': None,
-				'tracking_location': tracking_location,
-			}
-			# Common fields
-			status = action.get("status", None)
-			response = action.find("Response")
-			response_message = None
-			if response is not None:
-				message_tag = response.find("Message")
-				if message_tag is not None:
-					response_message = message_tag.text.strip()
-				else:
-					response_message = response.get("status", "").strip() or (response.text or "").strip()
-			# Fill in based on database
-			if target_db == "biosample":
-				report['biosample_status'] = status
-				report['biosample_message'] = response_message
-			elif target_db == "sra":
-				report['sra_status'] = status
-				report['sra_message'] = response_message
-			elif target_db == "genbank":
-				report['genbank_status'] = status
-				report['genbank_message'] = response_message
-				report['genbank_release_date'] = action.get("release_date", None)
-			reports.append(report)
-	except FileNotFoundError:
-		logging.error(f"Report not found: {report_path}")
-	except ET.ParseError:
-		logging.error(f"Error parsing XML report: {report_path}")
-	df = pd.DataFrame(reports)
-	df = df.where(pd.notna(df), None)
-	return df
+        for action in actions:
+            action_id = action.get("action_id", None)
+            target_db = action.get("target_db", "").lower()
+            status = action.get("status", None)
+
+            # Defaults
+            response_message = None
+            spuid = None
+            spuid_namespace = None
+            object_id = None
+            sample_id = None
+
+            # Extract info from <Response>
+            response = action.find("Response")
+            if response is not None:
+                message_tag = response.find("Message")
+                if message_tag is not None:
+                    response_message = message_tag.text.strip()
+                else:
+                    response_message = response.get("status", "").strip() or (response.text or "").strip()
+
+                object_tag = response.find("Object")
+                if object_tag is not None:
+                    spuid = object_tag.get("spuid", None)
+                    spuid_namespace = object_tag.get("spuid_namespace", None)
+                    object_id = object_tag.get("object_id", None)
+
+            # Determine sample_id
+            if spuid:  
+                sample_id = spuid
+            elif action_id:
+                # Expect format {submission}_{sample_id}_sra
+                parts = action_id.split("_")
+                if len(parts) >= 3:
+                    sample_id = parts[1]  # middle part
+                else:
+                    sample_id = action_id  # fallback: store raw action_id
+
+            if not sample_id:
+                logging.warning(f"Could not determine sample_id for action in {report_path}. Skipping this action.")
+                continue
+
+            # Initialize row
+            report = {
+                'sample_id': sample_id,
+                'spuid': spuid,
+                'spuid_namespace': spuid_namespace,
+                'object_id': object_id,
+                'submission_name': action_id,
+                'submission_status': submission_status,
+                'submission_id': submission_id,
+                'biosample_status': None,
+                'biosample_accession': None,
+                'biosample_message': None,
+                'sra_status': None,
+                'sra_accession': None,
+                'sra_message': None,
+                'tracking_location': tracking_location,
+            }
+
+            # Fill in database-specific fields
+            if target_db == "biosample":
+                report['biosample_status'] = status
+                report['biosample_message'] = response_message
+                if object_id:
+                    report['biosample_accession'] = object_id
+            elif target_db == "sra":
+                report['sra_status'] = status
+                report['sra_message'] = response_message
+                if object_id:
+                    report['sra_accession'] = object_id
+
+            reports.append(report)
+
+    except FileNotFoundError:
+        logging.error(f"Report not found: {report_path}")
+    except ET.ParseError:
+        logging.error(f"Error parsing XML report: {report_path}")
+
+    # Build DataFrame
+    df = pd.DataFrame(reports)
+
+    if not df.empty:
+        # Deduplicate so only one row per sample_id remains
+        df = df.groupby('sample_id', as_index=False).first()
+
+        # Ensure column order
+        column_order = ['sample_id', 'spuid', 'spuid_namespace', 'object_id'] + \
+                       [col for col in df.columns if col not in {'sample_id', 'spuid', 'spuid_namespace', 'object_id'}]
+        df = df[column_order]
+
+        # Normalize NaNs to None
+        df = df.where(pd.notna(df), None)
+    return df
 
 def parse_and_save_reports(reports_fetched, outdir, batch_id):
-	all_reports = pd.DataFrame()
-	for db, report_paths in reports_fetched.items():
-		for report_path in report_paths:
-			if report_path and os.path.exists(report_path):
-				df = parse_report_xml_to_df(report_path)
-				all_reports = pd.concat([all_reports, df], ignore_index=True)
-	report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
-	try:
-		all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
-		logging.info(f"Report table saved to: {report_csv_file}")
-	except Exception as e:
-		raise ValueError(f"Failed to save report CSV: {e}")
+    all_reports = pd.DataFrame()
+
+    for db, report_paths in reports_fetched.items():
+        for report_path in report_paths:
+            if report_path and os.path.exists(report_path):
+                df = parse_report_xml_to_df(report_path)
+                if not df.empty:
+                    all_reports = pd.concat([all_reports, df], ignore_index=True)
+
+    if all_reports.empty:
+        logging.warning(f"No sample data found in any reports for batch {batch_id}.")
+        return
+
+    # Deduplicate final CSV by sample_id
+    all_reports = all_reports.groupby('sample_id', as_index=False).first()
+
+    report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
+    try:
+        all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
+        logging.info(f"Report table saved to: {report_csv_file}")
+    except Exception as e:
+        raise ValueError(f"Failed to save report CSV: {e}")
+
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
 	"""
@@ -291,9 +365,10 @@ class GetParams:
 		parser.add_argument("--genbank", help="Optional flag to run Genbank submission", action="store_const", default=False, const=True)
 		parser.add_argument("--biosample", help="Optional flag to run BioSample submission", action="store_const", default=False, const=True)
 		parser.add_argument("--sra", help="Optional flag to run SRA submission", action="store_const", default=False, const=True)
-		parser.add_argument("--gisaid", help="Optional flag to run GISAID submission", action="store_const", default=False, const=True)
+		parser.add_argument("--wastewater", action="store_true", help="Prepare submission with wastewater specific metadata")
 		parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
 		return parser
+
 class SubmissionConfigParser:
 	""" Class constructor to read in config file as dict
 	"""
@@ -320,6 +395,7 @@ class SubmissionConfigParser:
 						logging.info("Error: There are missing NCBI values in the config file.", file=sys.stderr)
 						sys.exit(1)
 		return config_dict
+
 class Sample:
 	def __init__(self, sample_id, batch_id, species, databases, fastq1=None, fastq2=None, nanopore=None, fasta_file=None, annotation_file=None):
 		self.sample_id = sample_id
@@ -340,6 +416,7 @@ class Sample:
 			f"species={self.species}, databases={self.databases}, "
 			f"fasta_file={self.fasta_file}, annotation_file={self.annotation_file})"
 		)
+
 class MetadataParser:
 	def __init__(self, metadata_df, parameters):
 		self.metadata_df = metadata_df
@@ -364,15 +441,33 @@ class MetadataParser:
 			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid']  # Main columns
+		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi_sequence_name_sra']  # Main columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+	
 	def extract_biosample_metadata(self):
 		columns = ['strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','organism',
 				   'sample_type','collection_date','isolation_source','host_age','host_sex', 'race','ethnicity']  # BioSample specific columns
 		all_columns = columns + self.custom_columns # add custom columns to BioSample specific cols
 		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+	
+	def extract_wastewater_metadata(self):
+		columns =  [ "description", "isolation_source", "organism", "collection_date", "collection_time", "country", "state", "collection_site_id", 
+			"project_name", "collected_by", "purpose_of_ww_sampling", "ww_sample_site", "ww_flow", "instantaneous_flow", "ww_population", "ww_surv_jurisdiction", 
+			"ww_population_source", "ww_sample_matrix", "ww_sample_type", "collection_volume", "ww_sample_duration", "ww_temperature", "ww_ph", "ww_industrial_effluent_percent", 
+			"ww_sample_salinity", "ww_total_suspended_solids", "ww_surv_system_sample_id", "ww_pre_treatment", "ww_primary_sludge_retention_time", "specimen_processing",
+    		"specimen_processing_id", "specimen_processing_details", "ww_processing_protocol", "concentration_method", "extraction_method", "extraction_control", "ww_endog_control_1",
+			"ww_endog_control_1_conc", "ww_endog_control_1_protocol", "ww_endog_control_1_units", "ww_endog_control_2", "ww_endog_control_2_conc", "ww_endog_control_2_protocol", 
+			"ww_endog_control_2_units", "ww_surv_target_1", "ww_surv_target_1_known_present", "ww_surv_target_1_protocol", "ww_surv_target_1_conc", "ww_surv_target_1_conc_unit", 
+			"ww_surv_target_1_gene", "ww_surv_target_2", "ww_surv_target_2_conc", "ww_surv_target_2_conc_unit", "ww_surv_target_2_gene", "ww_surv_target_2_known_present",
+    		"purpose_of_ww_sequencing", "sequenced_by" ]
+		all_columns = columns + self.custom_columns 
+		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
+		record = self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+    	# Filter out empty/NaN values
+		return {k: v for k, v in record.items() if pd.notna(v) and v != ""}
+	
 	def extract_sra_metadata(self):
 		rename_fields = {
 			'sequencing_instrument': 'instrument_model',
@@ -400,13 +495,14 @@ class MetadataParser:
 		if nanopore_fields:
 			platforms.append(('nanopore', nanopore_fields))
 		return platforms
+	
 	def extract_genbank_metadata(self):
+		# Genbank specific columns (expect authors, which is in extract_top_metadata)
 		columns = ['submitting_lab','submitting_lab_division','submitting_lab_address','publication_status','publication_title',
-					'assembly_protocol','assembly_method','mean_coverage']  # Genbank specific columns
+					'illumina_sequencing_instrument', 'nanopore_sequencing_instrument', 'assembly_protocol','assembly_method','mean_coverage'] 
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 
-# todo: this opens an ftp connection for every submission; would be better I think to open it once every x submissions?
 class Submission:
 	def __init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier):
 		self.sample = sample
@@ -428,20 +524,21 @@ class Submission:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
 	def fetch_report(self, remote_dir, report_local_path):
 		""" Fetches report.xml from the host site folder submit/<Test|Production>/sample_database/"""
-		self.client.connect()
-		# Navigate to submit/<Test|Production>/<submission_db> folder
-		self.client.change_dir(remote_dir)
-		# Check if report.xml exists and download it
+		#self.client.connect()
+		## Navigate to submit/<Test|Production>/<submission_db> folder
+		#self.client.change_dir(remote_dir)
+		## Check if report.xml exists and download it
 		if os.path.exists(report_local_path):
 			logging.info(f"Report already exists locally: {report_local_path}")
 			return report_local_path
 		elif self.client.file_exists('report.xml'):
 			logging.info(f"Report found on server. Downloading to: {report_local_path}.")
 			self.client.download_file('report.xml', report_local_path)
-			return report_local_path # Report fetched, return its path
+			return report_local_path
 		else:
 			logging.info(f"No report found at {remote_dir}")
 			return False # Report not found, need to try again
+ 
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
 		remote_subdir = get_remote_submission_dir(self.identifier, self.sample.batch_id, type, getattr(self, 'platform', None))
@@ -649,6 +746,7 @@ class XMLSubmission(ABC):
 		parser = MetadataParser(self.metadata_df, self.parameters)
 		self.top_metadata = parser.extract_top_metadata()
 		self.biosample_metadata = parser.extract_biosample_metadata()
+		self.wastewater_metadata = parser.extract_wastewater_metadata()
 		all_platform_metadata = self.sra_metadata = parser.extract_sra_metadata()
 		# If illumina & nanopore, platform will be specified
 		if platform:
@@ -677,12 +775,14 @@ class XMLSubmissionMixin(ABC):
 		pass
 
 class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, sample, accession_id = None, identifier = None):
-		# Properly initialize the base classes 
-		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample) 
-		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier) 
+	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
+				 submission_dir, type, sample, accession_id=None, identifier=None, wastewater=False):
+		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample)
+		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
+		self.wastewater = bool(wastewater)
 		os.makedirs(self.outdir, exist_ok=True)
+
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, 'Action')
 		add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
@@ -721,23 +821,32 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 			primary_id = ET.SubElement(identifier, 'PrimaryId', {'db': 'BioSample'})
 			primary_id.text = self.accession_id
 		return biosample
+	
 	def add_attributes_block(self, biosample):
 		attributes = ET.SubElement(biosample, 'Attributes')
-		for attr_name, attr_value in self.biosample_metadata.items():
-			# organism already added to XML in add_action_block, also ignore the test fields in the custom metadata JSON
-			ignored_fields = ['organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2']
+		# Select the appropriate metadata source
+		metadata = self.wastewater_metadata if self.wastewater else self.biosample_metadata
+		logging.debug(f'wastewater set to {self.wastewater}')
+		logging.debug(metadata)
+		# Fields to ignore when adding attributes
+		ignored_fields = {'organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2'}
+		
+		# Add attributes for all non-ignored fields
+		for attr_name, attr_value in metadata.items():
 			if attr_name not in ignored_fields:
 				attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 				attribute.text = self.safe_text(attr_value)
 
 class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
-	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
-		# Properly initialize the base classes 
-		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample) 
+	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
+				 submission_dir, type, samples, sample, accession_id=None, identifier=None, wastewater=False):
+		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample)
 		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
 		self.samples = samples
+		self.wastewater = bool(wastewater)
 		os.makedirs(self.outdir, exist_ok=True)
+
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, "Action")
 		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
@@ -752,6 +861,7 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		data_type2 = ET.SubElement(file2, "DataType")
 		data_type2.text = "generic-data"
 		return add_files
+	
 	def add_attributes_block(self, add_files):
 		for attr_name, attr_value in self.sra_metadata.items():
 			attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
@@ -770,7 +880,7 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		# Identifier
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
-		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi-spuid']}_SRA")
+		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi_sequence_name_sra']}")
 		# todo: add attribute ref ID for BioSample
 
 class GenbankSubmission(XMLSubmission, Submission):
@@ -786,6 +896,11 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.biosample_metadata = parser.extract_biosample_metadata()
 		self.genbank_metadata = parser.extract_genbank_metadata()
 		os.makedirs(self.outdir, exist_ok=True)
+
+		print("Top metadata:", self.top_metadata)
+		print("Biosample metadata:", self.biosample_metadata)
+		print("GenBank metadata:", self.genbank_metadata)
+
 	def xml_create_bankit(self, submission):
 		"""
 		Prepares a submission for ftp upload via Bank-It
@@ -861,8 +976,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
 		source_data = {
-			"Sequence_ID": self.top_metadata.get("sequence_name"),
-			"strain": self.top_metadata.get("sequence_name"),
+			"Sequence_ID": self.top_metadata.get("ncbi_sequence_name_sra"),
+			"strain": self.biosample_metadata.get("strain"),
 			"BioProject": self.top_metadata.get("ncbi-bioproject"),
 			"organism": self.biosample_metadata.get("organism"),
 			"Collection_date": self.biosample_metadata.get("collection_date"),
@@ -880,10 +995,10 @@ class GenbankSubmission(XMLSubmission, Submission):
 			"StructuredCommentPrefix": "Assembly-Data",
 			"organism": self.biosample_metadata.get("organism"),
 			"collection_date": self.biosample_metadata.get("collection_date"),
+			"Assembly-Protocol": self.genbank_metadata.get("assembly_protocol"),
 			"Assembly-Method": self.genbank_metadata.get("assembly_method"),
+			"Sequencing Technology": self.genbank_metadata.get("illumina_sequencing_instrument"),
 			"Coverage": self.genbank_metadata.get("mean_coverage"),
-			"host_age": self.biosample_metadata.get("host_age"),
-			"host_gender": self.biosample_metadata.get("host_sex"),
 			"StructuredCommentSuffix": "Assembly-Data"
 		}
 		comment_df = pd.DataFrame([comment_data])
@@ -979,7 +1094,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("      cit \"" + publication_status + "\",\n")
 			f.write("      authors {\n")
 			f.write("        names std {\n")
-			authors_list = self.safe_text(self.genbank_metadata.get("authors")).split("; ")
+			authors_list = self.safe_text(self.top_metadata.get("authors")).split("; ")
 			if authors_list[0] not in ["Not Provided", ""]:
 				total_names = len(authors_list)
 				for index, author in enumerate(authors_list, start=1):
@@ -1045,7 +1160,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		symlink_or_copy(self.sample.fasta_file, renamed_fasta)
 		# Run table2asn 
 		self.run_table2asn()
-		print(f"Genbank files prepared for {self.sample.sample_id}")
+		logging.info(f"Genbank files prepared for {self.sample.sample_id}")
 
 	def prep_zip_folder(self):
 		""" Prepare files for manual upload to GenBank because FTP support not available 
@@ -1056,6 +1171,12 @@ class GenbankSubmission(XMLSubmission, Submission):
 				filepath = os.path.join(self.outdir, file)
 				if os.path.exists(filepath):
 					zip.write(filepath, file) 
+		# Delete all but the sqn file (because they're in the zip folder)
+		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff']:
+			pattern = os.path.join(self.outdir, p)
+			for f in glob.glob(pattern):
+				if os.path.isfile(f):
+					os.remove(f)
 
 	# Define internal workflow functions for the 3 different GenBank submission modalities
 	def _workflow_bankit(self):
@@ -1090,7 +1211,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 	def genbank_submission_driver(self):
 		""" Runs the appropriate workflow to prepare the GenBank submission
 		"""
-		print(f"Preparing GenBank submission of type: {self.sample.species}")
+		logging.info(f"Preparing GenBank submission of type: {self.sample.species}")
 		if self.sample.species in ['sars','flu']:
 			self._workflow_bankit()
 		elif self.sample.species in ['bacteria', 'eukaryote']:
@@ -1098,7 +1219,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		elif self.sample.species in ['virus','rsv','mpxv']:
 			self._workflow_virus()
 		else:
-			print(f"{self.sample.species} must be one of: sars, flu, bacteria, eukaryote, virus")
+			logging.debug(f"{self.sample.species} must be one of: sars, flu, bacteria, eukaryote, virus")
 
 	# Functions for running table2asn
 	def get_gff_locus_tag(self):
@@ -1137,7 +1258,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		"""
 		Executes table2asn with appropriate flags and handles errors.
 		"""
-		print("Running table2asn...")
+		logging.info("Running table2asn...")
 		# Check if table2asn executable exists in PATH
 		table2asn_path = shutil.which('table2asn')
 		if not table2asn_path:
@@ -1169,10 +1290,10 @@ class GenbankSubmission(XMLSubmission, Submission):
 			cmd.append("-src-file")
 			cmd.append(f"{self.outdir}/source.src")
 		# Run the command and capture errors
-		print(f'table2asn command: {shlex.join(cmd)}')
+		logging.info(f'table2asn command: {shlex.join(cmd)}')
 		try:
 			result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-			print(f"table2asn output: {result.stdout}")
+			logging.info(f"table2asn output: {result.stdout}")
 		except subprocess.CalledProcessError as e:
-			print(f"Error running table2asn: {e.stderr}")
+			logging.debug(f"Error running table2asn: {e.stderr}")
 			raise
