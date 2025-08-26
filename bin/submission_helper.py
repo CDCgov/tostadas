@@ -324,6 +324,7 @@ def parse_and_save_reports(reports_fetched, outdir, batch_id):
         logging.info(f"Report table saved to: {report_csv_file}")
     except Exception as e:
         raise ValueError(f"Failed to save report CSV: {e}")
+
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
 	"""
@@ -365,6 +366,7 @@ class GetParams:
 		parser.add_argument("--wastewater", action="store_true", help="Prepare submission with wastewater specific metadata")
 		parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
 		return parser
+
 class SubmissionConfigParser:
 	""" Class constructor to read in config file as dict
 	"""
@@ -391,6 +393,7 @@ class SubmissionConfigParser:
 						logging.info("Error: There are missing NCBI values in the config file.", file=sys.stderr)
 						sys.exit(1)
 		return config_dict
+
 class Sample:
 	def __init__(self, sample_id, batch_id, species, databases, fastq1=None, fastq2=None, nanopore=None, fasta_file=None, annotation_file=None):
 		self.sample_id = sample_id
@@ -411,6 +414,7 @@ class Sample:
 			f"species={self.species}, databases={self.databases}, "
 			f"fasta_file={self.fasta_file}, annotation_file={self.annotation_file})"
 		)
+
 class MetadataParser:
 	def __init__(self, metadata_df, parameters):
 		self.metadata_df = metadata_df
@@ -435,15 +439,17 @@ class MetadataParser:
 			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid']  # Main columns
+		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi_sequence_name_sra']  # Main columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+	
 	def extract_biosample_metadata(self):
 		columns = ['strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','organism',
 				   'sample_type','collection_date','isolation_source','host_age','host_sex', 'race','ethnicity']  # BioSample specific columns
 		all_columns = columns + self.custom_columns # add custom columns to BioSample specific cols
 		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+	
 	def extract_wastewater_metadata(self):
 		columns =  [ "description", "isolation_source", "organism", "collection_date", "collection_time", "country", "state", "collection_site_id", 
 			"project_name", "collected_by", "purpose_of_ww_sampling", "ww_sample_site", "ww_flow", "instantaneous_flow", "ww_population", "ww_surv_jurisdiction", 
@@ -487,13 +493,14 @@ class MetadataParser:
 		if nanopore_fields:
 			platforms.append(('nanopore', nanopore_fields))
 		return platforms
+	
 	def extract_genbank_metadata(self):
+		# Genbank specific columns (expect authors, which is in extract_top_metadata)
 		columns = ['submitting_lab','submitting_lab_division','submitting_lab_address','publication_status','publication_title',
-					'assembly_protocol','assembly_method','mean_coverage']  # Genbank specific columns
+					'illumina_sequencing_instrument', 'nanopore_sequencing_instrument', 'assembly_protocol','assembly_method','mean_coverage'] 
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 
-# todo: this opens an ftp connection for every submission; would be better I think to open it once every x submissions?
 class Submission:
 	def __init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier):
 		self.sample = sample
@@ -812,6 +819,7 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 			primary_id = ET.SubElement(identifier, 'PrimaryId', {'db': 'BioSample'})
 			primary_id.text = self.accession_id
 		return biosample
+	
 	def add_attributes_block(self, biosample):
 		attributes = ET.SubElement(biosample, 'Attributes')
 		# Select the appropriate metadata source
@@ -826,6 +834,7 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 			if attr_name not in ignored_fields:
 				attribute = ET.SubElement(attributes, 'Attribute', {'attribute_name': attr_name})
 				attribute.text = self.safe_text(attr_value)
+
 class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
 				 submission_dir, type, samples, sample, accession_id=None, identifier=None, wastewater=False):
@@ -850,6 +859,7 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		data_type2 = ET.SubElement(file2, "DataType")
 		data_type2.text = "generic-data"
 		return add_files
+	
 	def add_attributes_block(self, add_files):
 		for attr_name, attr_value in self.sra_metadata.items():
 			attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
@@ -868,7 +878,7 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		# Identifier
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
-		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi-spuid']}_SRA")
+		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi_sequence_name_sra']}")
 		# todo: add attribute ref ID for BioSample
 
 class GenbankSubmission(XMLSubmission, Submission):
@@ -884,6 +894,11 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.biosample_metadata = parser.extract_biosample_metadata()
 		self.genbank_metadata = parser.extract_genbank_metadata()
 		os.makedirs(self.outdir, exist_ok=True)
+
+		print("Top metadata:", self.top_metadata)
+		print("Biosample metadata:", self.biosample_metadata)
+		print("GenBank metadata:", self.genbank_metadata)
+
 	def xml_create_bankit(self, submission):
 		"""
 		Prepares a submission for ftp upload via Bank-It
@@ -959,8 +974,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
 		source_data = {
-			"Sequence_ID": self.top_metadata.get("sequence_name"),
-			"strain": self.top_metadata.get("sequence_name"),
+			"Sequence_ID": self.top_metadata.get("ncbi_sequence_name_sra"),
+			"strain": self.biosample_metadata.get("strain"),
 			"BioProject": self.top_metadata.get("ncbi-bioproject"),
 			"organism": self.biosample_metadata.get("organism"),
 			"Collection_date": self.biosample_metadata.get("collection_date"),
@@ -978,10 +993,10 @@ class GenbankSubmission(XMLSubmission, Submission):
 			"StructuredCommentPrefix": "Assembly-Data",
 			"organism": self.biosample_metadata.get("organism"),
 			"collection_date": self.biosample_metadata.get("collection_date"),
+			"Assembly-Protocol": self.genbank_metadata.get("assembly_protocol"),
 			"Assembly-Method": self.genbank_metadata.get("assembly_method"),
+			"Sequencing Technology": self.genbank_metadata.get("illumina_sequencing_instrument"),
 			"Coverage": self.genbank_metadata.get("mean_coverage"),
-			"host_age": self.biosample_metadata.get("host_age"),
-			"host_gender": self.biosample_metadata.get("host_sex"),
 			"StructuredCommentSuffix": "Assembly-Data"
 		}
 		comment_df = pd.DataFrame([comment_data])
@@ -1077,7 +1092,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("      cit \"" + publication_status + "\",\n")
 			f.write("      authors {\n")
 			f.write("        names std {\n")
-			authors_list = self.safe_text(self.genbank_metadata.get("authors")).split("; ")
+			authors_list = self.safe_text(self.top_metadata.get("authors")).split("; ")
 			if authors_list[0] not in ["Not Provided", ""]:
 				total_names = len(authors_list)
 				for index, author in enumerate(authors_list, start=1):
@@ -1154,6 +1169,12 @@ class GenbankSubmission(XMLSubmission, Submission):
 				filepath = os.path.join(self.outdir, file)
 				if os.path.exists(filepath):
 					zip.write(filepath, file) 
+		# Delete all but the sqn file (because they're in the zip folder)
+		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff']:
+			pattern = os.path.join(self.outdir, p)
+			for f in glob.glob(pattern):
+				if os.path.isfile(f):
+					os.remove(f)
 
 	# Define internal workflow functions for the 3 different GenBank submission modalities
 	def _workflow_bankit(self):
