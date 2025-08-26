@@ -104,8 +104,6 @@ def main_submit():
 				for fname in files_to_upload:
 					local = os.path.join(dirpath, fname)
 					logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
-
-					
 			else:
 				client.connect()
 				client.make_dir(remote_dir)
@@ -113,11 +111,13 @@ def main_submit():
 				for fname in files_to_upload:
 					local = os.path.join(dirpath, fname)
 					client.upload_file(local, fname)
-
 					if is_fastq_file(fname):
 						try:
-							os.remove(local)
-							logging.info(f"Deleted FASTQ file after upload: {local}")
+							if os.path.islink(local):
+								os.remove(local)
+								logging.info(f"Deleted symlinked FASTQ file after upload: {local}")
+							else:
+								logging.warning(f"FASTQ file {local} is not a symlink - skipping deletion for safety")
 						except Exception as e:
 							logging.warning(f"Could not delete FASTQ file {local}: {e}")
 				client.close()
