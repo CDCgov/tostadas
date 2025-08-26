@@ -9,7 +9,7 @@ nextflow.enable.dsl=2
 // get the utility processes / subworkflows
 include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
-include { CHECK_VALIDATION_ERRORS							} from "../modules/local/check_validation_errors/main.nf"
+include { CHECK_VALIDATION_ERRORS							} from "../modules/local/check_validation_errors/main"
 include { WRITE_VALIDATED_FULL_TSV                          } from "../modules/local/write_validated_full_tsv/main"
 include { SUBMISSION		                                } from "../subworkflows/local/submission"
 
