@@ -35,6 +35,10 @@ def get_args():
 				   help="Print what would be uploaded but don't connect or transfer files")
 	return parser
 
+def is_fastq_file(filename):
+    fastq_exts = ('.fq', '.fq.gz', '.fastq', '.fastq.gz')
+    return filename.lower().endswith(fastq_exts)
+
 def main_submit():
 	args = get_args().parse_args()
 	params = vars(args)
@@ -53,7 +57,7 @@ def main_submit():
 	# Extra files for each database type
 	EXTRA_ALLOWED = {
 		'biosample': [],
-		'sra': ['*.fq.gz'],
+		'sra': ['*.fq', '*.fq.gz', '*.fastq', '*.fastq.gz'],
 		'genbank': ['*.fasta', '*.sqn']
 	}
 
@@ -107,6 +111,15 @@ def main_submit():
 				for fname in files_to_upload:
 					local = os.path.join(dirpath, fname)
 					client.upload_file(local, fname)
+					if is_fastq_file(fname):
+						try:
+							if os.path.islink(local):
+								os.remove(local)
+								logging.info(f"Deleted symlinked FASTQ file after upload: {local}")
+							else:
+								logging.warning(f"FASTQ file {local} is not a symlink - skipping deletion for safety")
+						except Exception as e:
+							logging.warning(f"Could not delete FASTQ file {local}: {e}")
 				client.close()
 
 		elif any(f.endswith('.zip') for f in files):
