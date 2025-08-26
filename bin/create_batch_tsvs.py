@@ -43,7 +43,7 @@ def main():
     setup_logging(log_file='create_batch_tsvs.log', level=logging.DEBUG)
 
     logging.info(f"Reading Excel file: {params['input']}")
-    df = pd.read_excel(params['input'], dtype=str)
+    df = pd.read_excel(params['input'], dtype=str, input=[1])
 
     # Drop completely empty rows (which can sneak in from Excel)
     df.dropna(how='all', inplace=True)
