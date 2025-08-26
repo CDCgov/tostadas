@@ -43,7 +43,7 @@ Parameters can be overridden during runtime by providing various flags to the `n
 
 Example: Modifying the path of the output directory
 
-`nextflow run main.nf -profile test,singularity --virus --output_dir /path/to/output/dir` Certain parameters such as -profile and pathogen type (`--virus`) are required, while others like `--output_dir` can be specified optionally. The complete list of parameters and the types of input that they require can be found in the Parameters page.
+`nextflow run main.nf -profile test,singularity --species virus --output_dir /path/to/output/dir` Certain parameters such as -profile and pathogen type (`--species virus`) are required, while others like `--output_dir` can be specified optionally. The complete list of parameters and the types of input that they require can be found in the Parameters page.
 
 ### (2) Customizing parameters by modifying the standard.json or standard.yml files:
 
@@ -51,7 +51,7 @@ Default parameters can be overridden by making changes to either the standard.ym
 
 Example:
 
-`nextflow run main.nf -profile test,singularity --virus -params-file <standard_params.yml or standard_params.json>`
+`nextflow run main.nf -profile test,singularity --species virus -params-file <standard_params.yml or standard_params.json>`
 
 ### (3) Customizing parameters by modifying the nextflow.config file:
 
@@ -67,7 +67,7 @@ Optionally, the `test` option can be specified in the `-profile` parameter. If t
 
 You will want to define whether to run the full pipeline with submission or without submission using the `--submission` and `--annotation` flags. By default the pipeline will run both sub-workflows and submit to submit to GenBank and SRA. If you want to submit to only SRA, specify `--genbank false --sra`.
 
-`nextflow run main.nf -profile <singularity/docker/conda> --virus --genbank --sra --submission_wait_time 5`
+`nextflow run main.nf -profile <singularity/docker/conda> --species virus --genbank --sra --submission_wait_time 5`
 
 ## Running Submission only:
 
@@ -75,7 +75,7 @@ You will want to define whether to run the full pipeline with submission or with
 
 ❗ Note: you can only submit raw files to SRA, not to Genbank.
 
-`nextflow run main.nf -profile <test,standard>,<singularity,docker> --<virus,bacteria> --annotation false --sra --submission_wait_time 5`
+`nextflow run main.nf -profile <test,standard>,<singularity,docker> --species <virus,bacteria> --annotation false --sra --submission_wait_time 5`
 
 ## Submission Pre-requisites:
 

@@ -135,6 +135,8 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 
 	for db in databases:
 		reports_fetched[db] = []
+		if db == "genbank":
+			continue # just totally skip genbank for now
 		if db == 'sra':
 			base_outdir = os.path.join(outdir, db)
 			has_both_platforms = all(os.path.isdir(os.path.join(base_outdir, p)) for p in ['illumina', 'nanopore'])
