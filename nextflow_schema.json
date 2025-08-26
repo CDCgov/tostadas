@@ -15,6 +15,11 @@
           "type": "string",
           "description": "Species name for the analysis."
         },
+        "wastewater": {
+          "type": "boolean",
+          "default": false,
+          "description": "Boolean flag for indicating wastewater data."
+        },
         "meta_path": {
           "type": "string",
           "format": "file-path",
@@ -46,11 +51,6 @@
     },
     "Pipeline Configuration Modes": {
       "properties": {
-        "validate_params": {
-          "type": "boolean",
-          "description": "Flag to enable or disable parameter validation.",
-          "default": true
-        },
         "annotation": {
           "description": "Toggle for running annotation",
           "type": "boolean",

@@ -7,7 +7,7 @@
 *   Nextflow v. 21.10.3 or newer
 *   Compute environment (docker, singularity or conda)
 
-❗ Note: If you are a CDC user, please follow the set-up instructions found on this page: [CDC User Guide](https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide)
+❗ Note: If you are a CDC user, please follow the set-up instructions found on this page: [CDC User Guide](../user-guide/cdc-user-guide.md)
 
 ### (1) Clone the repository to your local machine:
 
@@ -43,7 +43,7 @@
 
 `# test command for virus reads`
 
-`nextflow run main.nf -profile test,<singularity|docker|conda> --virus`
+`nextflow run main.nf -profile test,<singularity|docker|conda> --species virus`
 
 The pipeline outputs appear in `tostadas/test_output`
 
@@ -57,7 +57,6 @@ The pipeline outputs appear in `tostadas/test_output`
 
 `nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation --genbank true --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --outdir <path/to/output/dir/>`
 
-Refer to the wiki for more information on input parameters and use cases
 
 ### (7) Custom metadata validation and custom BioSample package
 
