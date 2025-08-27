@@ -613,6 +613,12 @@ class ValidateChecks:
 		except (FileNotFoundError, json.JSONDecodeError) as e:
 			self.global_log.append(f"[CustomFields] Error loading JSON: {e}")
 			return
+		
+		# Remove the test_field examples
+		custom_fields = {
+			k: v for k, v in custom_fields.items()
+			if 'test_field' not in k.lower()
+		}
 
 		static_columns = {
 			"sample_name", "sequence_name", "ncbi-spuid", "ncbi-bioproject", "title", "description",
