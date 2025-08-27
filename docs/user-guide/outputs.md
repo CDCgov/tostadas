@@ -25,7 +25,7 @@ The outputs are recorded in the directory specified within the nextflow.config f
         *   errors
         *   fasta
         *   tsv\_per\_sample
-*   liftoff\_outputs (name configurable with `final_liftoff_output_dir`)
+*   liftoff\_outputs (name configurable with `final_liftoff_outdir`)
     *   name of metadata sample file
         *   errors
         *   fasta

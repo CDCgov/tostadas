@@ -85,7 +85,7 @@
           "description": "Flag to enable or disable RepeatMasker and Liftoff steps.",
           "default": "true"
         },
-        "final_liftoff_output_dir": {
+        "final_liftoff_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "File path to liftoff specific sub-workflow outputs",

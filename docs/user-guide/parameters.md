@@ -72,7 +72,7 @@ The following workflows are available for the `--workflow` parameter:
 
 | Param | Description | Input Required |
 | --- | --- | --- |
-| --final_liftoff_output_dir | File path to liftoff specific sub-workflow outputs | Yes (folder name as string) |
+| --final_liftoff_outdir | File path to liftoff specific sub-workflow outputs | Yes (folder name as string) |
 | --lift_print_version_exit | Print version and exit the program | Yes (true/false) |
 | --lift_print_help_exit | Print help and exit the program | Yes (true/false) |
 | --lift_parallel_processes | Number of parallel processes to use for liftoff | Yes (integer) |

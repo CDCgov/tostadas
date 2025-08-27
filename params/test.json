@@ -29,7 +29,7 @@
     "validate_custom_fields": true,
     "custom_fields_file": "",
 
-    "final_liftoff_output_dir": "liftoff_outputs",
+    "final_liftoff_outdir": "liftoff_outputs",
     "lift_print_version_exit": false,
     "lift_print_help_exit": false,
     "lift_parallel_processes": 8,
