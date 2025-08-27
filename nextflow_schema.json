@@ -202,7 +202,7 @@
           "description": "Bakta database type (light or full)",
           "default": "light"
         },
-        "bakta_output_dir": {
+        "bakta_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "File path to bakta specific sub-workflow outputs",

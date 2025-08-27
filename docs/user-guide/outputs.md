@@ -37,7 +37,7 @@ The outputs are recorded in the directory specified within the nextflow.config f
     *   fasta
     *   gffs
     *   tbl
-*   bakta\_outputs (name configurable with `bakta_output_dir`)
+*   bakta\_outputs (name configurable with `bakta_outdir`)
     *   name of metadata sample file
     *   fasta
     *   gff

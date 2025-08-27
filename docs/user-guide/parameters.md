@@ -109,7 +109,7 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --bakta_db_path | Path to Bakta database if user is supplying database | No (path to database) |
 | --download_bakta_db | Option to download Bakta database | Yes (true/false) |
 | --bakta_db_type | Bakta database type (light or full) | Yes (string) |
-| --bakta_output_dir | File path to bakta specific sub-workflow outputs | Yes (folder name as string) |
+| --bakta_outdir | File path to bakta specific sub-workflow outputs | Yes (folder name as string) |
 | --bakta_min_contig_length | Minimum contig size | Yes (integer) |
 | --bakta_threads | Number of threads to use while running annotation | Yes (integer) |
 | --bakta_genus | Organism genus name | Yes (N/A or name as string) |
