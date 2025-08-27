@@ -20,7 +20,7 @@ The workflow will generate outputs in the following order:
 
 The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:
 
-*   validation\_outputs (name configurable with `val_output_dir`)
+*   validation\_outputs (name configurable with `validation_outdir`)
     *   name of metadata sample file
         *   errors
         *   fasta

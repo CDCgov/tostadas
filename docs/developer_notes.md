@@ -25,7 +25,7 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
 
 1. METADATA_VALIDATION: Process that expects an Excel file (`$params.meta_path`), performs validation and outputs tsv files (and an error log). 
                         Each tsv files contains valid metadata for a number of submissions specified by `$params.batch_size`.
-                        Outputs are here: `$params.outdir/$params.metadata_basename/$params.val_output_dir/batched_tsvs`.  By default, it's: $outdir/<your_metadata_filename>/validation_outputs/batched_tsvs
+                        Outputs are here: `$params.outdir/$params.metadata_basename/$params.validation_outdir/batched_tsvs`.  By default, it's: $outdir/<your_metadata_filename>/validation_outputs/batched_tsvs
 
 2. CHECK_VALIDATION_ERRORS: Process that exits the pipeline if at least one ERROR is found in the validation log.  ERRORs will not pass NCBI submission checks.
                         Input: the validation log. Outputs: status ("OK" or "ERROR"), and pipeline exists if status is "ERROR".

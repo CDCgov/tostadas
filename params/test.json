@@ -23,7 +23,7 @@
     "outdir": "nf_test_results",
     "overwrite_output": true,
 
-    "val_output_dir": "validation_outputs",
+    "validation_outdir": "validation_outputs",
     "val_date_format_flag": "s",
     "val_keep_pi": true,
     "validate_custom_fields": true,

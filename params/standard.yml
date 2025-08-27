@@ -22,7 +22,7 @@ clear_nf_results: null
 outdir: ""
 overwrite_output: null
 
-val_output_dir: ""
+validation_outdir: ""
 val_date_format_flag: ""
 val_keep_pi: ""
 validate_custom_fields: false

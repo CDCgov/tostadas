@@ -485,7 +485,7 @@
           "default": "",
           "hidden": true
         },
-        "val_output_dir": {
+        "validation_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "File path for outputs specific to validate sub-workflow",

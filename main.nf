@@ -27,7 +27,7 @@ workflow GENBANK_WORKFLOW {
     if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
         AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
                             params.submission_config,
-                            file("${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/validated_metadata_all_samples.tsv"))
+                            file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"))
     }
 }
 
@@ -48,7 +48,7 @@ workflow FETCH_ACCESSIONS_WORKFLOW {
 
     AGGREGATE_SUBMISSIONS(batches,
                           params.submission_config,
-                          file("${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/validated_metadata_all_samples.tsv"))
+                          file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"))
 
 }
 
