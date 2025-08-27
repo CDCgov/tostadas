@@ -48,7 +48,7 @@ lift_copies: ""
 lift_minimap_path: ""
 lift_feature_database_name: ""
 
-vadr_output_dir: ""
+vadr_outdir: ""
 vadr_models_dir: ""
 
 submission_outdir: ""

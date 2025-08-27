@@ -471,7 +471,7 @@
           "default": "submission_outputs",
           "hidden": true
         },
-        "vadr_output_dir": {
+        "vadr_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "File path to vadr specific sub-workflow outputs",

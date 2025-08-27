@@ -49,7 +49,7 @@
     "lift_minimap_path": "N/A",
     "lift_feature_database_name": "N/A",
 
-    "vadr_output_dir": "vadr_outputs",
+    "vadr_outdir": "vadr_outputs",
     "vadr_models_dir": "vadr_files/mpxv-models",
 
     "submission_outdir": "submission_outputs",

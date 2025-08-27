@@ -96,7 +96,7 @@ The following workflows are available for the `--workflow` parameter:
 | Param | Description | Input Required |
 | --- | --- | --- |
 | --vadr | Toggle for running VADR annotation | Yes (true/false as bool) |
-| --vadr_output_dir | File path to vadr specific sub-workflow outputs | Yes (folder name as string) |
+| --vadr_outdir | File path to vadr specific sub-workflow outputs | Yes (folder name as string) |
 | --vadr_models_dir | File path to models for MPXV used by VADR annotation | Yes (folder name as string) |
 
 ## BAKTA

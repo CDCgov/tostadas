@@ -31,7 +31,7 @@ The outputs are recorded in the directory specified within the nextflow.config f
         *   fasta
         *   liftoff
         *   tbl
-*   vadr\_outputs (name configurable with `vadr_output_dir`)
+*   vadr\_outputs (name configurable with `vadr_outdir`)
     *   name of metadata sample file
     *   errors
     *   fasta
