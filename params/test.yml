@@ -51,7 +51,7 @@ lift_feature_database_name: "N/A"
 vadr_output_dir: "vadr_outputs"
 vadr_models_dir: "vadr_files/mpxv-models"
 
-submission_output_dir: "submission_outputs"
+submission_outdir: "submission_outputs"
 submission_prod_or_test: "test"
 submission_wait_time: 2
 submission_only_meta: ""

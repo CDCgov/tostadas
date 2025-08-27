@@ -130,7 +130,7 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --sra | Submit to SRA | Yes (true/false as bool) |
 | --biosample | Submit to Biosample | Yes (true/false as bool) |
 | --gisaid | Submit to GISAID | Yes (true/false as bool) |
-| --submission_output_dir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
+| --submission_outdir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
 | --submission_prod_or_test | Whether to submit samples for test or actual production | Yes (prod or test as string) |
 | --submission_config | Configuration file for submission to public repos | Yes (path as string) |
 | --submission_wait_time | Calculated based on sample number (3 \* 60 secs \* sample_num) | integer (seconds) |

@@ -42,7 +42,7 @@ The outputs are recorded in the directory specified within the nextflow.config f
     *   fasta
     *   gff
     *   tbl
-*   submission\_outputs (name and path configurable with `submission_output_dir`)
+*   submission\_outputs (name and path configurable with `submission_outdir`)
     *   name of annotation results (Liftoff or VADR, etc.)
         *   individual\_sample\_batch\_info
         *   biosample\_sra

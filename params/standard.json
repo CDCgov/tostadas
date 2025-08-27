@@ -52,7 +52,7 @@
     "vadr_output_dir": "",
     "vadr_models_dir": "",
 
-    "submission_output_dir": "",
+    "submission_outdir": "",
     "submission_prod_or_test": "",
     "submission_wait_time": "",
     "submission_only_meta": "",

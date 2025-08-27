@@ -35,7 +35,7 @@ workflow FETCH_ACCESSIONS_WORKFLOW {
 
     // glob for all subdirectories starting with "batch_" and collect into one list
     batches = Channel.fromPath(
-        "${params.outdir}/${params.metadata_basename}/${params.submission_output_dir}/batch_*",
+        "${params.outdir}/${params.metadata_basename}/${params.submission_outdir}/batch_*",
         type: 'dir'
     ).map { dir ->
         def meta = [ batch_id: dir.baseName ]
@@ -43,7 +43,7 @@ workflow FETCH_ACCESSIONS_WORKFLOW {
     } // meta = batch_id, dir = path to batch_id dir
     
     batches.view { "DEBUG - BATCHES: $it" }
-    log.info "Fetching report.xml files for submissions in ${params.outdir}/${params.metadata_basename}/${params.submission_output_dir}"
+    log.info "Fetching report.xml files for submissions in ${params.outdir}/${params.metadata_basename}/${params.submission_outdir}"
     
 
     AGGREGATE_SUBMISSIONS(batches,
