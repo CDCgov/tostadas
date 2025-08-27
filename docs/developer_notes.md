@@ -9,7 +9,7 @@ The workflows are:
 The user options for "workflow" are:
 1. `--workflow biosample_and_sra`: Runs BIOSAMPLE_AND_SRA, then runs the AGGREGATE_SUBMISSIONS subworkflow (fetches reports, aggregates them, updates metadata file)
 2. `--genbank`: Runs GENBANK workflow. It expects `--updated_meta_path` to point to an Excel file that matches the format of a validated metadata file (output of BIOSAMPLE_AND_SRA).
-                It automatically looks for this in the output directory in a subdirectory called `final_submission_outputs` within the metadata-specific subdirectory (`$params.outdir/$params.metadata_basename/$final_submission_output_dir`)
+                It automatically looks for this in the output directory in a subdirectory called `final_submission_outputs` within the metadata-specific subdirectory (`$params.outdir/$params.metadata_basename/$final_submission_outdir`)
 3. `--fetch_accessions`: Runs AGGREGATE_SUBMISSIONS. It will look in `--outdir` for the relevant metadata subdirectory (the basename of your metadata file) and then traverse the batch directories under `submission_outputs`.
                          It fetches the report.xml files for biosample and sra submissions for each batch. It needs your NCBI Center credentials from `submission_config.yaml`
 4. `--full_submissions`: Runs BIOSAMPLE_AND_SRA, then waits for awhile, then runs AGGREGATE_SUBMISSIONS, then runs GENBANK.
@@ -31,7 +31,7 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
                         Input: the validation log. Outputs: status ("OK" or "ERROR"), and pipeline exists if status is "ERROR".
 
 3. WRITE_VALIDATED_FULL_TSV: Process that collects the batch tsv files in `batched_tsvs` and concatenates them into one validated tsv file.
-                        Input: a list of all batched_tsv files. Output: `$params.outdir/$params.metadata_basename/$final_submission_output_dir/validated_metadata_all_samples.tsv`.
+                        Input: a list of all batched_tsv files. Output: `$params.outdir/$params.metadata_basename/$final_submission_outdir/validated_metadata_all_samples.tsv`.
                         This output file will be used in the AGGREGATE_SUBMISSIONS subworkflow.
 
 4. SUBMISSION: Subworkflow that runs two (2) processes.
@@ -56,17 +56,17 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
                    Input: Submission batch directory and submission config file. Output: fetch_submission log and batch report csv file.
 
     AGGREGATE_REPORTS: Process that collates the individual batch report csvs into one final report.csv
-                   Input: Collected list (actually a Nextflow channel) of all the report csvs. Output: `$params.outdir/$params.metadata_basename/$final_submission_output_dir/submission_report.csv`
+                   Input: Collected list (actually a Nextflow channel) of all the report csvs. Output: `$params.outdir/$params.metadata_basename/$final_submission_outdir/submission_report.csv`
 
     JOIN_ACCESSIONS_WITH_METADATA: Updates the initial Excel file with the accession IDs, which is needed for genbank submission.
-                   Input: `$params.outdir/$params.metadata_basename/$final_submission_output_dir/submission_report.csv` (AGGREGATE_REPORTS output) 
-                          `$params.outdir/$params.metadata_basename/$final_submission_output_dir/validated_metadata_all_samples.tsv` (WRITE_VALIDATED_FULL_TSV output)
-                   Output: `$params.outdir/$params.metadata_basename/$final_submission_output_dir/<your_metadata_filename>__updated.xlsx`
+                   Input: `$params.outdir/$params.metadata_basename/$final_submission_outdir/submission_report.csv` (AGGREGATE_REPORTS output) 
+                          `$params.outdir/$params.metadata_basename/$final_submission_outdir/validated_metadata_all_samples.tsv` (WRITE_VALIDATED_FULL_TSV output)
+                   Output: `$params.outdir/$params.metadata_basename/$final_submission_outdir/<your_metadata_filename>__updated.xlsx`
 
 ### Submitting to GenBank
 
 This requires `--updated_meta_path`. It can be specified in `nextflow.config`.
-If not specified, it looks for the output of JOIN_ACCESSIONS_WITH_METADATA (`$params.outdir/$params.metadata_basename/$final_submission_output_dir/<your_metadata_filename>__updated.xlsx`)
+If not specified, it looks for the output of JOIN_ACCESSIONS_WITH_METADATA (`$params.outdir/$params.metadata_basename/$final_submission_outdir/<your_metadata_filename>__updated.xlsx`)
 
 GENBANK workflow doesn't validate metadata. It is assumed the user will run biosample_and_sra first (because GenBank submission requires a BioSample accession ID). 
 It validates the fasta file.

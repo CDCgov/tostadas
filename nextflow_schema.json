@@ -365,7 +365,7 @@
           "description": "Either name or relative/absolute path for the outputs from submission",
           "default": "submission_outputs"
         },
-        "final_submission_output_dir": {
+        "final_submission_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "Either name or relative/absolute path for the final outputs from submission report fetching",

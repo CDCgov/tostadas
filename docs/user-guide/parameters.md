@@ -58,7 +58,7 @@ The following workflows are available for the `--workflow` parameter:
 | --- | --- | --- |
 | --outdir | File path to submit outputs from pipeline | Yes (path as string) |
 | --overwrite_output | Toggle to overwriting output files in directory | Yes (true/false as bool) |
-| --final_submission_output_dir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
+| --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
 
 ## Validation
 

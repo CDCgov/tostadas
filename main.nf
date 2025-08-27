@@ -1,7 +1,7 @@
 // Global variable to uniquely identify a run by its metadata filename
 params.metadata_basename = file(params.meta_path).baseName
 // Set default for updated_meta_path if not already defined
-params.updated_meta_path = params.updated_meta_path ?: "${params.outdir}/${params.metadata_basename}/${params.final_submission_output_dir}/${params.metadata_basename}_updated.xlsx"
+params.updated_meta_path = params.updated_meta_path ?: "${params.outdir}/${params.metadata_basename}/${params.final_submission_outdir}/${params.metadata_basename}_updated.xlsx"
 
 include { BIOSAMPLE_AND_SRA         } from './workflows/biosample_and_sra'
 include { GENBANK                   } from './workflows/genbank'
