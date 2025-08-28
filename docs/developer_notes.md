@@ -16,7 +16,12 @@ The user options for "workflow" are:
                          It waits for `$params.submission_wait_time` seconds, and if `$params.submission_wait_time` is `calc`, then it waits for 3 minutes * `params.batch_size`.
                          This is based on rudimentary testing that suggests NCBI takes about 3 minutes per submission to issue accession IDs (for multiple submissions).
 
-## Workflow-specific Details and Notes
+## Workflow-Specific Details and Notes
+
+The master branch conducts sample submissions one at a time (not in batch).  It has a different command (notably, no `dry_run` flag and no `workflow` flag because it only run ones workflow).
+One CDC team is still using the master branch, and was not ready to test and adapt their workflow for the dev branch (i.e., to handle batch sample submissions) as of August 2025.
+
+**So dev cannot be merged to master.**
 
 ### Submitting to BioSample and SRA
 
@@ -119,9 +124,8 @@ if `$params.annotation = true` and `$params.bakta = true` and `$params.species =
 
 ## Known issues and idiosyncracies
 
-1. The pipeline doesn't fetch Genbank accession IDs, but it could if they are available.  Doing so requires some optional handling for downstream report csv and updated metadata file generation.
+1. The pipeline doesn't fetch Genbank accession IDs, but it could if they are available.  Doing so will require some optional handling for downstream report csv and updated metadata file generation.
 
-2. GenBank doesn't allow no annotations file.  This needs to be adjusted as GenBank increasingly prohibits user-provided annotations in preference for NCBI-generated annotations.
-   For this to be updated, a specific line needs to be added to the XML file (where appropriate) indicating NCBI should annotate.
+2. I believe a specific line needs to be added to the GenBank XML file (where appropriate) indicating NCBI should perform annotations.  So the pipeline needs to be adjusted so that if there is no gff file provided in the channel, this line gets added to the XML file for appropriate GenBank submissions (i.e., only those that are submitted via ftp).
    
-3. Need some robust checking for the vadr_models_dir vs. species (see notes under annotation)
+3. Need some robust checking for the vadr_models_dir vs. species (see notes under annotation).
