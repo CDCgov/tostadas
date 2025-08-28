@@ -1,7 +1,5 @@
 // Global variable to uniquely identify a run by its metadata filename
 params.metadata_basename = file(params.meta_path).baseName
-// Set default for updated_meta_path if not already defined
-params.updated_meta_path = params.updated_meta_path ?: "${params.outdir}/${params.metadata_basename}/${params.final_submission_output_dir}/${params.metadata_basename}_updated.xlsx"
 
 include { BIOSAMPLE_AND_SRA         } from './workflows/biosample_and_sra'
 include { GENBANK                   } from './workflows/genbank'
@@ -23,7 +21,20 @@ workflow BIOSAMPLE_AND_SRA_WORKFLOW {
 }
 
 workflow GENBANK_WORKFLOW {
-    GENBANK(file(params.updated_meta_path))
+    // Set default for updated_meta_path if not already defined
+    def updated_meta_file = params.updated_meta_path && params.updated_meta_path != '' ?
+        file(params.updated_meta_path) :
+        file("${params.outdir}/${params.metadata_basename}/${params.final_submission_output_dir}/${params.metadata_basename}_updated.xlsx")
+
+    // Log an error if the updated metadata file doesn't exist
+    if (!updated_meta_file.exists()) {
+                log.error "Required file not found for genbank workflow: ${updated_meta_file}"
+                exit 1
+            } else {
+                log.info "Found required updated metadata file: ${updated_meta_file}"
+            }
+
+    GENBANK(file(updated_meta_file))
     if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
         AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
                             params.submission_config,
@@ -45,7 +56,6 @@ workflow FETCH_ACCESSIONS_WORKFLOW {
     batches.view { "DEBUG - BATCHES: $it" }
     log.info "Fetching report.xml files for submissions in ${params.outdir}/${params.metadata_basename}/${params.submission_output_dir}"
     
-
     AGGREGATE_SUBMISSIONS(batches,
                           params.submission_config,
                           file("${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/validated_metadata_all_samples.tsv"))
