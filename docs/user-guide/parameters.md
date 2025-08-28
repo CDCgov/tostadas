@@ -58,13 +58,13 @@ The following workflows are available for the `--workflow` parameter:
 | --- | --- | --- |
 | --outdir | File path to submit outputs from pipeline | Yes (path as string) |
 | --overwrite_output | Toggle to overwriting output files in directory | Yes (true/false as bool) |
-| --final_submission_output_dir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
+| --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
 
 ## Validation
 
 | Param | Description | Input Required |
 | --- | --- | --- |
-| --val_output_dir | File path for outputs specific to validate sub-workflow | Yes (folder name as string) |
+| --validation_outdir | File path for outputs specific to validate sub-workflow | Yes (folder name as string) |
 | --validate_custom_fields | Toggle checks/transformations for custom metadata fields on/off | No (true/false as bool) |
 | --custom_fields_file | Path to the JSON file containing custom metadata fields and their information | No (path as string) |
 
@@ -72,7 +72,7 @@ The following workflows are available for the `--workflow` parameter:
 
 | Param | Description | Input Required |
 | --- | --- | --- |
-| --final_liftoff_output_dir | File path to liftoff specific sub-workflow outputs | Yes (folder name as string) |
+| --final_liftoff_outdir | File path to liftoff specific sub-workflow outputs | Yes (folder name as string) |
 | --lift_print_version_exit | Print version and exit the program | Yes (true/false) |
 | --lift_print_help_exit | Print help and exit the program | Yes (true/false) |
 | --lift_parallel_processes | Number of parallel processes to use for liftoff | Yes (integer) |
@@ -96,7 +96,7 @@ The following workflows are available for the `--workflow` parameter:
 | Param | Description | Input Required |
 | --- | --- | --- |
 | --vadr | Toggle for running VADR annotation | Yes (true/false as bool) |
-| --vadr_output_dir | File path to vadr specific sub-workflow outputs | Yes (folder name as string) |
+| --vadr_outdir | File path to vadr specific sub-workflow outputs | Yes (folder name as string) |
 | --vadr_models_dir | File path to models for MPXV used by VADR annotation | Yes (folder name as string) |
 
 ## BAKTA
@@ -109,7 +109,7 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --bakta_db_path | Path to Bakta database if user is supplying database | No (path to database) |
 | --download_bakta_db | Option to download Bakta database | Yes (true/false) |
 | --bakta_db_type | Bakta database type (light or full) | Yes (string) |
-| --bakta_output_dir | File path to bakta specific sub-workflow outputs | Yes (folder name as string) |
+| --bakta_outdir | File path to bakta specific sub-workflow outputs | Yes (folder name as string) |
 | --bakta_min_contig_length | Minimum contig size | Yes (integer) |
 | --bakta_threads | Number of threads to use while running annotation | Yes (integer) |
 | --bakta_genus | Organism genus name | Yes (N/A or name as string) |
@@ -130,7 +130,7 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --sra | Submit to SRA | Yes (true/false as bool) |
 | --biosample | Submit to Biosample | Yes (true/false as bool) |
 | --gisaid | Submit to GISAID | Yes (true/false as bool) |
-| --submission_output_dir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
+| --submission_outdir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
 | --submission_prod_or_test | Whether to submit samples for test or actual production | Yes (prod or test as string) |
 | --submission_config | Configuration file for submission to public repos | Yes (path as string) |
 | --submission_wait_time | Calculated based on sample number (3 \* 60 secs \* sample_num) | integer (seconds) |
