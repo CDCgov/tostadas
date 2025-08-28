@@ -1,0 +1,4 @@
+WARNING: Skipping mount /var/singularity/mnt/session/etc/resolv.conf [files]: /etc/resolv.conf doesn't exist in container
+refgff is ref.MPXV.NC063383.v7.gff
+0 374
+ID=ITR-UPDATETAG-RPT1;rpt_type=long_terminal_repeat ID=ITR-UPDATETAG-RPT2;rpt_type=long_terminal_repeat

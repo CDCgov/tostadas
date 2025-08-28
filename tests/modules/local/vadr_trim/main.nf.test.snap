@@ -1,0 +1,33 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.trimmed.fasta:md5,9491e6440082e1f09fce1eb83b2f26e8"
+                    ]
+                ],
+                "trimmed_fasta": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.trimmed.fasta:md5,9491e6440082e1f09fce1eb83b2f26e8"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:23:13.094608765"
+    }
+}

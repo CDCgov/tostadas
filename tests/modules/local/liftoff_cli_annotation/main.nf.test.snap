@@ -1,0 +1,73 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta:md5,4a11c4fe6d828bf5e411c21d10075b7c"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.liftoff-orig.gff:md5,5c311a89c5ce7e828ba6fc6477da7cf4"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "output.unmapped_features.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "errors": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "output.unmapped_features.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fasta": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta:md5,4a11c4fe6d828bf5e411c21d10075b7c"
+                    ]
+                ],
+                "gff": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.liftoff-orig.gff:md5,5c311a89c5ce7e828ba6fc6477da7cf4"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:21:57.639675966"
+    }
+}

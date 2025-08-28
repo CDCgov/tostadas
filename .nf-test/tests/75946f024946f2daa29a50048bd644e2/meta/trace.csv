@@ -1,0 +1,2 @@
+task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
+1	bb/7b24c7	492766	CONCAT_GFFS	COMPLETED	0	2025-08-28 16:38:05.500	3.7s	3s	152.2%	72.1 MB	4.8 GB	17.6 MB	132.8 KB

@@ -1,0 +1,7 @@
+NY0006:
+
+	ITR CHECK:
+	No ITR errors
+
+	STOP CODON CHECK:
+	No codon errors

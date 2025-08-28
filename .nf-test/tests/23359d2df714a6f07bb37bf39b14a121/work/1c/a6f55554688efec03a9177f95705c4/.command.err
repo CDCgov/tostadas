@@ -1,0 +1,4 @@
++ cat batch_1.csv
++ head -n 1
++ for f in batch_1.csv
++ tail -n +2 batch_1.csv

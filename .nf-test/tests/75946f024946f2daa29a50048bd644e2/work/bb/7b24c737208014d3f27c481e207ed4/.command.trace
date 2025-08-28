@@ -1,0 +1,17 @@
+nextflow.trace/v2
+realtime=3000
+%cpu=1522
+cpu_model=Intel(R) Xeon(R) Gold 6154 CPU @ 3.00GHz
+rchar=18456452
+wchar=135995
+syscr=1828
+syscw=17
+read_bytes=21236736
+write_bytes=147456
+%mem=0
+vmem=5010852
+rss=72388
+peak_vmem=5017016
+peak_rss=73848
+vol_ctxt=4743
+inv_ctxt=21313
