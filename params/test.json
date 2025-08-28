@@ -23,13 +23,13 @@
     "outdir": "nf_test_results",
     "overwrite_output": true,
 
-    "val_output_dir": "validation_outputs",
+    "validation_outdir": "validation_outputs",
     "val_date_format_flag": "s",
     "val_keep_pi": true,
     "validate_custom_fields": true,
     "custom_fields_file": "",
 
-    "final_liftoff_output_dir": "liftoff_outputs",
+    "final_liftoff_outdir": "liftoff_outputs",
     "lift_print_version_exit": false,
     "lift_print_help_exit": false,
     "lift_parallel_processes": 8,
@@ -49,10 +49,10 @@
     "lift_minimap_path": "N/A",
     "lift_feature_database_name": "N/A",
 
-    "vadr_output_dir": "vadr_outputs",
+    "vadr_outdir": "vadr_outputs",
     "vadr_models_dir": "vadr_files/mpxv-models",
 
-    "submission_output_dir": "submission_outputs",
+    "submission_outdir": "submission_outputs",
     "submission_prod_or_test": "test",
     "submission_wait_time": 2,
     "submission_only_meta": "",

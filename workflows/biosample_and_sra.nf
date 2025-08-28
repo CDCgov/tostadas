@@ -9,7 +9,7 @@ nextflow.enable.dsl=2
 // get the utility processes / subworkflows
 include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 include { METADATA_VALIDATION                               } from "../modules/local/metadata_validation/main"
-include { CHECK_VALIDATION_ERRORS							} from "../modules/local/check_validation_errors/main.nf"
+include { CHECK_VALIDATION_ERRORS							} from "../modules/local/check_validation_errors/main"
 include { WRITE_VALIDATED_FULL_TSV                          } from "../modules/local/write_validated_full_tsv/main"
 include { SUBMISSION		                                } from "../subworkflows/local/submission"
 
@@ -41,7 +41,7 @@ workflow BIOSAMPLE_AND_SRA {
     // Get status from the check
 	CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
 		if (status == "ERROR") {
-			println "Validation failed. Please check ${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/error.txt"
+			log.info "Validation failed. Please check ${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/error.txt"
 			workflow.abort()
 		}
 	}
@@ -102,17 +102,14 @@ workflow BIOSAMPLE_AND_SRA {
 					def hasIllumina = fq1Exists && fq2Exists
 					def hasNanopore = nnpExists
 
-					//log.info "Sample ${sid} | fq1: ${sample.fq1} (exists: ${fq1Exists}) | fq2: ${sample.fq2} (exists: ${fq2Exists}) | nnp: ${sample.nanopore} (exists: ${nnpExists})"
-
 					if (params.sra && (hasIllumina || hasNanopore)) {
 						enabledDatabases << "sra"
 					}
 					if (params.sra && !(hasIllumina || hasNanopore)) {
 						sraWarnings << sid
 					}
-					if (params.biosample) {
-						enabledDatabases << "biosample"
-					}
+					// always run biosample submission
+					enabledDatabases << "biosample"
 				}
 
 				if (sraWarnings) {

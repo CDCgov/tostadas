@@ -1,7 +1,5 @@
 // Global variable to uniquely identify a run by its metadata filename
 params.metadata_basename = file(params.meta_path).baseName
-// Set default for updated_meta_path if not already defined
-params.updated_meta_path = params.updated_meta_path ?: "${params.outdir}/${params.metadata_basename}/${params.final_submission_output_dir}/${params.metadata_basename}_updated.xlsx"
 
 include { BIOSAMPLE_AND_SRA         } from './workflows/biosample_and_sra'
 include { GENBANK                   } from './workflows/genbank'
@@ -23,19 +21,44 @@ workflow BIOSAMPLE_AND_SRA_WORKFLOW {
 }
 
 workflow GENBANK_WORKFLOW {
-    GENBANK(file(params.updated_meta_path))
+    // Set default for updated_meta_path if not already defined
+    def updated_meta_file = params.updated_meta_path && params.updated_meta_path != '' ?
+        file(params.updated_meta_path) :
+        file("${params.outdir}/${params.metadata_basename}/${params.final_submission_output_dir}/${params.metadata_basename}_updated.xlsx")
+
+    // Log an error if the updated metadata file doesn't exist
+    if (!updated_meta_file.exists()) {
+                log.error "Required file not found for genbank workflow: ${updated_meta_file}"
+                exit 1
+            } else {
+                log.info "Found required updated metadata file: ${updated_meta_file}"
+            }
+
+    GENBANK(file(updated_meta_file))
     if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
         AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
                             params.submission_config,
-                            file("${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/validated_metadata_all_samples.tsv"))
+                            file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"))
     }
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {
-    // TODO: this won't work because it needs to be at the batch level
-    AGGREGATE_SUBMISSIONS(file(params.submission_results_dir),
+
+    // glob for all subdirectories starting with "batch_" and collect into one list
+    batches = Channel.fromPath(
+        "${params.outdir}/${params.metadata_basename}/${params.submission_outdir}/batch_*",
+        type: 'dir'
+    ).map { dir ->
+        def meta = [ batch_id: dir.baseName ]
+        tuple(meta, dir)
+    } // meta = batch_id, dir = path to batch_id dir
+    
+    batches.view { "DEBUG - BATCHES: $it" }
+    log.info "Fetching report.xml files for submissions in ${params.outdir}/${params.metadata_basename}/${params.submission_outdir}"
+    
+    AGGREGATE_SUBMISSIONS(batches,
                           params.submission_config,
-                          file("${params.outdir}/${params.metadata_basename}/${params.val_output_dir}/validated_metadata_all_samples.tsv"))
+                          file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"))
 
 }
 

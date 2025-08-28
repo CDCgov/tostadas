@@ -124,29 +124,16 @@ workflow GENBANK {
         .map { meta, fasta, gff -> [meta.batch_id, [meta: meta, fasta: fasta, gff: gff]] }
         .groupTuple()
         .map { batch_id, samples ->
-            def missingFiles = [] as Set
-
-            samples.each { s ->
-                def sid = s.meta.sample_id
-                if (params.genbank) {
-                    if (!s.fasta || !file(s.fasta).exists()) missingFiles << "${sid}:fasta"
-                    if (!s.gff   || !file(s.gff).exists())   missingFiles << "${sid}:gff"
-                }
+            def missingFasta = samples.any { s ->
+                !s.fasta || !file(s.fasta).exists()
             }
-
-            if (missingFiles) {
-                log.warn "Skipping batch ${batch_id} due to missing files: ${missingFiles.join(', ')}"
-                return null
-            }
-
             def meta = [
                 batch_id : batch_id,
                 batch_tsv: samples[0].meta.batch_tsv
             ]
-			// todo: only add genbank if files not missing
-            return tuple(meta, samples, ['genbank'])
+            def enabledDatabases = missingFasta ? [] : ['genbank'] 
+            return tuple(meta, samples, enabledDatabases)
         }
-        .filter { it != null }
 
 	// Run submission using the batch channel
 	SUBMISSION(submission_batch_ch, 

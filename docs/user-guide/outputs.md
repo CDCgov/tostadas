@@ -20,29 +20,29 @@ The workflow will generate outputs in the following order:
 
 The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:
 
-*   validation\_outputs (name configurable with `val_output_dir`)
+*   validation\_outputs (name configurable with `validation_outdir`)
     *   name of metadata sample file
         *   errors
         *   fasta
         *   tsv\_per\_sample
-*   liftoff\_outputs (name configurable with `final_liftoff_output_dir`)
+*   liftoff\_outputs (name configurable with `final_liftoff_outdir`)
     *   name of metadata sample file
         *   errors
         *   fasta
         *   liftoff
         *   tbl
-*   vadr\_outputs (name configurable with `vadr_output_dir`)
+*   vadr\_outputs (name configurable with `vadr_outdir`)
     *   name of metadata sample file
     *   errors
     *   fasta
     *   gffs
     *   tbl
-*   bakta\_outputs (name configurable with `bakta_output_dir`)
+*   bakta\_outputs (name configurable with `bakta_outdir`)
     *   name of metadata sample file
     *   fasta
     *   gff
     *   tbl
-*   submission\_outputs (name and path configurable with `submission_output_dir`)
+*   submission\_outputs (name and path configurable with `submission_outdir`)
     *   name of annotation results (Liftoff or VADR, etc.)
         *   individual\_sample\_batch\_info
         *   biosample\_sra

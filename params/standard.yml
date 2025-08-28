@@ -22,13 +22,13 @@ clear_nf_results: null
 outdir: ""
 overwrite_output: null
 
-val_output_dir: ""
+validation_outdir: ""
 val_date_format_flag: ""
 val_keep_pi: ""
 validate_custom_fields: false
 custom_fields_file: ""
 
-final_liftoff_output_dir: ""
+final_liftoff_outdir: ""
 lift_print_version_exit: null
 lift_print_help_exit: null
 lift_parallel_processes: null
@@ -48,10 +48,10 @@ lift_copies: ""
 lift_minimap_path: ""
 lift_feature_database_name: ""
 
-vadr_output_dir: ""
+vadr_outdir: ""
 vadr_models_dir: ""
 
-submission_output_dir: ""
+submission_outdir: ""
 submission_prod_or_test: ""
 submission_wait_time: ""
 submission_only_meta: ""

@@ -15,6 +15,11 @@
           "type": "string",
           "description": "Species name for the analysis."
         },
+        "wastewater": {
+          "type": "boolean",
+          "default": false,
+          "description": "Boolean flag for indicating wastewater data."
+        },
         "meta_path": {
           "type": "string",
           "format": "file-path",
@@ -46,11 +51,6 @@
     },
     "Pipeline Configuration Modes": {
       "properties": {
-        "validate_params": {
-          "type": "boolean",
-          "description": "Flag to enable or disable parameter validation.",
-          "default": true
-        },
         "annotation": {
           "description": "Toggle for running annotation",
           "type": "boolean",
@@ -85,7 +85,7 @@
           "description": "Flag to enable or disable RepeatMasker and Liftoff steps.",
           "default": "true"
         },
-        "final_liftoff_output_dir": {
+        "final_liftoff_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "File path to liftoff specific sub-workflow outputs",
@@ -202,7 +202,7 @@
           "description": "Bakta database type (light or full)",
           "default": "light"
         },
-        "bakta_output_dir": {
+        "bakta_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "File path to bakta specific sub-workflow outputs",
@@ -359,13 +359,13 @@
     },
     "Submission Parameters": {
       "properties": {
-        "submission_output_dir": {
+        "submission_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "Either name or relative/absolute path for the outputs from submission",
           "default": "submission_outputs"
         },
-        "final_submission_output_dir": {
+        "final_submission_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "Either name or relative/absolute path for the final outputs from submission report fetching",
@@ -464,14 +464,14 @@
           "default": "${projectDir}/environments/vadr_env.yml",
           "hidden": true
         },
-        "submission_output_dir": {
+        "submission_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "Either name or relative/absolute path for the outputs from submission",
           "default": "submission_outputs",
           "hidden": true
         },
-        "vadr_output_dir": {
+        "vadr_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "File path to vadr specific sub-workflow outputs",
@@ -485,7 +485,7 @@
           "default": "",
           "hidden": true
         },
-        "val_output_dir": {
+        "validation_outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "File path for outputs specific to validate sub-workflow",

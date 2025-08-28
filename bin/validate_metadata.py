@@ -569,27 +569,37 @@ class ValidateChecks:
 
 			# Illumina check
 			if illumina_found:
-				illumina_missing = [f for f in required_illumina if not row.get(f)]
-				if row.get("illumina_library_layout") == "paired":
-					if not row.get("int_illumina_sra_file_path_2"):
-						illumina_missing.append("int_illumina_sra_file_path_2")
+				for field in required_illumina:
+					if not row.get(field):  # missing or empty
+						self.metadata_df.at[idx, field] = "Not Provided"
+						self.sample_log[sample_name].append(f"INFO: Filled missing {field} with 'Not Provided'")
+				
+				illumina_invalid = []
+				if row.get("illumina_library_layout") == "paired" and not row.get("int_illumina_sra_file_path_2"):
+					illumina_invalid.append("int_illumina_sra_file_path_2 (missing for paired layout)")
 				if row.get("illumina_sequencing_instrument") not in self.parameters.get("illumina_instrument_restrictions", []):
-					illumina_missing.append("illumina_sequencing_instrument (invalid or missing)")
-				if illumina_missing:
+					illumina_invalid.append("illumina_sequencing_instrument (invalid or missing)")
+				if illumina_invalid:
 					self.sample_log[sample_name].append(
-						f"ERROR: Illumina metadata is incomplete or invalid. Missing/invalid: {', '.join(set(illumina_missing))}"
+						f"ERROR: Illumina metadata is incomplete or invalid. Issues: {', '.join(set(illumina_invalid))}"
 					)
 			else:
 				self.sample_log[sample_name].append("INFO: Illumina Not Found")
 
 			# Nanopore check
 			if nanopore_found:
-				nanopore_missing = [f for f in required_nanopore if not row.get(f)]
+				for field in required_nanopore:
+					if not row.get(field):  # missing or empty
+						self.metadata_df.at[idx, field] = "Not Provided"
+						self.sample_log[sample_name].append(f"INFO: Filled missing {field} with 'Not Provided'")
+
+				nanopore_invalid = []
 				if row.get("nanopore_sequencing_instrument") not in self.parameters.get("nanopore_instrument_restrictions", []):
-					nanopore_missing.append("nanopore_sequencing_instrument (invalid or missing)")
-				if nanopore_missing:
+					nanopore_invalid.append("nanopore_sequencing_instrument (invalid or missing)")
+
+				if nanopore_invalid:
 					self.sample_log[sample_name].append(
-						f"ERROR: Nanopore metadata is incomplete or invalid. Missing/invalid: {', '.join(set(nanopore_missing))}"
+						f"ERROR: Nanopore metadata is incomplete or invalid. Issues: {', '.join(set(nanopore_invalid))}"
 					)
 			else:
 				self.sample_log[sample_name].append("INFO: Nanopore Not Found")
@@ -603,6 +613,12 @@ class ValidateChecks:
 		except (FileNotFoundError, json.JSONDecodeError) as e:
 			self.global_log.append(f"[CustomFields] Error loading JSON: {e}")
 			return
+		
+		# Remove the test_field examples
+		custom_fields = {
+			k: v for k, v in custom_fields.items()
+			if 'test_field' not in k.lower()
+		}
 
 		static_columns = {
 			"sample_name", "sequence_name", "ncbi-spuid", "ncbi-bioproject", "title", "description",
@@ -611,10 +627,10 @@ class ValidateChecks:
 			"collected_by", "sample_type", "lat_lon", "purpose_of_sampling", "host_sex", "host_age", "race", "ethnicity",
 			"assembly_protocol", "assembly_method", "mean_coverage", "fasta_path", "gff_path", "ncbi_sequence_name_sra",
 			"illumina_sequencing_instrument", "illumina_library_strategy", "illumina_library_source", "illumina_library_selection",
-			"illumina_library_layout", "illumina_library_protocol", "illumina_sra_file_path_1", "illumina_sra_file_path_2",
+			"illumina_library_layout", "illumina_library_protocol", "illumina_library_name", "illumina_sra_file_path_1", "illumina_sra_file_path_2",
 			"file_location", "fastq_path_1", "fastq_path_2", "nanopore_sequencing_instrument", "nanopore_library_strategy",
 			"nanopore_library_source", "nanopore_library_selection", "nanopore_library_layout", "nanopore_library_protocol",
-			"nanopore_sra_file_path_1", "nanopore_sra_file_path_2"
+			"nanopore_library_name", "nanopore_sra_file_path_1", "nanopore_sra_file_path_2"
 		}
 
 		existing_cols = set(self.metadata_df.columns)
@@ -655,7 +671,7 @@ class ValidateChecks:
 			return None
 		if isinstance(val, str):
 			val = val.replace("\u00A0", " ").strip()  # normalize NBSP
-			if val == "" or val.lower() in {"not provided", "na", "n/a"}:
+			if val == "":
 				return None
 		return val
 
