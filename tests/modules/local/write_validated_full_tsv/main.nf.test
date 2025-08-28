@@ -1,0 +1,29 @@
+nextflow_process {
+
+    name "Test Process WRITE_VALIDATED_FULL_TSV"
+    script "modules/local/write_validated_full_tsv/main.nf"
+    process "WRITE_VALIDATED_FULL_TSV"
+
+    test("Should concatenate TSVs and keep only the first header") {
+
+        when {
+            params {
+
+            }
+
+            process {
+                """
+                input[0] = [
+                    file("${projectDir}/tests/modules/local/write_validated_full_tsv/batch_1.tsv")
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert file("${process.out.validated_concatenated_tsv[0]}").exists()
+            assert snapshot(file("${process.out.validated_concatenated_tsv[0]}")).match()
+        }
+    }
+}

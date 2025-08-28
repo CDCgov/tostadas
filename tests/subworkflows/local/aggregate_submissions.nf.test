@@ -1,0 +1,34 @@
+nextflow_workflow {
+
+    name "Test Workflow AGGREGATE_SUBMISSIONS"
+    script "subworkflows/local/aggregate_submissions.nf"
+    workflow "AGGREGATE_SUBMISSIONS"
+
+    test("Should aggregate submission reports and merge accessions") {
+
+        when {
+            params {
+                submission_prod_or_test = "test"
+                dry_run = true
+                metadata_basename = "rsv_test_metadata"
+                submission_mode = "ftp"
+                env_yml = "${projectDir}/environment.yml"
+            }
+
+            workflow {
+                """
+                input[0] = [ [ batch_id: 'batch_1' ], file("${projectDir}/tests/modules/local/fetch_reports/batch_1/") ]
+                input[1] = file("${projectDir}/conf/submission_config.yaml")
+                input[2] = file("${projectDir}/tests/subworkflows/local/validated_metadata_all_samples.tsv")
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+
+    }
+
+}

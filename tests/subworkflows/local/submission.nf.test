@@ -34,7 +34,6 @@ nextflow_workflow {
                             )
                         )
                 input[1] = file("${projectDir}/conf/submission_config.yaml")
-                input[2] = 1
 
                 """
             }

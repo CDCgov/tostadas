@@ -4,7 +4,6 @@ process WRITE_VALIDATED_FULL_TSV {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
-
     input:
     path validated_tsvs
 

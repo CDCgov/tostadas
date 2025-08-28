@@ -1,0 +1,28 @@
+nextflow_process {
+
+    name "Test Process CREATE_BATCH_TSVS"
+    script "modules/local/create_batch_tsvs/main.nf"
+    process "CREATE_BATCH_TSVS"
+
+    test("Should split Excel into TSV batches") {
+
+        when {
+            params {
+                // no parameters needed
+            }
+
+            process {
+                """
+                input[0] = file("${projectDir}/assets/sample_metadata/test_genbank.xlsx")
+                input[1] = 1
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert !process.out.tsv_files.isEmpty()
+            assert snapshot(process.out.tsv_files[0]).match()
+        }
+    }
+}
