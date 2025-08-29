@@ -1,6 +1,9 @@
 name: CI Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - nf-tests-updates-2
 
 jobs:
   test:
