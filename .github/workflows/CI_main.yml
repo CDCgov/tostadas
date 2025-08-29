@@ -25,6 +25,11 @@ jobs:
         run: |
           wget -qO- https://get.nf-test.com | bash
           sudo mv nf-test /usr/local/bin/
+          
+      - name: Install Singularity
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y singularity-container
 
       - name: Run Tests
         run: nf-test test --ci
