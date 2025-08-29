@@ -27,7 +27,7 @@ jobs:
         run: |
           source $HOME/mambaforge/etc/profile.d/conda.sh
           mamba env create -f environment.yml
-          conda activate tostadas_tests
+          conda activate tostadas
           which python
 
       - name: Set up Java (for Nextflow)
