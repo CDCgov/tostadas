@@ -1,0 +1,12 @@
+{
+    "Should aggregate one or more batch CSVs into a single report": {
+        "content": [
+            "submission_report.csv:md5,742a680a1878c92c807e6e00d5616b74"
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:21:19.46947745"
+    }
+}

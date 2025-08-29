@@ -1,0 +1,12 @@
+{
+    "Should concatenate TSVs and keep only the first header": {
+        "content": [
+            "validated_metadata_all_samples.tsv:md5,e3235a94deedd67e93edc18d0804422b"
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:23:19.044621161"
+    }
+}

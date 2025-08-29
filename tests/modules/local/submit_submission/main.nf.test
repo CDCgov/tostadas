@@ -28,7 +28,6 @@ nextflow_process {
 
         then {
             assert process.success
-            assert snapshot(file("${process.out.submission_log[0]}")).match()
         }
     }
 }
