@@ -50,3 +50,27 @@
 [INFO] [DRY-RUN] Would connect to FTP and upload to: submit/Test/mpxv_test_metadata_batch_1_sra
 [INFO] [DRY-RUN] Would upload batch_1/sra/submission.xml → submit/Test/mpxv_test_metadata_batch_1_sra/submission.xml
 [INFO] [DRY-RUN] Would upload batch_1/sra/submit.ready → submit/Test/mpxv_test_metadata_batch_1_sra/submit.ready
+[INFO] [DRY-RUN] Would connect to FTP and upload to: submit/Test/mpxv_test_metadata_batch_1_biosample
+[INFO] [DRY-RUN] Would upload batch_1/biosample/submission.xml → submit/Test/mpxv_test_metadata_batch_1_biosample/submission.xml
+[INFO] [DRY-RUN] Would upload batch_1/biosample/submit.ready → submit/Test/mpxv_test_metadata_batch_1_biosample/submit.ready
+[INFO] [DRY-RUN] Would connect to FTP and upload to: submit/Test/mpxv_test_metadata_batch_1_sra
+[INFO] [DRY-RUN] Would upload batch_1/sra/submission.xml → submit/Test/mpxv_test_metadata_batch_1_sra/submission.xml
+[INFO] [DRY-RUN] Would upload batch_1/sra/submit.ready → submit/Test/mpxv_test_metadata_batch_1_sra/submit.ready
+[INFO] [DRY-RUN] Would connect to FTP and upload to: submit/Test/mpxv_test_metadata_batch_1_biosample
+[INFO] [DRY-RUN] Would upload batch_1/biosample/submission.xml → submit/Test/mpxv_test_metadata_batch_1_biosample/submission.xml
+[INFO] [DRY-RUN] Would upload batch_1/biosample/submit.ready → submit/Test/mpxv_test_metadata_batch_1_biosample/submit.ready
+[INFO] [DRY-RUN] Would connect to FTP and upload to: submit/Test/mpxv_test_metadata_batch_1_sra
+[INFO] [DRY-RUN] Would upload batch_1/sra/submission.xml → submit/Test/mpxv_test_metadata_batch_1_sra/submission.xml
+[INFO] [DRY-RUN] Would upload batch_1/sra/submit.ready → submit/Test/mpxv_test_metadata_batch_1_sra/submit.ready
+[INFO] [DRY-RUN] Would connect to FTP and upload to: submit/Test/mpxv_test_metadata_batch_1_biosample
+[INFO] [DRY-RUN] Would upload batch_1/biosample/submission.xml → submit/Test/mpxv_test_metadata_batch_1_biosample/submission.xml
+[INFO] [DRY-RUN] Would upload batch_1/biosample/submit.ready → submit/Test/mpxv_test_metadata_batch_1_biosample/submit.ready
+[INFO] [DRY-RUN] Would connect to FTP and upload to: submit/Test/mpxv_test_metadata_batch_1_sra
+[INFO] [DRY-RUN] Would upload batch_1/sra/submission.xml → submit/Test/mpxv_test_metadata_batch_1_sra/submission.xml
+[INFO] [DRY-RUN] Would upload batch_1/sra/submit.ready → submit/Test/mpxv_test_metadata_batch_1_sra/submit.ready
+[INFO] [DRY-RUN] Would connect to FTP and upload to: submit/Test/mpxv_test_metadata_batch_1_biosample
+[INFO] [DRY-RUN] Would upload batch_1/biosample/submission.xml → submit/Test/mpxv_test_metadata_batch_1_biosample/submission.xml
+[INFO] [DRY-RUN] Would upload batch_1/biosample/submit.ready → submit/Test/mpxv_test_metadata_batch_1_biosample/submit.ready
+[INFO] [DRY-RUN] Would connect to FTP and upload to: submit/Test/mpxv_test_metadata_batch_1_sra
+[INFO] [DRY-RUN] Would upload batch_1/sra/submission.xml → submit/Test/mpxv_test_metadata_batch_1_sra/submission.xml
+[INFO] [DRY-RUN] Would upload batch_1/sra/submit.ready → submit/Test/mpxv_test_metadata_batch_1_sra/submit.ready

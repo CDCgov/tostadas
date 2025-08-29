@@ -1,2 +1,0 @@
-task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
-1	1c/a6f555	492090	AGGREGATE_REPORTS	COMPLETED	0	2025-08-28 16:38:00.015	874ms	32ms	117.6%	0	0	91.8 KB	1.9 KB

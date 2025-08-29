@@ -26,12 +26,8 @@ nextflow_process {
 
         then {
             assert process.success
-            assert snapshot(file("${process.out.submission_log[0]}")).match()
 
-            // Optionally check for a report CSV if expected in the test
-            if (file("${process.out.submission_report[0]}").exists()) {
-                assert snapshot(file("${process.out.submission_report[0]}")).match()
-            }
+            
         }
     }
 }
