@@ -5,62 +5,46 @@
 */
 process UPDATE_SUBMISSION {
 
-    publishDir "${params.output_dir}/${params.submission_outdir}", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "${params.output_dir}/${params.submission_output_dir}", mode: 'copy', overwrite: params.overwrite_output
 
     conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+        'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
     input:
     tuple val(meta), val(samples), val(enabledDatabases)
+    path(original_submissions_dir)
     path(submission_config)
+    
+    output:
+    tuple val(meta), path("${meta.batch_id}"), emit: submission_batch_folder
+    path("${meta.batch_id}/update_submission.log"), emit: submission_log, optional: true
 
     when:
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
 
     script:
     def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
-    def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
-    def biosample = params.biosample == true ? '--biosample' : ''
-    def sra = "sra" in enabledDatabases ? '--sra' : ''
-    def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
-    // get absolute path if relative dir passed
-    def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
+    def dry_run = params.dry_run == true ? '--dry_run' : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
-        def s = [
-            "sample_id=${sample.meta.sample_id}",
-            "fq1=${sample.fq1}",
-            "fq2=${sample.fq2}",
-            "nanopore=${sample.nanopore}",
-            "fasta=${sample.fasta}",
-            "gff=${sample.gff}"
-        ].findAll { it.split('=')[1] != "null" }  // remove nulls
-        .join(',')
+        def s = ["sample_id=${sample.sample_id}"]   // only sample_id is available
+            .join(',')
         return "\"${s}\""
     }
     def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
 
     """
-    submission_new.py \
-        --update \
+    submission_update.py \
+        --submission_folder ${original_submissions_dir} \
         --submission_name ${meta.batch_id} \
-        --config_file $submission_config  \
+        --config_file ${submission_config}  \
         --metadata_file ${meta.batch_tsv} \
         --identifier ${params.metadata_basename} \
-        --species $params.species \
-        --output_dir  ./${params.metadata_basename}/${meta.batch_id} \
-        ${sample_args} \
-        --custom_metadata_file $params.custom_fields_file \
-        --submission_mode $params.submission_mode \
+        --outdir  ${meta.batch_id} \
+        --submission_mode ${params.submission_mode} \
         $test_flag \
-        $send_submission_email \
-        $genbank $sra $biosample
+        $dry_run 
     """
-
-    
-    output:
-    tuple val(meta), path("${params.metadata_basename}"), emit: submission_files
-    //path "${params.metadata_basename}/*.csv", emit: submission_report
 }

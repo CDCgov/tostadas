@@ -3,6 +3,7 @@ params.metadata_basename = file(params.meta_path).baseName
 
 include { BIOSAMPLE_AND_SRA         } from './workflows/biosample_and_sra'
 include { GENBANK                   } from './workflows/genbank'
+include { BIOSAMPLE_UPDATE          } from './workflows/biosample_update'
 include { AGGREGATE_SUBMISSIONS     } from './subworkflows/local/aggregate_submissions'
 include { WAIT                      } from './modules/local/wait/main'
 
@@ -62,6 +63,10 @@ workflow FETCH_ACCESSIONS_WORKFLOW {
 
 }
 
+workflow UPDATE_SUBMISSION_WORKFLOW {
+    BIOSAMPLE_UPDATE()
+}
+
 workflow {
     if (params.workflow == "full_submission") {
         BIOSAMPLE_AND_SRA()
@@ -77,6 +82,9 @@ workflow {
     }
     else if (params.workflow == "fetch_accessions") {
         FETCH_ACCESSIONS_WORKFLOW()
+    }
+    else if (params.workflow == "update_submission") {
+        UPDATE_SUBMISSION_WORKFLOW()
     }
     else {
         error "Invalid workflow specified."
