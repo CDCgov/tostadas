@@ -65,23 +65,45 @@ The pipeline outputs appear in `tostadas/test_output`
 
 **Annotate and submit viral reads**
 ```
-nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank false --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
+nextflow run main.nf -profile <docker|singularity> --workflow biosample_and_sra --species virus --submission --annotation --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
 ```
 **Annotate and submit bacterial reads**
 ```
-nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation  --genbank false --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>
+nextflow run main.nf -profile <docker|singularity> --workflow biosample_and_sra --species bacteria --submission --annotation --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --outdir <path/to/output/dir/>
 ```
 
-**Submit Reads to GenBank**
+**Submit to GenBank**
 
 GenBank submission requires a modified metadata file that includes the GenBank accession ID. This file will be generated as an output of the biosample and SRA workflow and can be found in the results directory, for example: test_output/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx.
 
 To submit reads to GenBank, use the following command:
 
 ```
-nextflow run main.nf -profile <docker|singularity> --workflow genbank --genbank true --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --updated_meta_path <path/to/updated/metadata/file>
+nextflow run main.nf -profile <docker|singularity> --workflow genbank --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --updated_meta_path <path/to/updated/metadata/file>
 ```
 Refer to the github pages website for more information on input parameters and use cases. 
+
+**Retrieve accession IDs**
+
+To fetch and parse report.xml files from a previous submission, use the following command:
+
+```
+nextflow run main.nf -profile <docker|singularity> --workflow fetch_accessions --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --meta_path assets/sample_metadata/mpxv_test_metadata
+```
+
+**Submit updates to a BioSample submission**
+
+CBI allows UI-less updating of BioSample submissions, and TOSTADAS can do this using the `--workflow update_submission` workflow option.
+
+To submit updated metadata to biosample, use the following command: 
+
+```
+nextflow run main.nf -profile <docker|singularity> --workflow update_submission --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --original_submission_dir <results/mpxv_test_metadata/submission_outputs> --meta_path <path/to/updated/metadata/file>
+```
+
+Please make sure your updated metadata Excel file has a `biosample_accession` column that contains accurate accession IDs.  TOSTADAS does not check these for accuracy.  Please make sure they are correct.
+
+Note: TOSTADAS uses the `ncbi-spuid` field to match samples in the metadata file and the original submission.xml.  The `sample_name` field is not preserved in the submission.xml, so it cannot be used as an identifier for this workflow.
 
 ### 7. Custom metadata validation and custom BioSample package
 
@@ -94,7 +116,7 @@ TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; ver
 
 **Submit to a custom BioSample package**
 ```
-nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file  <path/to/metadata_custom_fields.json>
+nextflow run main.nf -profile <docker|singularity> --workflow biosample_and_sra --species virus --submission --annotation --sra true --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file  <path/to/metadata_custom_fields.json>
 ```
 ### Workflow Parameters Overview
 

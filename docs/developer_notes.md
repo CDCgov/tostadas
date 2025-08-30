@@ -59,7 +59,7 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
 5. AGGREGATE_SUBMISSIONS: Subworkflow that runs three (3) processes:
 
     FETCH_REPORTS: Process that traverses the submission directory and look for the reports for each database inside each batch dir. Parses these XMLs into a batch-specific csv report file.
-                   Publishes the results to `$params.submission_output_dir1
+                   Publishes the results to `$params.submission_outdir`
                    Input: Submission batch directory and submission config file. Output: fetch_submission log and batch report csv file.
 
     AGGREGATE_REPORTS: Process that collates the individual batch report csvs into one final report.csv
@@ -152,8 +152,11 @@ The workflow runs METADATA_VALIDATION, CHECK_VALIDATION_ERRORS, and WRITE_VALIDA
 
 1. The pipeline doesn't fetch Genbank accession IDs, but it could if they are available.  Doing so will require some optional handling for downstream report csv and updated metadata file generation.
 
-2. The update_submissions workflow was added very late and I didn't have time to rigorously test it. This should be done, and additional nf-tests created for the additional processes.
+2. The update_submissions workflow was added very late and I didn't have time to rigorously test it. More testing should be done, and additional nf-tests created for the additional processes.
 
-3. I believe a specific line needs to be added to the GenBank XML file (where appropriate) indicating NCBI should perform annotations.  So the pipeline needs to be adjusted so that if there is no gff file provided in the channel, this line gets added to the XML file for appropriate GenBank submissions (i.e., only those that are submitted via ftp). Also, GenBank sqn file needs to be rigorously validated.
+3. I believe a specific line needs to be added to the GenBank XML file (where appropriate) indicating NCBI should perform annotations.  So the pipeline may be to be adjusted such that if there is no gff file provided in the channel, this line gets added to the XML file for appropriate GenBank submissions (i.e., only those that are submitted via ftp). Also, GenBank sqn file needs to be rigorously validated.
    
 4. Need some robust checking for the vadr_models_dir vs. species (see notes under annotation).
+
+5. For update_submission, the metadata file is not being copied to the workDir, it's being referenced from its own workDir.  This is not ideal Nextflow coding, and should be changed so that it copies the actual file.  
+   It's happening because of the channel construction (which is being made from a json file in REBATCH_METADATA process). I think this can be pretty easily modified to just output the channel.
