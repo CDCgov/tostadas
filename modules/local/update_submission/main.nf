@@ -17,7 +17,7 @@ process UPDATE_SUBMISSION {
     path(submission_config)
     
     output:
-    tuple val(meta), path("${meta.batch_id}"), emit: submission_batch_folder
+    tuple val(meta), path("${meta.batch_id}_biosample_update_[0-9]*"), emit: submission_batch_folder
     path("${meta.batch_id}/update_submission.log"), emit: submission_log, optional: true
 
     when:
