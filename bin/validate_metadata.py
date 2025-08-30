@@ -713,10 +713,14 @@ class HandleDfInserts:
 		self.metadata_df['geo_loc_name'] = self.new_combination_list
 
 	def insert_additional_columns(self):
-		""" Inserts additional columns into the metadata dataframe
+		""" Inserts additional columns into the metadata dataframe if they don't exist
 		"""
-		# todo: this fx does not include req'd cols for GISAID (see seqsender main config and submission_process.py script)
-		self.metadata_df.insert(self.metadata_df.shape[1], "structuredcomment", ["Assembly-Data"] * len(self.metadata_df.index))
+		additional_columns = {
+        "structuredcomment": ["Assembly-Data"] * len(self.metadata_df.index)
+    	}
+		for col_name, col_values in additional_columns.items():
+			if col_name not in self.metadata_df.columns:
+				self.metadata_df.insert(self.metadata_df.shape[1], col_name, col_values)
 
 
 if __name__ == "__main__":

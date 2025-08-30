@@ -66,9 +66,9 @@
           "description": "Path to validated metadata Excel file with biosample_accession, sra_accession, genbank_accession columns.",
           "default": false
         },
-        "update_submission": {
-          "type": "boolean",
-          "description": "Flag to enable or disable updating existing submissions.",
+        "original_submisson_outdir": {
+          "type": "string",
+          "description": "Path to original submissions dir (if running update_submission workflow).",
           "default": false
         }
       }

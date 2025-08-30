@@ -31,7 +31,7 @@ Example metadata [Link](https://github.com/CDCgov/tostadas/blob/bb47dce749eada90
 
 ### Submitting to GenBank
 
-The files required for GenBank submission will be stored in the `test_output/submission_outputs/<sample_name>/submission_files/GENBANK/` directory. You can find information on how to submit these files to NCBI [here](https://submit.ncbi.nlm.nih.gov/).
+The files required for GenBank submission will be stored in the `test_output/submission_outputs/<sample_name|batch_name>/genbank` directory. You can find information on how to submit these files to NCBI [here](https://submit.ncbi.nlm.nih.gov/).
 
 ## Customizing Parameters:
 
@@ -43,7 +43,7 @@ Parameters can be overridden during runtime by providing various flags to the `n
 
 Example: Modifying the path of the output directory
 
-`nextflow run main.nf -profile test,singularity --species virus --output_dir /path/to/output/dir` Certain parameters such as -profile and pathogen type (`--species virus`) are required, while others like `--output_dir` can be specified optionally. The complete list of parameters and the types of input that they require can be found in the Parameters page.
+`nextflow run main.nf -profile test,singularity --workflow biosample_and_sra --species virus --outdir /path/to/output/dir` Certain parameters such as -profile and pathogen type (`--species virus`) are required, while others like `--outdir` can be specified optionally. The complete list of parameters and the types of input that they require can be found in the Parameters page.
 
 ### (2) Customizing parameters by modifying the standard.json or standard.yml files:
 
@@ -51,7 +51,7 @@ Default parameters can be overridden by making changes to either the standard.ym
 
 Example:
 
-`nextflow run main.nf -profile test,singularity --species virus -params-file <standard_params.yml or standard_params.json>`
+`nextflow run main.nf -profile test,singularity --species virus --workflow biosample_and_sra -params-file <standard_params.yml or standard_params.json>`
 
 ### (3) Customizing parameters by modifying the nextflow.config file:
 
@@ -63,19 +63,45 @@ Within the nextflow pipeline the `-profile` parameter is required to specify the
 
 Optionally, the `test` option can be specified in the `-profile` parameter. If test is not specified, parameters are read from the nextflow.config file. The test params should remain the same for testing purposes.
 
-## Running with Annotation and Submission:
+## Perform a Dry Run:
 
-You will want to define whether to run the full pipeline with submission or without submission using the `--submission` and `--annotation` flags. By default the pipeline will run both sub-workflows and submit to submit to GenBank and SRA. If you want to submit to only SRA, specify `--genbank false --sra`.
+For any workflow, you can add `--dry_run true` to run through all the steps but not actually upload files to NCBI's server.  This option produces a few submission log files you can read to check which folders will be uploaded and where they will be uploaded on the host server.
 
-`nextflow run main.nf -profile <singularity/docker/conda> --species virus --genbank --sra --submission_wait_time 5`
+## Submitting to BioSample and/or SRA:
 
-## Running Submission only:
+Use the `--workflow biosample_and_sra` workflow option to submit to BioSample, and submit to SRA as well by also specifying `--sra`.  
 
-You will want to define whether to run the full pipeline with submission or without submission using the `--submission` and `--annotation` flags. By default, the pipeline will run both sub-workflows. To only run the submission sub-workflow, specify `--annotation false`. By default the pipeline will submit to GenBank and SRA. If you want to submit to only SRA, specify `--genbank false --sra`.
+Note: The column `ncbi-spuid` in the metadata template is used as the BioSample SPUID, and the column `ncbi_sequence_name_sra` is used as the SRA SPUID.  These two fields need to be unique for each sample.
+NCBI uses SPUID as temporary linkage IDs to connect a BioSample and corresponding SRA submission.
+
+Note: SRA submission supports uploading both Nanopore and Illumina data. These will be processed as separate submission.xml files and separate uploads, as required by NCBI.
+
+## Submitting to GenBank: 
+
+Use the `--workflow genbank` workflow option to submit to GenBank. Please note that a GenBank submission requires a BioSample accession ID assigned by NCBI.  If you successfully ran `--workflow biosample_and_sra` previously, you can find your updated metadata file in the `final_submission_outputs` by folder by default.  Check it to make sure your accession IDs were successfully assigned.  Supply this file using `--updated_meta_path` (*NOT* `--meta_path`).  Note: TOSTADAS will automatically search for `--updated_meta_path` in your `--outdir` if you don't explicitly provide it.
 
 ❗ Note: you can only submit raw files to SRA, not to Genbank.
 
-`nextflow run main.nf -profile <test,standard>,<singularity,docker> --species <virus,bacteria> --annotation false --sra --submission_wait_time 5`
+## Fetching NCBI Accession IDs:
+
+TOSTADAS will go search for and fetch report.xml files, aggregate the results into a csv file, and create an updated metadata Excel file including the validated metadata and accession IDs, if assigned.
+This report CSV file and updated metadata Excel file are placed in the `final_submission_outputs` by folder by default.
+
+Run this workflow using `--workflow fetch_accessions`.  Provide the same `--outdir` and `--meta_path` you provided for the original submission, as TOSTADAS uses these two parameters to find your submission folder and fetch the corresponding reports.
+If you change the naming of this folder structure, this workflow will not run.
+
+## Running Update Submission:
+
+NCBI allows UI-less updating of BioSample submissions, and TOSTADAS can do this using the `--workflow update_submission` workflow option.
+
+You need to provide `--original_submission_dir` (the path to your original submission that you are updating) and `--meta_path` (the Excel file containing the new data for these same samples).
+TOSTADAS will validate the metadata, recreate the same batches as in the original submission (using the batch_summary.json created during the first submission), update the original submission file and submit it.
+
+It will save the updated submissions as date-stamped batch folders under `--outdir` and within a subdirectory called the basename of your metadata file.
+
+Note: TOSTADAS uses the `ncbi-spuid` field to match samples in the metadata file and the original submission.xml.  The `sample_name` field is not preserved in the submission.xml, so it cannot be used as an identifier for this workflow.
+
+Note: Please make sure your updated metadata Excel file has a `biosample_accession` column that contains accurate accession IDs.  TOSTADAS does not check these for accuracy.  Please make sure they are correct.
 
 ## Submission Pre-requisites:
 

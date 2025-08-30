@@ -3,6 +3,7 @@
 ## Table of Contents
 - [General](#general)
     - [What is NCBI](#what-is-ncbi)
+    - [NCBI Center Account](#ncbi-center-account)
     - [Key Components of NCBI](#key-components-of-ncbi)
         - [PubMed](#1-pubmed)
         - [GenBank](#2-genbank)
@@ -25,6 +26,11 @@ TOSTADAS provides users with the ability to submit samples to various NCBI datab
 The National Center for Biotechnology Information (NCBI) is a division of the National Library of Medicine (NLM) at the National Institutes of Health (NIH). NCBI plays a crucial role in advancing bioinformatics, genomics, and computational biology. Its primary mission is to provide access to and facilitate the use of a vast array of biomedical and genomic information.
 
 NCBI continues to evolve, offering a wide range of tools and resources to support researchers, healthcare professionals, and the broader scientific community in accessing and utilizing biological information.
+
+### NCBI Center Account
+
+To submit to NCBI using TOSTADAS, you first need to establish an account with NCBI. If you're submitting on behalf of a group (e.g., a CDC branch, or a state Public Health Lab), you will want to create one account for your center to use.
+NCBI has information on how to create an account [here](https://www.nlm.nih.gov/ncbi/workshops/2023-06_organizing-biology-data/supplemental-files/NCBIAccountFlyer.pdf).  You may already have a personal NCBI account, but you should create a Center-level account.  You will need to configure the TOSTADAS submission config file with your NCBI account username and password to facilitate submissions via ftp.
 
 ### Key Components of NCBI:
 
