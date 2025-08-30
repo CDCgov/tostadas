@@ -154,9 +154,14 @@ The workflow runs METADATA_VALIDATION, CHECK_VALIDATION_ERRORS, and WRITE_VALIDA
 
 2. The update_submissions workflow was added very late and I didn't have time to rigorously test it. More testing should be done, and additional nf-tests created for the additional processes.
 
-3. I believe a specific line needs to be added to the GenBank XML file (where appropriate) indicating NCBI should perform annotations.  So the pipeline may be to be adjusted such that if there is no gff file provided in the channel, this line gets added to the XML file for appropriate GenBank submissions (i.e., only those that are submitted via ftp). Also, GenBank sqn file needs to be rigorously validated.
+3. I believe a specific line needs to be added to the GenBank XML file (where appropriate) indicating NCBI should perform annotations.  So the pipeline may be to be adjusted such that if there is no gff file provided in the channel, this line gets added to the XML file for appropriate GenBank submissions (i.e., only those that are submitted via ftp). Also, GenBank sqn file needs to be rigorously validated (sars and flu haven't been tested at all).
    
 4. Need some robust checking for the vadr_models_dir vs. species (see notes under annotation).
 
 5. For update_submission, the metadata file is not being copied to the workDir, it's being referenced from its own workDir.  This is not ideal Nextflow coding, and should be changed so that it copies the actual file.  
    It's happening because of the channel construction (which is being made from a json file in REBATCH_METADATA process). I think this can be pretty easily modified to just output the channel.
+
+6. Outstanding to-do notes in `submission_helper.py`: 
+        Line 963: These are hard-coded but probably need to be controlled during GENBANK_VALIDATION somehow.
+        Line 982: This is not an issue, it's actually more of a reminder to me that the way Biosample and SRA XML files get made is different from Genbank (they are called differently in submission_prep.py). 
+        Line 1273: We never did figure out if locus tag prefix can be set automatically. I think it has to be assigned before, which means it must be specified in `${params.bakta_locus_tag}`
