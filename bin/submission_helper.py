@@ -31,17 +31,17 @@ def setup_logging(log_file="submission.log", level=logging.INFO):
 			level=level,
 			format="[%(levelname)s] %(message)s",
 			handlers=[
-				logging.FileHandler(log_file),
+				logging.FileHandler(log_file, mode="a"),
 				logging.StreamHandler()
 			]
 		)
 
 def symlink_or_copy(src, dst, copy=False):
-    if not os.path.exists(dst):
-        if copy:
-            shutil.copy(src, dst)
-        else:
-            os.symlink(os.path.abspath(src), dst)
+	if not os.path.exists(dst):
+		if copy:
+			shutil.copy(src, dst)
+		else:
+			os.symlink(os.path.abspath(src), dst)
 
 def get_compound_extension(filename):
 	"""Return the full extension (up to 2 suffixes) of a file, like '.fastq.gz'."""
@@ -190,142 +190,142 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 	return reports_fetched
 
 def parse_report_xml_to_df(report_path):
-    """
-    Parses a report.xml file containing multiple samples.
-    Returns a DataFrame with one row per sample_id.
-    """
-    reports = []
-    try:
-        tree = ET.parse(report_path)
-        root = tree.getroot()
-        submission_status = root.get("status", None)
-        submission_id = root.get("submission_id", None)
-        tracking_location_tag = root.find("Tracking/SubmissionLocation")
-        tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
+	"""
+	Parses a report.xml file containing multiple samples.
+	Returns a DataFrame with one row per sample_id.
+	"""
+	reports = []
+	try:
+		tree = ET.parse(report_path)
+		root = tree.getroot()
+		submission_status = root.get("status", None)
+		submission_id = root.get("submission_id", None)
+		tracking_location_tag = root.find("Tracking/SubmissionLocation")
+		tracking_location = tracking_location_tag.text if tracking_location_tag is not None else None
 
-        actions = root.findall("Action")
-        if not actions:
-            logging.warning(f"No <Action> elements found in {report_path}. Skipping this report.")
-            return pd.DataFrame()  # Empty — caller will skip
+		actions = root.findall("Action")
+		if not actions:
+			logging.warning(f"No <Action> elements found in {report_path}. Skipping this report.")
+			return pd.DataFrame()  # Empty — caller will skip
 
-        for action in actions:
-            action_id = action.get("action_id", None)
-            target_db = action.get("target_db", "").lower()
-            status = action.get("status", None)
+		for action in actions:
+			action_id = action.get("action_id", None)
+			target_db = action.get("target_db", "").lower()
+			status = action.get("status", None)
 
-            # Defaults
-            response_message = None
-            spuid = None
-            spuid_namespace = None
-            object_id = None
-            sample_id = None
+			# Defaults
+			response_message = None
+			spuid = None
+			spuid_namespace = None
+			object_id = None
+			sample_id = None
 
-            # Extract info from <Response>
-            response = action.find("Response")
-            if response is not None:
-                message_tag = response.find("Message")
-                if message_tag is not None:
-                    response_message = message_tag.text.strip()
-                else:
-                    response_message = response.get("status", "").strip() or (response.text or "").strip()
+			# Extract info from <Response>
+			response = action.find("Response")
+			if response is not None:
+				message_tag = response.find("Message")
+				if message_tag is not None:
+					response_message = message_tag.text.strip()
+				else:
+					response_message = response.get("status", "").strip() or (response.text or "").strip()
 
-                object_tag = response.find("Object")
-                if object_tag is not None:
-                    spuid = object_tag.get("spuid", None)
-                    spuid_namespace = object_tag.get("spuid_namespace", None)
-                    object_id = object_tag.get("object_id", None)
+				object_tag = response.find("Object")
+				if object_tag is not None:
+					spuid = object_tag.get("spuid", None)
+					spuid_namespace = object_tag.get("spuid_namespace", None)
+					object_id = object_tag.get("object_id", None)
 
-            # Determine sample_id
-            if spuid:  
-                sample_id = spuid
-            elif action_id:
-                # Expect format {submission}_{sample_id}_sra
-                parts = action_id.split("_")
-                if len(parts) >= 3:
-                    sample_id = parts[1]  # middle part
-                else:
-                    sample_id = action_id  # fallback: store raw action_id
+			# Determine sample_id
+			if spuid:  
+				sample_id = spuid
+			elif action_id:
+				# Expect format {submission}_{sample_id}_sra
+				parts = action_id.split("_")
+				if len(parts) >= 3:
+					sample_id = parts[1]  # middle part
+				else:
+					sample_id = action_id  # fallback: store raw action_id
 
-            if not sample_id:
-                logging.warning(f"Could not determine sample_id for action in {report_path}. Skipping this action.")
-                continue
+			if not sample_id:
+				logging.warning(f"Could not determine sample_id for action in {report_path}. Skipping this action.")
+				continue
 
-            # Initialize row
-            report = {
-                'sample_id': sample_id,
-                'spuid': spuid,
-                'spuid_namespace': spuid_namespace,
-                'object_id': object_id,
-                'submission_name': action_id,
-                'submission_status': submission_status,
-                'submission_id': submission_id,
-                'biosample_status': None,
-                'biosample_accession': None,
-                'biosample_message': None,
-                'sra_status': None,
-                'sra_accession': None,
-                'sra_message': None,
-                'tracking_location': tracking_location,
-            }
+			# Initialize row
+			report = {
+				'sample_id': sample_id,
+				'spuid': spuid,
+				'spuid_namespace': spuid_namespace,
+				'object_id': object_id,
+				'submission_name': action_id,
+				'submission_status': submission_status,
+				'submission_id': submission_id,
+				'biosample_status': None,
+				'biosample_accession': None,
+				'biosample_message': None,
+				'sra_status': None,
+				'sra_accession': None,
+				'sra_message': None,
+				'tracking_location': tracking_location,
+			}
 
-            # Fill in database-specific fields
-            if target_db == "biosample":
-                report['biosample_status'] = status
-                report['biosample_message'] = response_message
-                if object_id:
-                    report['biosample_accession'] = object_id
-            elif target_db == "sra":
-                report['sra_status'] = status
-                report['sra_message'] = response_message
-                if object_id:
-                    report['sra_accession'] = object_id
+			# Fill in database-specific fields
+			if target_db == "biosample":
+				report['biosample_status'] = status
+				report['biosample_message'] = response_message
+				if object_id:
+					report['biosample_accession'] = object_id
+			elif target_db == "sra":
+				report['sra_status'] = status
+				report['sra_message'] = response_message
+				if object_id:
+					report['sra_accession'] = object_id
 
-            reports.append(report)
+			reports.append(report)
 
-    except FileNotFoundError:
-        logging.error(f"Report not found: {report_path}")
-    except ET.ParseError:
-        logging.error(f"Error parsing XML report: {report_path}")
+	except FileNotFoundError:
+		logging.error(f"Report not found: {report_path}")
+	except ET.ParseError:
+		logging.error(f"Error parsing XML report: {report_path}")
 
-    # Build DataFrame
-    df = pd.DataFrame(reports)
+	# Build DataFrame
+	df = pd.DataFrame(reports)
 
-    if not df.empty:
-        # Deduplicate so only one row per sample_id remains
-        df = df.groupby('sample_id', as_index=False).first()
+	if not df.empty:
+		# Deduplicate so only one row per sample_id remains
+		df = df.groupby('sample_id', as_index=False).first()
 
-        # Ensure column order
-        column_order = ['sample_id', 'spuid', 'spuid_namespace', 'object_id'] + \
-                       [col for col in df.columns if col not in {'sample_id', 'spuid', 'spuid_namespace', 'object_id'}]
-        df = df[column_order]
+		# Ensure column order
+		column_order = ['sample_id', 'spuid', 'spuid_namespace', 'object_id'] + \
+					   [col for col in df.columns if col not in {'sample_id', 'spuid', 'spuid_namespace', 'object_id'}]
+		df = df[column_order]
 
-        # Normalize NaNs to None
-        df = df.where(pd.notna(df), None)
-    return df
+		# Normalize NaNs to None
+		df = df.where(pd.notna(df), None)
+	return df
 
 def parse_and_save_reports(reports_fetched, outdir, batch_id):
-    all_reports = pd.DataFrame()
+	all_reports = pd.DataFrame()
 
-    for db, report_paths in reports_fetched.items():
-        for report_path in report_paths:
-            if report_path and os.path.exists(report_path):
-                df = parse_report_xml_to_df(report_path)
-                if not df.empty:
-                    all_reports = pd.concat([all_reports, df], ignore_index=True)
+	for db, report_paths in reports_fetched.items():
+		for report_path in report_paths:
+			if report_path and os.path.exists(report_path):
+				df = parse_report_xml_to_df(report_path)
+				if not df.empty:
+					all_reports = pd.concat([all_reports, df], ignore_index=True)
 
-    if all_reports.empty:
-        logging.warning(f"No sample data found in any reports for batch {batch_id}.")
-        return
+	if all_reports.empty:
+		logging.warning(f"No sample data found in any reports for batch {batch_id}.")
+		return
 
-    # Deduplicate final CSV by sample_id
-    all_reports = all_reports.groupby('sample_id', as_index=False).first()
+	# Deduplicate final CSV by sample_id
+	all_reports = all_reports.groupby('sample_id', as_index=False).first()
 
-    report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
-    try:
-        all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
-        logging.info(f"Report table saved to: {report_csv_file}")
-    except Exception as e:
-        raise ValueError(f"Failed to save report CSV: {e}")
+	report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
+	try:
+		all_reports.to_csv(report_csv_file, mode='w', header=True, index=False)
+		logging.info(f"Report table saved to: {report_csv_file}")
+	except Exception as e:
+		raise ValueError(f"Failed to save report CSV: {e}")
 
 class GetParams:
 	""" Class constructor for getting all necessary parameters (input args from argparse and hard-coded ones)
@@ -457,15 +457,15 @@ class MetadataParser:
 			"project_name", "collected_by", "purpose_of_ww_sampling", "ww_sample_site", "ww_flow", "instantaneous_flow", "ww_population", "ww_surv_jurisdiction", 
 			"ww_population_source", "ww_sample_matrix", "ww_sample_type", "collection_volume", "ww_sample_duration", "ww_temperature", "ww_ph", "ww_industrial_effluent_percent", 
 			"ww_sample_salinity", "ww_total_suspended_solids", "ww_surv_system_sample_id", "ww_pre_treatment", "ww_primary_sludge_retention_time", "specimen_processing",
-    		"specimen_processing_id", "specimen_processing_details", "ww_processing_protocol", "concentration_method", "extraction_method", "extraction_control", "ww_endog_control_1",
+			"specimen_processing_id", "specimen_processing_details", "ww_processing_protocol", "concentration_method", "extraction_method", "extraction_control", "ww_endog_control_1",
 			"ww_endog_control_1_conc", "ww_endog_control_1_protocol", "ww_endog_control_1_units", "ww_endog_control_2", "ww_endog_control_2_conc", "ww_endog_control_2_protocol", 
 			"ww_endog_control_2_units", "ww_surv_target_1", "ww_surv_target_1_known_present", "ww_surv_target_1_protocol", "ww_surv_target_1_conc", "ww_surv_target_1_conc_unit", 
 			"ww_surv_target_1_gene", "ww_surv_target_2", "ww_surv_target_2_conc", "ww_surv_target_2_conc_unit", "ww_surv_target_2_gene", "ww_surv_target_2_known_present",
-    		"purpose_of_ww_sequencing", "sequenced_by" ]
+			"purpose_of_ww_sequencing", "sequenced_by" ]
 		all_columns = columns + self.custom_columns 
 		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
 		record = self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
-    	# Filter out empty/NaN values
+		# Filter out empty/NaN values
 		return {k: v for k, v in record.items() if pd.notna(v) and v != ""}
 	
 	def extract_sra_metadata(self):
@@ -498,7 +498,7 @@ class MetadataParser:
 	
 	def extract_genbank_metadata(self):
 		# Genbank specific columns (expect authors, which is in extract_top_metadata)
-		columns = ['submitting_lab','submitting_lab_division','submitting_lab_address','publication_status','publication_title',
+		columns = ['biosample_accession','submitting_lab','submitting_lab_division','submitting_lab_address','publication_status','publication_title',
 					'illumina_sequencing_instrument', 'nanopore_sequencing_instrument', 'assembly_protocol','assembly_method','mean_coverage'] 
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
@@ -881,11 +881,10 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi_sequence_name_sra']}")
-		# todo: add attribute ref ID for BioSample
 
 class GenbankSubmission(XMLSubmission, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
-		# Properly initialize the base classes 
+		# Properly initialize the base classes
 		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample) 
 		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
@@ -937,12 +936,14 @@ class GenbankSubmission(XMLSubmission, Submission):
 			attribute.text = 'BankIt_SARSCoV2_api'
 		elif self.sample.species == 'influenza':
 			attribute.text = 'BankIt_influenza_api'
-		# todo: add else condition for failure
+		else:
+			logging.error("Species must be one of: sras, flu")
+			raise ValueError("Species must be one of: sars, influenza") 
 		# Identifier section
 		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		identifier = ET.SubElement(add_files, 'Identifier')
 		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
-		self.safe_text(self.top_metadata['ncbi-spuid'])
+		spuid.text = self.safe_text(f'{self.top_metadata["ncbi-spuid"]}-GB')
 	
 	def xml_create_wgs(self):
 		# Create root Submission element
@@ -967,9 +968,16 @@ class GenbankSubmission(XMLSubmission, Submission):
 		ref_id = ET.SubElement(attribute_ref, "RefId")
 		primary_id = ET.SubElement(ref_id, "PrimaryId", db="BioProject")
 		primary_id.text = self.safe_text(self.top_metadata["ncbi-bioproject"])
-		# Identifier for submission
+		# AttributeRefId for BioSample
+		attribute_ref = ET.SubElement(add_files, "AttributeRefId")
+		ref_id = ET.SubElement(attribute_ref, "RefId")
+		primary_id = ET.SubElement(ref_id, "PrimaryId", db="BioSample")
+		primary_id.text = self.safe_text(self.genbank_metadata["biosample_accession"])
+		# Identifier with SPUID
 		identifier = ET.SubElement(add_files, "Identifier")
-		# todo: why is there no Identifier block in the submission example?
+		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
+		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
+		spuid.text = self.safe_text(f'{self.top_metadata["ncbi-spuid"]}-GB')
 		self.finalize_xml()
 		# todo: the order & placement of these calls is different from BS and SRA, and this bothers me
 
@@ -1149,7 +1157,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 			Runs table2asn on them
 		"""
 		# Create the source df
-		# todo: that seq_id needs to be the genbank sequence id
 		self.create_source_file()
 		# Create Structured Comment file
 		self.create_comment_file()
@@ -1193,8 +1200,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.xml_create_wgs()
 		self.prep_table2asn_files()
 		# Delete all but the sqn file 
-		# todo: this also keeps the fsa file, need to check on that
-		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff']:
+		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff', '*.fsa']:
 			pattern = os.path.join(self.outdir, p)
 			for f in glob.glob(pattern):
 				if os.path.isfile(f):
