@@ -43,21 +43,22 @@ The outputs are recorded in the directory specified within the nextflow.config f
     *   gff
     *   tbl
 *   submission\_outputs (name and path configurable with `submission_outdir`)
-    *   name of annotation results (Liftoff or VADR, etc.)
-        *   individual\_sample\_batch\_info
-        *   biosample\_sra
+    *   individual\_sample\_batch\_folder
+        *   biosample
+        *   sra
         *   genbank
-        *   accessions.csv
-    *   terminal\_outputs
-    *   commands\_used
+        *   log\_file
+*   final\_submission\_outputs (name and path configurable with `final_submission_outdir`)
+    *   updated\_metadata\_Excel\_file
+    *   submission\_report\_file
 
 ## Understanding Pipeline Outputs:
 
 The pipeline outputs include:
 
-*   metadata.tsv files for each sample
+*   batch_<n>.tsv files for each sample (one for each sample batch)
 *   separate fasta files for each sample
 *   separate gff files for each sample
 *   separate tbl files containing feature information for each sample
-*   submission log file
+*   submission log files
     *   This output is found in the submission\_outputs file in your specified output\_directory

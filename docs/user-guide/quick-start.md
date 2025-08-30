@@ -109,6 +109,8 @@ Database targets are specified at run time. You can specify more than one target
 
 `--annotation false`: Disable annotation
 
+❗ Note: this also submits to BioSample, by default.
+
 ## Troubleshooting
 
 If you encounter issues while using the TOSTADAS pipeline, refer to the following troubleshooting steps to resolve common problems:

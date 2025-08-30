@@ -30,6 +30,7 @@ The following workflows are available for the `--workflow` parameter:
 - **genbank**: Runs a GenBank submission.
 - **fetch_accessions**: Fetches reports and updates the metadata file.
 - **full_submission**: Executes BioSample and SRA submissions, waits 60 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
+- **update_submission**: Executes a BioSample submission using an updated metadata Excel file.
 
 **Note**: The GenBank submission cannot complete without a BioSample accession ID.
 
@@ -41,7 +42,6 @@ The following workflows are available for the `--workflow` parameter:
 | --publish_dir_mode | Mode for publishing directory, e.g., 'copy' or 'move' | Yes (string) |
 | --remove_demographic_info | Flag to remove demographic info. If true, values in host_sex, host_age, race, ethnicity are set to 'Not Provided' | Yes (true/false) |
 | --batch_size | The number of samples to prepare in one submission file. | No (integer) |
-| --processed_samples | Directory where processed samples are stored. | No (string or list) |
 
 ## Cleanup Subworkflow
 
@@ -126,17 +126,17 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 
 | Param | Description | Input Required |
 | --- | --- | --- |
-| --genbank | Submit to GenBank | Yes (true/false as bool) |
 | --sra | Submit to SRA | Yes (true/false as bool) |
-| --biosample | Submit to Biosample | Yes (true/false as bool) |
-| --gisaid | Submit to GISAID | Yes (true/false as bool) |
 | --submission_outdir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
+| --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
 | --submission_prod_or_test | Whether to submit samples for test or actual production | Yes (prod or test as string) |
 | --submission_config | Configuration file for submission to public repos | Yes (path as string) |
 | --submission_wait_time | Calculated based on sample number (3 \* 60 secs \* sample_num) | integer (seconds) |
 | --send_submission_email | Toggle email notification on/off | Yes (true/false as bool) |
 | --submission_mode | Mode of submission | Yes (string) |
-| --update_submission | Flag to enable or disable updating existing submissions | Yes (true/false as bool) |
+
+## Update Submission
+| --original_submission_outdir | Either name or relative/absolute path for the outputs from original submission (the one being updated) | Yes (name or path as string) |
 
 ❗ Important note about `send_submission_email`: An email is only triggered if Genbank is being submitted to AND `table2asn` is the `genbank_submission_type`. As for the recipient, this must be specified within your submission config file under 'general' as `notif_email_recipient`.
 
