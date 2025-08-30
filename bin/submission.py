@@ -133,7 +133,6 @@ def main_submit():
 					sendemail(sample, config, mode, dirpath)
 				elif params['send_email']:
 					sendemail(sample, config, mode, dirpath, dry_run=False)
-		# todo: add an elif for genbank email/manual submissions
 		else:
 			print(f"[SKIP] {dirpath} does not contain both submission.xml and submit.ready")
 
