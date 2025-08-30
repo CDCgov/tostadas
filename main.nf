@@ -54,7 +54,6 @@ workflow FETCH_ACCESSIONS_WORKFLOW {
         tuple(meta, dir)
     } // meta = batch_id, dir = path to batch_id dir
     
-    batches.view { "DEBUG - BATCHES: $it" }
     log.info "Fetching report.xml files for submissions in ${params.outdir}/${params.metadata_basename}/${params.submission_outdir}"
     
     AGGREGATE_SUBMISSIONS(batches,
