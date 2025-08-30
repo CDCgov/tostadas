@@ -31,7 +31,7 @@ def setup_logging(log_file="submission.log", level=logging.INFO):
 			level=level,
 			format="[%(levelname)s] %(message)s",
 			handlers=[
-				logging.FileHandler(log_file),
+				logging.FileHandler(log_file, mode="a"),
 				logging.StreamHandler()
 			]
 		)

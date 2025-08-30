@@ -155,7 +155,8 @@ def main():
     os.makedirs(updated_folder, exist_ok=True)
     updated_xml = os.path.join(updated_folder, "submission.xml")
 
-    log_file_path = os.path.join(updated_folder, 'update_submission.log')
+    parent_dir = os.path.dirname(updated_folder)
+    log_file_path = os.path.join(parent_dir, "update_submission.log")
     setup_logging(log_file=log_file_path, level=logging.DEBUG)
     logging.info("Starting BioSample batch update.")
 
