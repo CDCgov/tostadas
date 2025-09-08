@@ -28,7 +28,7 @@ process PREP_SUBMISSION {
     def biosample = "biosample" in enabledDatabases ? '--biosample' : ''
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
-    def wastewater = params.wastewater == true ? '--wastewater' : ''
+    def wastewater = params.program == 'wastewater' ? '--wastewater' : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
@@ -51,7 +51,7 @@ process PREP_SUBMISSION {
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
         --identifier ${params.metadata_basename} \
-        --species $params.species \
+        --species $params.organism_type \
         --outdir  ${meta.batch_id} \
         ${sample_args} \
         --submission_mode $params.submission_mode \

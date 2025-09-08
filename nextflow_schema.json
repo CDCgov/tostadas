@@ -11,14 +11,18 @@
           "type": "string",
           "description": "Choose TOSTADAS workflow"
         },
-        "species": {
+        "program": {
           "type": "string",
-          "description": "Species name for the analysis."
+          "default": null,
+          "description": "Flag indicated a program-specific workflow; accepts: wastewater, pulsenet."
         },
-        "wastewater": {
-          "type": "boolean",
-          "default": false,
-          "description": "Boolean flag for indicating wastewater data."
+        "organism_type": {
+          "type": "string",
+          "description": "Organism type, used for genbank submission; accepts: bacteria, virus, eukaryote."
+        },
+        "virus_subtype": {
+          "type": "string",
+          "description": "Virus subtype for annotation; accepts: mpxv, rsv, variola."
         },
         "meta_path": {
           "type": "string",

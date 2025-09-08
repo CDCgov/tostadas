@@ -67,7 +67,10 @@ workflow UPDATE_SUBMISSION_WORKFLOW {
 }
 
 workflow {
-    if (params.workflow == "full_submission") {
+    if (params.program == "wastewater") {
+        BIOSAMPLE_AND_SRA_WORKFLOW()
+    }
+    else if (params.workflow == "full_submission") {
         BIOSAMPLE_AND_SRA()
         WAIT( Channel.value( calc_wait_time() ) )
         AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
