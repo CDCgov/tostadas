@@ -371,10 +371,10 @@
           "type": "string",
           "description": "Organism type, used for genbank submission; accepts: bacteria, virus, eukaryote."
         },
-        "submission_prod_or_test": {
-          "type": "string",
-          "description": "Whether to submit samples for test or actual production",
-          "default": "test",
+        "prod_submission": {
+          "type": "boolean",
+          "description": "Whether to submit samples for test or production",
+          "default": false,
           "hidden": false
         },
         "submission_config": {

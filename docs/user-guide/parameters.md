@@ -120,7 +120,7 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --sra | Submit to SRA | Yes (true/false as bool) |
 | --submission_outdir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
 | --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
-| --submission_prod_or_test | Whether to submit samples for test or actual production | Yes (prod or test as string) |
+| --prod_submission | Whether to submit samples for test or actual production | Yes (prod or test as string) |
 | --submission_config | Configuration file for submission to public repos | Yes (path as string) |
 | --submission_wait_time | Calculated based on sample number (3 \* 60 secs \* sample_num) | integer (seconds) |
 | --send_submission_email | Toggle email notification on/off | Yes (true/false as bool) |

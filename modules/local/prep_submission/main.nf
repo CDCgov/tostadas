@@ -22,7 +22,7 @@ process PREP_SUBMISSION {
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
 
     script:
-    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+    def test_flag = params.prod_submission == false ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
     def dry_run = params.dry_run == true ? '--dry_run' : ''
     def biosample = "biosample" in enabledDatabases ? '--biosample' : ''
