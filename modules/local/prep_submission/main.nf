@@ -28,7 +28,7 @@ process PREP_SUBMISSION {
     def biosample = "biosample" in enabledDatabases ? '--biosample' : ''
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
-    def wastewater = params.program == 'wastewater' ? '--wastewater' : ''
+    def wastewater = params.biosample_pkg == 'wastewater' ? '--wastewater' : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
