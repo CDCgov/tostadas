@@ -18,7 +18,6 @@ Default parameters are given in the nextflow.config file. This table lists the p
 | --- | --- | --- |
 | --submission | Toggle for running submission | Yes (true/false as bool) |
 | --annotation | Toggle for running annotation | Yes (true/false as bool) |
-| --cleanup | Toggle for running cleanup subworkflows | Yes (true/false as bool) |
 | --dry_run | Simulate submission and print a log. | No (true/false) |
 | --workflow | Specifies the workflow to execute, allowing users to choose the appropriate processing method. | Yes (string) |
 
@@ -42,15 +41,6 @@ The following workflows are available for the `--workflow` parameter:
 | --publish_dir_mode | Mode for publishing directory, e.g., 'copy' or 'move' | Yes (string) |
 | --remove_demographic_info | Flag to remove demographic info. If true, values in host_sex, host_age, race, ethnicity are set to 'Not Provided' | Yes (true/false) |
 | --batch_size | The number of samples to prepare in one submission file. | No (integer) |
-
-## Cleanup Subworkflow
-
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --clear_nextflow_log | Clears nextflow work log | Yes (true/false as bool) |
-| --clear_work_dir | Param to clear work directory created during workflow | Yes (true/false as bool) |
-| --clear_conda_env | Clears conda environment | Yes (true/false as bool) |
-| --clear_nf_results | Remove results from nextflow outputs | Yes (true/false as bool) |
 
 ## General Output
 
@@ -126,6 +116,7 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 
 | Param | Description | Input Required |
 | --- | --- | --- |
+| --biosample | Submit to BioSample | Yes (true/false as bool) |
 | --sra | Submit to SRA | Yes (true/false as bool) |
 | --submission_outdir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
 | --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
