@@ -11,7 +11,7 @@
           "type": "string",
           "description": "Choose TOSTADAS workflow"
         },
-        "program": {
+        "biosample_pkg": {
           "type": "string",
           "default": null,
           "description": "Flag indicated a program-specific workflow; accepts: wastewater, pulsenet."
@@ -70,10 +70,10 @@
           "description": "Path to validated metadata Excel file with biosample_accession, sra_accession, genbank_accession columns.",
           "default": false
         },
-        "original_submisson_outdir": {
+        "original_submission_outdir": {
           "type": "string",
           "description": "Path to original submissions dir (if running update_submission workflow).",
-          "default": false
+          "default": null
         }
       }
     },
@@ -572,6 +572,6 @@
     "meta_path",
     "ref_fasta_path",
     "ref_gff_path",
-    "species"
+    "workflow"
   ]
 }
