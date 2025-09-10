@@ -33,11 +33,11 @@ Add a few of your actual samples to the Excel metadata sheet and submit these to
 
 ### 6. Submit small sample to production server
 
-`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod true`
+`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true`
 
 ### 7. Submit all samples to production server
 Update your metadata path to point to all of your samples for submissions
-`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod true`
+`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true`
 
 ### 8. Troubleshooting
 View [the docs](https://cdcgov.github.io/tostadas/user-guide/quick-start/#troubleshooting)
