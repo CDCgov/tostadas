@@ -441,7 +441,7 @@ class MetadataParser:
 			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi_sequence_name_sra']  # Main columns
+		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra']  # Main columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	
@@ -880,7 +880,7 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		# Identifier
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
-		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi_sequence_name_sra']}")
+		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi-spuid-sra']}")
 
 class GenbankSubmission(XMLSubmission, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
@@ -984,7 +984,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
 		source_data = {
-			"Sequence_ID": self.top_metadata.get("ncbi_sequence_name_sra"),
+			"Sequence_ID": self.top_metadata.get("ncbi-spuid-sra"),
 			"strain": self.biosample_metadata.get("strain"),
 			"BioProject": self.top_metadata.get("ncbi-bioproject"),
 			"organism": self.biosample_metadata.get("organism"),
