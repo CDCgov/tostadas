@@ -522,22 +522,48 @@ class Submission:
 			return FTPClient(self.submission_config)
 		else:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
-	def fetch_report(self, remote_dir, report_local_path):
-		""" Fetches report.xml from the host site folder submit/<Test|Production>/sample_database/"""
-		#self.client.connect()
-		## Navigate to submit/<Test|Production>/<submission_db> folder
-		#self.client.change_dir(remote_dir)
-		## Check if report.xml exists and download it
-		if os.path.exists(report_local_path):
-			logging.info(f"Report already exists locally: {report_local_path}")
-			return report_local_path
-		elif self.client.file_exists('report.xml'):
-			logging.info(f"Report found on server. Downloading to: {report_local_path}.")
-			self.client.download_file('report.xml', report_local_path)
-			return report_local_path
-		else:
-			logging.info(f"No report found at {remote_dir}")
-			return False # Report not found, need to try again
+		
+	def fetch_report(self, remote_dir, local_dir):
+		"""
+		Fetch report.xml or the highest-numbered report.<n>.xml from the remote server.
+		Host site folder format is submit/<Test|Production>/submission_folder/
+		Keeps the original filename locally.
+		"""
+		# Ensure local_dir exists
+		os.makedirs(local_dir, exist_ok=True)
+
+		# Check for report.xml first
+		if self.client.file_exists('report.xml'):
+			local_path = os.path.join(local_dir, "report.xml")
+			if os.path.exists(local_path):
+				logging.info(f"Report already exists locally: {local_path}")
+				return local_path
+			logging.info(f"Report found on server. Downloading to: {local_path}")
+			self.client.download_file('report.xml', local_path)
+			return local_path
+
+		# Otherwise, look for report.<n>.xml
+		file_list = self.client.list_files(remote_dir)
+		report_files = []
+		for f in file_list:
+			match = re.match(r"^report\.(\d+)\.xml$", os.path.basename(f))
+			if match:
+				report_files.append((int(match.group(1)), f))
+
+		if report_files:
+			# Pick the file with the largest number
+			_, latest_report = max(report_files, key=lambda x: x[0])
+			local_path = os.path.join(local_dir, os.path.basename(latest_report))
+			if os.path.exists(local_path):
+				logging.info(f"Report already exists locally: {local_path}")
+				return local_path
+			logging.info(f"Found numbered report on server: {latest_report}. Downloading to: {local_path}")
+			self.client.download_file(latest_report, local_path)
+			return local_path
+
+		# Nothing found
+		logging.info(f"No report found at {remote_dir}")
+		return False
  
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
@@ -593,6 +619,11 @@ class SFTPClient:
 		except IOError as e:
 			logging.info(f"Failed to change directory: {dir_path}. Error: {e}")
 			raise
+	def list_files(self, dir_path="."):
+		try:
+			return self.sftp.listdir(dir_path)
+		except Exception as e:
+			raise IOError(f"Failed to list files in {dir_path}: {e}")
 	def file_exists(self, file_path):
 		try:
 			self.sftp.stat(file_path)
@@ -662,6 +693,11 @@ class FTPClient:
 		except ftplib.error_perm as e:
 			logging.info(f"Failed to change directory: {dir_path}. Error: {e}")
 			raise
+	def list_files(self, dir_path="."):
+		try:
+			return self.ftp.nlst(dir_path)
+		except Exception as e:
+			raise IOError(f"Failed to list files in {dir_path}: {e}")
 	def file_exists(self, file_path):
 		if file_path in self.ftp.nlst():
 			return True
