@@ -863,8 +863,6 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		attributes = ET.SubElement(biosample, 'Attributes')
 		# Select the appropriate metadata source
 		metadata = self.wastewater_metadata if self.wastewater else self.biosample_metadata
-		logging.debug(f'wastewater set to {self.wastewater}')
-		logging.debug(metadata)
 		# Fields to ignore when adding attributes
 		ignored_fields = {'organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2'}
 		
