@@ -2,7 +2,6 @@ import os
 import sys
 import glob
 import shutil
-import tempfile
 from datetime import datetime
 import argparse
 import yaml
@@ -542,25 +541,6 @@ class Submission:
 			self.client.download_file('report.xml', local_path)
 			return local_path
 
-		# Otherwise, look for report.<n>.xml
-		file_list = self.client.list_files(remote_dir)
-		report_files = []
-		for f in file_list:
-			match = re.match(r"^report\.(\d+)\.xml$", os.path.basename(f))
-			if match:
-				report_files.append((int(match.group(1)), f))
-
-		if report_files:
-			# Pick the file with the largest number
-			_, latest_report = max(report_files, key=lambda x: x[0])
-			local_path = os.path.join(local_dir, os.path.basename(latest_report))
-			if os.path.exists(local_path):
-				logging.info(f"Report already exists locally: {local_path}")
-				return local_path
-			logging.info(f"Found numbered report on server: {latest_report}. Downloading to: {local_path}")
-			self.client.download_file(latest_report, local_path)
-			return local_path
-
 		# Nothing found
 		logging.info(f"No report found at {remote_dir}")
 		return False
@@ -619,11 +599,6 @@ class SFTPClient:
 		except IOError as e:
 			logging.info(f"Failed to change directory: {dir_path}. Error: {e}")
 			raise
-	def list_files(self, dir_path="."):
-		try:
-			return self.sftp.listdir(dir_path)
-		except Exception as e:
-			raise IOError(f"Failed to list files in {dir_path}: {e}")
 	def file_exists(self, file_path):
 		try:
 			self.sftp.stat(file_path)
@@ -693,11 +668,6 @@ class FTPClient:
 		except ftplib.error_perm as e:
 			logging.info(f"Failed to change directory: {dir_path}. Error: {e}")
 			raise
-	def list_files(self, dir_path="."):
-		try:
-			return self.ftp.nlst(dir_path)
-		except Exception as e:
-			raise IOError(f"Failed to list files in {dir_path}: {e}")
 	def file_exists(self, file_path):
 		if file_path in self.ftp.nlst():
 			return True
