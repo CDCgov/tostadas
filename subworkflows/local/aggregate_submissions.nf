@@ -4,6 +4,7 @@ include { JOIN_ACCESSIONS_WITH_METADATA              } from '../../modules/local
 
 workflow AGGREGATE_SUBMISSIONS {
     take:
+      wait_value // used to enforce ordering in main workflow
       submission_dirs // works for one or more batch_dir(s)
       submission_config
       validated_metadata_tsv

@@ -11,12 +11,14 @@ include { WAIT                      } from './modules/local/wait/main'
 def calc_wait_time() {
     return params.submission_wait_time != 'calc'
         ? params.submission_wait_time as int
-        : 3 * 60 * params.batch_size as int
+        : 30 * params.batch_size as int
 }
 
 workflow BIOSAMPLE_AND_SRA_WORKFLOW {
     BIOSAMPLE_AND_SRA()
-    AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, 
+    WAIT( BIOSAMPLE_AND_SRA.out.submission_batch_folder.map { calc_wait_time() } )
+    AGGREGATE_SUBMISSIONS(WAIT.out,
+                          BIOSAMPLE_AND_SRA.out.submission_batch_folder, 
                           params.submission_config,
                           BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
 }
@@ -37,14 +39,14 @@ workflow GENBANK_WORKFLOW {
 
     GENBANK(file(updated_meta_file))
     if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
-        AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
+        AGGREGATE_SUBMISSIONS(Channel.value(true), // 'true' placeholder because WAIT is not run
+                            GENBANK.out.submission_batch_folder,
                             params.submission_config,
                             file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"))
     }
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {
-
     // glob for all subdirectories starting with "batch_" and collect into one list
     batches = Channel.fromPath(
         "${params.outdir}/${params.metadata_basename}/${params.submission_outdir}/batch_*",
@@ -53,13 +55,11 @@ workflow FETCH_ACCESSIONS_WORKFLOW {
         def meta = [ batch_id: dir.baseName ]
         tuple(meta, dir)
     } // meta = batch_id, dir = path to batch_id dir
-    
     log.info "Fetching report.xml files for submissions in ${params.outdir}/${params.metadata_basename}/${params.submission_outdir}"
-    
-    AGGREGATE_SUBMISSIONS(batches,
+    AGGREGATE_SUBMISSIONS(Channel.value(true), // 'true' placeholder because WAIT is not run
+                          batches,
                           params.submission_config,
                           file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"))
-
 }
 
 workflow UPDATE_SUBMISSION_WORKFLOW {
@@ -69,8 +69,8 @@ workflow UPDATE_SUBMISSION_WORKFLOW {
 workflow {
     if (params.workflow == "full_submission") {
         BIOSAMPLE_AND_SRA()
-        WAIT( Channel.value( calc_wait_time() ) )
-        AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
+        WAIT( BIOSAMPLE_AND_SRA.out.submission_batch_folder.map { calc_wait_time() } )
+        AGGREGATE_SUBMISSIONS(WAIT.out, BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv)
         GENBANK(AGGREGATE_SUBMISSIONS.out.accession_augmented_xlsx)
     }
     else if (params.workflow == "biosample_and_sra") {
