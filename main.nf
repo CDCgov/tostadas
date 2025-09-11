@@ -71,7 +71,7 @@ workflow {
     if (params.workflow == "full_submission") {
         BIOSAMPLE_AND_SRA()
         WAIT( BIOSAMPLE_AND_SRA.out.submission_batch_folder.map { calc_wait_time() } )
-        AGGREGATE_SUBMISSIONS(gated_folders, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv, WAIT.out)
+        AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, params.submission_config, BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv, WAIT.out)
         GENBANK(AGGREGATE_SUBMISSIONS.out.accession_augmented_xlsx)
     }
     else if (params.workflow == "biosample_and_sra") {
