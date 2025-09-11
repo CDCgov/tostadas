@@ -833,9 +833,10 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		# Descriptor with Title
 		descriptor = ET.SubElement(biosample, 'Descriptor')
-		if 'title' in self.top_metadata and self.top_metadata['title']:
+		title_val = self.top_metadata.get('title')
+		if pd.notna(title_val) and str(title_val).strip():
 			title = ET.SubElement(descriptor, 'Title')
-			title.text = self.safe_text(self.top_metadata['title'])
+			title.text = self.safe_text(title_val)
 		# Organism section
 		organism = ET.SubElement(biosample, 'Organism')
 		organism_name = ET.SubElement(organism, 'OrganismName')
