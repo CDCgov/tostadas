@@ -232,6 +232,7 @@ def parse_report_xml_to_df(report_path):
 					spuid = object_tag.get("spuid", None)
 					spuid_namespace = object_tag.get("spuid_namespace", None)
 					object_id = object_tag.get("object_id", None)
+					accession = object_tag.get("accession", None)
 
 			# Initialize row
 			report = {
@@ -257,18 +258,18 @@ def parse_report_xml_to_df(report_path):
 			if target_db == "biosample":
 				report['biosample_status'] = status
 				report['biosample_message'] = response_message
-				if object_id:
-					report['biosample_accession'] = object_id
+				if accession:
+					report['biosample_accession'] = accession
 			elif target_db == "sra":
 				report['sra_status'] = status
 				report['sra_message'] = response_message
-				if object_id:
-					report['sra_accession'] = object_id
+				if accession:
+					report['sra_accession'] = accession
 			elif target_db == "genbank":
 				report['genbank_status'] = status
 				report['genbank_message'] = response_message
-				if object_id:
-					report['genbank_accession'] = object_id
+				if accession:
+					report['genbank_accession'] = accession
 
 			reports.append(report)
 
