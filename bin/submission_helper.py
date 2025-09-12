@@ -526,7 +526,9 @@ class Submission:
 		if self.client.file_exists('report.xml'):
 			local_path = os.path.join(local_dir, "report.xml")
 			if os.path.exists(local_path):
-				logging.info(f"Report already exists locally: {local_path}")
+				logging.info(f"Report exists locally: {local_path}")
+				logging.info(f"Downloading latest report to: {local_path}")
+				self.client.download_file('report.xml', local_path)
 				return local_path
 			logging.info(f"Report found on server. Downloading to: {local_path}")
 			self.client.download_file('report.xml', local_path)
