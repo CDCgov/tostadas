@@ -11,14 +11,10 @@
           "type": "string",
           "description": "Choose TOSTADAS workflow"
         },
-        "species": {
+        "biosample_pkg": {
           "type": "string",
-          "description": "Species name for the analysis."
-        },
-        "wastewater": {
-          "type": "boolean",
-          "default": false,
-          "description": "Boolean flag for indicating wastewater data."
+          "default": null,
+          "description": "Flag indicating a pre-configured BioSample pkg; accepts: wastewater, pulsenet, null."
         },
         "meta_path": {
           "type": "string",
@@ -26,6 +22,45 @@
           "description": "Meta-data file path for samples",
           "default": "/tostadas/assets/metadata_template.xlsx",
           "pattern": "^\\S+\\.(xlsx|xls|xlsm|xlsb|csv)$"
+        },
+        "outdir": {
+          "type": "string",
+          "default": "results",
+          "format": "directory-path",
+          "description": "File path to submit outputs from pipeline"
+        }
+      }
+    },
+    "Pipeline Configuration Modes": {
+      "properties": {
+        "annotation": {
+          "description": "Toggle for running annotation",
+          "type": "boolean",
+          "default": false
+        },
+        "submission": {
+          "type": "boolean",
+          "description": "Toggle for running submission",
+          "default": true
+        },
+        "updated_meta_path": {
+          "type": "string",
+          "description": "Path to validated metadata Excel file with biosample_accession, sra_accession, genbank_accession columns.",
+          "default": null
+        },
+        "original_submission_outdir": {
+          "type": "string",
+          "description": "Path to original submissions dir (if running update_submission workflow).",
+          "default": null
+        }
+      }
+    },
+    "Annotation Parameters": {
+      "properties": {
+        "virus_subtype": {
+          "type": "string",
+          "description": "Virus subtype for annotation; accepts: mpxv, rsv, variola.",
+          "hidden": false
         },
         "ref_fasta_path": {
           "type": "string",
@@ -41,49 +76,17 @@
           "default": "${projectDir}/tostadas/assets/ref/ref.MPXV.NC063383.v7.gff",
           "pattern": "^\\S+\\.(gff|gff3)$"
         },
-        "outdir": {
-          "type": "string",
-          "format": "directory-path",
-          "description": "File path to submit outputs from pipeline",
-          "default": "results"
-        }
-      }
-    },
-    "Pipeline Configuration Modes": {
-      "properties": {
-        "annotation": {
-          "description": "Toggle for running annotation",
-          "type": "boolean",
-          "default": true
-        },
-        "submission": {
-          "type": "boolean",
-          "description": "Toggle for running submission",
-          "default": true
-        },
-        "updated_meta_path": {
-          "type": "string",
-          "description": "Path to validated metadata Excel file with biosample_accession, sra_accession, genbank_accession columns.",
-          "default": false
-        },
-        "original_submisson_outdir": {
-          "type": "string",
-          "description": "Path to original submissions dir (if running update_submission workflow).",
-          "default": false
-        }
-      }
-    },
-    "Annotation Parameters": {
-      "properties": {
         "vadr": {
           "type": "boolean",
           "description": "Flag to enable or disable VADR (Viral Annotation DefineR) step.",
-          "default": "${projectDir}/environments/vadr_env.yml"
+          "default": false,
+          "hidden": false
         },
         "repeatmasker_liftoff": {
           "type": "boolean",
           "description": "Flag to enable or disable RepeatMasker and Liftoff steps.",
-          "default": "true"
+          "default": true,
+          "hidden": false
         },
         "final_liftoff_outdir": {
           "type": "string",
@@ -195,12 +198,14 @@
         },
         "bakta": {
           "type": "boolean",
-          "description": "Toggle for running Bakta annotation"
+          "description": "Toggle for running Bakta annotation",
+          "hidden": false
         },
         "bakta_db_type": {
           "type": "string",
           "description": "Bakta database type (light or full)",
-          "default": "light"
+          "default": "light",
+          "hidden": false
         },
         "bakta_outdir": {
           "type": "string",
@@ -345,66 +350,68 @@
         },
         "bakta_db_path": {
           "type": "string",
-          "description": "Path to Bakta database if user is supplying database"
+          "description": "Path to Bakta database if user is supplying database",
+          "hidden": false
         },
         "download_bakta_db": {
           "type": "boolean",
-          "description": "Option to download Bakta database"
+          "description": "Option to download Bakta database",
+          "hidden": false
         },
         "save_reference": {
           "type": "boolean",
-          "description": "Option to save the downloaded Bakta database"
+          "description": "Option to save the downloaded Bakta database",
+          "hidden": false
         }
       }
     },
     "Submission Parameters": {
       "properties": {
-        "submission_outdir": {
+        "organism_type": {
           "type": "string",
-          "format": "directory-path",
-          "description": "Either name or relative/absolute path for the outputs from submission",
-          "default": "submission_outputs"
+          "description": "Organism type, used for genbank submission; accepts: bacteria, virus, eukaryote."
         },
-        "final_submission_outdir": {
-          "type": "string",
-          "format": "directory-path",
-          "description": "Either name or relative/absolute path for the final outputs from submission report fetching",
-          "default": "final_submission_outputs"
-        },
-        "submission_prod_or_test": {
-          "type": "string",
-          "description": "Whether to submit samples for test or actual production",
-          "default": "test"
+        "prod_submission": {
+          "type": "boolean",
+          "description": "Whether to submit samples for test or production",
+          "default": false,
+          "hidden": false
         },
         "submission_config": {
           "type": "string",
           "description": "Configuration file for submission to public repos",
           "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml",
-          "pattern": "^\\S+\\.(yaml|yml)$"
+          "pattern": "^\\S+\\.(yaml|yml)$",
+          "hidden": false
         },
         "submission_wait_time": {
           "type": "integer",
           "description": "Calculated based on sample number (3 * 60 secs * sample_num)",
-          "default": 380
+          "default": 380,
+          "hidden": false
         },
         "send_submission_email": {
           "type": "boolean",
           "description": "Toggle email notification on/off",
-          "default": false
+          "default": false,
+          "hidden": false
         },
         "submission_mode": {
           "type": "string",
           "description": "Mode of submission.",
-          "default": "ftp"
+          "default": "ftp",
+          "hidden": false
         },
         "dry_run": {
           "type": "boolean",
           "description": "Simulate submission and print a log.",
-          "default": false
+          "default": false,
+          "hidden": false
         },
         "biosample_fields_key": {
           "type": "string",
-          "description": "Path to a yaml file containing required parameters for all supported BioSample packages."
+          "description": "Path to a yaml file containing required parameters for all supported BioSample packages.",
+          "hidden": true
         }
       }
     },
@@ -424,11 +431,6 @@
           "type": "boolean",
           "description": "Flag to enable or disable submission to BioSample.",
           "default": true
-        },
-        "gisaid": {
-          "type": "boolean",
-          "description": "Flag to enable or disable submission to GISAID (under development).",
-          "default": false
         }
       }
     },
@@ -444,7 +446,7 @@
           "type": "integer",
           "description": "The number of samples to prepare in one submission file.",
           "default": 1,
-          "hidden": true
+          "hidden": false
         },
         "env_yml": {
           "type": "string",
@@ -464,6 +466,13 @@
           "default": "${projectDir}/environments/vadr_env.yml",
           "hidden": true
         },
+        "final_submission_outdir": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "Either name or relative/absolute path for the final outputs from submission report fetching",
+          "default": "final_submission_outputs",
+          "hidden": true
+        },
         "submission_outdir": {
           "type": "string",
           "format": "directory-path",
@@ -481,7 +490,7 @@
         "vadr_models_dir": {
           "type": "string",
           "format": "directory-path",
-          "description": "File path to models for MPXV used by VADR annotation",
+          "description": "File path to models used by VADR annotation",
           "default": "",
           "hidden": true
         },
@@ -490,27 +499,6 @@
           "format": "directory-path",
           "description": "File path for outputs specific to validate sub-workflow",
           "default": "validation_outputs",
-          "hidden": true
-        },
-        "cleanup": {
-          "type": "boolean",
-          "default": true,
-          "hidden": true
-        },
-        "clear_nextflow_log": {
-          "type": "boolean",
-          "hidden": true
-        },
-        "clear_work_dir": {
-          "type": "boolean",
-          "hidden": true
-        },
-        "clear_conda_env": {
-          "type": "boolean",
-          "hidden": true
-        },
-        "clear_nf_results": {
-          "type": "boolean",
           "hidden": true
         },
         "date_format_flag": {
@@ -537,12 +525,6 @@
           "default": "copy",
           "hidden": false
         },
-        "processed_samples": {
-          "type": "string",
-          "description": "Directory where processed samples are stored.",
-          "default": "${projectDir}/results/submission_outputs",
-          "hidden": false
-        },
         "validate_custom_fields": {
           "type": "boolean",
           "description": "Toggle checks/transformations for custom metadata fields on/off",
@@ -566,8 +548,8 @@
   },
   "required": [
     "meta_path",
-    "ref_fasta_path",
-    "ref_gff_path",
-    "species"
+    "submission_config",
+    "workflow",
+    "biosample_fields_key"
   ]
 }

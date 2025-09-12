@@ -88,7 +88,7 @@ workflow GENBANK {
     if (params.annotation) {
         annotation_input_ch = validated_sample_ch.map { meta, fasta, gff -> [meta, fasta, gff] }
 
-        if (params.species in ['mpxv', 'variola', 'rsv', 'virus']) {
+        if (params.organism_type == 'virus') {
             if (params.repeatmasker_liftoff && !params.vadr) {
                 REPEATMASKER_LIFTOFF(annotation_input_ch.map { meta, fasta, gff -> [meta, fasta] })
                 annotation_input_ch = annotation_input_ch
@@ -105,7 +105,7 @@ workflow GENBANK {
                     .map { sample_id, meta, fasta, new_tbl -> [meta, fasta, new_tbl] }
             }
 
-        } else if (params.species == 'bacteria' && params.bakta) {
+        } else if (params.orgranism_type == 'bacteria' && params.bakta) {
             RUN_BAKTA(annotation_input_ch.map { meta, fasta, gff -> [meta, fasta] })
             annotation_input_ch = annotation_input_ch
                 .map { meta, fasta, _gff -> [meta.sample_id, meta] }

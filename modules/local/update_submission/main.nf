@@ -24,7 +24,7 @@ process UPDATE_SUBMISSION {
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
 
     script:
-    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+    def test_flag = params.prod_submission == false ? '--test' : ''
     def dry_run = params.dry_run == true ? '--dry_run' : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces

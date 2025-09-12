@@ -18,7 +18,7 @@ process FETCH_REPORTS {
     path("${submission_folder}/*.csv"), emit: submission_report, optional: true
 
     script:
-    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+    def test_flag = params.prod_submission == false ? '--test' : ''
     def dry_run_flag = params.dry_run == true ? '--dry_run' : ''
 
     """

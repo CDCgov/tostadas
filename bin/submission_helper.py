@@ -2,7 +2,6 @@ import os
 import sys
 import glob
 import shutil
-import tempfile
 from datetime import datetime
 import argparse
 import yaml
@@ -218,7 +217,6 @@ def parse_report_xml_to_df(report_path):
 			spuid = None
 			spuid_namespace = None
 			object_id = None
-			sample_id = None
 
 			# Extract info from <Response>
 			response = action.find("Response")
@@ -234,37 +232,25 @@ def parse_report_xml_to_df(report_path):
 					spuid = object_tag.get("spuid", None)
 					spuid_namespace = object_tag.get("spuid_namespace", None)
 					object_id = object_tag.get("object_id", None)
-
-			# Determine sample_id
-			if spuid:  
-				sample_id = spuid
-			elif action_id:
-				# Expect format {submission}_{sample_id}_sra
-				parts = action_id.split("_")
-				if len(parts) >= 3:
-					sample_id = parts[1]  # middle part
-				else:
-					sample_id = action_id  # fallback: store raw action_id
-
-			if not sample_id:
-				logging.warning(f"Could not determine sample_id for action in {report_path}. Skipping this action.")
-				continue
+					accession = object_tag.get("accession", None)
 
 			# Initialize row
 			report = {
-				'sample_id': sample_id,
+				'submission_id': submission_id,
 				'spuid': spuid,
 				'spuid_namespace': spuid_namespace,
 				'object_id': object_id,
 				'submission_name': action_id,
 				'submission_status': submission_status,
-				'submission_id': submission_id,
 				'biosample_status': None,
 				'biosample_accession': None,
 				'biosample_message': None,
 				'sra_status': None,
 				'sra_accession': None,
 				'sra_message': None,
+				'genbank_status': None,
+				'genbank_accession': None,
+				'genbank_message': None,
 				'tracking_location': tracking_location,
 			}
 
@@ -272,13 +258,18 @@ def parse_report_xml_to_df(report_path):
 			if target_db == "biosample":
 				report['biosample_status'] = status
 				report['biosample_message'] = response_message
-				if object_id:
-					report['biosample_accession'] = object_id
+				if accession:
+					report['biosample_accession'] = accession
 			elif target_db == "sra":
 				report['sra_status'] = status
 				report['sra_message'] = response_message
-				if object_id:
-					report['sra_accession'] = object_id
+				if accession:
+					report['sra_accession'] = accession
+			elif target_db == "genbank":
+				report['genbank_status'] = status
+				report['genbank_message'] = response_message
+				if accession:
+					report['genbank_accession'] = accession
 
 			reports.append(report)
 
@@ -292,11 +283,11 @@ def parse_report_xml_to_df(report_path):
 
 	if not df.empty:
 		# Deduplicate so only one row per sample_id remains
-		df = df.groupby('sample_id', as_index=False).first()
+		df = df.groupby('submission_id', as_index=False).first()
 
 		# Ensure column order
-		column_order = ['sample_id', 'spuid', 'spuid_namespace', 'object_id'] + \
-					   [col for col in df.columns if col not in {'sample_id', 'spuid', 'spuid_namespace', 'object_id'}]
+		column_order = ['submission_id', 'spuid', 'spuid_namespace', 'object_id'] + \
+					   [col for col in df.columns if col not in {'submission_id', 'spuid', 'spuid_namespace', 'object_id'}]
 		df = df[column_order]
 
 		# Normalize NaNs to None
@@ -318,7 +309,7 @@ def parse_and_save_reports(reports_fetched, outdir, batch_id):
 		return
 
 	# Deduplicate final CSV by sample_id
-	all_reports = all_reports.groupby('sample_id', as_index=False).first()
+	all_reports = all_reports.groupby('submission_id', as_index=False).first()
 
 	report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
 	try:
@@ -441,7 +432,7 @@ class MetadataParser:
 			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi_sequence_name_sra']  # Main columns
+		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra']  # Main columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	
@@ -522,22 +513,26 @@ class Submission:
 			return FTPClient(self.submission_config)
 		else:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
+		
 	def fetch_report(self, remote_dir, report_local_path):
-		""" Fetches report.xml from the host site folder submit/<Test|Production>/sample_database/"""
-		#self.client.connect()
-		## Navigate to submit/<Test|Production>/<submission_db> folder
-		#self.client.change_dir(remote_dir)
-		## Check if report.xml exists and download it
-		if os.path.exists(report_local_path):
-			logging.info(f"Report already exists locally: {report_local_path}")
-			return report_local_path
-		elif self.client.file_exists('report.xml'):
-			logging.info(f"Report found on server. Downloading to: {report_local_path}.")
+		"""
+		Fetch report.xml or the highest-numbered report.<n>.xml from the remote server.
+		Host site folder format is submit/<Test|Production>/submission_folder/
+		Keeps the original filename locally.
+		"""
+		# Check for report.xml first
+		if self.client.file_exists('report.xml'):
+			if os.path.exists(report_local_path):
+				logging.info(f"Report exists locally: {report_local_path}")
+				logging.info(f"Downloading latest report to: {report_local_path}")
+				self.client.download_file('report.xml', report_local_path)
+				return report_local_path
+			logging.info(f"Report found on server. Downloading to: {report_local_path}")
 			self.client.download_file('report.xml', report_local_path)
 			return report_local_path
-		else:
-			logging.info(f"No report found at {remote_dir}")
-			return False # Report not found, need to try again
+		# Nothing found
+		logging.info(f"No report found at {remote_dir}")
+		return False
  
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
@@ -797,9 +792,10 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		spuid.text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		# Descriptor with Title
 		descriptor = ET.SubElement(biosample, 'Descriptor')
-		if 'title' in self.top_metadata and self.top_metadata['title']:
+		title_val = self.top_metadata.get('title')
+		if pd.notna(title_val) and str(title_val).strip():
 			title = ET.SubElement(descriptor, 'Title')
-			title.text = self.safe_text(self.top_metadata['title'])
+			title.text = self.safe_text(title_val)
 		# Organism section
 		organism = ET.SubElement(biosample, 'Organism')
 		organism_name = ET.SubElement(organism, 'OrganismName')
@@ -826,8 +822,6 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		attributes = ET.SubElement(biosample, 'Attributes')
 		# Select the appropriate metadata source
 		metadata = self.wastewater_metadata if self.wastewater else self.biosample_metadata
-		logging.debug(f'wastewater set to {self.wastewater}')
-		logging.debug(metadata)
 		# Fields to ignore when adding attributes
 		ignored_fields = {'organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2'}
 		
@@ -880,7 +874,7 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		# Identifier
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
-		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi_sequence_name_sra']}")
+		identifier_spuid.text = self.safe_text(f"{self.top_metadata['ncbi-spuid-sra']}")
 
 class GenbankSubmission(XMLSubmission, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode, submission_dir, type, samples, sample, accession_id = None, identifier = None):
@@ -984,7 +978,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
 		source_data = {
-			"Sequence_ID": self.top_metadata.get("ncbi_sequence_name_sra"),
+			"Sequence_ID": self.top_metadata.get("ncbi-spuid-sra"),
 			"strain": self.biosample_metadata.get("strain"),
 			"BioProject": self.top_metadata.get("ncbi-bioproject"),
 			"organism": self.biosample_metadata.get("organism"),

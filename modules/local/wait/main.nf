@@ -12,11 +12,14 @@ process WAIT {
 
     input:
         val wait_time
+    
+    output:
+        val true
 
     script:
         """
-        submission_utility.py --wait true --wait_time ${wait_time}
+        echo "Sleeping for ${wait_time} seconds..."
+        sleep ${wait_time}
         """
-    output:
-        val true
+
 }

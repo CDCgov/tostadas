@@ -7,6 +7,7 @@ workflow AGGREGATE_SUBMISSIONS {
       submission_dirs // works for one or more batch_dir(s)
       submission_config
       validated_metadata_tsv
+      wait_signal
 
     main:
       FETCH_REPORTS(submission_dirs, file(submission_config))

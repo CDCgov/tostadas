@@ -22,13 +22,13 @@ process PREP_SUBMISSION {
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
 
     script:
-    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
+    def test_flag = params.prod_submission == false ? '--test' : ''
     def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
     def dry_run = params.dry_run == true ? '--dry_run' : ''
     def biosample = "biosample" in enabledDatabases ? '--biosample' : ''
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
-    def wastewater = params.wastewater == true ? '--wastewater' : ''
+    def wastewater = params.biosample_pkg == 'wastewater' ? '--wastewater' : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
@@ -51,7 +51,7 @@ process PREP_SUBMISSION {
         --config_file $submission_config  \
         --metadata_file ${meta.batch_tsv} \
         --identifier ${params.metadata_basename} \
-        --species $params.species \
+        --species $params.organism_type \
         --outdir  ${meta.batch_id} \
         ${sample_args} \
         --submission_mode $params.submission_mode \

@@ -108,8 +108,9 @@ workflow BIOSAMPLE_AND_SRA {
 					if (params.sra && !(hasIllumina || hasNanopore)) {
 						sraWarnings << sid
 					}
-					// always run biosample submission
-					enabledDatabases << "biosample"
+					if (params.biosample) {
+						enabledDatabases << "biosample"
+					}
 				}
 
 				if (sraWarnings) {

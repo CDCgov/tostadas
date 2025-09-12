@@ -625,7 +625,7 @@ class ValidateChecks:
 			"authors", "submitting_lab", "submitting_lab_division", "submitting_lab_address", "publication_status", "publication_title",
 			"isolate", "isolation_source", "host_disease", "host", "organism", "collection_date", "country", "state",
 			"collected_by", "sample_type", "lat_lon", "purpose_of_sampling", "host_sex", "host_age", "race", "ethnicity",
-			"assembly_protocol", "assembly_method", "mean_coverage", "fasta_path", "gff_path", "ncbi_sequence_name_sra",
+			"assembly_protocol", "assembly_method", "mean_coverage", "fasta_path", "gff_path", "ncbi-spuid-sra",
 			"illumina_sequencing_instrument", "illumina_library_strategy", "illumina_library_source", "illumina_library_selection",
 			"illumina_library_layout", "illumina_library_protocol", "illumina_library_name", "illumina_sra_file_path_1", "illumina_sra_file_path_2",
 			"file_location", "fastq_path_1", "fastq_path_2", "nanopore_sequencing_instrument", "nanopore_library_strategy",

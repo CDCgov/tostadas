@@ -33,10 +33,6 @@ Example metadata [Link](https://github.com/CDCgov/tostadas/blob/bb47dce749eada90
 
 The files required for GenBank submission will be stored in the `test_output/submission_outputs/<sample_name|batch_name>/genbank` directory. You can find information on how to submit these files to NCBI [here](https://submit.ncbi.nlm.nih.gov/).
 
-## Customizing Parameters:
-
-Parameters can be customized from the command line or by modifying one of the following configuration files: standard.json, standard.yml or nextflow.config.
-
 ### (1) Customizing parameters from the command line:
 
 Parameters can be overridden during runtime by providing various flags to the `nextflow` command.
@@ -45,15 +41,7 @@ Example: Modifying the path of the output directory
 
 `nextflow run main.nf -profile test,singularity --workflow biosample_and_sra --species virus --outdir /path/to/output/dir` Certain parameters such as -profile and pathogen type (`--species virus`) are required, while others like `--outdir` can be specified optionally. The complete list of parameters and the types of input that they require can be found in the Parameters page.
 
-### (2) Customizing parameters by modifying the standard.json or standard.yml files:
-
-Default parameters can be overridden by making changes to either the standard.yml or standard.json files located in the ./params directory. To modify the run with the updated parameters, use the `--params-file` runtime parameter and specify which file contains the updated parameters.
-
-Example:
-
-`nextflow run main.nf -profile test,singularity --species virus --workflow biosample_and_sra -params-file <standard_params.yml or standard_params.json>`
-
-### (3) Customizing parameters by modifying the nextflow.config file:
+### (2) Customizing parameters by modifying the nextflow.config file:
 
 Default parameters can be also be overridden by making changes to the nextflow.config file located in the project directory. By default, if the test option is not provided during runtime, the run configuration will be read from the nextflow.config file.
 
