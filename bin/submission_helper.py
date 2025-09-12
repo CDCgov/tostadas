@@ -217,7 +217,6 @@ def parse_report_xml_to_df(report_path):
 			spuid = None
 			spuid_namespace = None
 			object_id = None
-			sample_id = None
 
 			# Extract info from <Response>
 			response = action.find("Response")
@@ -234,36 +233,23 @@ def parse_report_xml_to_df(report_path):
 					spuid_namespace = object_tag.get("spuid_namespace", None)
 					object_id = object_tag.get("object_id", None)
 
-			# Determine sample_id
-			if spuid:  
-				sample_id = spuid
-			elif action_id:
-				# Expect format {submission}_{sample_id}_sra
-				parts = action_id.split("_")
-				if len(parts) >= 3:
-					sample_id = parts[1]  # middle part
-				else:
-					sample_id = action_id  # fallback: store raw action_id
-
-			if not sample_id:
-				logging.warning(f"Could not determine sample_id for action in {report_path}. Skipping this action.")
-				continue
-
 			# Initialize row
 			report = {
-				'sample_id': sample_id,
+				'submission_id': submission_id,
 				'spuid': spuid,
 				'spuid_namespace': spuid_namespace,
 				'object_id': object_id,
 				'submission_name': action_id,
 				'submission_status': submission_status,
-				'submission_id': submission_id,
 				'biosample_status': None,
 				'biosample_accession': None,
 				'biosample_message': None,
 				'sra_status': None,
 				'sra_accession': None,
 				'sra_message': None,
+				'genbank_status': None,
+				'genbank_accession': None,
+				'genbank_message': None,
 				'tracking_location': tracking_location,
 			}
 
@@ -278,6 +264,11 @@ def parse_report_xml_to_df(report_path):
 				report['sra_message'] = response_message
 				if object_id:
 					report['sra_accession'] = object_id
+			elif target_db == "genbank":
+				report['genbank_status'] = status
+				report['genbank_message'] = response_message
+				if object_id:
+					report['genbank_accession'] = object_id
 
 			reports.append(report)
 
@@ -291,11 +282,11 @@ def parse_report_xml_to_df(report_path):
 
 	if not df.empty:
 		# Deduplicate so only one row per sample_id remains
-		df = df.groupby('sample_id', as_index=False).first()
+		df = df.groupby('submission_id', as_index=False).first()
 
 		# Ensure column order
-		column_order = ['sample_id', 'spuid', 'spuid_namespace', 'object_id'] + \
-					   [col for col in df.columns if col not in {'sample_id', 'spuid', 'spuid_namespace', 'object_id'}]
+		column_order = ['submission_id', 'spuid', 'spuid_namespace', 'object_id'] + \
+					   [col for col in df.columns if col not in {'submission_id', 'spuid', 'spuid_namespace', 'object_id'}]
 		df = df[column_order]
 
 		# Normalize NaNs to None
@@ -317,7 +308,7 @@ def parse_and_save_reports(reports_fetched, outdir, batch_id):
 		return
 
 	# Deduplicate final CSV by sample_id
-	all_reports = all_reports.groupby('sample_id', as_index=False).first()
+	all_reports = all_reports.groupby('submission_id', as_index=False).first()
 
 	report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
 	try:

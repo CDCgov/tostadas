@@ -18,10 +18,21 @@ process AGGREGATE_REPORTS {
 
     script:
     """
-    set -x
-    cat ${report_csvs.join(' ')} | head -n 1 > submission_report.csv
-    for f in ${report_csvs.join(' ')}; do
-        tail -n +2 "\$f" >> submission_report.csv
-    done
+    set -eux
+    python3 - << 'EOF'
+    import pandas as pd
+    from functools import reduce
+
+    # Read all CSVs into a list of dataframes
+    files = [${report_csvs.collect { "'${it}'" }.join(', ')}]
+    dfs = [pd.read_csv(f) for f in files]
+
+    # Merge them on 'submission_id'
+    merged = reduce(lambda left, right: pd.merge(left, right, on='submission_id', how='outer'), dfs)
+
+    # Save result
+    merged.to_csv('submission_report.csv', index=False)
+    EOF
+
     """
 }
