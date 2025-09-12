@@ -513,27 +513,22 @@ class Submission:
 		else:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
 		
-	def fetch_report(self, remote_dir, local_dir):
+	def fetch_report(self, remote_dir, report_local_path):
 		"""
 		Fetch report.xml or the highest-numbered report.<n>.xml from the remote server.
 		Host site folder format is submit/<Test|Production>/submission_folder/
 		Keeps the original filename locally.
 		"""
-		# Ensure local_dir exists
-		os.makedirs(local_dir, exist_ok=True)
-
 		# Check for report.xml first
 		if self.client.file_exists('report.xml'):
-			local_path = os.path.join(local_dir, "report.xml")
-			if os.path.exists(local_path):
-				logging.info(f"Report exists locally: {local_path}")
-				logging.info(f"Downloading latest report to: {local_path}")
-				self.client.download_file('report.xml', local_path)
-				return local_path
-			logging.info(f"Report found on server. Downloading to: {local_path}")
-			self.client.download_file('report.xml', local_path)
-			return local_path
-
+			if os.path.exists(report_local_path):
+				logging.info(f"Report exists locally: {report_local_path}")
+				logging.info(f"Downloading latest report to: {report_local_path}")
+				self.client.download_file('report.xml', report_local_path)
+				return report_local_path
+			logging.info(f"Report found on server. Downloading to: {report_local_path}")
+			self.client.download_file('report.xml', report_local_path)
+			return report_local_path
 		# Nothing found
 		logging.info(f"No report found at {remote_dir}")
 		return False
