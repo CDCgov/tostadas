@@ -217,6 +217,7 @@ def parse_report_xml_to_df(report_path):
 			spuid = None
 			spuid_namespace = None
 			object_id = None
+			accession = None
 
 			# Extract info from <Response>
 			response = action.find("Response")
