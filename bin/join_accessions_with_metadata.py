@@ -71,7 +71,7 @@ def main():
         merged_df.insert(merged_df.columns.get_loc(insert_after) + 1, col, col_data)
 
     # Write to Excel with extra header line above the column headers
-    with pd.ExcelWriter(params["output"]) as writer:
+    with pd.ExcelWriter(params["output"], mode='w', engine='openpyxl') as writer:
         # First row for extra info
         extra_info = pd.DataFrame([["NCBI submission report"]])
         extra_info.to_excel(writer, index=False, header=False, startrow=0)
@@ -80,11 +80,6 @@ def main():
         merged_df.to_excel(writer, index=False, startrow=1)
 
     logger.info(f'Final Excel file written to: {params["output"]}')
-
-    # Write to Excel
-    #merged_df.to_excel(params["output"], index=False)
-    #logger.info(f'Final Excel file written to: {params["output"]}')
-
 
 if __name__ == '__main__':
     main()

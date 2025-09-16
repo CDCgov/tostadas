@@ -217,6 +217,7 @@ def parse_report_xml_to_df(report_path):
 			spuid = None
 			spuid_namespace = None
 			object_id = None
+			accession = None
 
 			# Extract info from <Response>
 			response = action.find("Response")
@@ -282,9 +283,6 @@ def parse_report_xml_to_df(report_path):
 	df = pd.DataFrame(reports)
 
 	if not df.empty:
-		# Deduplicate so only one row per sample_id remains
-		df = df.groupby('submission_id', as_index=False).first()
-
 		# Ensure column order
 		column_order = ['submission_id', 'spuid', 'spuid_namespace', 'object_id'] + \
 					   [col for col in df.columns if col not in {'submission_id', 'spuid', 'spuid_namespace', 'object_id'}]
@@ -307,9 +305,6 @@ def parse_and_save_reports(reports_fetched, outdir, batch_id):
 	if all_reports.empty:
 		logging.warning(f"No sample data found in any reports for batch {batch_id}.")
 		return
-
-	# Deduplicate final CSV by sample_id
-	all_reports = all_reports.groupby('submission_id', as_index=False).first()
 
 	report_csv_file = os.path.join(outdir, f"{batch_id}.csv")
 	try:
