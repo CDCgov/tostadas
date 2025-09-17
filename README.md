@@ -192,6 +192,3 @@ exemption status: NA
 exemption justification: NA
 description fields: Nextflow workflow for viral and bacterial annotation and automated upload to NCBI databases
 ```
-
-
-
