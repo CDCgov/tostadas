@@ -105,7 +105,7 @@ workflow GENBANK {
                     .map { sample_id, meta, fasta, new_tbl -> [meta, fasta, new_tbl] }
             }
 
-        } else if (params.orgranism_type == 'bacteria' && params.bakta) {
+        } else if (params.organism_type == 'bacteria' && params.bakta) {
             RUN_BAKTA(annotation_input_ch.map { meta, fasta, gff -> [meta, fasta] })
             annotation_input_ch = annotation_input_ch
                 .map { meta, fasta, _gff -> [meta.sample_id, meta] }
