@@ -29,15 +29,15 @@ Run the following command to test your setup
 ### 5. Run a test with real data
 Add a few of your actual samples to the Excel metadata sheet and submit these to the test server. NCBI provides a test server to validate the sftp connection before submitting to production. 
 
-`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir>`
+`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --dry_run false`
 
 ### 6. Submit small sample to production server
 
-`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true`
+`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false`
 
 ### 7. Submit all samples to production server
 Update your metadata path to point to all of your samples for submissions
-`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true`
+`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false`
 
 ### 8. Troubleshooting
 View [the docs](https://cdcgov.github.io/tostadas/user-guide/quick-start/#troubleshooting)
