@@ -82,7 +82,7 @@ workflow GENBANK {
         .join(
             genbank_validated_ch.map { meta, validated_fasta -> [meta.sample_id, validated_fasta] }
         )
-        .map { sample_id, meta, original_fasta, gff, validated_fasta -> [meta, validated_fasta, gff] }
+        .map { _sample_id, meta, _original_fasta, gff, validated_fasta -> [meta, validated_fasta, gff] }
 
     // Run annotation if requested
     if (params.annotation) {
@@ -90,28 +90,28 @@ workflow GENBANK {
 
         if (params.organism_type == 'virus') {
             if (params.repeatmasker_liftoff && !params.vadr) {
-                REPEATMASKER_LIFTOFF(annotation_input_ch.map { meta, fasta, gff -> [meta, fasta] })
+                REPEATMASKER_LIFTOFF(annotation_input_ch.map { meta, fasta, _gff -> [meta, fasta] })
                 annotation_input_ch = annotation_input_ch
                     .map { meta, fasta, _gff -> [meta.sample_id, meta, fasta] }
                     .join(REPEATMASKER_LIFTOFF.out.gff.map { meta, gff -> [meta.sample_id, gff] })
-                    .map { sample_id, meta, fasta, new_gff -> [meta, fasta, new_gff] }
+                    .map { _sample_id, meta, fasta, new_gff -> [meta, fasta, new_gff] }
             }
 
             if (params.vadr) {
-                RUN_VADR(annotation_input_ch.map { meta, fasta, gff -> [meta, fasta] })
+                RUN_VADR(annotation_input_ch.map { meta, fasta, _gff -> [meta, fasta] })
                 annotation_input_ch = annotation_input_ch
                     .map { meta, fasta, _gff -> [meta.sample_id, meta, fasta] }
                     .join(RUN_VADR.out.tbl.map { meta, tbl -> [meta.sample_id, tbl] })
-                    .map { sample_id, meta, fasta, new_tbl -> [meta, fasta, new_tbl] }
+                    .map { _sample_id, meta, fasta, new_tbl -> [meta, fasta, new_tbl] }
             }
 
         } else if (params.organism_type == 'bacteria' && params.bakta) {
-            RUN_BAKTA(annotation_input_ch.map { meta, fasta, gff -> [meta, fasta] })
+            RUN_BAKTA(annotation_input_ch.map { meta, fasta, _gff -> [meta, fasta] })
             annotation_input_ch = annotation_input_ch
-                .map { meta, fasta, _gff -> [meta.sample_id, meta] }
+                .map { meta, _fasta, _gff -> [meta.sample_id, meta] }
                 .join(RUN_BAKTA.out.gff.map { meta, gff -> [meta.sample_id, gff] })
                 .join(RUN_BAKTA.out.fna.map { meta, fna -> [meta.sample_id, fna] })
-                .map { sample_id, meta, new_gff, new_fasta -> [meta, new_fasta, new_gff] }
+                .map { _sample_id, meta, new_gff, new_fasta -> [meta, new_fasta, new_gff] }
         }
 
         sample_ch = annotation_input_ch
