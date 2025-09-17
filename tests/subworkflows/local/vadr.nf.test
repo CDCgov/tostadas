@@ -1,0 +1,30 @@
+nextflow_workflow {
+
+    name "Test Workflow RUN_VADR"
+    script "subworkflows/local/vadr.nf"
+    workflow "RUN_VADR"
+
+    test("Should run without failures") {
+
+        when {
+            params {
+                vadr_models_dir  = "${projectDir}/vadr_files/mpxv-models/"
+                outdir           = "${outputDir}"
+                species          = "mpxv"
+                prefix           = "NY0006"
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ batch_id: "batch_1", batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv"), sample_id: "NY0006" ],
+                    file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta")
+                ])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+    }
+}

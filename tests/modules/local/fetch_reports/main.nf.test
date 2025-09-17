@@ -1,0 +1,33 @@
+nextflow_process {
+
+    name "Test Process FETCH_REPORTS"
+    script "modules/local/fetch_reports/main.nf"
+    process "FETCH_REPORTS"
+
+    test("Run with test profile and mock batch") {
+
+        when {
+            params {
+                submission_prod_or_test = "test"
+                dry_run = true
+                submission_mode = "ftp"
+                metadata_basename = "rsv_test_metadata" 
+                species = "rsv"
+            }
+
+            process {
+                """
+                // Inputs
+                input[0] = [ [ batch_id: 'batch_1' ], file("${projectDir}/tests/modules/local/fetch_reports/batch_1/") ]
+                input[1] = file("${projectDir}/conf/submission_config.yaml")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            
+        }
+    }
+}

@@ -1,0 +1,51 @@
+{
+    "Should run BioSample and SRA submission from validated metadata and templates": {
+        "content": [
+            {
+                "0": [
+                    "validated_metadata_all_samples.tsv:md5,ca071cf1536ab43ae483d32521f9219e"
+                ],
+                "1": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,ca071cf1536ab43ae483d32521f9219e"
+                        },
+                        [
+                            [
+                                "submission.xml:md5,befc33a338d4b11ac75330ea532d51d6",
+                                "submit.ready:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            "prep_submission.log:md5,50b85e0c2e48bd0f7ba621332580baaf",
+                            "submission.log:md5,fefa479f846dbe2985e2fbc9d1777a37"
+                        ]
+                    ]
+                ],
+                "submission_batch_folder": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,ca071cf1536ab43ae483d32521f9219e"
+                        },
+                        [
+                            [
+                                "submission.xml:md5,befc33a338d4b11ac75330ea532d51d6",
+                                "submit.ready:md5,d41d8cd98f00b204e9800998ecf8427e"
+                            ],
+                            "prep_submission.log:md5,50b85e0c2e48bd0f7ba621332580baaf",
+                            "submission.log:md5,fefa479f846dbe2985e2fbc9d1777a37"
+                        ]
+                    ]
+                ],
+                "validated_concatenated_tsv": [
+                    "validated_metadata_all_samples.tsv:md5,ca071cf1536ab43ae483d32521f9219e"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:33:45.985695997"
+    }
+}

@@ -1,0 +1,33 @@
+nextflow_process {
+
+    name "Test Process SUBMISSION"
+    script "modules/local/submit_submission/main.nf"
+    process "SUBMIT_SUBMISSION"
+
+    test("Run with profile test, virus") {
+
+        when {
+            params {
+                // define parameters here
+                submission_prod_or_test = "test"
+                send_submission_email = false
+                submission_mode = "ftp"
+                metadata_basename = "mpxv_test_metadata"
+                overwrite_output = true
+                dry_run = true 
+            }
+
+            process {
+                """
+                // define inputs of the process here
+                input[0] = [ [ batch_id: 'batch_1'], file("${projectDir}/tests/modules/local/submit_submission/batch_1/") ]
+                input[1] = file("${projectDir}/conf/submission_config.yaml")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+        }
+    }
+}

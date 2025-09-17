@@ -5,50 +5,46 @@
 */
 process UPDATE_SUBMISSION {
 
-    publishDir "$params.output_dir/$params.submission_output_dir", mode: 'copy', overwrite: params.overwrite_output
+    publishDir "${params.output_dir}/${params.submission_output_dir}", mode: 'copy', overwrite: params.overwrite_output
 
     conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'staphb/tostadas:latest' : 'staphb/tostadas:latest' }"
+        'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
     input:
-    tuple val(meta), path(validated_meta_path), path(fasta_path), path(fastq_1), path(fastq_2), path(nanopore), path(annotations_path), val(enabledDatabases)
+    tuple val(meta), val(samples), val(enabledDatabases)
+    path(original_submissions_dir)
     path(submission_config)
+    
+    output:
+    tuple val(meta), path("${meta.batch_id}_biosample_update_[0-9]*"), emit: submission_batch_folder
+    path("${meta.batch_id}/update_submission.log"), emit: submission_log, optional: true
 
     when:
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
 
     script:
-    def test_flag = params.submission_prod_or_test == 'test' ? '--test' : ''
-    def send_submission_email = params.send_submission_email == true ? '--send_email' : ''
-    def biosample = params.biosample == true ? '--biosample' : ''
-    def sra = "sra" in enabledDatabases ? '--sra' : ''
-    def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
-    // get absolute path if relative dir passed
-    def resolved_output_dir = params.output_dir.startsWith('/') ? params.output_dir : "${baseDir}/${params.output_dir}"
+    def test_flag = params.prod_submission == false ? '--test' : ''
+    def dry_run = params.dry_run == true ? '--dry_run' : ''
 
-    """     
-    submission_new.py \
-        --update \
-        --submission_name $meta.id \
-        --submission_report ${resolved_output_dir}/${params.submission_output_dir}/submission_report.csv \
-        --config_file $submission_config \
-        --metadata_file $validated_meta_path \
-        --species $params.species \
-        --output_dir  . \
-        ${fasta_path ? "--fasta_file $fasta_path" : ""} \
-        ${annotations_path ? "--annotation_file $annotations_path" : ""} \
-        ${fastq_1 ? "--fastq1 $fastq_1" : ""} \
-        ${fastq_2 ? "--fastq2 $fastq_2" : ""} \
-        ${nanopore ? "--nanopore $nanopore" : ""} \
-        --custom_metadata_file $params.custom_fields_file \
-        --submission_mode $params.submission_mode \
-        $test_flag \
-        $send_submission_email \
-        $genbank $sra $biosample 
+    // Assemble per-sample arguments, quoting paths in case of spaces
+    def sample_args_list = samples.collect { sample ->
+        def s = ["sample_id=${sample.sample_id}"]   // only sample_id is available
+            .join(',')
+        return "\"${s}\""
+    }
+    def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
 
     """
-    output:
-    tuple val(meta), path("${validated_meta_path.getBaseName()}"), emit: submission_files
-    //path ""${validated_meta_path.getBaseName()}/*.csv", emit: submission_report
+    submission_update.py \
+        --submission_folder ${original_submissions_dir} \
+        --submission_name ${meta.batch_id} \
+        --config_file ${submission_config}  \
+        --metadata_file ${meta.batch_tsv} \
+        --identifier ${params.metadata_basename} \
+        --outdir  ${meta.batch_id} \
+        --submission_mode ${params.submission_mode} \
+        $test_flag \
+        $dry_run 
+    """
 }

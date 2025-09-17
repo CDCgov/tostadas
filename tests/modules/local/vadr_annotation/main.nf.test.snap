@@ -1,0 +1,77 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        [
+                            "NY0006_mpxv.vadr.alc:md5,3cd999740861b5eb86edc43ecc6e04cb",
+                            "NY0006_mpxv.vadr.alt:md5,bd11f41e399d3fb83b73b71e4e82a4a8",
+                            "NY0006_mpxv.vadr.alt.list:md5,fc0e4e38d8484f8547c4cf265f41f7ad",
+                            "NY0006_mpxv.vadr.cmd:md5,758da8d0e8cfbc6186ee911175e3aa36",
+                            "NY0006_mpxv.vadr.dcr:md5,d9b5295b718f16cf523fa42c69c67f7f",
+                            "NY0006_mpxv.vadr.fail.fa:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "NY0006_mpxv.vadr.fail.list:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "NY0006_mpxv.vadr.fail.tbl:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "NY0006_mpxv.vadr.filelist:md5,29e2d67928255ce773901888a04f0a71",
+                            "NY0006_mpxv.vadr.ftr:md5,05766ae78c4f6fedddbb43c2b142df37",
+                            "NY0006_mpxv.vadr.log:md5,892e536c228d6da32a3aa965462631d8",
+                            "NY0006_mpxv.vadr.mdl:md5,a938c44cafa42009bec1583e33e42385",
+                            "NY0006_mpxv.vadr.pass.fa:md5,9491e6440082e1f09fce1eb83b2f26e8",
+                            "NY0006_mpxv.vadr.pass.list:md5,2b0ca8b49d78424831fbe0e1f1299a05",
+                            "NY0006_mpxv.vadr.pass.tbl:md5,fe3255aae4f8f27f88aa9563808596d6",
+                            "NY0006_mpxv.vadr.rpn:md5,00eef6d6c30debdb447e56dd3b246ecf",
+                            "NY0006_mpxv.vadr.sda:md5,095cb8fab95655206235a481444cf9fa",
+                            "NY0006_mpxv.vadr.seqstat:md5,d3250e6d9ccefa386a5bf1c1e29a1e5d",
+                            "NY0006_mpxv.vadr.sgm:md5,e19af69b527fa296559ba8e128545958",
+                            "NY0006_mpxv.vadr.sqa:md5,a94a62b57ad54ced8406bf6d0703d778",
+                            "NY0006_mpxv.vadr.sqc:md5,9fca78d73930739a1af8358f0def4c7c"
+                        ]
+                    ]
+                ],
+                "vadr_outputs": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        [
+                            "NY0006_mpxv.vadr.alc:md5,3cd999740861b5eb86edc43ecc6e04cb",
+                            "NY0006_mpxv.vadr.alt:md5,bd11f41e399d3fb83b73b71e4e82a4a8",
+                            "NY0006_mpxv.vadr.alt.list:md5,fc0e4e38d8484f8547c4cf265f41f7ad",
+                            "NY0006_mpxv.vadr.cmd:md5,758da8d0e8cfbc6186ee911175e3aa36",
+                            "NY0006_mpxv.vadr.dcr:md5,d9b5295b718f16cf523fa42c69c67f7f",
+                            "NY0006_mpxv.vadr.fail.fa:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "NY0006_mpxv.vadr.fail.list:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "NY0006_mpxv.vadr.fail.tbl:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "NY0006_mpxv.vadr.filelist:md5,29e2d67928255ce773901888a04f0a71",
+                            "NY0006_mpxv.vadr.ftr:md5,05766ae78c4f6fedddbb43c2b142df37",
+                            "NY0006_mpxv.vadr.log:md5,892e536c228d6da32a3aa965462631d8",
+                            "NY0006_mpxv.vadr.mdl:md5,a938c44cafa42009bec1583e33e42385",
+                            "NY0006_mpxv.vadr.pass.fa:md5,9491e6440082e1f09fce1eb83b2f26e8",
+                            "NY0006_mpxv.vadr.pass.list:md5,2b0ca8b49d78424831fbe0e1f1299a05",
+                            "NY0006_mpxv.vadr.pass.tbl:md5,fe3255aae4f8f27f88aa9563808596d6",
+                            "NY0006_mpxv.vadr.rpn:md5,00eef6d6c30debdb447e56dd3b246ecf",
+                            "NY0006_mpxv.vadr.sda:md5,095cb8fab95655206235a481444cf9fa",
+                            "NY0006_mpxv.vadr.seqstat:md5,d3250e6d9ccefa386a5bf1c1e29a1e5d",
+                            "NY0006_mpxv.vadr.sgm:md5,e19af69b527fa296559ba8e128545958",
+                            "NY0006_mpxv.vadr.sqa:md5,a94a62b57ad54ced8406bf6d0703d778",
+                            "NY0006_mpxv.vadr.sqc:md5,9fca78d73930739a1af8358f0def4c7c"
+                        ]
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:23:02.645276418"
+    }
+}

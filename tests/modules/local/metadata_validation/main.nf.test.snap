@@ -1,0 +1,20 @@
+{
+    "Should run without failures": {
+        "content": [
+            [
+                [
+                    "batch_1.tsv:md5,58f0cb49a968e687f1d6d6f19be76e11",
+                    "batch_2.tsv:md5,c3379b86301ddc604364132292e1cf3a",
+                    "batch_3.tsv:md5,8b02835d4e99c966ebf0d7ef3aaae429",
+                    "batch_4.tsv:md5,e03be080faca211ad4da62b974c27626",
+                    "batch_5.tsv:md5,06b2bc516d5fa8cfe20a992cec99dcac"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:22:04.094817068"
+    }
+}

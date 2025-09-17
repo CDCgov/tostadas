@@ -1,35 +1,36 @@
-name: Tostadas CI
+name: CI Tests
 
-on:
-  pull_request:
-    types: [opened, reopened]
-    branches: [master, dev]
+on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-      with:
-          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set Up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Install Mambaforge
-      run: |
-        curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
-        bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
-        export PATH="$HOME/mambaforge/bin:$PATH"
+      - name: Setup Nextflow latest-edge
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "latest-edge"
 
-    - name: Create Environment and Run Tests 
-      run: |
-        source $HOME/mambaforge/etc/profile.d/conda.sh
-        conda activate
-        mamba env create -f tests/test_env.yml
-        conda activate tostadas_tests
-        pytest -p no:warnings tests/test_main.py
+      - name: Install nf-test
+        run: |
+          wget -qO- https://get.nf-test.com | bash
+          sudo mv nf-test /usr/local/bin/
+          
+      - name: Install Singularity
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y singularity-container
+          singularity --version
+
+      - name: Run Tests
+        run: nf-test test --ci

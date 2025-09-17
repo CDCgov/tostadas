@@ -1,0 +1,48 @@
+nextflow_workflow {
+
+    name "Test Workflow SUBMISSION"
+    script "subworkflows/local/submission.nf"
+    workflow "SUBMISSION"
+
+    test("Run with profile test, virus | biosample") {
+
+        when {
+            params {
+                submission_prod_or_test = "test"
+                send_submission_email = false
+                update_submission = false
+                fetch_reports_only = false
+                biosample = true
+                sra = false
+                genbank = false
+                species = "virus"
+                submission_mode = "ftp"
+                metadata_basename = "mpxv_test_metadata"
+                overwrite_output = true
+                dry_run = true
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                            tuple(    
+                                [batch_id: 'batch_1', batch_tsv: file("${projectDir}/tests/subworkflows/local/batch_1_mpxv.tsv")], 
+                                [ 
+                                    [meta: [ sample_id: 'NY0006' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), nnp: null, gff: null], 
+                                    [meta: [ sample_id: 'IL0005' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_2.mpx.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/IL0005.fasta"), nnp: null, gff: null]
+                                ], 
+                                ["biosample"]
+                            )
+                        )
+                input[1] = file("${projectDir}/conf/submission_config.yaml")
+
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}

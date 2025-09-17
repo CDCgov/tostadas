@@ -1,0 +1,73 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006_reformatted.gff:md5,0b73232ae0199cad448f157d5fc6559f"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006_annotation_error.txt:md5,ba7064ab567293dd6a52ae240bf9d77f"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.tbl:md5,228ca0a298dfa042f7d54cc85739c19d"
+                    ]
+                ],
+                "errors": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006_annotation_error.txt:md5,ba7064ab567293dd6a52ae240bf9d77f"
+                    ]
+                ],
+                "gff": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006_reformatted.gff:md5,0b73232ae0199cad448f157d5fc6559f"
+                    ]
+                ],
+                "tbl": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.tbl:md5,228ca0a298dfa042f7d54cc85739c19d"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:21:27.476767514"
+    }
+}

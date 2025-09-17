@@ -1,0 +1,4 @@
+#seq  seq        seq             best                      sub                                         seq   
+#idx  name       len  p/f   ant  model      grp            grp              nfa  nfn  nf5  nf3  nfalt  alerts
+#---  ------  ------  ----  ---  ---------  -------------  ---------------  ---  ---  ---  ---  -----  ------
+1     NY0006  197189  PASS  yes  NC_063383  Orthopoxvirus  Monkeypox_virus  358    0    0    0      0  DUPLICATE_REGIONS(dupregin),DISCONTINUOUS_SIMILARITY(discontn)

@@ -1,0 +1,12 @@
+{
+    "Run with profile test, virus": {
+        "content": [
+            "submission.log:md5,24d4960c2f0ef871aa264aa779dd0373"
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:22:39.009561376"
+    }
+}

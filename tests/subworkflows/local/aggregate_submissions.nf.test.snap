@@ -1,0 +1,25 @@
+{
+    "Should aggregate submission reports and merge accessions": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    
+                ],
+                "accession_augmented_xlsx": [
+                    
+                ],
+                "all_report_csvs": [
+                    
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:25:35.183361848"
+    }
+}

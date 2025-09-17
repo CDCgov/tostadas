@@ -1,0 +1,113 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.cat:md5,0c34df151e7643e5b67d9811a143a978"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.masked:md5,f0830afc16b4d2048d016c45510255cb"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.out:md5,d580f811d2a360656f2e42729e9c2320"
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.out.gff:md5,d32c14de9e331eb0204b2128a2667c1c"
+                    ]
+                ],
+                "4": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.tbl:md5,48e0deea431292fe365f1640082dfb2a"
+                    ]
+                ],
+                "cat": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.cat:md5,0c34df151e7643e5b67d9811a143a978"
+                    ]
+                ],
+                "gff": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.out.gff:md5,d32c14de9e331eb0204b2128a2667c1c"
+                    ]
+                ],
+                "masked": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.masked:md5,f0830afc16b4d2048d016c45510255cb"
+                    ]
+                ],
+                "out": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.out:md5,d580f811d2a360656f2e42729e9c2320"
+                    ]
+                ],
+                "tbl": [
+                    [
+                        {
+                            "batch_id": "batch_1",
+                            "batch_tsv": "batch_1.tsv:md5,4ab00a8f04e89e82dd5504f5ca0c0a6c",
+                            "sample_id": "NY0006"
+                        },
+                        "NY0006.fasta.tbl:md5,48e0deea431292fe365f1640082dfb2a"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:22:32.701056622"
+    }
+}

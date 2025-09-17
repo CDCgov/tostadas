@@ -5,7 +5,7 @@
 <!-- [![GitHub Downloads](https://img.shields.io/github/downloads/CDCgov/tostadas/total.svg?style=social&logo=github&label=Download)](https://github.com/CDCgov/tostadas/releases) -->
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
-For the complete TOSTADAS documentation, please see the [Wiki](https://github.com/CDCgov/tostadas/wiki)
+For the complete TOSTADAS documentation, please see the [Complete Documentation](https://cdcgov.github.io/tostadas/)
 
 ## Warnings
 ### Plugin Compatibility Warning
@@ -24,7 +24,7 @@ A portable, open-source pipeline designed to streamline submission of pathogen g
 TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses and select bacteria. Testing for additional pathogen is planned for future releases.
 
 ## Installation and Quick Start
-❗ Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](https://github.com/CDCgov/tostadas/wiki/CDC-User-Guide)
+❗ Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](./docs/user-guide/cdc-user-guide.md)
 
 For non-CDC users, please follow the instructions below.
 ### 1. Clone the repository to your local machine
@@ -57,7 +57,7 @@ vim conf/submission_config.yaml
 ### 5. Run the workflow with default parameters and the local run environment:
 ```
 # test command for virus reads
-nextflow run main.nf -profile test,<singularity|docker|conda> --virus
+nextflow run main.nf -profile test,<singularity|docker|conda> --species virus
 ```
 The pipeline outputs appear in `tostadas/test_output`
 
@@ -65,13 +65,45 @@ The pipeline outputs appear in `tostadas/test_output`
 
 **Annotate and submit viral reads**
 ```
-nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
+nextflow run main.nf -profile <docker|singularity> --workflow biosample_and_sra --species virus --submission --annotation --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
 ```
 **Annotate and submit bacterial reads**
 ```
-nextflow run main.nf -profile <docker|singularity> --species bacteria --submission --annotation  --genbank true --sra true --biosample true --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --output_dir <path/to/output/dir/>
+nextflow run main.nf -profile <docker|singularity> --workflow biosample_and_sra --species bacteria --submission --annotation --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --outdir <path/to/output/dir/>
 ```
-Refer to the wiki for more information on input parameters and use cases
+
+**Submit to GenBank**
+
+GenBank submission requires a modified metadata file that includes the GenBank accession ID. This file will be generated as an output of the biosample and SRA workflow and can be found in the results directory, for example: test_output/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx.
+
+To submit reads to GenBank, use the following command:
+
+```
+nextflow run main.nf -profile <docker|singularity> --workflow genbank --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --updated_meta_path <path/to/updated/metadata/file>
+```
+Refer to the github pages website for more information on input parameters and use cases. 
+
+**Retrieve accession IDs**
+
+To fetch and parse report.xml files from a previous submission, use the following command:
+
+```
+nextflow run main.nf -profile <docker|singularity> --workflow fetch_accessions --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --meta_path assets/sample_metadata/mpxv_test_metadata
+```
+
+**Submit updates to a BioSample submission**
+
+CBI allows UI-less updating of BioSample submissions, and TOSTADAS can do this using the `--workflow update_submission` workflow option.
+
+To submit updated metadata to biosample, use the following command: 
+
+```
+nextflow run main.nf -profile <docker|singularity> --workflow update_submission --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --original_submission_dir <results/mpxv_test_metadata/submission_outputs> --meta_path <path/to/updated/metadata/file>
+```
+
+Please make sure your updated metadata Excel file has a `biosample_accession` column that contains accurate accession IDs.  TOSTADAS does not check these for accuracy.  Please make sure they are correct.
+
+Note: TOSTADAS uses the `ncbi-spuid` field to match samples in the metadata file and the original submission.xml.  The `sample_name` field is not preserved in the submission.xml, so it cannot be used as an identifier for this workflow.
 
 ### 7. Custom metadata validation and custom BioSample package
 
@@ -84,7 +116,7 @@ TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; ver
 
 **Submit to a custom BioSample package**
 ```
-nextflow run main.nf -profile <docker|singularity> --species virus --submission --annotation  --genbank true --sra true --biosample true --output_dir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file  <path/to/metadata_custom_fields.json>
+nextflow run main.nf -profile <docker|singularity> --workflow biosample_and_sra --species virus --submission --annotation --sra true --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file  <path/to/metadata_custom_fields.json>
 ```
 ### Workflow Parameters Overview
 
@@ -92,13 +124,23 @@ This section outlines the primary parameters available for configuring and runni
 
 | Parameter               | Description                                                                                       | Input Required           |
 |-------------------------|---------------------------------------------------------------------------------------------------|--------------------------|
-| `--validate_params`     | Flag to enable or disable parameter validation                                                    | No (true/false as bool)  |
 | `--annotation`          | Toggle for running annotation                                                                     | Yes (true/false as bool) |
 | `--submission`          | Toggle for running submission                                                                     | Yes (true/false as bool) |
-| `--update_submission`   | Toggle to update data for existing BioSample or SRA records                                       | Yes (true/false as bool) |
-| `--fetch_reports_only`  | Toggle for only fetching submission reports                                                       | Yes (true/false as bool) |
+| `--update_submission`   | Toggle to update data for existing BioSample or SRA records(currently in progress)                                       | Yes (true/false as bool) |
+| `--workflow`            | Specifies the workflow to execute, allowing users to choose the appropriate processing method.   | Yes (string)             |
 
-For more detailed information on each parameter and additional configurations, please refer to the [TOSTADAS documentation](https://github.com/CDCgov/tostadas/wiki).
+#### Workflow Options
+
+The following workflows are available for the `--workflow` parameter:
+
+- **biosample_and_sra**: Runs a submission to BioSample and SRA.
+- **genbank**: Runs a GenBank submission.
+- **fetch_accessions**: Fetches reports and updates the metadata file.
+- **full_submission**: Executes BioSample and SRA submissions, waits 60 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
+
+**Note**: The GenBank submission cannot complete without a BioSample accession ID.
+
+For more detailed information on each parameter and additional configurations, please refer to the [TOSTADAS documentation](https://cdcgov.github.io/tostadas/).
 
 ## Troubleshooting
 
@@ -123,7 +165,7 @@ If you need to report a bug, suggest new features, or just say “thanks”, [op
 
 ## Acknowledgements
 ### Contributors
-Kyle O'Connell | Yesh Kulasekarapandian | Ankush Gupta | Cole Tindall | Jessica Rowell | Swarnali Louha | Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison | Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Lynsey Kovar | Hunter Seabolt | Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
+Jessica Rowell | Kyle O'Connell | Yesh Kulasekarapandian | Ankush Gupta | Cole Tindall | Ramiya Sivakumar | Swarnali Louha | Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison | Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Lynsey Kovar | Hunter Seabolt | Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
 
 ### Tools
 The submission portion of this pipeline was adapted from SeqSender. To find more information on this tool, please refer to their GitHub page: [SeqSender](https://github.com/CDCgov/seqsender)
@@ -150,4 +192,3 @@ exemption status: NA
 exemption justification: NA
 description fields: Nextflow workflow for viral and bacterial annotation and automated upload to NCBI databases
 ```
-

@@ -1,0 +1,332 @@
+{
+    "Run with profile test, virus | sra": {
+        "content": [
+            {
+                "Description": {
+                    "Comment": "Batch submission",
+                    "Organization": {
+                        "role": "owner",
+                        "type": "institute",
+                        "Name": "CDC",
+                        "Contact": {
+                            "email": "test@cdc.gov",
+                            "Name": {
+                                "First": "John",
+                                "Last": "Doe"
+                            }
+                        }
+                    }
+                },
+                "Action": [
+                    {
+                        "AddFiles": {
+                            "target_db": "SRA",
+                            "File": [
+                                {
+                                    "file_path": "NY0006_R1.fastq.gz",
+                                    "DataType": "generic-data"
+                                },
+                                {
+                                    "file_path": "NY0006_R2.fastq.gz",
+                                    "DataType": "generic-data"
+                                }
+                            ],
+                            "Attribute": [
+                                {
+                                    "name": "instrument_model"
+                                },
+                                {
+                                    "name": "library_strategy"
+                                },
+                                {
+                                    "name": "library_source"
+                                },
+                                {
+                                    "name": "library_selection"
+                                },
+                                {
+                                    "name": "library_layout"
+                                },
+                                {
+                                    "name": "library_construction_protocol"
+                                },
+                                {
+                                    "name": "library_name"
+                                }
+                            ],
+                            "AttributeRefId": [
+                                {
+                                    "name": "BioProject",
+                                    "RefId": {
+                                        "PrimaryId": "PRJNA849962"
+                                    }
+                                },
+                                {
+                                    "name": "BioSample",
+                                    "RefId": {
+                                        "SPUID": {
+                                            "spuid_namespace": ""
+                                        }
+                                    }
+                                }
+                            ],
+                            "Identifier": {
+                                "SPUID": {
+                                    "spuid_namespace": ""
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "AddFiles": {
+                            "target_db": "SRA",
+                            "File": [
+                                {
+                                    "file_path": "IL0005_R1.fastq.gz",
+                                    "DataType": "generic-data"
+                                },
+                                {
+                                    "file_path": "IL0005_R2.fastq.gz",
+                                    "DataType": "generic-data"
+                                }
+                            ],
+                            "Attribute": [
+                                {
+                                    "name": "instrument_model"
+                                },
+                                {
+                                    "name": "library_strategy"
+                                },
+                                {
+                                    "name": "library_source"
+                                },
+                                {
+                                    "name": "library_selection"
+                                },
+                                {
+                                    "name": "library_layout"
+                                },
+                                {
+                                    "name": "library_construction_protocol"
+                                },
+                                {
+                                    "name": "library_name"
+                                }
+                            ],
+                            "AttributeRefId": [
+                                {
+                                    "name": "BioProject",
+                                    "RefId": {
+                                        "PrimaryId": "PRJNA849962"
+                                    }
+                                },
+                                {
+                                    "name": "BioSample",
+                                    "RefId": {
+                                        "SPUID": {
+                                            "spuid_namespace": ""
+                                        }
+                                    }
+                                }
+                            ],
+                            "Identifier": {
+                                "SPUID": {
+                                    "spuid_namespace": ""
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:22:17.141335514"
+    },
+    "Run with profile test, virus | biosample": {
+        "content": [
+            {
+                "Description": {
+                    "Comment": "Batch submission",
+                    "Organization": {
+                        "role": "owner",
+                        "type": "institute",
+                        "Name": "CDC",
+                        "Contact": {
+                            "email": "test@cdc.gov",
+                            "Name": {
+                                "First": "John",
+                                "Last": "Doe"
+                            }
+                        }
+                    }
+                },
+                "Action": [
+                    {
+                        "AddData": {
+                            "target_db": "BioSample",
+                            "Data": {
+                                "content_type": "xml",
+                                "XmlContent": {
+                                    "BioSample": {
+                                        "schema_version": "2.0",
+                                        "SampleId": {
+                                            "SPUID": {
+                                                "spuid_namespace": ""
+                                            }
+                                        },
+                                        "Descriptor": {
+                                            "Title": "Test Monkeypoxvirus "
+                                        },
+                                        "Organism": {
+                                            "OrganismName": "Monkeypox Virus"
+                                        },
+                                        "BioProject": {
+                                            "PrimaryId": {
+                                                "db": "BioProject"
+                                            }
+                                        },
+                                        "Package": "Pathogen.cl.1.0",
+                                        "Attributes": {
+                                            "Attribute": [
+                                                {
+                                                    "attribute_name": "isolate"
+                                                },
+                                                {
+                                                    "attribute_name": "host_disease"
+                                                },
+                                                {
+                                                    "attribute_name": "host"
+                                                },
+                                                {
+                                                    "attribute_name": "collected_by"
+                                                },
+                                                {
+                                                    "attribute_name": "lat_lon"
+                                                },
+                                                {
+                                                    "attribute_name": "geo_loc_name"
+                                                },
+                                                {
+                                                    "attribute_name": "sample_type"
+                                                },
+                                                {
+                                                    "attribute_name": "collection_date"
+                                                },
+                                                {
+                                                    "attribute_name": "isolation_source"
+                                                },
+                                                {
+                                                    "attribute_name": "host_age"
+                                                },
+                                                {
+                                                    "attribute_name": "host_sex"
+                                                },
+                                                {
+                                                    "attribute_name": "race"
+                                                },
+                                                {
+                                                    "attribute_name": "ethnicity"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            "Identifier": {
+                                "SPUID": {
+                                    "spuid_namespace": ""
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "AddData": {
+                            "target_db": "BioSample",
+                            "Data": {
+                                "content_type": "xml",
+                                "XmlContent": {
+                                    "BioSample": {
+                                        "schema_version": "2.0",
+                                        "SampleId": {
+                                            "SPUID": {
+                                                "spuid_namespace": ""
+                                            }
+                                        },
+                                        "Descriptor": {
+                                            "Title": "Test Monkeypoxvirus "
+                                        },
+                                        "Organism": {
+                                            "OrganismName": "Monkeypox Virus"
+                                        },
+                                        "BioProject": {
+                                            "PrimaryId": {
+                                                "db": "BioProject"
+                                            }
+                                        },
+                                        "Package": "Pathogen.cl.1.0",
+                                        "Attributes": {
+                                            "Attribute": [
+                                                {
+                                                    "attribute_name": "isolate"
+                                                },
+                                                {
+                                                    "attribute_name": "host_disease"
+                                                },
+                                                {
+                                                    "attribute_name": "host"
+                                                },
+                                                {
+                                                    "attribute_name": "collected_by"
+                                                },
+                                                {
+                                                    "attribute_name": "lat_lon"
+                                                },
+                                                {
+                                                    "attribute_name": "geo_loc_name"
+                                                },
+                                                {
+                                                    "attribute_name": "sample_type"
+                                                },
+                                                {
+                                                    "attribute_name": "collection_date"
+                                                },
+                                                {
+                                                    "attribute_name": "isolation_source"
+                                                },
+                                                {
+                                                    "attribute_name": "host_age"
+                                                },
+                                                {
+                                                    "attribute_name": "host_sex"
+                                                },
+                                                {
+                                                    "attribute_name": "race"
+                                                },
+                                                {
+                                                    "attribute_name": "ethnicity"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            "Identifier": {
+                                "SPUID": {
+                                    "spuid_namespace": ""
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2025-08-28T16:22:10.518989452"
+    }
+}

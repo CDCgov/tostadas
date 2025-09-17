@@ -10,24 +10,17 @@ process LIFTOFF_CLI {
     conda(params.env_yml)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/liftoff:1.6.3--pyhdfd78af_0' :
-        'quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_0'}"
-
-    publishDir "$params.output_dir/liftoff", mode: "copy", overwrite: params.overwrite_output,
-        saveAs: { filename ->
-                      filename.indexOf('.fasta') > 0 ? "fasta/${filename}":
-                      filename.indexOf('.txt') > 0 ? "errors/${filename}":
-                      filename
-        }
+        'biocontainers/liftoff:1.6.3--pyhdfd78af_0'}"
 
 	input:
-	tuple val(meta), path(metadata), path(fasta), path(fastq1), path(fastq2)
+	tuple val(meta), path(fasta)
     path ref_fasta_path 
     path ref_gff_path 
 
     output:
-    path fasta, emit: fasta
-    path "*.gff", emit: gff
-    path "*.txt", emit: errors
+    tuple val(meta), path(fasta), emit: fasta
+    tuple val(meta), path("*.gff"), emit: gff
+    tuple val(meta), path("*.txt"), emit: errors
 
 	script:
     """
