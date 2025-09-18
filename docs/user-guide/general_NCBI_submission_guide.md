@@ -4,10 +4,7 @@
 - [General](#general)
     - [What is NCBI](#what-is-ncbi)
     - [NCBI Center Account](#ncbi-center-account)
-    - [Key Components of NCBI](#key-components-of-ncbi)
-        - [BioProject / BioSample](#6-bioproject--biosample)
-        - [SRA](#5-sra)
-        - [GenBank](#2-genbank)
+    - [Key NCBI Repositories TOSTADAS Supports](#key-ncbi-repositories-tostadas-supports)
 - [More Information For Each Database](#more-information-for-each-database)
 
 ## General

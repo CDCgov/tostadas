@@ -41,24 +41,21 @@ Prepare necessary submission files for BioSample, SRA, and/or GenBank depending 
 
 ## 🚀 Quick Links
 
-| [📖 Background](index.md) | [⚙️ General Usage](user-guide/installation.md#environment-setup) | [🧪 Advanced Usage](user-guide/custom_metadata_guide.md) |
-| --- | --- | --- |
-| [Overview](index.md) | [1️⃣ Installation](user-guide/installation.md) | [1️⃣ Custom Metadata](user-guide/custom_metadata_guide.md) |
-|  | [2️⃣ General NCBI Guide](user-guide/general_NCBI_submission_guide.md#ncbi-center-accounts) | [2️⃣ User Provided Annotation](user-guide/user_provided_annotation_guide.md) |
-|  | [3️⃣ Submission Guide](user-guide/submission_guide.md) | [3️⃣ VADR Installation](user-guide/vadr_install.md) |
-|  | [4️⃣ Output](user-guide/outputs.md) | [4️⃣ Wastewater Submission](user-guide/wastewater_guide.md) |
-|  | [5️⃣ Parameters](user-guide/parameters.md) |  |
-|  | [6️⃣ Profiles](user-guide/profile.md) |  |
+### ⚙️ General Usage
 
----
+| [📖 Overview](index.md) | [1️⃣ Installation](user-guide/installation.md#environment-setup) | [2️⃣ General NCBI Guide](user-guide/general_NCBI_submission_guide.md#ncbi-center-account) | [3️⃣ Submission Guide](user-guide/submission_guide.md) | [4️⃣ Output](user-guide/outputs.md) | [5️⃣ Parameters](user-guide/parameters.md) | [6️⃣ Profiles](user-guide/profile.md) |
+| --- | --- | --- | --- | --- | --- | --- |
 
-### 🏢 [CDC-Specific Usage](user-guide/cdc-user-guide.md#cdc-user-guide)
+### 🧪 Advanced Usage
+
+| [1️⃣ Custom Metadata](user-guide/custom_metadata_guide.md) | [2️⃣ User Provided Annotation](user-guide/user_provided_annotation_guide.md) | [3️⃣ VADR Installation](user-guide/vadr_install.md) | [4️⃣ Wastewater Submission](user-guide/wastewater_guide.md) |
+| --- | --- | --- | --- |
+
+### 🏢 CDC-Specific Usage
 
 | 📋 Guides |
 | --- |
-| [CDC User Guide](user-guide/cdc-user-guide.md) |
-
----
+| [CDC User Guide](user-guide/cdc-user-guide.md#cdc-user-guide) |
 
 ### 💡 Help & FAQ
 

@@ -82,7 +82,7 @@ Open the updated Excel file from results/bacteria_test_metadata_1/final_submissi
 
 ## Submission config fields
 
-The fields and corresponding example values can be found here: [Submission Config](../../conf/submission_config.yaml).
+The fields and corresponding example values can be found here: [Submission Config](https://github.com/CDCgov/tostadas/raw/main/conf/submission_config.yaml).
 
 | Field Name                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|

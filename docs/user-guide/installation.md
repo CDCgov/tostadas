@@ -3,15 +3,8 @@
 ## Table of Contents
 
 - [Environment Setup](#environment-setup)
-  - [Dependencies](#dependencies)
-  - [(1) Clone the repository to your local machine](#1-clone-the-repository-to-your-local-machine)
-  - [(2) Install mamba and add it to your PATH](#2-install-mamba-and-add-it-to-your-path)
-  - [(3) Install Nextflow using mamba and the bioconda Channel](#3-install-nextflow-using-mamba-and-the-bioconda-channel)
 - [Run a test submission](#run-a-test-submission)
-  - [(1) Update the default submissions config file with your NCBI username and password](#1-update-the-default-submissions-config-file-with-your-ncbi-username-and-password)
-  - [(2) Run the workflow with default parameters and the local run environment](#2-run-the-workflow-with-default-parameters-and-the-local-run-environment)
 - [Start submitting your own data](#start-submitting-your-own-data)
-)
 
 ## Environment Setup
 
@@ -32,7 +25,7 @@
 
 2a. Install mamba
 
-❗ Note: If you have mamba installed in your local environment, skip ahead to step 3 ([Create and activate a conda environment](#3-create-and-activate-a-conda-environment))
+❗ Note: If you have mamba installed in your local environment, skip ahead to step 3.
 
 `curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh`
 
