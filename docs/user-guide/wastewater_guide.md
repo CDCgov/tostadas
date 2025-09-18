@@ -18,10 +18,10 @@ This workflow uses Nextflow to automate submission of FASTQ read files to NCBI's
 
 ### 2. Fill out Metadata for all samples
 
-Download the Excel [template for wastewater metadata]((https://github.com/CDCgov/tostadas/raw/main/assets/sample_metadata/wastewater_biosample_template.xlsx)) and fill out following the examples in the sheet. Rename your file.
+Download the Excel [template for wastewater metadata](https://github.com/CDCgov/tostadas/raw/master/assets/sample_metadata/wastewater_biosample_template.xlsx) and fill out following the examples in the sheet. Rename your file.
 
 ### 3. Fill out the submission config file
-Add your center information to this [configuration file](https://github.com/CDCgov/tostadas/raw/main/conf/submission_config.yaml). Make sure for Biosample package you enter `SARS-CoV-2.wwsurv.1.0`. Rename the file as needed, but make sure you keep it in the conf/ directory.
+Add your center information to this [configuration file](https://github.com/CDCgov/tostadas/raw/master/conf/submission_config.yaml). Make sure for Biosample package you enter `SARS-CoV-2.wwsurv.1.0`. Rename the file as needed, but make sure you keep it in the conf/ directory.
 
 ### 4. Test your set up with the test profile
 Run the following command to test your setup
