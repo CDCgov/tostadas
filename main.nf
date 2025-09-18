@@ -38,7 +38,7 @@ workflow GENBANK_WORKFLOW {
             }
 
     GENBANK(file(updated_meta_file))
-    if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
+    if (params.organism_type in ['sars', 'flu', 'bacteria', 'eukaryote']) {
         WAIT( GENBANK.out.submission_batch_folder.map { calc_wait_time() } )
         AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
                             params.submission_config,

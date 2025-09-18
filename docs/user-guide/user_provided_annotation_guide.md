@@ -15,12 +15,12 @@ General information about annotation examples can be found [here](https://www.nc
 
 ## Using Table2asn (GenBank)
 
-A popular method for GenBank submission is to use [tabel2asn](https://www.ncbi.nlm.nih.gov/genbank/table2asn/). 
+A popular method for GenBank submission is to use [table2asn](https://www.ncbi.nlm.nih.gov/genbank/table2asn/). 
 
 Table2asn is a command-line program that creates sequence records for submission to GenBank (.sqn file for every .fsa file). This tool outputs an ASN.1 (Abstract Syntax Notation 1) text file with the same basename and a .sqn suffix as well. 
 
 Required inputs into table2asn are the following (click the name to view required formatting/general information for each input file): 
-* [Template File](https://www.ncbi.nlm.nih.gov/genbank/tbl2asn2/#Template) (.sbt)
+* [Template File](https://www.ncbi.nlm.nih.gov/genbank/table2asn/#Template) (.sbt)
     * TOSTADAS handles the creation of this based on your metadata information and contents within your submission config file 
 * [FASTA File](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.FASTA_Formatting) (.fasta)
 * [Genome Annotation File](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table) (.gff or .tbl)

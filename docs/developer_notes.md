@@ -101,8 +101,8 @@ if `$params.annotation = true` and `$params.repeatmasker_liftoff = true`:
             Inputs: Tuple containing the fasta, the repeatmasker gff, and the liftoff gff; and a reference gff. Outputs: .gff, .tbl, errors log
 
 if `$params.annotation = true` and `$params.vadr = true`:
-    NOTE: The vadr model library can be specified using `$params.vadr_models_dir`, BUT it uses `$params.species` as the value for `mkey`. 
-    Run the vadr container, and run `v-annotate.pl -h` for more details on what `mkey` is, and see the VADR_ANNOTATION process (`--mkey ${params.species}`).
+    NOTE: The vadr model library can be specified using `$params.vadr_models_dir`, BUT it uses `$params.virus_subtype` as the value for `mkey`. 
+    Run the vadr container, and run `v-annotate.pl -h` for more details on what `mkey` is, and see the VADR_ANNOTATION process (`--mkey ${params.virus_subtype}`).
     To add more libraries will require a bit of development effort but is not difficult. 
 
 3. RUN_VADR: Subworkflow consisting of three (3) processes
@@ -110,11 +110,11 @@ if `$params.annotation = true` and `$params.vadr = true`:
     VADR_TRIM: Process that runs fasta-trim-terminal-ambigs.pl.
             Inputs: fasta. Outputs: trimmed.fasta
     VADR_ANNOTATION: Process that annotates the fasta using the model library specified.
-            Inputs: trimmed.fasta and path to vadr models directory. Outputs: path to vadr output files in a folder that has the format: `<sample_id>_<species>`
+            Inputs: trimmed.fasta and path to vadr models directory. Outputs: path to vadr output files in a folder that has the format: `<sample_id>_<virus_subtype>`
     VADR_POST_CLEANUP: Process that performs final cleanup of annotations
             Inputs: path to vadr outputs from VADR_ANNOTATION. Outputs: .gff, .tbl, errors log.
 
-if `$params.annotation = true` and `$params.bakta = true` and `$params.species = bacteria`:
+if `$params.annotation = true` and `$params.bakta = true` and `$params.organism_type = bacteria`:
 3. RUN_BAKTA: Subworkflow consisting of two (2) processes.  These are the only two nf-core modules in this pipeline.
             Inputs: fasta. Outputs: gff and fasta.
     BAKTA_BAKTADBDOWNLOAD: Process that downloads the bakta db specified.

@@ -7,7 +7,7 @@
     - [Input File (Specifics)](#input-file-specifics)
 - [How To Run](#how-to-run)
 - [Outputs](#outputs)
-- [Capabilities / Limitations](#capabilities--limitations)
+- [See Capabilities / Limitations](#capabilities-limitations)
 - [Data Type Casting Assumptions](#data-type-casting-assumptions)
 - [When Do Checks/Changes Not Proceed](#when-do-checkschanges-not-proceed)
 

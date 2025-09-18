@@ -90,6 +90,10 @@ def main_submit():
 				f for f in files
 				if any(fnmatch.fnmatch(f, pattern) for pattern in allowed_patterns)
 			]
+			# files_to_upload list has arbitrary order; need to make sure submit.ready is the last file to get uploaded
+			if 'submit.ready' in files_to_upload:
+				files_to_upload.remove('submit.ready')
+				files_to_upload.append('submit.ready')
 			if not files_to_upload:
 				logging.info(f"[SKIP] {dirpath} contains no allowed upload files.")
 				continue
