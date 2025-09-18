@@ -101,7 +101,6 @@ nav:
     - 6. Profiles: user-guide/profile.md
   - CDC Specific Usage:
     - 1. CDC User-Guide: user-guide/cdc-user-guide.md
-    - 2. CDC Configs : user-guide/cdc_configs_access.md
   - Advanced Usage:
     - 1. Custom Metadata: user-guide/custom_metadata_guide.md
     - 2. User Provided Annotation: user-guide/user_provided_annotation_guide.md

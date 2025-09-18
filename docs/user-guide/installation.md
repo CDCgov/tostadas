@@ -64,9 +64,10 @@ The pipeline outputs appear in `tostadas/results`
 
 ## Start submitting your own data
 
-Choose a workflow and specify your profile or (optionally, for annotation and GenBank submission) an `organism_Type` and `virus_subtype`.
+Create an NCBI Center Account. See [NCBI Center Account](general_NCBI_submission_guide.md#ncbi-center-account)
 
-Start here for more detailed information: [Putting together the Nextflow command](submission_guide.md#putting-together-the-nextflow-command)
+Choose a workflow and specify your profile or (optionally, for annotation and GenBank submission) an `organism_Type` and `virus_subtype`.  See: [Putting together the Nextflow command](submission_guide.md#putting-together-the-nextflow-command)
+
 
 
 
