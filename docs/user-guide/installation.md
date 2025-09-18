@@ -1,5 +1,18 @@
 # Installation
 
+## Table of Contents
+
+- [Environment Setup](#environment-setup)
+  - [Dependencies](#dependencies)
+  - [(1) Clone the repository to your local machine](#1-clone-the-repository-to-your-local-machine)
+  - [(2) Install mamba and add it to your PATH](#2-install-mamba-and-add-it-to-your-path)
+  - [(3) Install Nextflow using mamba and the bioconda Channel](#3-install-nextflow-using-mamba-and-the-bioconda-channel)
+- [Run a test submission](#run-a-test-submission)
+  - [(1) Update the default submissions config file with your NCBI username and password](#1-update-the-default-submissions-config-file-with-your-ncbi-username-and-password)
+  - [(2) Run the workflow with default parameters and the local run environment](#2-run-the-workflow-with-default-parameters-and-the-local-run-environment)
+- [Start submitting your own data](#start-submitting-your-own-data)
+)
+
 ## Environment Setup
 
 ### Dependencies:
@@ -33,13 +46,15 @@
 
 `mamba install -c bioconda nextflow`
 
-### (4) Update the default submissions config file with your NCBI username and password
+## Run a test submission
+
+### (1) Update the default submissions config file with your NCBI username and password
 
 `# update this config file (you don't have to use vim)`
 
 `vim conf/submission_config.yaml`
 
-### (5) Run the workflow with default parameters and the local run environment
+### (2) Run the workflow with default parameters and the local run environment
 
 `# test command for virus reads`
 
@@ -47,9 +62,11 @@
 
 The pipeline outputs appear in `tostadas/results`
 
-### (6) Start running your own analysis
+## Start submitting your own data
 
-**Submit viral reads **
+Choose a workflow and specify your profile or (optionally, for annotation and GenBank submission) an `organism_Type` and `virus_subtype`.
+
+Start here for more detailed information: [Putting together the Nextflow command](submission_guide.md#putting-together-the-nextflow-command)
 
 
 

@@ -37,3 +37,24 @@ Optional gene calling and feature annotation of assembled genomes (FASTA) using 
 ### (3) Submission
 
 Prepare necessary submission files for BioSample, SRA, and/or GenBank depending on the provided inputs and perform optional upload to NCBI via ftp. This workflow was adapted from the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
+
+## Quick Links
+
+### General Usage
+| 🖥️ [Installation](user-guide/installation.md) | 🧬 [General NCBI Guide](user-guide/general_NCBI_submission_guide.md) | 📤 [Submission Guide](user-guide/submission_guide.md) |
+| --- | --- | --- |
+| 📁 [Outputs](user-guide/outputs.md) | ⚙️ [Parameters](user-guide/parameters.md) | 🧪 [Profiles](user-guide/profile.md) |
+
+### CDC Specific Usage
+| 🧑‍⚕️ [CDC User Guide](user-guide/cdc-user-guide.md) | 🔐 [CDC Configs](user-guide/cdc_configs_access.md) |  |
+| --- | --- | --- |
+
+### Advanced Usage
+| 📝 [Custom Metadata](user-guide/custom_metadata_guide.md) | 🧬 [User Annotation](user-guide/user_provided_annotation_guide.md) | 🧪 [VADR Install](user-guide/vadr_install.md) |
+| --- | --- | --- |
+| 💧 [Wastewater Submission](user-guide/wastewater_guide.md) |  |  |
+
+### FAQ & Support
+| 📞 [Get in Touch](user-guide/get-in-touch.md) | 🛠️ [Troubleshooting](user-guide/troubleshooting.md) | 🤝 [Contributions](user-guide/contributions.md) |
+| --- | --- | --- |
+
