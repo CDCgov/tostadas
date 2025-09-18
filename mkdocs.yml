@@ -94,8 +94,8 @@ nav:
   - Background : index.md
   - General Usage:
     - 1. Installation: user-guide/installation.md
-    - 2. General Submission Guide: user-guide/general_NCBI_submission_guide.md
-    - 3. Submission Config: user-guide/submission_config_guide.md
+    - 2. General NCBI Guide: user-guide/general_NCBI_submission_guide.md
+    - 3. Submission Guide: user-guide/submission_guide.md
     - 4. Output: user-guide/outputs.md
     - 5. Parameters: user-guide/parameters.md
     - 6. Profiles: user-guide/profile.md
@@ -103,11 +103,10 @@ nav:
     - 1. CDC User-Guide: user-guide/cdc-user-guide.md
     - 2. CDC Configs : user-guide/cdc_configs_access.md
   - Advanced Usage:
-    - 1. Quick-Start: user-guide/quick-start.md
-    - 2. Custom Metadata: user-guide/custom_metadata_guide.md
-    - 3. User Provided Annotation: user-guide/user_provided_annotation_guide.md
-    - 4. VADR Installation: user-guide/vadr_install.md
-    - 5. Wastewater Submission: user-guide/wastewater_guide.md
+    - 1. Custom Metadata: user-guide/custom_metadata_guide.md
+    - 2. User Provided Annotation: user-guide/user_provided_annotation_guide.md
+    - 3. VADR Installation: user-guide/vadr_install.md
+    - 4. Wastewater Submission: user-guide/wastewater_guide.md
   - FAQ:
     - Get in Touch: user-guide/get-in-touch.md
     - Troubleshooting: user-guide/troubleshooting.md
