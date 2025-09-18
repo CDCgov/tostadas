@@ -5,21 +5,14 @@
     - [What is NCBI](#what-is-ncbi)
     - [NCBI Center Account](#ncbi-center-account)
     - [Key Components of NCBI](#key-components-of-ncbi)
-        - [PubMed](#1-pubmed)
-        - [GenBank](#2-genbank)
-        - [BLAST](#3-blast)
-        - [Entrez](#4-entrez)
-        - [SRA](#5-sra)
         - [BioProject / BioSample](#6-bioproject--biosample)
-        - [ClinVar](#7-clinvar)
-        - [dbSNP](#8-dbsnp)
+        - [SRA](#5-sra)
+        - [GenBank](#2-genbank)
 - [More Information For Each Database](#more-information-for-each-database)
-
-    
 
 ## General
 
-TOSTADAS provides users with the ability to submit samples to various NCBI databases with ease. For many of the databases, the pipeline leverages FTP communication to submit samples in an automated manner. TOSTADAS creates many custom log files locally for the submission process and returns valuable information / documents created at the NCBI endpoint as well. Through frequent conversations with personnel from NCBI, TOSTADAS will be continuously updated with any improvments to existing submission mechanisms and/or the implementation of completely new ones from NCBI, in order to provide the best experience for our users.
+TOSTADAS lets users submit samples to various NCBI databases with ease. For many of the databases, the pipeline leverages FTP communication to submit samples in an automated manner. TOSTADAS creates many custom log files locally for the submission process and returns valuable information / documents created at the NCBI endpoint as well. Through frequent conversations with personnel from NCBI, TOSTADAS will be continuously updated with any improvments to existing submission mechanisms and/or the implementation of completely new ones from NCBI, in order to provide the best experience for our users.
 
 ### What is NCBI?
 
@@ -32,45 +25,32 @@ NCBI continues to evolve, offering a wide range of tools and resources to suppor
 To submit to NCBI using TOSTADAS, you first need to establish an account with NCBI. If you're submitting on behalf of a group (e.g., a CDC branch, or a state Public Health Lab), you will want to create one account for your center to use.
 NCBI has information on how to create an account [here](https://www.nlm.nih.gov/ncbi/workshops/2023-06_organizing-biology-data/supplemental-files/NCBIAccountFlyer.pdf).  You may already have a personal NCBI account, but you should create a Center-level account.  You will need to configure the TOSTADAS submission config file with your NCBI account username and password to facilitate submissions via ftp.
 
-### Key Components of NCBI:
+TO create a Center Account:
+    
+    *   Contact the following e-mail for account creation: sra@ncbi.nlm.nih.gov and provide the following information:
+        *   Suggested center abbreviation (16 char max)
+        *   Center name (full), center URL & mailing address (including country and postcode)
+        *   Phone number (main phone for center or lab)
+        *   Contact person (someone likely to remain at the location for an extended time)
+        *   Contact email (ideally a service account monitored by several people)
+        *   Whether you intend to submit via FTP or command line Aspera (ascp)
+    *   Gain access to an upload directory: Following center account creation, a test area and a production area will be created. Deposit the XML file and related data files into a directory and follow the instructions SRA provides via email to indicate when files are ready to trigger the pipeline.
+    *   GISAID: GISAID support is not yet implemented but it may be added in the future.
 
-#### 1. **PubMed:**
-   - **Description:** PubMed is a comprehensive database of biomedical literature, containing articles, abstracts, and citations from various scientific journals.
-   - **URL:** [PubMed](https://pubmed.ncbi.nlm.nih.gov/)
+### Key NCBI Repositories TOSTADAS Supports:
 
-#### 2. **GenBank:**
-   - **Description:** GenBank is a DNA sequence database that collects and archives genomic data from researchers worldwide. It plays a pivotal role in the sharing and dissemination of genetic information.
-   - **URL:** [General GenBank Docs](https://www.ncbi.nlm.nih.gov/genbank/)
-   - **URL2:** [Formatting for GenBank](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table)
-
-#### 3. **BLAST:**
-   - **Description:** BLAST is a powerful tool for comparing biological sequences, allowing researchers to identify similarities between sequences and explore evolutionary relationships.
-   - **URL:** [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi)
-
-#### 4. **Entrez:**
-   - **Description:** Entrez is an integrated search and retrieval system that provides access to various NCBI databases, including PubMed, GenBank, and others.
-   - **URL:** [Entrez](https://www.ncbi.nlm.nih.gov/gquery/)
-
-#### 5. **SRA:**
-   - **Description:** SRA is a repository that archives and provides access to raw sequence data, including next-generation sequencing data, facilitating the exploration of genomic datasets.
-   - **URL:** [SRA](https://www.ncbi.nlm.nih.gov/sra)
-
-#### 6. **BioProject / BioSample:**
+#### 1. **BioProject / BioSample:**
    - **Description:** BioProject and BioSample are databases that organize and store information about biological projects and samples, respectively, providing context for genomic data submissions.
    - **URL:** [BioProject](https://www.ncbi.nlm.nih.gov/bioproject/) / [BioSample](https://www.ncbi.nlm.nih.gov/biosample/)
 
-#### 7. **ClinVar:**
-   - **Description:** ClinVar is a resource that aggregates information about genomic variations and their clinical significance, aiding in the interpretation of genetic variants in a clinical context.
-   - **URL:** [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/)
+#### 2. **SRA:**
+   - **Description:** SRA is a repository that archives and provides access to raw sequence data, including next-generation sequencing data, facilitating the exploration of genomic datasets.
+   - **URL:** [SRA](https://www.ncbi.nlm.nih.gov/sra)
 
-#### 8. **dbSNP:**
-   - **Description:** dbSNP is a database that catalogs and classifies variations in the human genome, including single nucleotide polymorphisms (SNPs) and other genomic variations.
-   - **URL:** [dbSNP](https://www.ncbi.nlm.nih.gov/snp/)
-
-** **NOTE:** Current NCBI databases that are available through TOSTADAS are the following: 
-* SRA
-* GenBank
-* BioSample
+#### 3. **GenBank:**
+   - **Description:** GenBank is a DNA sequence database that collects and archives genomic data from researchers worldwide. It plays a pivotal role in the sharing and dissemination of genetic information.
+   - **URL:** [General GenBank Docs](https://www.ncbi.nlm.nih.gov/genbank/)
+   - **URL2:** [Formatting for GenBank](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table)
 
 ## More Information For Each Database
 

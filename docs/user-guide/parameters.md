@@ -17,7 +17,7 @@ Default parameters are given in the nextflow.config file. This table lists the p
 | Param | Description | Input Required |
 | --- | --- | --- |
 | --submission | Toggle for running submission | Yes (true/false as bool) |
-| --annotation | Toggle for running annotation | Yes (true/false as bool) |
+| --annotation | Toggle for running annotation (only runs in genbank workflow) | Yes (true/false as bool) |
 | --dry_run | Simulate submission and print a log. | No (true/false) |
 | --workflow | Specifies the workflow to execute, allowing users to choose the appropriate processing method. | Yes (string) |
 
@@ -41,6 +41,8 @@ The following workflows are available for the `--workflow` parameter:
 | --publish_dir_mode | Mode for publishing directory, e.g., 'copy' or 'move' | Yes (string) |
 | --remove_demographic_info | Flag to remove demographic info. If true, values in host_sex, host_age, race, ethnicity are set to 'Not Provided' | Yes (true/false) |
 | --batch_size | The number of samples to prepare in one submission file. | No (integer) |
+| --organism_type | Used for annotation and to choose GenBank workflow. Options: bacteria, virus, eukaryote | No (integer) |
+| --virus_subtype | Used for VADR annotation. Options: mpxv, rsv.| No (integer) |
 
 ## General Output
 
@@ -112,7 +114,7 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --bakta_gram | Gram type for signal peptide predictions | No ('+' '-' '?') |
 | --save_reference | Option to save the downloaded Bakta database | No (true/false) |
 
-## Sample Submission
+## Submission
 
 | Param | Description | Input Required |
 | --- | --- | --- |
