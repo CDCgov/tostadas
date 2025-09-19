@@ -20,6 +20,7 @@ nextflow_workflow {
                 input[0] = [ [ batch_id: 'batch_1' ], file("${projectDir}/tests/modules/local/fetch_reports/batch_1/") ]
                 input[1] = file("${projectDir}/conf/submission_config.yaml")
                 input[2] = file("${projectDir}/tests/subworkflows/local/validated_metadata_all_samples.tsv")
+                input[3] = true
                 """
             }
         }

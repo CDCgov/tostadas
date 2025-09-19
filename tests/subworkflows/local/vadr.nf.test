@@ -10,7 +10,7 @@ nextflow_workflow {
             params {
                 vadr_models_dir  = "${projectDir}/vadr_files/mpxv-models/"
                 outdir           = "${outputDir}"
-                species          = "mpxv"
+                virus_subtype    = "mpxv"
                 prefix           = "NY0006"
             }
             workflow {

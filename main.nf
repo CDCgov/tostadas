@@ -16,11 +16,13 @@ def calc_wait_time() {
 
 workflow BIOSAMPLE_AND_SRA_WORKFLOW {
     BIOSAMPLE_AND_SRA()
-    WAIT( BIOSAMPLE_AND_SRA.out.submission_batch_folder.map { calc_wait_time() } )
-    AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, 
-                          params.submission_config,
-                          BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv,
-                          WAIT.out)
+    if (params.submission) {
+        WAIT( BIOSAMPLE_AND_SRA.out.submission_batch_folder.map { calc_wait_time() } )
+        AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, 
+                            params.submission_config,
+                            BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv,
+                            WAIT.out)
+    }
 }
 
 workflow GENBANK_WORKFLOW {
