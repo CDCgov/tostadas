@@ -20,11 +20,4 @@ Expected Output:
 
 ### (4) Update the default submissions config file with your NCBI username and password, and run one of the following nextflow commands to execute the scripts with default parameters and the local run environment:
 
-`# update this config file (you don't have to use vim)` 
-
-`vim bin/config_files/submission_config.yaml` 
-
-`# for virus reads` 
-`nextflow run main.nf -profile test,singularity --species virus` 
-
-The outputs of the pipeline will appear in the `test_output` folder within the project directory. You can specify an output directory in the config file or by supplying a path to the `--outdir` flag in your `nextflow run` command.
+See [Run a test submission](installation.md#run-a-test-submission).

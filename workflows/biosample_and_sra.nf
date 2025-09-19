@@ -133,5 +133,5 @@ workflow BIOSAMPLE_AND_SRA {
 
 	emit:
 	validated_concatenated_tsv = WRITE_VALIDATED_FULL_TSV.out.validated_concatenated_tsv // contains data for all batches of samples
-    submission_batch_folder = SUBMISSION.out.submission_batch_folder // one batch submission folder 
+	submission_batch_folder = params.submission ? SUBMISSION.out.submission_batch_folder : null
 }

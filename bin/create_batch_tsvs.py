@@ -14,7 +14,7 @@ def get_args():
     parser = argparse.ArgumentParser(
         description="Convert updated Excel metadata to batched TSVs for GenBank submission."
     )
-    parser.add_argument('--input', required=True, help="Path to the Excel file with accessions")
+    parser.add_argument('--input', required=True, help="Path to the Excel file with accessions. The script will read row 2 as the header row, and rows 3: as data rows.")
     parser.add_argument('--batch_size', type=int, default=20, help="Max number of samples per batch")
     parser.add_argument('--output_prefix', required=True, help="Prefix for output TSV files (e.g. '/path/to/batch')")
     return parser
@@ -43,7 +43,7 @@ def main():
     setup_logging(log_file='create_batch_tsvs.log', level=logging.DEBUG)
 
     logging.info(f"Reading Excel file: {params['input']}")
-    df = pd.read_excel(params['input'], dtype=str)
+    df = pd.read_excel(params['input'], dtype=str, skiprows=1)
 
     # Drop completely empty rows (which can sneak in from Excel)
     df.dropna(how='all', inplace=True)

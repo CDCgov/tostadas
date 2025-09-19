@@ -16,11 +16,13 @@ def calc_wait_time() {
 
 workflow BIOSAMPLE_AND_SRA_WORKFLOW {
     BIOSAMPLE_AND_SRA()
-    WAIT( BIOSAMPLE_AND_SRA.out.submission_batch_folder.map { calc_wait_time() } )
-    AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, 
-                          params.submission_config,
-                          BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv,
-                          WAIT.out)
+    if (params.submission) {
+        WAIT( BIOSAMPLE_AND_SRA.out.submission_batch_folder.map { calc_wait_time() } )
+        AGGREGATE_SUBMISSIONS(BIOSAMPLE_AND_SRA.out.submission_batch_folder, 
+                            params.submission_config,
+                            BIOSAMPLE_AND_SRA.out.validated_concatenated_tsv,
+                            WAIT.out)
+    }
 }
 
 workflow GENBANK_WORKFLOW {
@@ -38,7 +40,7 @@ workflow GENBANK_WORKFLOW {
             }
 
     GENBANK(file(updated_meta_file))
-    if (params.species in ['sars', 'flu', 'bacteria', 'eukaryote']) {
+    if (params.organism_type in ['sars', 'flu', 'bacteria', 'eukaryote']) {
         WAIT( GENBANK.out.submission_batch_folder.map { calc_wait_time() } )
         AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
                             params.submission_config,
@@ -57,7 +59,7 @@ workflow FETCH_ACCESSIONS_WORKFLOW {
     } // meta = batch_id, dir = path to batch_id dir
     log.info "Fetching report.xml files for submissions in ${params.outdir}/${params.metadata_basename}/${params.submission_outdir}"
     // use a dummy channel placeholder in place of the WAIT utility, which isn't used in this workflow, 
-    def dummy_wait = Channel.value(true)
+    dummy_wait = Channel.value(true)
     AGGREGATE_SUBMISSIONS(batches,
                           params.submission_config,
                           file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"), dummy_wait)
