@@ -5,7 +5,7 @@ NCBI_ftp_host: 'ftp-private.ncbi.nlm.nih.gov'
 NCBI_sftp_host: 'sftp-private.ncbi.nlm.nih.gov'
 NCBI_API_URL: 'https://submit.ncbi.nlm.nih.gov/api/2.0/files/FILE_ID/?format=attachment'
 table2asn_email: '' # To submit to GenBank, use 'gb-admin@ncbi.nlm.nih.gov'
-BioSample_package: "Pathogen.cl.1.0" # see assets/biosample_fields_key.yaml for supported BioSample pkgs
+BioSample_package: "SARS-CoV-2.wwsurv.1.0" # see assets/biosample_fields_key.yaml for supported BioSample pkgs
 Role: owner
 Type: institute
 NCBI_Namespace:
