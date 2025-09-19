@@ -13,7 +13,7 @@ nextflow_process {
 
             process {
                 """
-                input[0] = file("${projectDir}tests/modules/local/create_batch_tsvs/test_genbank.xlsx")
+                input[0] = file("${projectDir}/tests/modules/local/create_batch_tsvs/test_genbank.xlsx")
                 input[1] = 1
                 """
             }
