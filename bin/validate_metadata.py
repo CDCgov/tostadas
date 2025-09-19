@@ -630,11 +630,13 @@ class ValidateChecks:
 			"illumina_library_layout", "illumina_library_protocol", "illumina_library_name", "illumina_sra_file_path_1", "illumina_sra_file_path_2",
 			"file_location", "fastq_path_1", "fastq_path_2", "nanopore_sequencing_instrument", "nanopore_library_strategy",
 			"nanopore_library_source", "nanopore_library_selection", "nanopore_library_layout", "nanopore_library_protocol",
-			"nanopore_library_name", "nanopore_sra_file_path_1", "nanopore_sra_file_path_2"
+			"nanopore_library_name", "nanopore_sra_file_path_1", "nanopore_sra_file_path_2",
+			"int_illumina_sra_file_path_1", "int_illumina_sra_file_path_2","int_nanopore_sra_file_path_1", "int_nanopore_sra_file_path_2"
 		}
 
 		existing_cols = set(self.metadata_df.columns)
-		unexpected_fields = existing_cols - static_columns.intersection(existing_cols) - set(custom_fields)
+		unexpected_fields = existing_cols - static_columns - set(custom_fields)
+
 
 		for field, props in custom_fields.items():
 			field_errors = []
