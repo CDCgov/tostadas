@@ -1,12 +1,12 @@
 {
     "Should split Excel into TSV batches": {
         "content": [
-            "genbank_batch_1.tsv:md5,e2475926c845dc27cb4609c1923b7766"
+            "batch_1.tsv:md5,e2475926c845dc27cb4609c1923b7766"
         ],
         "meta": {
             "nf-test": "0.9.2",
-            "nextflow": "25.04.6"
+            "nextflow": "25.04.7"
         },
-        "timestamp": "2025-09-19T00:57:19.369820824"
+        "timestamp": "2025-09-20T17:05:13.638943436"
     }
 }
