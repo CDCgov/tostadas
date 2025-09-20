@@ -6,6 +6,7 @@
 - [Choosing an organism type and/or virus subtype](#choosing-an-organism-type-andor-virus-subtype)
 - [Using specific profiles](#using-specific-profiles)
 - [Other customizations](#other-customizations)
+- [Submitting to Production](#submitting-to-production)
 - [Typical example workflow](#typical-example-workflow)
 - [Submission config fields](#submission-config-fields)
 - [Custom metadata validation and custom BioSample package](#custom-metadata-validation-and-custom-biosample-package)
@@ -52,34 +53,42 @@ All the custom parameters for TOSTADAS are found in nextflow.config and the conf
 
 For example, the default output directory is `results`, but you can override that and choose your own output directory using `--outdir path/to/my/output` in your command.
 
+TOSTADAS can chunk large datasets into smaller groups to submit to NCBI's servers using the `--batch_size` flag.  If you have a metadata Excel file with 200 samples, you can submit them in batches of 50 by adding `--batch_size 50` to your command. This groups 50 samples at a time into one submission file for each data repository. NCBI much prefers this over submitting samples one-at-a-time.   
+
+We **highly** recommend you submit using batches!!! We suggest 50 as a maximum batch size.   
+
 Another example: the `--dry_run` flag (which prepares files for submission but doesn't upload to the server) defaults to `true` for the test profile and `false` otherwise, but you can override it by specifying `--dry_run <true|false>` on the command line.
 
+## Submitting to Production 
 
+TOSTADAS defaults to submitting to the test server even if not using the test profile, to avoid accidentally pushing data to NCBI's Production server.   
+
+When you've completed testing and are ready to submit for production, add `--prod_submission` to your command line (or change `prod_submission` to `true` in `nextflow.config`).    
 
 ## Typical example workflow
 
-We'll run test submissions to BioSample and SRA using the test MPOX data included in the repository.
+We'll run test submissions to BioSample and SRA using the test MPOX data included in the repository.   
 
-Submit to biosample and sra:
-`nextflow run main.nf -profile test,singularity,mpox --workflow biosample_and_sra --dry_run false --submission_config conf/submission_config.yaml --batch_size 5`
-**Remember** to add credentials to your submission_config.yaml file.
+Submit to biosample and sra:   
+`nextflow run main.nf -profile test,singularity,mpox --workflow biosample_and_sra --dry_run false --submission_config conf/submission_config.yaml --batch_size 5`   
+**Remember** to add credentials to your submission_config.yaml file.   
 
-Fetch the accessions if they weren’t assigned (this workflow creates an updated Metadata Excel file with the validated fields and the accession IDs):
-`nextflow run main.nf -profile test,singularity,mpox --workflow fetch_accessions --dry_run false --submission_config conf/submission_config.yaml` 
+Fetch the accessions if they weren’t assigned (this workflow creates an updated Metadata Excel file with the validated fields and the accession IDs):   
+`nextflow run main.nf -profile test,singularity,mpox --workflow fetch_accessions --dry_run false --submission_config conf/submission_config.yaml`   
+   
+Submit an updated biosample submission (open the updated Excel file from results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx and add some fake SAMN IDs first):   
+`nextflow run main.nf -profile test,singularity --workflow update_submission --dry_run false --species mpxv --submission_config conf/submission_config.yaml --batch_size 5 --original_submission_outdir results/mpxv_test_metadata/submission_outputs --meta_path results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx`   
+**Remember** This won’t run without those fake SAMN IDs in the biosample_accession field.   
+   
+Now we'll run a test GenBank submission using the test bacteria data included in the repository.   
 
-Submit an updated biosample submission (open the updated Excel file from results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx and add some fake SAMN IDs first):
-`nextflow run main.nf -profile test,singularity --workflow update_submission --dry_run false --species mpxv --submission_config conf/submission_config.yaml --batch_size 5 --original_submission_outdir results/mpxv_test_metadata/submission_outputs --meta_path results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx`
-**Remember** This won’t run without those fake SAMN IDs in the biosample_accession field.
-
-Now we'll run a test GenBank submission using the test bacteria data included in the repository.
-
-Submit to BioSample first (because GenBank requires a BioSample accession):
-`nextflow run main.nf -profile test,singularity,bacteria --workflow biosample_and_sra --dry_run false --submission_config conf/submission_config.yaml`
-
-Open the updated Excel file from results/bacteria_test_metadata_1/final_submission_outputs/bacteria_test_metadata_1_updated.xlsx and add some fake SAMN IDs first.
-**The next command won't run without the fake SAMN IDs in biosample_accession column**.
-`nextflow run main.nf -profile test,singularity,bacteria --workflow genbank --dry_run false --submission_config conf/submission_config.yaml --annotation --download_bakta_db --bakta_db_light`
-
+Submit to BioSample first (because GenBank requires a BioSample accession):   
+`nextflow run main.nf -profile test,singularity,bacteria --workflow biosample_and_sra --dry_run false --submission_config conf/submission_config.yaml`   
+   
+Open the updated Excel file from results/bacteria_test_metadata_1/final_submission_outputs/bacteria_test_metadata_1_updated.xlsx and add some fake SAMN IDs first.   
+**The next command won't run without the fake SAMN IDs in biosample_accession column**.   
+`nextflow run main.nf -profile test,singularity,bacteria --workflow genbank --dry_run false --submission_config conf/submission_config.yaml --annotation --download_bakta_db --bakta_db_light`   
+   
 ## Submission config fields
 
 The fields and corresponding example values can be found here: [Submission Config](https://github.com/CDCgov/tostadas/raw/master/conf/submission_config.yaml).

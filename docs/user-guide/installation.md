@@ -61,6 +61,10 @@ Create an NCBI Center Account. See [NCBI Center Account](general_NCBI_submission
 
 Choose a workflow and specify your profile or (optionally, for annotation and GenBank submission) an `organism_Type` and `virus_subtype`.  See: [Putting together the Nextflow command](submission_guide.md#putting-together-the-nextflow-command)
 
-
+**Please read** the [Submission Guide](submission_guide.md) for important details about parameters you need to specify.  Please especially note the following:   
+* `prod_submission`: true/false (for submitting to Test vs. Production server). See [Other customizations](submission_guide.md#other-customizations)      
+* `batch_size`: for submitting large datasets in chunks. We **highly** recommend you submit using batches! See [Other customizations](submission_guide.md#other-customizations)    
+* `workflow`: read how to use TOSTADAS for different types of submissions. See [Submitting to Production](submission_guide.md#submitting-to-production)   
+* profiles: read about profile shortcuts in [Using specific profiles](submission_guide.md#using-specific-profiles)   
 
 
