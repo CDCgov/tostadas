@@ -40,12 +40,13 @@ workflow GENBANK_WORKFLOW {
             }
 
     GENBANK(file(updated_meta_file))
-    if (params.organism_type in ['sars', 'flu', 'bacteria', 'eukaryote']) {
-        WAIT( GENBANK.out.submission_batch_folder.map { calc_wait_time() } )
-        AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
-                            params.submission_config,
-                            file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"), WAIT.out)
-    }
+    // todo: this fetching code won't work because of the directory structure; genbank really needs to be a separate nextflow pipeline
+    // if (params.organism_type in ['sars', 'flu', 'bacteria', 'eukaryote']) {
+    //     WAIT( GENBANK.out.submission_batch_folder.map { calc_wait_time() } )
+    //     AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
+    //                         params.submission_config,
+    //                         file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"), WAIT.out)
+    //}
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {
