@@ -119,26 +119,29 @@ workflow GENBANK {
         sample_ch = validated_sample_ch
     }
 
-    // Build final batch-wise submission channel
-    submission_batch_ch = sample_ch
-        .map { meta, fasta, gff -> [meta.batch_id, [meta: meta, fasta: fasta, gff: gff]] }
-        .groupTuple()
-        .map { batch_id, samples ->
-            def missingFasta = samples.any { s ->
-                !s.fasta || !file(s.fasta).exists()
+    if (params.submission) {
+        // Build final batch-wise submission channel
+        submission_batch_ch = sample_ch
+            .map { meta, fasta, gff -> [meta.batch_id, [meta: meta, fasta: fasta, gff: gff]] }
+            .groupTuple()
+            .map { batch_id, samples ->
+                def missingFasta = samples.any { s ->
+                    !s.fasta || !file(s.fasta).exists()
+                }
+                def meta = [
+                    batch_id : batch_id,
+                    batch_tsv: samples[0].meta.batch_tsv
+                ]
+                def enabledDatabases = missingFasta ? [] : ['genbank'] 
+                return tuple(meta, samples, enabledDatabases)
             }
-            def meta = [
-                batch_id : batch_id,
-                batch_tsv: samples[0].meta.batch_tsv
-            ]
-            def enabledDatabases = missingFasta ? [] : ['genbank'] 
-            return tuple(meta, samples, enabledDatabases)
         }
+        
 
-	// Run submission using the batch channel
-	SUBMISSION(submission_batch_ch, 
-			   params.submission_config)
+        // Run submission using the batch channel
+        SUBMISSION(submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
+                params.submission_config)
 
 	emit:
-    submission_batch_folder = SUBMISSION.out.submission_batch_folder
+    submission_batch_folder = params.submission ? SUBMISSION.out.submission_batch_folder : null
 }

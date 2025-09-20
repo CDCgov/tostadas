@@ -125,18 +125,18 @@ def main_submit():
 						except Exception as e:
 							logging.warning(f"Could not delete FASTQ file {local}: {e}")
 				client.close()
-
-		elif any(f.endswith('.zip') for f in files):
+		elif any(f.endswith('.sqn') for f in files):
 			# Handle non-ftp submissions (directories with a zip file but without submission.xml and submit.ready)
-			rel = os.path.relpath(dirpath, root) # dirpath should be <batch_id>/genbank/<sample_id>
-			parts = rel.split(os.sep) # genbank/<sample_id>
-			database = parts[0].lower() # genbank
-			sample = parts[1] # genbank submission files are stored in a subfolder called <sample name>
-			if database == 'genbank':  # make sure we're only uploading the intended zip file
-				if params['dry_run']:
-					sendemail(sample, config, mode, dirpath)
-				elif params['send_email']:
-					sendemail(sample, config, mode, dirpath, dry_run=False)
+			sample = os.path.relpath(dirpath, root) # dirpath should be <batch_id>/<sample_id>, genbank submission files are stored in a subfolder called <sample name>
+			# todo: I don't love just assigning this here, not stable...makes assumptions
+			database = 'genbank' # genbank
+			logging.info(f"Found sample {sample} to submit to {database} at {dirpath}")
+			if params['dry_run']:
+				sendemail(sample, config, mode, dirpath)
+			elif params['send_email']:
+				sendemail(sample, config, mode, dirpath, dry_run=False)
+			else:
+				logging.info(f"Submission will not be emailed because --send_email flag is set to {params['send_email']}.")
 		else:
 			print(f"[SKIP] {dirpath} does not contain both submission.xml and submit.ready")
 

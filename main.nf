@@ -29,7 +29,7 @@ workflow GENBANK_WORKFLOW {
     // Set default for updated_meta_path if not already defined
     def updated_meta_file = params.updated_meta_path && params.updated_meta_path != '' ?
         file(params.updated_meta_path) :
-        file("${params.outdir}/${params.metadata_basename}/${params.final_submission_output_dir}/${params.metadata_basename}_updated.xlsx")
+        file("${params.outdir}/${params.metadata_basename}/${params.final_submission_outdir}/${params.metadata_basename}_updated.xlsx")
 
     // Log an error if the updated metadata file doesn't exist
     if (!updated_meta_file.exists()) {
@@ -40,12 +40,13 @@ workflow GENBANK_WORKFLOW {
             }
 
     GENBANK(file(updated_meta_file))
-    if (params.organism_type in ['sars', 'flu', 'bacteria', 'eukaryote']) {
-        WAIT( GENBANK.out.submission_batch_folder.map { calc_wait_time() } )
-        AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
-                            params.submission_config,
-                            file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"), WAIT.out)
-    }
+    // todo: this fetching code won't work because of the directory structure; genbank really needs to be a separate nextflow pipeline
+    // if (params.organism_type in ['sars', 'flu', 'bacteria', 'eukaryote']) {
+    //     WAIT( GENBANK.out.submission_batch_folder.map { calc_wait_time() } )
+    //     AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
+    //                         params.submission_config,
+    //                         file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"), WAIT.out)
+    //}
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {

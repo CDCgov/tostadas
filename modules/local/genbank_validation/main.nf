@@ -13,7 +13,7 @@ process GENBANK_VALIDATION {
     tuple val(meta), path(fasta)
 
     output:
-    tuple val(meta), path("${fasta.baseName}_cleaned.fsa")
+    tuple val(meta), path("genbank/${fasta.baseName}_cleaned.fsa")
     
     script:
         // Run the Python script for validating and cleaning FASTA files and copying the GFF file

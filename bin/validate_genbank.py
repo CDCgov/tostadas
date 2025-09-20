@@ -168,8 +168,9 @@ if __name__ == "__main__":
     check_file_exists(input_fasta)
 
     base_fasta = os.path.splitext(os.path.basename(input_fasta))[0]
-    output_fasta = os.path.join(os.path.dirname(input_fasta), f"{base_fasta}_cleaned.fsa")
-
+    outdir = os.path.join(os.path.dirname(input_fasta), "genbank")
+    os.makedirs(outdir, exist_ok=True)
+    output_fasta = os.path.join(outdir, f"{base_fasta}_cleaned.fsa")
     validate_and_clean_fasta(input_fasta, output_fasta)
 
     if errors:
