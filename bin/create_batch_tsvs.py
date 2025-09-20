@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import pandas as pd
 import argparse
 import logging
@@ -30,7 +31,8 @@ def write_batched_tsvs(df, batch_size, output_prefix):
     num_batches = math.ceil(total_rows / batch_size)
     for i in range(num_batches):
         batch_df = df.iloc[i * batch_size : (i + 1) * batch_size]
-        batch_path = f"{output_prefix}_batch_{i+1}.tsv"
+        os.makedirs(output_prefix, exist_ok=True)
+        batch_path = f"{output_prefix}/batch_{i+1}.tsv"
         batch_df.to_csv(batch_path, sep='\t', index=False)
         batched_paths.append(batch_path)
         logging.debug(f"Wrote {len(batch_df)} rows to {batch_path}")

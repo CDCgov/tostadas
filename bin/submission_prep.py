@@ -66,6 +66,8 @@ def main_prepare():
 			annotation_file = d.get('gff')
 		))
 
+	print(samples)
+
 	# 1) Prepare BioSample XML + submit.ready
 	if params['biosample']:
 		submission_dir = os.path.join(output_root, 'biosample')

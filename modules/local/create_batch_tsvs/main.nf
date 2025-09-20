@@ -14,7 +14,7 @@ process CREATE_BATCH_TSVS {
     val batch_size
 
     output:
-    path "*.tsv", emit: tsv_files
+    path "genbank/*.tsv", emit: tsv_files
 
     script:
     """

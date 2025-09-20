@@ -885,10 +885,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.genbank_metadata = parser.extract_genbank_metadata()
 		os.makedirs(self.outdir, exist_ok=True)
 
-		print("Top metadata:", self.top_metadata)
-		print("Biosample metadata:", self.biosample_metadata)
-		print("GenBank metadata:", self.genbank_metadata)
-
 	def xml_create_bankit(self, submission):
 		"""
 		Prepares a submission for ftp upload via Bank-It
@@ -1158,6 +1154,86 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.run_table2asn()
 		logging.info(f"Genbank files prepared for {self.sample.sample_id}")
 
+	# Functions for running table2asn
+	def get_gff_locus_tag(self):
+		""" Read the locus lag from the GFF3 file for use in table2asn command"""
+		locus_tag = None
+		if not self.sample.annotation_file.endswith('.tbl'):
+			with open(self.sample.annotation_file, 'r') as file:
+				for line in file:
+					if line.startswith('##FASTA'):
+						break  # Stop reading if FASTA section starts
+					elif line.startswith('#'):
+						continue  # Skip comment lines
+					else:
+						columns = line.strip().split('\t')
+						if columns[2] == 'CDS':
+							attributes = columns[8].split(';')
+							for attribute in attributes:
+								key, value = attribute.split('=')
+								if key == 'locus_tag':
+									locus_tag = value.split('_')[0]
+									break  # Found locus tag, stop searching
+							if locus_tag:
+								break  # Found locus tag, stop searching
+		return locus_tag
+	#  Detect multiple contig fasta for Table2asn submission
+	def is_multicontig_fasta(self, fasta_file):
+		headers = set()
+		with open(fasta_file, 'r') as file:
+			for line in file:
+				if line.startswith('>'):
+					headers.add(line.strip())
+					if len(headers) > 1:
+						return True
+		return False
+	
+	def run_table2asn(self):
+		"""
+		Executes table2asn with appropriate flags and handles errors.
+		"""
+		logging.info("Running table2asn...")
+		# Check if table2asn executable exists in PATH
+		table2asn_path = shutil.which('table2asn')
+		if not table2asn_path:
+			raise FileNotFoundError("table2asn executable not found in PATH.")
+		# Check if a GFF file is supplied and extract the locus tag
+		# todo: the locus tag needs to be fetched (?) after BioSample is assigned (it appears under Manage Data for the BioProject)
+		if self.sample.annotation_file:
+			locus_tag = self.get_gff_locus_tag()
+			gff_dest = os.path.join(self.outdir, os.path.basename(self.sample.annotation_file))
+			symlink_or_copy(self.sample.annotation_file, gff_dest)
+		# Construct the table2asn command
+		cmd = [
+			"table2asn",
+			"-i", f"{self.outdir}/sequence.fsa",
+			"-o", f"{self.outdir}/{self.sample.sample_id}.sqn",
+			"-t", f"{self.outdir}/authorset.sbt"
+		]
+		if self.sample.annotation_file:
+			cmd.extend(["-f", gff_dest])
+			if locus_tag:
+				cmd.extend(["-locus-tag-prefix", locus_tag])
+		if self.is_multicontig_fasta(f"{self.outdir}/sequence.fsa"):
+			cmd.append("-M")
+			cmd.append("n")
+			cmd.append("-Z")
+		if os.path.isfile(f"{self.outdir}/comment.cmt"):
+			cmd.append("-w")
+			cmd.append("comment.cmt")
+		# if not using submission.xml file, need the source.src file
+		if not self.sample.ftp_upload:
+			cmd.append("-src-file")
+			cmd.append(f"{self.outdir}/source.src")
+		# Run the command and capture errors
+		logging.info(f'table2asn command: {shlex.join(cmd)}')
+		try:
+			result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+			logging.info(f"table2asn output: {result.stdout}")
+		except subprocess.CalledProcessError as e:
+			logging.debug(f"Error running table2asn: {e.stderr}")
+			raise
+
 	def prep_zip_folder(self):
 		""" Prepare files for manual upload to GenBank because FTP support not available 
 			These files will be emailed to user and/or GenBank, and also zipped to output dir """
@@ -1215,80 +1291,3 @@ class GenbankSubmission(XMLSubmission, Submission):
 			self._workflow_virus()
 		else:
 			logging.debug(f"{self.sample.species} must be one of: sars, flu, bacteria, eukaryote, virus")
-
-	# Functions for running table2asn
-	def get_gff_locus_tag(self):
-		""" Read the locus lag from the GFF3 file for use in table2asn command"""
-		locus_tag = None
-		if not self.sample.annotation_file.endswith('.tbl'):
-			with open(self.sample.annotation_file, 'r') as file:
-				for line in file:
-					if line.startswith('##FASTA'):
-						break  # Stop reading if FASTA section starts
-					elif line.startswith('#'):
-						continue  # Skip comment lines
-					else:
-						columns = line.strip().split('\t')
-						if columns[2] == 'CDS':
-							attributes = columns[8].split(';')
-							for attribute in attributes:
-								key, value = attribute.split('=')
-								if key == 'locus_tag':
-									locus_tag = value.split('_')[0]
-									break  # Found locus tag, stop searching
-							if locus_tag:
-								break  # Found locus tag, stop searching
-		return locus_tag
-	#  Detect multiple contig fasta for Table2asn submission
-	def is_multicontig_fasta(self, fasta_file):
-		headers = set()
-		with open(fasta_file, 'r') as file:
-			for line in file:
-				if line.startswith('>'):
-					headers.add(line.strip())
-					if len(headers) > 1:
-						return True
-		return False
-	def run_table2asn(self):
-		"""
-		Executes table2asn with appropriate flags and handles errors.
-		"""
-		logging.info("Running table2asn...")
-		# Check if table2asn executable exists in PATH
-		table2asn_path = shutil.which('table2asn')
-		if not table2asn_path:
-			raise FileNotFoundError("table2asn executable not found in PATH.")
-		# Check if a GFF file is supplied and extract the locus tag
-		# todo: the locus tag needs to be fetched (?) after BioSample is assigned (it appears under Manage Data for the BioProject)
-		locus_tag = self.get_gff_locus_tag()
-		gff_dest = os.path.join(self.outdir, os.path.basename(self.sample.annotation_file))
-		symlink_or_copy(self.sample.annotation_file, gff_dest)
-		# Construct the table2asn command
-		cmd = [
-			"table2asn",
-			"-i", f"{self.outdir}/sequence.fsa",
-			"-o", f"{self.outdir}/{self.sample.sample_id}.sqn",
-			"-t", f"{self.outdir}/authorset.sbt",
-			"-f", f"{self.outdir}/{os.path.basename(self.sample.annotation_file)}"
-		]
-		if locus_tag:
-			cmd.extend(["-locus-tag-prefix", locus_tag])
-		if self.is_multicontig_fasta(f"{self.outdir}/sequence.fsa"):
-			cmd.append("-M")
-			cmd.append("n")
-			cmd.append("-Z")
-		if os.path.isfile(f"{self.outdir}/comment.cmt"):
-			cmd.append("-w")
-			cmd.append("comment.cmt")
-		# if not using submission.xml file, need the source.src file
-		if not self.sample.ftp_upload:
-			cmd.append("-src-file")
-			cmd.append(f"{self.outdir}/source.src")
-		# Run the command and capture errors
-		logging.info(f'table2asn command: {shlex.join(cmd)}')
-		try:
-			result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-			logging.info(f"table2asn output: {result.stdout}")
-		except subprocess.CalledProcessError as e:
-			logging.debug(f"Error running table2asn: {e.stderr}")
-			raise
