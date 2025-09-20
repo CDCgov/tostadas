@@ -136,6 +136,7 @@ workflow GENBANK {
                 return tuple(meta, samples, enabledDatabases)
             }
         }
+        
 
         // Run submission using the batch channel
         SUBMISSION(submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
