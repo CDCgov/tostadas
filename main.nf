@@ -29,7 +29,7 @@ workflow GENBANK_WORKFLOW {
     // Set default for updated_meta_path if not already defined
     def updated_meta_file = params.updated_meta_path && params.updated_meta_path != '' ?
         file(params.updated_meta_path) :
-        file("${params.outdir}/${params.metadata_basename}/${params.final_submission_output_dir}/${params.metadata_basename}_updated.xlsx")
+        file("${params.outdir}/${params.metadata_basename}/${params.final_submission_outdir}/${params.metadata_basename}_updated.xlsx")
 
     // Log an error if the updated metadata file doesn't exist
     if (!updated_meta_file.exists()) {
