@@ -3,18 +3,18 @@
         "content": [
             [
                 [
-                    "batch_1.tsv:md5,eb0cfaf7072af2dac2c753cac1759f7e",
-                    "batch_2.tsv:md5,727094cac54dd83cd94c4573b0a08a71",
-                    "batch_3.tsv:md5,0eb09a08ff9e42ba4de6e0b728c6f5eb",
-                    "batch_4.tsv:md5,a61de85cccd1b75a029f0abd850663de",
-                    "batch_5.tsv:md5,3dc2d27d2406741b76098762eb63b85a"
+                    "batch_1.tsv:md5,00fbb06b6c1e6b53fb08f63fe67f6708",
+                    "batch_2.tsv:md5,ae3cfc1e373bcb87ae4327cad08d298d",
+                    "batch_3.tsv:md5,e9bb912d1833db4a79b7c6107b1d09a7",
+                    "batch_4.tsv:md5,a4ae5ae854ca6f3347c725068fc74b17",
+                    "batch_5.tsv:md5,a1879a67af4dbd9458dab9d3562f8a4c"
                 ]
             ]
         ],
         "meta": {
             "nf-test": "0.9.2",
-            "nextflow": "25.04.6"
+            "nextflow": "25.04.7"
         },
-        "timestamp": "2025-09-19T00:44:30.260454814"
+        "timestamp": "2025-09-19T19:05:19.217585325"
     }
 }

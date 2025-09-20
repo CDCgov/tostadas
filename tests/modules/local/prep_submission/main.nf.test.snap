@@ -188,7 +188,7 @@
                                                 "db": "BioProject"
                                             }
                                         },
-                                        "Package": "Pathogen.cl.1.0",
+                                        "Package": "SARS-CoV-2.wwsurv.1.0",
                                         "Attributes": {
                                             "Attribute": [
                                                 {
@@ -266,7 +266,7 @@
                                                 "db": "BioProject"
                                             }
                                         },
-                                        "Package": "Pathogen.cl.1.0",
+                                        "Package": "SARS-CoV-2.wwsurv.1.0",
                                         "Attributes": {
                                             "Attribute": [
                                                 {
@@ -325,8 +325,8 @@
         ],
         "meta": {
             "nf-test": "0.9.2",
-            "nextflow": "25.04.6"
+            "nextflow": "25.04.7"
         },
-        "timestamp": "2025-09-19T01:11:00.947052671"
+        "timestamp": "2025-09-19T19:05:30.223127829"
     }
 }
