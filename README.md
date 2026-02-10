@@ -180,6 +180,8 @@ The submission portion of this pipeline was adapted from SeqSender. To find more
 
 :link: VADR Documentation:  https://github.com/ncbi/vadr.git
 
+:link: VADR MeV Models (Greninger Lab):  https://github.com/greninger-lab/vadr-models-mev
+
 :link: Bakta Documentation:  https://github.com/oschwengers/bakta
 
 :link: RepeatMasker Documentation: https://www.repeatmasker.org/

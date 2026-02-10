@@ -21,17 +21,8 @@ process VADR_ANNOTATION {
     v-annotate.pl \
         --split \
         --cpu $task.cpus \
-        --glsearch \
-        --minimap2 \
-        -s \
-        -r \
-        --nomisc \
+        ${params.vadr_opts} \
         --mkey ${params.virus_subtype} \
-        --r_lowsimok \
-        --r_lowsimxd 100 \
-        --r_lowsimxl 2000 \
-        --alt_pass discontn,dupregin \
-        --s_overhang 150 \
         --mdir $vadr_models_dir \
         $fasta_path \
         ${meta.sample_id}_${params.virus_subtype}
