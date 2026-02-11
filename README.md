@@ -21,7 +21,7 @@ A portable, open-source pipeline designed to streamline submission of pathogen g
 + Genome Annotation    
 + File submission    
 
-TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses and select bacteria. Testing for additional pathogen is planned for future releases.
+TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses, Measles, RSV, and select bacteria. Testing for additional pathogens is planned for future releases.
 
 ## Installation and Quick Start
 ❗ Note: If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](./docs/user-guide/cdc-user-guide.md)
@@ -81,7 +81,15 @@ To submit reads to GenBank, use the following command:
 ```
 nextflow run main.nf -profile <docker|singularity> --workflow genbank --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --updated_meta_path <path/to/updated/metadata/file>
 ```
-Refer to the github pages website for more information on input parameters and use cases. 
+
+**Annotate and submit measles reads to GenBank**
+
+Measles uses VADR for annotation. Use the `measles` profile to load the appropriate VADR models and configuration:
+```
+nextflow run main.nf -profile measles,<docker|singularity> --workflow genbank --updated_meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
+```
+
+Refer to the github pages website for more information on input parameters and use cases.
 
 **Retrieve accession IDs**
 
