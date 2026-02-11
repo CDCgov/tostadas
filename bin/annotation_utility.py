@@ -402,12 +402,13 @@ class MainVADRFuncs:
             elif i == 1: 
                 self.line_dict['gene'] = line_list[i].split('\t')[-1]
             elif line_list[i].split('\t')[0] == 'protein_id' or line_list[i].split('\t')[0] == 'ID':
-                self.line_dict['ID'] = str(line_list[i].split('\t')[-1])
+                if 'ID' not in self.line_dict:
+                    self.line_dict['ID'] = str(line_list[i].split('\t')[-1])
             else:
                 if line_list[i].split('\t')[0] != self.line_dict['coord1'] and line_list[i].split('\t')[0] != self.line_dict['coord2']:
-                    # fix up the individual line for the sample and write it 
                     splitted = line_list[i].split('\t')
-                    self.line_dict[splitted[0]] = splitted[1]
+                    if splitted[0] not in self.line_dict:
+                        self.line_dict[splitted[0]] = splitted[1]
     def format_attributes(self, line_dict, prefix):
         """
         Create GFF attribute string from line_dict, skipping coordinates and internal fields.
