@@ -407,7 +407,7 @@ class MainVADRFuncs:
             else:
                 if line_list[i].split('\t')[0] != self.line_dict['coord1'] and line_list[i].split('\t')[0] != self.line_dict['coord2']:
                     splitted = line_list[i].split('\t')
-                    if splitted[0] not in self.line_dict:
+                    if splitted[0] not in self.line_dict and 'ID' not in self.line_dict:
                         self.line_dict[splitted[0]] = splitted[1]
     def format_attributes(self, line_dict, prefix):
         """
