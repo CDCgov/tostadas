@@ -160,12 +160,28 @@ class MainUtility:
                     except AssertionError:
                         raise AssertionError(f"Could not replace %3B or %2C from line")
 
-                for item in anns[0:-2]:
-                    item = item.split('=')
-                    tbl.write('\t' + '\t' + '\t' + item[0] + '\t' + item[1] + '\n')
-                    
-                item = anns[-1].split('=')
-                tbl.write('\t' + '\t' + '\t' + item[0] + '\t' + item[1])
+                for ann in anns:
+                    ann = ann.strip()
+                    if not ann:
+                        continue
+                    parts = ann.split('=', 1)
+                    if len(parts) != 2:
+                        continue
+                    key, val = parts[0], parts[1].strip()
+                    # Convert GFF3 ID back to protein_id for CDS features
+                    if key == 'ID':
+                        if _type in ('CDS', 'misc_feature'):
+                            key = 'protein_id'
+                            for prefix in ('cds-', 'gene-'):
+                                if val.startswith(prefix):
+                                    val = val[len(prefix):]
+                                    break
+                        else:
+                            continue
+                    # Skip invalid qualifier names (e.g. numeric keys)
+                    if key[0].isdigit():
+                        continue
+                    tbl.write('\t\t\t' + key + '\t' + val + '\n')
 
             if not line:
                 break
