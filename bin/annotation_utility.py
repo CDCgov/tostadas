@@ -297,10 +297,11 @@ class MainVADRFuncs:
             # else:
             #     raise ValueError(f"Did not find a second ITR in {sample}")
 
-            # write the sample information to gff 
+            # write the sample information to gff
             self.write_to_gff(sample)
+            self.new_gff.close()
 
-            # reset the repeat region counter 
+            # reset the repeat region counter
             self.repeat_region_counter = 0
             self.check_second_repeat = False
             self.second_itr_index = None
