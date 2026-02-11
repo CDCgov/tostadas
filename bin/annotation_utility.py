@@ -181,6 +181,9 @@ class MainUtility:
                     # Skip invalid qualifier names (e.g. numeric keys)
                     if key[0].isdigit():
                         continue
+                    # Skip CDS-only qualifiers on gene features
+                    if _type == 'gene' and key in ('codon_start', 'product', 'protein_id', 'transl_except', 'transl_table'):
+                        continue
                     tbl.write('\t\t\t' + key + '\t' + val + '\n')
 
             if not line:
