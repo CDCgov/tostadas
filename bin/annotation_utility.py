@@ -251,6 +251,7 @@ class MainVADRFuncs:
         self.stop_codon_flag = {}
         self.repeat_flag = {}
         self.table_fail_errors = {}
+        self.additional_cds = {}
         self.repeat_region_counter = 0
         self.check_second_repeat = False
         self.second_itr_index = None
@@ -365,11 +366,18 @@ class MainVADRFuncs:
 
         # split the line up properly 
         for line_list, i in zip(self.raw_strings, range(len(self.raw_strings))):
-            # convert the line to dictionary 
+            # convert the line to dictionary
             self.store_line_to_dict(
                 line_list=line_list
             )
-            # get the orientation 
+            # store additional CDS entries for multi-CDS genes
+            if self.current_additional_cds:
+                if sample not in self.additional_cds:
+                    self.additional_cds[sample] = []
+                self.additional_cds[sample].append(
+                    (self.line_dict.get('gene', ''), self.current_additional_cds)
+                )
+            # get the orientation
             self.get_orientation()
             # check the stop codons 
             self.get_next_line, self.line_dict = self.gff_checks.check_stop_codon(
@@ -393,22 +401,27 @@ class MainVADRFuncs:
             self.final_samp_lines.append([self.get_next_line, self.line_dict])
 
     def store_line_to_dict(self, line_list):
-        # indices_to_loop = list(filter(lambda x: x != 2, [x for x in range(1, len(line_list))]))
         self.line_dict = {}
+        self.current_additional_cds = []
+        first_cds_done = False
         for i in range(len(line_list)):
+            if first_cds_done:
+                self.current_additional_cds.append(line_list[i])
+                continue
             if i == 0:
                 self.line_dict['coord1'], self.line_dict['coord2'] = line_list[i].split('\t')[0], line_list[i].split('\t')[1]
                 self.line_dict['type'] = line_list[i].split('\t')[-1]
-            elif i == 1: 
+            elif i == 1:
                 self.line_dict['gene'] = line_list[i].split('\t')[-1]
             elif line_list[i].split('\t')[0] == 'protein_id' or line_list[i].split('\t')[0] == 'ID':
                 if 'ID' not in self.line_dict:
                     self.line_dict['ID'] = str(line_list[i].split('\t')[-1])
+                    first_cds_done = True
             else:
-                if line_list[i].split('\t')[0] != self.line_dict['coord1'] and line_list[i].split('\t')[0] != self.line_dict['coord2']:
-                    splitted = line_list[i].split('\t')
-                    if splitted[0] not in self.line_dict and 'ID' not in self.line_dict:
-                        self.line_dict[splitted[0]] = splitted[1]
+                parts = line_list[i].split('\t')
+                if parts[0] != self.line_dict['coord1'] and parts[0] != self.line_dict['coord2']:
+                    if parts[0] not in self.line_dict:
+                        self.line_dict[parts[0]] = parts[1]
     def format_attributes(self, line_dict, prefix):
         """
         Create GFF attribute string from line_dict, skipping coordinates and internal fields.
@@ -523,3 +536,77 @@ class MainVADRFuncs:
     @staticmethod
     def write_line(line_dict, sample, type):
         return f"{sample}\tVADR\t{type}\t{line_dict['coord1']}\t{line_dict['coord2']}\t.\t{line_dict['orientation']}\t.\t"
+
+    def insert_additional_cds(self, tbl_path, sample):
+        """Insert additional CDS entries for multi-CDS genes into the .tbl file."""
+        if sample not in self.additional_cds:
+            return
+
+        with open(tbl_path, 'r') as f:
+            tbl_lines = f.readlines()
+
+        for gene_name, raw_lines in self.additional_cds[sample]:
+            cds_blocks = self._parse_cds_blocks(raw_lines)
+            if not cds_blocks:
+                continue
+
+            # Find insertion point: after the primary CDS's protein_id line for this gene
+            insert_idx = None
+            for idx, line in enumerate(tbl_lines):
+                stripped = line.strip()
+                if stripped == f'gene\t{gene_name}':
+                    # Look ahead for the protein_id line within the same feature block
+                    for j in range(idx + 1, min(idx + 10, len(tbl_lines))):
+                        if 'protein_id' in tbl_lines[j]:
+                            insert_idx = j + 1
+                            break
+                    if insert_idx is not None:
+                        break
+
+            if insert_idx is None:
+                continue
+
+            # Build the lines to insert
+            new_lines = []
+            for block in cds_blocks:
+                for j, (start, end) in enumerate(block['coords']):
+                    if j == 0:
+                        new_lines.append(f"{start}\t{end}\tCDS\n")
+                    else:
+                        new_lines.append(f"{start}\t{end}\n")
+                for key, val in block['qualifiers']:
+                    new_lines.append(f"\t\t\t{key}\t{val}\n")
+
+            tbl_lines[insert_idx:insert_idx] = new_lines
+
+        with open(tbl_path, 'w') as f:
+            f.writelines(tbl_lines)
+
+    @staticmethod
+    def _parse_cds_blocks(raw_lines):
+        """Parse raw stripped .tbl lines into structured CDS blocks."""
+        blocks = []
+        current_block = None
+
+        for line in raw_lines:
+            parts = line.split('\t')
+            # CDS header line (e.g. "1807\t2498\tCDS")
+            if len(parts) >= 3 and parts[-1] == 'CDS':
+                if current_block is not None:
+                    blocks.append(current_block)
+                current_block = {
+                    'coords': [(parts[0], parts[1])],
+                    'qualifiers': []
+                }
+            elif current_block is not None:
+                # Continuation coordinate line (e.g. "2498\t2705")
+                if len(parts) >= 2 and parts[0].isdigit() and parts[1].rstrip().isdigit():
+                    current_block['coords'].append((parts[0], parts[1].rstrip()))
+                # Qualifier line (e.g. "product\tV protein")
+                elif len(parts) >= 2 and not parts[0][0].isdigit():
+                    current_block['qualifiers'].append((parts[0], parts[1].rstrip()))
+
+        if current_block is not None:
+            blocks.append(current_block)
+
+        return blocks
