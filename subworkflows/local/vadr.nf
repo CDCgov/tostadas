@@ -5,6 +5,7 @@
                             VADR SUBWORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { VADR_MODEL_SETUP                                  } from "../../modules/local/vadr_model_setup/main"
 include { VADR_TRIM                                         } from "../../modules/local/vadr_trim/main"
 include { VADR_ANNOTATION                                   } from "../../modules/local/vadr_annotation/main"
 include { VADR_POST_CLEANUP                                 } from "../../modules/local/vadr_post_cleanup/main"
@@ -14,15 +15,18 @@ workflow RUN_VADR {
         fasta // meta, fasta_path
 
     main:
+        // Step 0: Ensure model directory is ready (downloads CM if needed, builds indices)
+        VADR_MODEL_SETUP(params.vadr_models_dir)
+
         // Step 1: Trim terminal ambiguous nucleotides from fasta
         VADR_TRIM(fasta)
-        
+
         // Step 2: Run VADR annotation on trimmed fasta
         VADR_ANNOTATION(
             VADR_TRIM.out.trimmed_fasta,
-            params.vadr_models_dir
+            VADR_MODEL_SETUP.out.prepared_models
         )
-        
+
         // Step 3: Post-process VADR outputs
         VADR_POST_CLEANUP(VADR_ANNOTATION.out.vadr_outputs)
 

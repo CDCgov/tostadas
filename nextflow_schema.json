@@ -494,6 +494,18 @@
           "default": "",
           "hidden": true
         },
+        "vadr_opts": {
+          "type": "string",
+          "description": "Pathogen-specific flags passed to v-annotate.pl",
+          "default": "",
+          "hidden": true
+        },
+        "vadr_cm_url": {
+          "type": "string",
+          "description": "URL to download the covariance model file if too large for the repository",
+          "default": "",
+          "hidden": true
+        },
         "validation_outdir": {
           "type": "string",
           "format": "directory-path",
