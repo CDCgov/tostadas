@@ -432,7 +432,7 @@ class MetadataParser:
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	
 	def extract_biosample_metadata(self):
-		columns = ['strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','organism',
+		columns = ['strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','country','state','organism',
 				   'sample_type','collection_date','isolation_source','host_age','host_sex', 'race','ethnicity']  # BioSample specific columns
 		all_columns = columns + self.custom_columns # add custom columns to BioSample specific cols
 		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
@@ -969,11 +969,13 @@ class GenbankSubmission(XMLSubmission, Submission):
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
 		# Fall back to sample_id when ncbi-spuid-sra is empty (non-SRA submissions)
-		seq_id = self.top_metadata.get("ncbi-spuid-sra") or self.sample.sample_id
+		seq_id = self.top_metadata.get("ncbi-spuid-sra")
+		if pd.isna(seq_id) if isinstance(seq_id, float) else not seq_id:
+			seq_id = self.sample.sample_id
 
 		# Fall back to country + state when geo_loc_name is absent
 		country = self.biosample_metadata.get("geo_loc_name")
-		if not country:
+		if pd.isna(country) if isinstance(country, float) else not country:
 			country = self.biosample_metadata.get("country", "")
 			state = self.biosample_metadata.get("state", "")
 			if country and state:
