@@ -968,13 +968,29 @@ class GenbankSubmission(XMLSubmission, Submission):
 
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
+		# Fall back to sample_id when ncbi-spuid-sra is empty (non-SRA submissions)
+		seq_id = self.top_metadata.get("ncbi-spuid-sra") or self.sample.sample_id
+
+		# Fall back to country + state when geo_loc_name is absent
+		country = self.biosample_metadata.get("geo_loc_name")
+		if not country:
+			country = self.biosample_metadata.get("country", "")
+			state = self.biosample_metadata.get("state", "")
+			if country and state:
+				country = f"{country}: {state}"
+
+		# Strip time component from pandas datetime strings
+		collection_date = self.biosample_metadata.get("collection_date")
+		if collection_date:
+			collection_date = str(collection_date).split(" ")[0]
+
 		source_data = {
-			"Sequence_ID": self.top_metadata.get("ncbi-spuid-sra"),
+			"Sequence_ID": seq_id,
 			"strain": self.biosample_metadata.get("strain"),
 			"BioProject": self.top_metadata.get("ncbi-bioproject"),
 			"organism": self.biosample_metadata.get("organism"),
-			"Collection_date": self.biosample_metadata.get("collection_date"),
-			"country": self.biosample_metadata.get("geo_loc_name"),
+			"Collection_date": collection_date,
+			"country": country,
 			"isolate": self.biosample_metadata.get("isolate"),
 			"host": self.biosample_metadata.get("host"),
 			"isolation_source": self.biosample_metadata.get("isolation_source")
