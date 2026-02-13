@@ -341,6 +341,7 @@ class GetParams:
 		parser.add_argument("--identifier", help="Original metadaata file prefix as unique identifier for NCBI FTP site folder name", required=True)
 		parser.add_argument("--submission_report", help="Path to submission report csv file", required=False, default="submission_report.csv")
 		parser.add_argument("--species", help="Type of organism data", required=True)
+		parser.add_argument("--mol_type", help="Molecule type for table2asn (e.g. genomic, viral cRNA)", required=False, default="genomic")
 		parser.add_argument('--sample', action='append', help='Comma-separated sample attributes')
 		# optional parameters
 		parser.add_argument("-o", "--outdir", type=str, default='submission_outputs',
@@ -1100,42 +1101,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("  },\n")
 			f.write("  subtype new\n")
 			f.write("}\n")
-			f.write("Seqdesc ::= pub {\n")
-			f.write("  pub {\n")
-			f.write("    gen {\n")
-			f.write("      cit \"" + publication_status + "\",\n")
-			f.write("      authors {\n")
-			f.write("        names std {\n")
-			authors_list = self.safe_text(self.top_metadata.get("authors")).split("; ")
-			if authors_list[0] not in ["Not Provided", ""]:
-				total_names = len(authors_list)
-				for index, author in enumerate(authors_list, start=1):
-					# Parse the author name into first, middle, last, suffix, title
-					name = HumanName(author.strip())
-					f.write("        {\n")
-					f.write("          name name {\n")
-					f.write("            last \"" + self.safe_text(name.last) + "\",\n")
-					f.write("            first \"" + self.safe_text(name.first) + "\"")
-					middle_name = self.safe_text(name.middle)
-					if middle_name != "Not Provided":
-						f.write(",\n            middle \"" + middle_name + "\"")
-					suffix = self.safe_text(name.suffix)
-					if suffix != "Not Provided":
-						f.write(",\n            suffix \"" + suffix + "\"")
-					title = self.safe_text(name.title)
-					if title != "Not Provided":
-						f.write(",\n            title \"" + title + "\"")
-					f.write("\n          }\n")
-					if index == total_names:
-						f.write("        }\n")
-					else:
-						f.write("        },\n")
-			f.write("        }\n")
-			f.write("      },\n")
-			f.write("      title \"" + publication_title + "\"\n")
-			f.write("    }\n")
-			f.write("  }\n")
-			f.write("}\n")
 			if alt_submitter_email is not None and alt_submitter_email.strip() != "":
 				f.write("Seqdesc ::= user {\n")
 				f.write("  type str \"Submission\",\n")
@@ -1243,6 +1208,10 @@ class GenbankSubmission(XMLSubmission, Submission):
 		if not self.sample.ftp_upload:
 			cmd.append("-src-file")
 			cmd.append(f"{self.outdir}/source.src")
+		# Set molecule type if not default genomic
+		mol_type = self.parameters.get('mol_type', 'genomic')
+		if mol_type != 'genomic':
+			cmd.extend(["-j", f"[molinfo={mol_type}]"])
 		# Run the command and capture errors
 		logging.info(f'table2asn command: {shlex.join(cmd)}')
 		try:

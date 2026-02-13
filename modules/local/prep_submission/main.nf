@@ -52,6 +52,7 @@ process PREP_SUBMISSION {
         --metadata_file ${meta.batch_tsv} \
         --identifier ${params.metadata_basename} \
         --species $params.organism_type \
+        --mol_type '$params.mol_type' \
         --outdir  ${meta.batch_id} \
         ${sample_args} \
         --submission_mode $params.submission_mode \
