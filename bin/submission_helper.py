@@ -988,10 +988,10 @@ class GenbankSubmission(XMLSubmission, Submission):
 		if collection_date:
 			collection_date = str(collection_date).split(" ")[0]
 
+		bioproject = self.top_metadata.get("ncbi-bioproject")
 		source_data = {
 			"Sequence_ID": seq_id,
 			"strain": self.biosample_metadata.get("strain"),
-			"BioProject": self.top_metadata.get("ncbi-bioproject"),
 			"organism": self.biosample_metadata.get("organism"),
 			"Collection_date": collection_date,
 			"country": country,
@@ -1000,6 +1000,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 			"isolation_source": self.biosample_metadata.get("isolation_source"),
 			"note": self.biosample_metadata.get("note")
 		}
+		if bioproject and str(bioproject).strip() not in ("", "nan", "Not Provided"):
+			source_data["BioProject"] = bioproject
 		source_df = pd.DataFrame([source_data])
 		source_df.to_csv(os.path.join(self.outdir, "source.src"), sep="\t", index=False)
 
@@ -1123,19 +1125,13 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("}\n")
 
 	def _strip_sqn_blocks(self, content):
-		"""Remove pub citation and DBLink/BioProject blocks from .sqn ASN.1 text."""
+		"""Remove pub citation block from .sqn ASN.1 text."""
 		lines = content.split('\n')
 		result = []
 		i = 0
 		while i < len(lines):
 			stripped = lines[i].strip()
-			remove = False
 			if stripped == 'pub {' or stripped == 'pub {,':
-				remove = True
-			elif stripped == 'user {' or stripped == 'user {,':
-				if i + 1 < len(lines) and 'DBLink' in lines[i + 1]:
-					remove = True
-			if remove:
 				depth = 0
 				while i < len(lines):
 					depth += lines[i].count('{') - lines[i].count('}')
@@ -1175,7 +1171,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 			# Remove pub and DBLink blocks if requested
 			if self.parameters.get('strip_pub_block', False):
 				content = self._strip_sqn_blocks(content)
-				logging.info(f"Stripped pub/DBLink blocks from {sqn_file}")
+				logging.info(f"Stripped pub block from {sqn_file}")
 			with open(sqn_file, 'w') as f:
 				f.write(content)
 		logging.info(f"Genbank files prepared for {self.sample.sample_id}")
