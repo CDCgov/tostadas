@@ -433,7 +433,7 @@ class MetadataParser:
 	
 	def extract_biosample_metadata(self):
 		columns = ['strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','country','state','organism',
-				   'sample_type','collection_date','isolation_source','host_age','host_sex', 'race','ethnicity']  # BioSample specific columns
+				   'sample_type','collection_date','isolation_source','host_age','host_sex', 'race','ethnicity','note']  # BioSample specific columns
 		all_columns = columns + self.custom_columns # add custom columns to BioSample specific cols
 		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
@@ -995,7 +995,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 			"country": country,
 			"isolate": self.biosample_metadata.get("isolate"),
 			"host": self.biosample_metadata.get("host"),
-			"isolation_source": self.biosample_metadata.get("isolation_source")
+			"isolation_source": self.biosample_metadata.get("isolation_source"),
+			"note": self.biosample_metadata.get("note")
 		}
 		source_df = pd.DataFrame([source_data])
 		source_df.to_csv(os.path.join(self.outdir, "source.src"), sep="\t", index=False)
