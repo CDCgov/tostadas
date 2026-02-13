@@ -1211,7 +1211,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 		# Set molecule type if not default genomic
 		mol_type = self.parameters.get('mol_type', 'genomic')
 		if mol_type != 'genomic':
-			cmd.extend(["-j", f"[molinfo={mol_type}]"])
+			cmd.extend(["-j", f"[mol_type={mol_type}]"])
 		# Run the command and capture errors
 		logging.info(f'table2asn command: {shlex.join(cmd)}')
 		try:
