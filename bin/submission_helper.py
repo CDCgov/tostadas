@@ -1131,9 +1131,18 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.create_comment_file()
 		# Create authorset file
 		self.create_authorset_file()
-		# Rename and move the fasta for table2asn call
+		# Copy the fasta for table2asn, adding mol_type to defline if needed
 		renamed_fasta = os.path.join(self.outdir, "sequence.fsa")
-		symlink_or_copy(self.sample.fasta_file, renamed_fasta)
+		mol_type = self.parameters.get('mol_type', 'genomic')
+		if mol_type != 'genomic':
+			with open(self.sample.fasta_file, 'r') as fin, open(renamed_fasta, 'w') as fout:
+				for line in fin:
+					if line.startswith('>'):
+						fout.write(line.rstrip() + f" [mol_type={mol_type}]\n")
+					else:
+						fout.write(line)
+		else:
+			symlink_or_copy(self.sample.fasta_file, renamed_fasta)
 		# Run table2asn 
 		self.run_table2asn()
 		logging.info(f"Genbank files prepared for {self.sample.sample_id}")
@@ -1208,10 +1217,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 		if not self.sample.ftp_upload:
 			cmd.append("-src-file")
 			cmd.append(f"{self.outdir}/source.src")
-		# Set molecule type if not default genomic
-		mol_type = self.parameters.get('mol_type', 'genomic')
-		if mol_type != 'genomic':
-			cmd.extend(["-j", f"[mol_type={mol_type}]"])
 		# Run the command and capture errors
 		logging.info(f'table2asn command: {shlex.join(cmd)}')
 		try:
