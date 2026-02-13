@@ -1131,20 +1131,22 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.create_comment_file()
 		# Create authorset file
 		self.create_authorset_file()
-		# Copy the fasta for table2asn, adding mol_type to defline if needed
+		# Copy the fasta for table2asn
 		renamed_fasta = os.path.join(self.outdir, "sequence.fsa")
+		symlink_or_copy(self.sample.fasta_file, renamed_fasta)
+		# Run table2asn
+		self.run_table2asn()
+		# Post-process .sqn to fix biomol if mol_type is not default genomic
 		mol_type = self.parameters.get('mol_type', 'genomic')
 		if mol_type != 'genomic':
-			with open(self.sample.fasta_file, 'r') as fin, open(renamed_fasta, 'w') as fout:
-				for line in fin:
-					if line.startswith('>'):
-						fout.write(line.rstrip() + f" [mol_type={mol_type}]\n")
-					else:
-						fout.write(line)
-		else:
-			symlink_or_copy(self.sample.fasta_file, renamed_fasta)
-		# Run table2asn 
-		self.run_table2asn()
+			sqn_file = os.path.join(self.outdir, f"{self.sample.sample_id}.sqn")
+			if os.path.isfile(sqn_file):
+				with open(sqn_file, 'r') as f:
+					content = f.read()
+				content = content.replace('biomol genomic', 'biomol cRNA')
+				with open(sqn_file, 'w') as f:
+					f.write(content)
+				logging.info(f"Updated biomol to cRNA in {sqn_file}")
 		logging.info(f"Genbank files prepared for {self.sample.sample_id}")
 
 	# Functions for running table2asn
