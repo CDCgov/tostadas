@@ -342,6 +342,7 @@ class GetParams:
 		parser.add_argument("--submission_report", help="Path to submission report csv file", required=False, default="submission_report.csv")
 		parser.add_argument("--species", help="Type of organism data", required=True)
 		parser.add_argument("--mol_type", help="Molecule type for table2asn (e.g. genomic, viral cRNA)", required=False, default="genomic")
+		parser.add_argument("--strip_pub_block", help="Remove pub citation and DBLink blocks from .sqn", required=False, action="store_const", default=False, const=True)
 		parser.add_argument('--sample', action='append', help='Comma-separated sample attributes')
 		# optional parameters
 		parser.add_argument("-o", "--outdir", type=str, default='submission_outputs',
@@ -1121,6 +1122,31 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("  }\n")
 			f.write("}\n")
 
+	def _strip_sqn_blocks(self, content):
+		"""Remove pub citation and DBLink/BioProject blocks from .sqn ASN.1 text."""
+		lines = content.split('\n')
+		result = []
+		i = 0
+		while i < len(lines):
+			stripped = lines[i].strip()
+			remove = False
+			if stripped == 'pub {' or stripped == 'pub {,':
+				remove = True
+			elif stripped == 'user {' or stripped == 'user {,':
+				if i + 1 < len(lines) and 'DBLink' in lines[i + 1]:
+					remove = True
+			if remove:
+				depth = 0
+				while i < len(lines):
+					depth += lines[i].count('{') - lines[i].count('}')
+					i += 1
+					if depth <= 0:
+						break
+				continue
+			result.append(lines[i])
+			i += 1
+		return '\n'.join(result)
+
 	def prep_table2asn_files(self):
 		""" Creates authorset (sbt), comment (cmt), source (src) files
 			Runs table2asn on them
@@ -1136,17 +1162,22 @@ class GenbankSubmission(XMLSubmission, Submission):
 		symlink_or_copy(self.sample.fasta_file, renamed_fasta)
 		# Run table2asn
 		self.run_table2asn()
-		# Post-process .sqn to fix biomol if mol_type is not default genomic
-		mol_type = self.parameters.get('mol_type', 'genomic')
-		if mol_type != 'genomic':
-			sqn_file = os.path.join(self.outdir, f"{self.sample.sample_id}.sqn")
-			if os.path.isfile(sqn_file):
-				with open(sqn_file, 'r') as f:
-					content = f.read()
+		# Post-process .sqn
+		sqn_file = os.path.join(self.outdir, f"{self.sample.sample_id}.sqn")
+		if os.path.isfile(sqn_file):
+			with open(sqn_file, 'r') as f:
+				content = f.read()
+			# Fix biomol for RNA viruses
+			mol_type = self.parameters.get('mol_type', 'genomic')
+			if mol_type != 'genomic':
 				content = content.replace('biomol genomic', 'biomol cRNA')
-				with open(sqn_file, 'w') as f:
-					f.write(content)
 				logging.info(f"Updated biomol to cRNA in {sqn_file}")
+			# Remove pub and DBLink blocks if requested
+			if self.parameters.get('strip_pub_block', False):
+				content = self._strip_sqn_blocks(content)
+				logging.info(f"Stripped pub/DBLink blocks from {sqn_file}")
+			with open(sqn_file, 'w') as f:
+				f.write(content)
 		logging.info(f"Genbank files prepared for {self.sample.sample_id}")
 
 	# Functions for running table2asn

@@ -29,6 +29,7 @@ process PREP_SUBMISSION {
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
     def wastewater = params.biosample_pkg == 'wastewater' ? '--wastewater' : ''
+    def strip_pub = params.strip_pub_block == true ? '--strip_pub_block' : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
@@ -60,6 +61,7 @@ process PREP_SUBMISSION {
         $send_submission_email \
         $sra $biosample $genbank \
         $wastewater \
-        $dry_run
+        $dry_run \
+        $strip_pub
     """
 }
