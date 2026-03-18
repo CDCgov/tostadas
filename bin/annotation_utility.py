@@ -124,13 +124,12 @@ class MainUtility:
     def gff2tbl(samp_name, gff_loc, tbl_output):
         """ Converts the reformatted gff file to a table
         """
-        # read in the reformatted gff file from above
         gff_input = open(f"{gff_loc}", "r")
-        # specify the output tbl file path and open it up
-        out_name = f"{tbl_output}/{samp_name}.tbl"
+        safe_name = samp_name.replace('/', '_')
+        out_name = f"{tbl_output}/{safe_name}.tbl"
         tbl = open(out_name, "w")
 
-        # write fasta header for the sample name
+        # Feature ID preserves original name (WHO strain format uses slashes)
         tbl.write('>' + 'Feature' + ' ' + samp_name + '\n')
         # iterate and skip the first two header rows
         for line in gff_input:
@@ -465,8 +464,13 @@ class MainVADRFuncs:
                 self.new_gff.write(f"{gene_line}{gene_attrs}\n")
                 self.new_gff.write(f"{cds_line}{cds_attrs}\n")
     
+    def safe_filename(self, name):
+        """Replace characters that are invalid in filenames."""
+        return name.replace('/', '_')
+
     def get_new_gff(self, sample):
-        self.new_gff = open(f"{self.parameters['output_path']}/gffs/{sample}_reformatted.gff", 'w', encoding='utf-8')
+        safe = self.safe_filename(sample)
+        self.new_gff = open(f"{self.parameters['output_path']}/gffs/{safe}_reformatted.gff", 'w', encoding='utf-8')
     
     def get_new_error_file(self):
         self.new_error_file = open(os.path.join(self.parameters['output_path'], 'errors/annotation_error.txt'), 'w', encoding='utf-8')

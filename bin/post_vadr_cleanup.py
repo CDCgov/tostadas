@@ -42,11 +42,15 @@ def main():
     processor.line_cleanup()
 
     # Convert each GFF to a .tbl file and insert additional CDS entries
+    def safe_filename(name):
+        return name.replace('/', '_')
+
     for sample in processor.sample_info:
-        gff_file = transformed_outdir / 'gffs' / f'{sample}_reformatted.gff'
+        safe = safe_filename(sample)
+        gff_file = transformed_outdir / 'gffs' / f'{safe}_reformatted.gff'
         tbl_outdir = transformed_outdir / 'tbl'
         main_util.gff2tbl(sample, str(gff_file), str(tbl_outdir))
-        tbl_file = str(tbl_outdir / f'{sample}.tbl')
+        tbl_file = str(tbl_outdir / f'{safe}.tbl')
         processor.insert_additional_cds(tbl_file, sample)
 
 
