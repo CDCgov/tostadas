@@ -62,6 +62,8 @@ process PREP_SUBMISSION {
         $sra $biosample $genbank \
         $wastewater \
         $dry_run \
-        $strip_pub
+        $strip_pub \
+        --genome_representation '$params.genome_representation' \
+        --expected_final_version '$params.expected_final_version'
     """
 }

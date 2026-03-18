@@ -355,6 +355,8 @@ class GetParams:
 		parser.add_argument("--sra", help="Optional flag to run SRA submission", action="store_const", default=False, const=True)
 		parser.add_argument("--wastewater", action="store_true", help="Prepare submission with wastewater specific metadata")
 		parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
+		parser.add_argument("--genome_representation", type=str, default="Full", help="WGS genome representation value (Full or Partial)")
+		parser.add_argument("--expected_final_version", type=str, default="Yes", help="WGS expected final version value (Yes or No)")
 		return parser
 
 class SubmissionConfigParser:
@@ -947,9 +949,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 		description = ET.SubElement(genome, "Description")
 		assembly_metadata_choice = ET.SubElement(description, "GenomeAssemblyMetadataChoice")
 		ET.SubElement(assembly_metadata_choice, "StructuredComment")
-		# todo: these need to be controlled variables
-		ET.SubElement(description, "GenomeRepresentation").text = "Full"
-		ET.SubElement(description, "ExpectedFinalVersion").text = "Yes"
+		ET.SubElement(description, "GenomeRepresentation").text = self.parameters.get("genome_representation", "Full")
+		ET.SubElement(description, "ExpectedFinalVersion").text = self.parameters.get("expected_final_version", "Yes")
 		# AttributeRefId for BioProject
 		attribute_ref = ET.SubElement(add_files, "AttributeRefId")
 		ref_id = ET.SubElement(attribute_ref, "RefId")
