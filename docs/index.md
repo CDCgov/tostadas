@@ -8,9 +8,7 @@ A portable, open-source pipeline designed to streamline submission of pathogen g
 + Genome Annotation    
 + File submission    
 
-TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses and select bacteria. Testing for additional pathogen is planned for future releases.
-
-The current release is tested with sequence data from Poxviruses and select bacteria but TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both.
+TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses, RSV, Measles, and select bacteria.
 
 ## Pipeline Summary
 

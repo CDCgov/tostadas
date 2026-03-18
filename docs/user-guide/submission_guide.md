@@ -1,4 +1,4 @@
-# Submission Guide 
+# Submission Guide
 
 ## Table of Contents
 - [Putting together the Nextflow command](#putting-together-the-nextflow-command)
@@ -8,8 +8,15 @@
 - [Other customizations](#other-customizations)
 - [Submitting to Production](#submitting-to-production)
 - [Typical example workflow](#typical-example-workflow)
+- [GenBank Submission Conditions](#genbank-submission-conditions)
+  - [Submission paths by organism type](#submission-paths-by-organism-type)
+  - [Prerequisites](#prerequisites)
+  - [Annotation directives](#annotation-directives)
+  - [Processing times](#processing-times)
+  - [Accession retrieval](#accession-retrieval)
 - [Submission config fields](#submission-config-fields)
 - [Custom metadata validation and custom BioSample package](#custom-metadata-validation-and-custom-biosample-package)
+  - [Supported BioSample packages](#supported-biosample-packages)
   - [Built-in BioSample package profiles](#built-in-biosample-package-profiles)
 
 ## Putting together the Nextflow command
@@ -28,7 +35,7 @@ Choose how you want to run TOSTADAS using the `--workflow` parameter:
 
 ## Choosing an organism type and/or virus subtype
 
-If you want to run viral annotation, you need to specify a `--virus_subtype <mpxv|rsv>`.  This tells TOSTADAS which annotator profile to use if you're running VADR.
+If you want to run viral annotation, you need to specify a `--virus_subtype <mpxv|rsv|mev>`.  This tells TOSTADAS which annotator profile to use if you're running VADR.
 
 If you want to run bacterial annotation, you need to specify `--organism_type bacteria`. This tells TOSTADAS to annotate using bakta.  You can instead use a profile (see [Using specific profiles](#using-specific-profiles)).
 
@@ -41,11 +48,12 @@ TOSTADAS supports some profiles to make submission easier.  These are specified 
 
 - **test**: Runs a test submission. It prepares all the files but does not actually submit to the test server. To submit to the test server, add `dry_run false`
 - **nwss**: Submits to SARS-CoV-2.wwsurv.1.0 BioSample package.
-- **pulsenet**: Submits to OneHealthEnteric.1.0 BioSample package. 
+- **pulsenet**: Submits to OneHealthEnteric.1.0 BioSample package.
 - **virus**: Sets defaults for virus submission (to run a test bacteria submission, use `profile test,virus,<docker|singularity|conda>`)
 - **bacteria**: Sets defaults for bacteria submission (to run a test bacteria submission, use `profile test,bacteria,<docker|singularity|conda>`)
 - **mpox**: Sets defaults for MPOX submission (to run a test MPOX submission, use `profile test,mpox,<docker|singularity|conda>`)
 - **rsv**: Sets defaults for RSV submission (to run a test RSV submission, use `profile test,rsv,<docker|singularity|conda>`)
+- **measles**: Sets defaults for Measles submission (to run a test Measles submission, use `profile test,measles,<docker|singularity|conda>`)
 
 ## Other customizations
 
@@ -53,42 +61,95 @@ All the custom parameters for TOSTADAS are found in nextflow.config and the conf
 
 For example, the default output directory is `results`, but you can override that and choose your own output directory using `--outdir path/to/my/output` in your command.
 
-TOSTADAS can chunk large datasets into smaller groups to submit to NCBI's servers using the `--batch_size` flag.  If you have a metadata Excel file with 200 samples, you can submit them in batches of 50 by adding `--batch_size 50` to your command. This groups 50 samples at a time into one submission file for each data repository. NCBI much prefers this over submitting samples one-at-a-time.   
+TOSTADAS can chunk large datasets into smaller groups to submit to NCBI's servers using the `--batch_size` flag.  If you have a metadata Excel file with 200 samples, you can submit them in batches of 50 by adding `--batch_size 50` to your command. This groups 50 samples at a time into one submission file for each data repository. NCBI much prefers this over submitting samples one-at-a-time.
 
-We **highly** recommend you submit using batches!!! We suggest 50 as a maximum batch size.   
+We **highly** recommend you submit using batches!!! We suggest 50 as a maximum batch size.
 
 Another example: the `--dry_run` flag (which prepares files for submission but doesn't upload to the server) defaults to `true` for the test profile and `false` otherwise, but you can override it by specifying `--dry_run <true|false>` on the command line.
 
-## Submitting to Production 
+## Submitting to Production
 
-TOSTADAS defaults to submitting to the test server even if not using the test profile, to avoid accidentally pushing data to NCBI's Production server.   
+TOSTADAS defaults to submitting to the test server even if not using the test profile, to avoid accidentally pushing data to NCBI's Production server.
 
-When you've completed testing and are ready to submit for production, add `--prod_submission` to your command line (or change `prod_submission` to `true` in `nextflow.config`).    
+When you've completed testing and are ready to submit for production, add `--prod_submission` to your command line (or change `prod_submission` to `true` in `nextflow.config`).
 
 ## Typical example workflow
 
-We'll run test submissions to BioSample and SRA using the test MPOX data included in the repository.   
+We'll run test submissions to BioSample and SRA using the test MPOX data included in the repository.
 
-Submit to biosample and sra:   
-`nextflow run main.nf -profile test,singularity,mpox --workflow biosample_and_sra --dry_run false --submission_config conf/submission_config.yaml --batch_size 5`   
-**Remember** to add credentials to your submission_config.yaml file.   
+Submit to biosample and sra:
+`nextflow run main.nf -profile test,singularity,mpox --workflow biosample_and_sra --dry_run false --submission_config conf/submission_config.yaml --batch_size 5`
+**Remember** to add credentials to your submission_config.yaml file.
 
-Fetch the accessions if they weren’t assigned (this workflow creates an updated Metadata Excel file with the validated fields and the accession IDs):   
-`nextflow run main.nf -profile test,singularity,mpox --workflow fetch_accessions --dry_run false --submission_config conf/submission_config.yaml`   
-   
-Submit an updated biosample submission (open the updated Excel file from results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx and add some fake SAMN IDs first):   
-`nextflow run main.nf -profile test,singularity --workflow update_submission --dry_run false --species mpxv --submission_config conf/submission_config.yaml --batch_size 5 --original_submission_outdir results/mpxv_test_metadata/submission_outputs --meta_path results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx`   
-**Remember** This won’t run without those fake SAMN IDs in the biosample_accession field.   
-   
-Now we'll run a test GenBank submission using the test bacteria data included in the repository.   
+Fetch the accessions if they weren't assigned (this workflow creates an updated Metadata Excel file with the validated fields and the accession IDs):
+`nextflow run main.nf -profile test,singularity,mpox --workflow fetch_accessions --dry_run false --submission_config conf/submission_config.yaml`
 
-Submit to BioSample first (because GenBank requires a BioSample accession):   
-`nextflow run main.nf -profile test,singularity,bacteria --workflow biosample_and_sra --dry_run false --submission_config conf/submission_config.yaml`   
-   
-Open the updated Excel file from results/bacteria_test_metadata_1/final_submission_outputs/bacteria_test_metadata_1_updated.xlsx and add some fake SAMN IDs first.   
-**The next command won't run without the fake SAMN IDs in biosample_accession column**.   
-`nextflow run main.nf -profile test,singularity,bacteria --workflow genbank --dry_run false --submission_config conf/submission_config.yaml --annotation --download_bakta_db --bakta_db_light`   
-   
+Submit an updated biosample submission (open the updated Excel file from results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx and add some fake SAMN IDs first):
+`nextflow run main.nf -profile test,singularity --workflow update_submission --dry_run false --species mpxv --submission_config conf/submission_config.yaml --batch_size 5 --original_submission_outdir results/mpxv_test_metadata/submission_outputs --meta_path results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx`
+**Remember** This won't run without those fake SAMN IDs in the biosample_accession field.
+
+Now we'll run a test GenBank submission using the test bacteria data included in the repository.
+
+Submit to BioSample first (because GenBank requires a BioSample accession):
+`nextflow run main.nf -profile test,singularity,bacteria --workflow biosample_and_sra --dry_run false --submission_config conf/submission_config.yaml`
+
+Open the updated Excel file from results/bacteria_test_metadata_1/final_submission_outputs/bacteria_test_metadata_1_updated.xlsx and add some fake SAMN IDs first.
+**The next command won't run without the fake SAMN IDs in biosample_accession column**.
+`nextflow run main.nf -profile test,singularity,bacteria --workflow genbank --dry_run false --submission_config conf/submission_config.yaml --annotation --download_bakta_db --bakta_db_light`
+
+## GenBank Submission Conditions
+
+GenBank submission behavior in TOSTADAS varies depending on the organism type. This section describes the submission paths, prerequisites, annotation handling, expected processing times, and how to retrieve accessions.
+
+### Submission paths by organism type
+
+**Bacteria and eukaryotes** submit via the Whole Genome Shotgun (WGS) pathway. Set `--organism_type bacteria` or `--organism_type eukaryote`. The pipeline generates WGS-formatted XML (`target_db="WGS"`) and uploads it via FTP to NCBI. This path requires genome completeness fields in the submission XML (see [WGS prerequisites](#wgs-prerequisites) below).
+
+**SARS-CoV-2 and influenza** submit via BankIt FTP. Set `--organism_type virus`. The pipeline generates submission XML with `target_db="GenBank"` and uploads via FTP. NCBI annotates these sequences server-side, so no SQN file is generated or required.
+
+**All other viruses** (e.g., mpox, RSV) require an SQN file produced by VADR annotation. The pipeline generates the SQN file locally, packages it into a zip archive, and emails it to NCBI. This submission cannot be done via FTP; it must go through email (either automated by TOSTADAS when `table2asn_email` is configured, or manually by emailing the zip from the results folder).
+
+### Prerequisites
+
+**BioSample must be submitted before GenBank.** The WGS submission XML references each sample's `biosample_accession`, so those accessions must already exist. If you use the `full_submission` workflow, TOSTADAS handles this ordering automatically. If you run workflows individually, submit BioSample first, fetch accessions, then run the `genbank` workflow.
+
+#### WGS prerequisites
+
+For WGS submissions (bacteria and eukaryotes), TOSTADAS includes two additional fields in the submission XML:
+
+- `genome_representation` -- Set to `Full` (complete genome) or `Partial` (incomplete assembly). Defaults to `Full`.
+- `expected_final_version` -- Set to `Yes` if this is the final version of the assembly or `No` if updates are expected. Defaults to `Yes`.
+
+These can be configured via your metadata or pipeline parameters.
+
+### Annotation directives
+
+When no annotation file is provided, the pipeline automatically adds annotation directives to the submission XML:
+
+- **WGS submissions**: Adds `annotate=yes`, which requests NCBI run PGAP (Prokaryotic Genome Annotation Pipeline) on the submitted assembly.
+- **BankIt submissions**: Adds `auto_remove_failed_seqs=yes`, which tells NCBI to automatically drop sequences that fail validation rather than rejecting the entire submission.
+
+If you supply your own annotation files, these directives are not added.
+
+### Processing times
+
+Expect the following turnaround times after submission to NCBI:
+
+| Organism / Pathway | Typical Processing Time |
+|---|---|
+| SARS-CoV-2 (BankIt FTP) | ~10 minutes |
+| Influenza via BankIt FTP | 1--5 days |
+| WGS bacteria or eukaryote | 2--4 weeks |
+| Annotated eukaryotes | 1+ months |
+
+These times are approximate and depend on NCBI queue depth. Production submissions generally process faster than test submissions.
+
+### Accession retrieval
+
+**FTP-submitted organisms** (bacteria, eukaryotes, and BankIt viruses): Accessions are available in `report.xml` on the NCBI FTP server. Use the `fetch_accessions` workflow to download and parse these reports automatically.
+
+**Email-submitted viruses** (mpox, RSV, and other non-BankIt viruses): Accessions are not available via FTP. Check the [NCBI Submission Portal](https://submit.ncbi.nlm.nih.gov/) manually for status and assigned accession numbers.
+
 ## Submission config fields
 
 The fields and corresponding example values can be found here: [Submission Config](https://github.com/CDCgov/tostadas/raw/master/conf/submission_config.yaml).
@@ -125,6 +186,25 @@ The fields and corresponding example values can be found here: [Submission Confi
 
 ## Custom metadata validation and custom BioSample package
 
+### Supported BioSample packages
+
+TOSTADAS validates required fields for each BioSample package using `assets/biosample_fields_key.yaml`. The table below lists every package that TOSTADAS supports with built-in field validation. To select a package, set the `BioSample_package` field in `conf/submission_config.yaml` to the desired package name.
+
+| Package | Description | Nextflow Profile |
+|---|---|---|
+| `Pathogen.cl.1.0` | Pathogen: clinical or host-associated sample data (pipeline default) | -- |
+| `Pathogen.env.1.0` | Pathogen: environmental or food sample data | -- |
+| `SARS-CoV-2.cl.1.0` | SARS-CoV-2: clinical or host-associated surveillance | -- |
+| `SARS-CoV-2.wwsurv.1.0` | SARS-CoV-2: wastewater surveillance (NWSS program) | `nwss` |
+| `Microbe.1.0` | General microbial samples | -- |
+| `Virus.1.0` | General virus isolate samples | -- |
+| `Human.1.0` | Human tissue or clinical samples | -- |
+| `Metagenome.environmental.1.0` | Environmental metagenome samples | -- |
+| `OneHealthEnteric.1.0` | PulseNet One Health enteric pathogen surveillance | `pulsenet` |
+| `Beta-lactamase.1.0` | Beta-lactamase antimicrobial resistance characterization | -- |
+
+Packages listed with a Nextflow profile name (e.g., `nwss`, `pulsenet`) have a preconfigured profile that automatically sets the correct custom fields JSON and metadata template. For those packages, see [Built-in BioSample package profiles](#built-in-biosample-package-profiles) below. Packages marked `--` require manual configuration as described in the steps that follow.
+
 TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; version 1.0) NCBI BioSample package for submissions to the BioSample repository. You can submit using a different BioSample package by doing the following:
 
 1.  Change the package name in the `conf/submission_config.yaml`. Choose one of the available [NCBI BioSample packages](https://www.ncbi.nlm.nih.gov/biosample/docs/packages/).
@@ -142,7 +222,7 @@ new\_field\_name: TOSTADAS will replace the field name in your metadata Excel fi
 
 TOSTADAS has built-in profiles for two BioSample packages to support specific programs.  These profiles automatically import a custom_fields JSON file preconfigured for that package. Here's how to use them:
 
-* SARS-CoV-2.wwsurv.1.0 
+* SARS-CoV-2.wwsurv.1.0
     1. Change the BioSample_package field in `conf/submission_config.yaml` to `SARS-CoV-2.wwsurv.1.0`
     2. Use `assets/sample_metadata/wastewater_biosample_template.xlsx` as your metadata template
     3. Run as: `nextflow run main.nf -profile nwss,<docker|singularity> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>`

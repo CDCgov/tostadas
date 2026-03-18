@@ -42,7 +42,7 @@ The following workflows are available for the `--workflow` parameter:
 | --remove_demographic_info | Flag to remove demographic info. If true, values in host_sex, host_age, race, ethnicity are set to 'Not Provided' | Yes (true/false) |
 | --batch_size | The number of samples to prepare in one submission file. | No (integer) |
 | --organism_type | Used for annotation and to choose GenBank workflow. Options: bacteria, virus, eukaryote | No (integer) |
-| --virus_subtype | Used for VADR annotation. Options: mpxv, rsv.| No (integer) |
+| --virus_subtype | Used for VADR annotation. Options: mpxv, rsv, mev.| No (integer) |
 
 ## General Output
 

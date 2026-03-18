@@ -75,6 +75,16 @@ cpan install LWP
 If error about sqp_opts.pm copy the files in sequip to your Perl path, which is shown as the @INC 
 `cp sequip/* <YOUR_PATH>`
 
+### **Set Up the Measles (MEV) Model Directory**
+
+The measles VADR model is sourced from [vadr-models-mev](https://github.com/greninger-lab/vadr-models-mev). When using the `measles` profile, the pipeline automatically downloads the model via the `vadr_cm_url` parameter defined in `conf/measles.config`. The model files are placed in `vadr_files/mev-models/`.
+
+To download the model manually:
+```
+cd vadr_files
+git clone https://github.com/greninger-lab/vadr-models-mev.git mev-models
+```
+
 ### 6. Run the annotation script
 Ideally you have as many threads as samples, since VADR will give one thread to each sample
 ```
