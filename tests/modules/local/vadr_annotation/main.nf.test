@@ -8,15 +8,15 @@ nextflow_process {
 
         when {
             params {
-                virus_subtype = "mpxv"
-
+                virus_subtype = "rsv"
+                vadr_opts = "-r --xnocomp"
             }
             process {
                 """
-                input[0] =  [ [ batch_id: "batch_1",  batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv"), sample_id: "NY0006" ], 
-                               file("${projectDir}/tests/modules/local/vadr_annotation/NY0006.trimmed.fasta") 
+                input[0] =  [ [ batch_id: "batch_1",  batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv"), sample_id: "MZ568967" ],
+                               file("${projectDir}/assets/sample_fastas/rsv/MZ568967.fasta")
                             ]
-                input[1] = file("${projectDir}/vadr_files/mpxv-models/")
+                input[1] = file("${projectDir}/vadr_files/rsv-models/")
                 """
             }
         }
