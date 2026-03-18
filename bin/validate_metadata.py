@@ -238,9 +238,11 @@ class GetMetaAsDf:
 		# Map common NCBI source modifier column names to TOSTADAS names
 		column_aliases = {
 			'SeqId': 'sample_name',
+			'SeqID': 'sample_name',
 			'Strain': 'isolate',
 			'Collection_date': 'collection_date',
 			'Host': 'host',
+			'Isolate': 'isolate',
 		}
 		df.rename(columns={k: v for k, v in column_aliases.items() if k in df.columns and v not in df.columns}, inplace=True)
 		# Split NCBI-style "USA:State" country field into country + state
