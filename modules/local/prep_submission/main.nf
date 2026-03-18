@@ -10,6 +10,10 @@ process PREP_SUBMISSION {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
+    // Only retry on OOM/signal kills, not script errors
+    errorStrategy { task.exitStatus in [137, 139, 140, 143] ? 'retry' : 'finish' }
+    maxRetries 2
+
     input:
     tuple val(meta), val(samples), val(enabledDatabases)
     path(batch_tsv)

@@ -10,6 +10,10 @@ process SUBMIT_SUBMISSION {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
+    // submission.py is not idempotent; only retry on OOM/signal kills
+    errorStrategy { task.exitStatus in [137, 139, 140, 143] ? 'retry' : 'finish' }
+    maxRetries 1
+
     input:
     tuple val(meta), path(submission_files)
     path(submission_config)
