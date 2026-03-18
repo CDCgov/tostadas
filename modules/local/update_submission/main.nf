@@ -13,6 +13,7 @@ process UPDATE_SUBMISSION {
 
     input:
     tuple val(meta), val(samples), val(enabledDatabases)
+    path(batch_tsv)
     path(original_submissions_dir)
     path(submission_config)
     
@@ -40,7 +41,7 @@ process UPDATE_SUBMISSION {
         --submission_folder ${original_submissions_dir} \
         --submission_name ${meta.batch_id} \
         --config_file ${submission_config}  \
-        --metadata_file ${meta.batch_tsv} \
+        --metadata_file ${batch_tsv} \
         --identifier ${params.metadata_basename} \
         --outdir  ${meta.batch_id} \
         --submission_mode ${params.submission_mode} \

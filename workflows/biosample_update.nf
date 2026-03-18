@@ -65,11 +65,13 @@ workflow BIOSAMPLE_UPDATE {
         batch_summary
     )
 
+    // Carry the TSV as a proper path element so Nextflow stages it into the
+    // task work directory.  Embedding .toString() in val(meta) would store an
+    // absolute path that is unreachable on cloud executors and defeats caching.
     rebatch_ch = REBATCH_METADATA.out.rebatch_tuple
         .map { tsv_file, json_file ->
             def parsed = new groovy.json.JsonSlurper().parseText(json_file.text)
-            parsed.meta.batch_tsv = tsv_file.toString()  // path is guaranteed to exist
-            tuple(parsed.meta, parsed.samples, parsed.enabled)
+            tuple(parsed.meta, parsed.samples, parsed.enabled, tsv_file)
         }
 
     if (params.dry_run) {
@@ -80,8 +82,17 @@ workflow BIOSAMPLE_UPDATE {
 
 
     // Step 5: run update-submission on each rebatch
+    // Split the 4-element tuple into the channel arguments expected by the process
+    rebatch_meta_ch = rebatch_ch.map { meta, samples, enabled, batch_tsv ->
+        tuple(meta, samples, enabled)
+    }
+    rebatch_tsv_ch = rebatch_ch.map { meta, samples, enabled, batch_tsv ->
+        batch_tsv
+    }
+
     UPDATE_SUBMISSION(
-        rebatch_ch,
+        rebatch_meta_ch,
+        rebatch_tsv_ch,
         orig_submission_dir_ch,
         params.submission_config
     )
