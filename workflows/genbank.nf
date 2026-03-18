@@ -10,7 +10,8 @@ nextflow.enable.dsl=2
 include { validateParameters; paramsSummaryLog; samplesheetToList 	} from 'plugin/nf-schema'
 
 // get metadata validation processes
-include { CREATE_BATCH_TSVS                               			} from "../modules/local/create_batch_tsvs/main"
+include { METADATA_VALIDATION                               		} from "../modules/local/metadata_validation/main"
+include { CHECK_VALIDATION_ERRORS								} from "../modules/local/check_validation_errors/main"
 include { GENBANK_VALIDATION                               			} from "../modules/local/genbank_validation/main"
 
 // get viral annotation process/subworkflows
@@ -41,10 +42,21 @@ workflow GENBANK {
 	validateParameters()
 	log.info paramsSummaryLog(workflow)
 
-    // Create batches from Excel
-    CREATE_BATCH_TSVS(accession_augmented_xlsx, params.batch_size)
+    // Validate metadata and create batches (replaces CREATE_BATCH_TSVS to ensure
+    // derived columns like geo_loc_name and structuredcomment are always present)
+    METADATA_VALIDATION(accession_augmented_xlsx)
 
-    metadata_batch_ch = CREATE_BATCH_TSVS.out.tsv_files
+    // Enforce error checking before anything else continues
+    CHECK_VALIDATION_ERRORS(METADATA_VALIDATION.out.errors)
+
+    CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
+		if (status == "ERROR") {
+			log.info "Validation failed. Please check ${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/error.txt"
+			workflow.abort()
+		}
+	}
+
+    metadata_batch_ch = METADATA_VALIDATION.out.tsv_files
         .flatten()
             .map { batch_tsv ->
                 def meta = [
