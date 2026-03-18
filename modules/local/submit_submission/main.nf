@@ -7,8 +7,7 @@
 process SUBMIT_SUBMISSION {
 
     conda(params.env_yml)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
+    container 'docker.io/staphb/tostadas:latest'
 
     // submission.py is not idempotent; only retry on OOM/signal kills
     errorStrategy { task.exitStatus in [137, 139, 140, 143] ? 'retry' : 'finish' }

@@ -11,8 +11,7 @@
 process VADR_MODEL_SETUP {
 
     conda(params.vadr_env_yml)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker.io/staphb/vadr:latest' : 'docker.io/staphb/vadr:latest' }"
+    container 'docker.io/staphb/vadr:latest'
 
     // Network download; idempotent and safe to retry
     errorStrategy 'retry'
