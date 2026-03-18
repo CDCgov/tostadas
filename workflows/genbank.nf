@@ -44,7 +44,7 @@ workflow GENBANK {
 
     // Validate metadata and create batches (replaces CREATE_BATCH_TSVS to ensure
     // derived columns like geo_loc_name and structuredcomment are always present)
-    METADATA_VALIDATION(accession_augmented_xlsx)
+    METADATA_VALIDATION(accession_augmented_xlsx, file(params.submission_config))
 
     // Enforce error checking before anything else continues
     CHECK_VALIDATION_ERRORS(METADATA_VALIDATION.out.errors)
