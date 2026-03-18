@@ -14,7 +14,7 @@ TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing us
 
 ### (1) Metadata Validation
 
-Verifies that user-provided metadata conforms to NCBI standards and match the sequence data file(s), all of which are organized in an Excel spreadsheet ([example file](https://github.com/CDCgov/tostadas/blob/dev/assets/metadata_template.xlsx)). By default, TOSTADAS uses a set of metadata fields appropriate for most pathogen genomic data submissions, but can be configured to accommodate custom metadata fields specific to any use case. A full guide to using custom metadata fields can be found here: [Custom Metadata Guide](https://github.com/CDCgov/tostadas/blob/457242fb15973f69cb3578367317a8b5e7c619f7/docs/custom_metadata_guide.md)
+Verifies that user-provided metadata conforms to NCBI standards and match the sequence data file(s), all of which are organized in an Excel spreadsheet ([example file](https://github.com/CDCgov/tostadas/blob/dev/assets/metadata_template.xlsx)). By default, TOSTADAS uses a set of metadata fields appropriate for most pathogen genomic data submissions, but can be configured to accommodate custom metadata fields specific to any use case. A full guide to using custom metadata fields can be found here: [Custom Metadata Guide](user-guide/custom_metadata_guide.md)
 
 ### (2) Gene Annotation
 

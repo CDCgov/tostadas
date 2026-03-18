@@ -28,7 +28,7 @@ Run the following command to test your setup
 `nextflow run main.nf -profile nwss,test,[docker,singularity,conda]`
 
 ### 5. Run a test with real data
-Add a few of your actual samples to the Excel metadata sheet and submit these to the test server. NCBI provides a test server to validate the sftp connection before submitting to production. 
+Add a few of your actual samples to the Excel metadata sheet and submit these to the test server. NCBI provides a test server to validate the ftp connection before submitting to production. 
 
 `nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --dry_run false`
 

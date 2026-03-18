@@ -28,7 +28,7 @@ The following workflows are available for the `--workflow` parameter:
 - **biosample_and_sra**: Runs a submission to BioSample and SRA.
 - **genbank**: Runs a GenBank submission.
 - **fetch_accessions**: Fetches reports and updates the metadata file.
-- **full_submission**: Executes BioSample and SRA submissions, waits 60 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
+- **full_submission**: Executes BioSample and SRA submissions, waits 30 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
 - **update_submission**: Executes a BioSample submission using an updated metadata Excel file.
 
 **Note**: The GenBank submission cannot complete without a BioSample accession ID.
@@ -41,8 +41,8 @@ The following workflows are available for the `--workflow` parameter:
 | --publish_dir_mode | Mode for publishing directory, e.g., 'copy' or 'move' | Yes (string) |
 | --remove_demographic_info | Flag to remove demographic info. If true, values in host_sex, host_age, race, ethnicity are set to 'Not Provided' | Yes (true/false) |
 | --batch_size | The number of samples to prepare in one submission file. | No (integer) |
-| --organism_type | Used for annotation and to choose GenBank workflow. Options: bacteria, virus, eukaryote | No (integer) |
-| --virus_subtype | Used for VADR annotation. Options: mpxv, rsv, mev.| No (integer) |
+| --organism_type | Used for annotation and to choose GenBank workflow. Options: bacteria, virus, eukaryote | No (string) |
+| --virus_subtype | Used for VADR annotation. Options: mpxv, rsv, mev.| No (string) |
 
 ## General Output
 
@@ -99,7 +99,7 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --- | --- | --- |
 | --bakta | Toggle for running Bakta annotation | Yes (true/false as bool) |
 | --bakta_db_path | Path to Bakta database if user is supplying database | No (path to database) |
-| --download_bakta_db | Option to download Bakta database | Yes (true/false) |
+| --download_bakta_db | Option to download Bakta database. Default is empty string; the bacteria profile sets it to true. | No (true/false or empty string) |
 | --bakta_db_type | Bakta database type (light or full) | Yes (string) |
 | --bakta_outdir | File path to bakta specific sub-workflow outputs | Yes (folder name as string) |
 | --bakta_min_contig_length | Minimum contig size | Yes (integer) |
@@ -122,9 +122,9 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --sra | Submit to SRA | Yes (true/false as bool) |
 | --submission_outdir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
 | --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
-| --prod_submission | Whether to submit samples for test or actual production | Yes (prod or test as string) |
+| --prod_submission | Whether to submit to NCBI's production server. When false (default), submissions go to the test server. | No (true/false as bool, default: false) |
 | --submission_config | Configuration file for submission to public repos | Yes (path as string) |
-| --submission_wait_time | Calculated based on sample number (3 \* 60 secs \* sample_num) | integer (seconds) |
+| --submission_wait_time | Time in seconds to wait before fetching reports. Default is the string `'calc'`, which computes 30 seconds * batch_size at runtime. Can be overridden with an integer. | No (string or integer, default: 'calc') |
 | --send_submission_email | Toggle email notification on/off | Yes (true/false as bool) |
 | --submission_mode | Mode of submission | Yes (string) |
 

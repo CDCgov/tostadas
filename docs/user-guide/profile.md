@@ -39,7 +39,7 @@ All annotation workflows require single sample fasta input files. Input fasta fi
 
 ❗ This pipeline has been tested with paired-end sequence data.
 
-Example metadata [Link](https://github.com/CDCgov/tostadas/blob/bb47dce749eada90f3c879a3e373a2e27c36eca4/assets/sample_metadata/MPXV_metadata_Sample_Run_1.xlsx)
+Example metadata: [mpxv_test_metadata.xlsx](../assets/sample_metadata/mpxv_test_metadata.xlsx)
 
 
 ## Understanding Profiles and Environments:
@@ -81,7 +81,7 @@ If you change the naming of this folder structure, this workflow will not run.
 
 NCBI allows UI-less updating of BioSample submissions, and TOSTADAS can do this using the `--workflow update_submission` workflow option.
 
-You need to provide `--original_submission_dir` (the path to your original submission that you are updating) and `--meta_path` (the Excel file containing the new data for these same samples).
+You need to provide `--original_submission_outdir` (the path to your original submission that you are updating) and `--meta_path` (the Excel file containing the new data for these same samples).
 TOSTADAS will validate the metadata, recreate the same batches as in the original submission (using the batch_summary.json created during the first submission), update the original submission file and submit it.
 
 It will save the updated submissions as date-stamped batch folders under `--outdir` and within a subdirectory called the basename of your metadata file.

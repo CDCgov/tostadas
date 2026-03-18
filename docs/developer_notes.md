@@ -8,14 +8,14 @@ The workflows are:
 
 The user options for "workflow" are:
 1. `--workflow biosample_and_sra`: Runs BIOSAMPLE_AND_SRA, then runs the AGGREGATE_SUBMISSIONS subworkflow (fetches reports, aggregates them, updates metadata file)
-2. `--genbank`: Runs GENBANK workflow. It expects `--updated_meta_path` to point to an Excel file that matches the format of a validated metadata file (output of BIOSAMPLE_AND_SRA).
+2. `--workflow genbank`: Runs GENBANK workflow. It expects `--updated_meta_path` to point to an Excel file that matches the format of a validated metadata file (output of BIOSAMPLE_AND_SRA).
                 It automatically looks for this in the output directory in a subdirectory called `final_submission_outputs` within the metadata-specific subdirectory (`$params.outdir/$params.metadata_basename/$final_submission_outdir`)
-3. `--fetch_accessions`: Runs AGGREGATE_SUBMISSIONS. It will look in `--outdir` for the relevant metadata subdirectory (the basename of your metadata file) and then traverse the batch directories under `submission_outputs`.
+3. `--workflow fetch_accessions`: Runs AGGREGATE_SUBMISSIONS. It will look in `--outdir` for the relevant metadata subdirectory (the basename of your metadata file) and then traverse the batch directories under `submission_outputs`.
                          It fetches the report.xml files for biosample and sra submissions for each batch. It needs your NCBI Center credentials from `submission_config.yaml`
-4. `--full_submission`: Runs BIOSAMPLE_AND_SRA, then waits for awhile, then runs AGGREGATE_SUBMISSIONS, then runs GENBANK.
-                         It waits for `$params.submission_wait_time` seconds, and if `$params.submission_wait_time` is `calc`, then it waits for 3 minutes * `params.batch_size`.
-                         This is based on rudimentary testing that suggests NCBI takes about 3 minutes per submission to issue accession IDs (for multiple submissions).
-5. `--update_submission`: Runs BIOSAMPLE_UPDATE workflow.  It is used to submit updates to biosample accessions.
+4. `--workflow full_submission`: Runs BIOSAMPLE_AND_SRA, then waits for awhile, then runs AGGREGATE_SUBMISSIONS, then runs GENBANK.
+                         It waits for `$params.submission_wait_time` seconds, and if `$params.submission_wait_time` is `calc`, then it waits for 30 seconds * `params.batch_size`.
+                         This is based on rudimentary testing that suggests NCBI takes about 30 seconds per batch to issue accession IDs (for multiple submissions).
+5. `--workflow update_submission`: Runs BIOSAMPLE_UPDATE workflow.  It is used to submit updates to biosample accessions.
                            It requires an Excel metadata file with biosample_accession, such as the one output by BIOSAMPLE_AND_SRA here: `$params.outdir/$params.metadata_basename/$final_submission_outdir`.
 
 ## Workflow-Specific Details and Notes

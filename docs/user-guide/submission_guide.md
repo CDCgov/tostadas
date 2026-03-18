@@ -30,7 +30,7 @@ Choose how you want to run TOSTADAS using the `--workflow` parameter:
 - **biosample_and_sra**: Runs a submission to BioSample and SRA. Add `--biosample false` or `--sra false` to toggle off submission to one or the other.
 - **genbank**: Runs a GenBank submission. This requires an updated metadata file that includes `biosample_accession` as required by NCBI.
 - **fetch_accessions**: Fetches reports and updates the metadata file.
-- **full_submission**: Executes BioSample and SRA submissions, waits 60 seconds multiplied by `--batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
+- **full_submission**: Executes BioSample and SRA submissions, waits 30 seconds multiplied by `--batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
 - **update_submission**: Executes a BioSample submission using an updated metadata Excel file.
 
 ## Choosing an organism type and/or virus subtype
@@ -85,7 +85,7 @@ Fetch the accessions if they weren't assigned (this workflow creates an updated 
 `nextflow run main.nf -profile test,singularity,mpox --workflow fetch_accessions --dry_run false --submission_config conf/submission_config.yaml`
 
 Submit an updated biosample submission (open the updated Excel file from results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx and add some fake SAMN IDs first):
-`nextflow run main.nf -profile test,singularity --workflow update_submission --dry_run false --species mpxv --submission_config conf/submission_config.yaml --batch_size 5 --original_submission_outdir results/mpxv_test_metadata/submission_outputs --meta_path results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx`
+`nextflow run main.nf -profile test,singularity,mpox --workflow update_submission --dry_run false --submission_config conf/submission_config.yaml --batch_size 5 --original_submission_outdir results/mpxv_test_metadata/submission_outputs --meta_path results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx`
 **Remember** This won't run without those fake SAMN IDs in the biosample_accession field.
 
 Now we'll run a test GenBank submission using the test bacteria data included in the repository.
@@ -95,7 +95,7 @@ Submit to BioSample first (because GenBank requires a BioSample accession):
 
 Open the updated Excel file from results/bacteria_test_metadata_1/final_submission_outputs/bacteria_test_metadata_1_updated.xlsx and add some fake SAMN IDs first.
 **The next command won't run without the fake SAMN IDs in biosample_accession column**.
-`nextflow run main.nf -profile test,singularity,bacteria --workflow genbank --dry_run false --submission_config conf/submission_config.yaml --annotation --download_bakta_db --bakta_db_light`
+`nextflow run main.nf -profile test,singularity,bacteria --workflow genbank --dry_run false --submission_config conf/submission_config.yaml --annotation --download_bakta_db --bakta_db_type light`
 
 ## GenBank Submission Conditions
 
