@@ -1,0 +1,3 @@
+sample_name	ncbi-spuid	ncbi-spuid_namespace	ncbi-bioproject	title	description	authors	isolate	isolation_source	host_disease	host	organism	collection_date	country	state	collected_by	sample_type	lat_lon	geo_loc_name	structuredcomment
+IL0005	MPXV_USA_2022_IL0005	POX	PRJNA849962	Test Monkeypoxvirus	This submission is part of a test	C.M. Gigante	MPXV_USA_2022_IL0005	Not Provided	Not Provided	Homo sapiens	Monkeypox Virus	2022-06	USA	IL	Not Provided	Not Provided	na	USA: IL	Assembly-Data
+NY0006	MPXV_USA_2022_NY0006	POX	PRJNA849962	Test Monkeypoxvirus	This submission is part of a test	C.M. Gigante	MPXV_USA_2022_NY0006	Not Provided	Not Provided	Homo sapiens	Monkeypox Virus	2022-06	USA	NY	Not Provided	Not Provided	Not Provided	USA: NY	Assembly-Data
