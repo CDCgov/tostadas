@@ -242,7 +242,7 @@ class GetMetaAsDf:
 		column_aliases = {
 			'SeqId': 'sample_name',
 			'SeqID': 'sample_name',
-			'Strain': 'isolate',
+			'Strain': 'strain',
 			'Collection_date': 'collection_date',
 			'Host': 'host',
 			'Isolate': 'isolate',
@@ -766,7 +766,7 @@ class HandleDfInserts:
 		"""
 		for i in range(len(self.list_of_country)):
 			if i < len(self.list_of_state) and self.list_of_state[i] not in ("", None):
-				self.new_combination_list.append(f'{self.list_of_country[i]}: {self.list_of_state[i]}')
+				self.new_combination_list.append(f'{self.list_of_country[i]}:{self.list_of_state[i]}')
 			else:
 				self.new_combination_list.append(str(self.list_of_country[i]))
 

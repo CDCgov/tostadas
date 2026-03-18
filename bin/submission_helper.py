@@ -1064,7 +1064,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 			country = self.biosample_metadata.get("country", "")
 			state = self.biosample_metadata.get("state", "")
 			if country and state:
-				country = f"{country}: {state}"
+				country = f"{country}:{state}"
 
 		# Strip time component from pandas datetime strings
 		collection_date = self.biosample_metadata.get("collection_date")
@@ -1202,7 +1202,15 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("  data {\n")
 			f.write("    {\n")
 			f.write("      label str \"AdditionalComment\",\n")
-			f.write("      data str \"Submission Title: " + self.sample.sample_id + "\"\n")
+			# Use Submission_Title from config, or description from metadata, falling back to sample ID
+			submission_title = self.submission_config.get("Submission_Title", "").strip() if self.submission_config.get("Submission_Title") else ""
+			if not submission_title:
+				desc = self.top_metadata.get("description")
+				if desc and str(desc).strip() not in ("", "Not Provided"):
+					submission_title = str(desc).strip()
+				else:
+					submission_title = self.sample.sample_id
+			f.write("      data str \"Submission Title: " + submission_title + "\"\n")
 			f.write("    }\n")
 			f.write("  }\n")
 			f.write("}\n")
