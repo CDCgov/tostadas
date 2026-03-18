@@ -376,11 +376,11 @@ class SubmissionConfigParser:
 			for k, v in config_dict.items():
 				if self.parameters.get("gisaid", False):
 					if k.startswith('GISAID') and not v:
-						logging.info("Error: There are missing GISAID values in the config file.", file=sys.stderr)
+						logging.error(f"Missing GISAID value in config file: {k}")
 						sys.exit(1)
 				else:
 					if k.startswith('NCBI') and not v:
-						logging.info("Error: There are missing NCBI values in the config file.", file=sys.stderr)
+						logging.error(f"Missing NCBI value in config file: {k}")
 						sys.exit(1)
 		return config_dict
 
