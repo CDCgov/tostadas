@@ -68,9 +68,17 @@ workflow BIOSAMPLE_UPDATE {
     // task work directory.  Embedding .toString() in val(meta) would store an
     // absolute path that is unreachable on cloud executors and defeats caching.
     rebatch_ch = REBATCH_METADATA.out.rebatch_tuple
-        .map { tsv_file, json_file ->
-            def parsed = new groovy.json.JsonSlurper().parseText(json_file.text)
-            tuple(parsed.meta, parsed.samples, parsed.enabled, tsv_file)
+        .flatMap { tsv_files, json_files ->
+            // REBATCH_METADATA emits all batch TSVs and JSONs as collected lists.
+            // Pair each JSON with its matching TSV by batch_id.
+            def tsv_list = tsv_files instanceof List ? tsv_files : [tsv_files]
+            def json_list = json_files instanceof List ? json_files : [json_files]
+            json_list.collect { json_file ->
+                def parsed = new groovy.json.JsonSlurper().parseText(json_file.text)
+                def batch_id = parsed.meta.batch_id
+                def matching_tsv = tsv_list.find { it.name == "${batch_id}.tsv" }
+                tuple(parsed.meta, parsed.samples, parsed.enabled, matching_tsv)
+            }
         }
 
     if (params.dry_run) {
