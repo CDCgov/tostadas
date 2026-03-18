@@ -134,14 +134,89 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 
 	for db in databases:
 		reports_fetched[db] = []
-		if db == "genbank":
-			continue # just totally skip genbank for now
+
+		if db == 'genbank':
+			# Determine GenBank submission style from local directory structure
+			genbank_dir = os.path.join(outdir, 'genbank')
+			if not os.path.isdir(genbank_dir):
+				logging.info("No genbank/ directory found; skipping GenBank fetch.")
+				continue
+
+			top_level_xml = os.path.join(genbank_dir, 'submission.xml')
+			subdirs_with_xml = [
+				d for d in os.listdir(genbank_dir)
+				if os.path.isdir(os.path.join(genbank_dir, d))
+				and os.path.isfile(os.path.join(genbank_dir, d, 'submission.xml'))
+			]
+
+			if os.path.isfile(top_level_xml):
+				# BankIt style (sars/flu): single submission.xml at genbank/ level
+				fetch_dirs = [(genbank_dir, None)]
+			elif subdirs_with_xml:
+				# WGS style (bacteria/eukaryote): per-sample submission.xml
+				fetch_dirs = [(os.path.join(genbank_dir, sd), sd) for sd in subdirs_with_xml]
+			else:
+				# Email style (virus): no submission.xml; accessions require manual retrieval
+				logging.info("No submission.xml found in genbank/; accessions must be fetched manually.")
+				continue
+
+			for local_output_path, sample_id in fetch_dirs:
+				report_local_path = os.path.join(local_output_path, "report.xml")
+				submission = Submission(
+					parameters=parameters,
+					submission_config=config_dict,
+					outdir=local_output_path,
+					submission_mode=submission_mode,
+					submission_dir=submission_dir,
+					type=db,
+					sample=None,
+					identifier=identifier
+				)
+				# Per-sample WGS uses sample_id suffix; BankIt uses base genbank dir
+				if sample_id:
+					remote_subdir = f"{get_remote_submission_dir(identifier, batch_id, db)}_{sample_id}"
+				else:
+					remote_subdir = get_remote_submission_dir(identifier, batch_id, db)
+				remote_dir = f"submit/{submission_dir}/{remote_subdir}"
+				logging.info(f'remote dir: {remote_dir}, report local path: {report_local_path}')
+
+				try:
+					submission.client.connect()
+					submission.client.change_dir(remote_dir)
+				except Exception as e:
+					logging.warning(f"GenBank folder not found on FTP: {remote_dir}. Skipping.")
+					try:
+						submission.client.close()
+					except Exception:
+						pass
+					continue
+
+				try:
+					sample_start = time.time()
+					success = False
+					while time.time() - sample_start < timeout:
+						report_path = submission.fetch_report(remote_dir, report_local_path)
+						if report_path:
+							logging.info(f"Fetched report.xml for genbank ({sample_id or 'batch'})")
+							reports_fetched[db].append(report_path)
+							success = True
+							break
+						else:
+							logging.info(f"Retrying fetch for genbank ({sample_id or 'batch'})...")
+							time.sleep(3)
+					if not success:
+						logging.error(f"Timeout fetching report for genbank ({sample_id or 'batch'})")
+				finally:
+					submission.client.close()
+			continue
+
 		if db == 'sra':
 			base_outdir = os.path.join(outdir, db)
 			has_both_platforms = all(os.path.isdir(os.path.join(base_outdir, p)) for p in ['illumina', 'nanopore'])
 			platforms = ['illumina', 'nanopore'] if has_both_platforms else [None]
 		else:
-			platforms = [None]  # only 1 path for biosample/genbank
+			platforms = [None]
+
 		for platform in platforms:
 			if db == 'sra' and platform:
 				local_output_path = os.path.join(outdir, db, platform)
@@ -166,12 +241,8 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 				submission.client.connect()
 				submission.client.change_dir(remote_dir)
 			except Exception as e:
-				if db == "genbank":
-					logging.warning(f"GenBank folder not found on FTP: {remote_dir}. Skipping.")
-					continue  # Don't raise; just skip genbank (genbank is not always ftp)
-				else:
-					logging.error(f"Critical: Failed to access {db} folder {remote_dir}. Error: {e}")
-					raise  # For biosample/sra, still crash
+				logging.error(f"Critical: Failed to access {db} folder {remote_dir}. Error: {e}")
+				raise
 
 			success = False
 			while time.time() - start_time < timeout:
