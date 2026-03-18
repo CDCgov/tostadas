@@ -126,10 +126,11 @@ def main_submit():
 							logging.warning(f"Could not delete FASTQ file {local}: {e}")
 				client.close()
 		elif any(f.endswith('.sqn') for f in files):
-			# Handle non-ftp submissions (directories with a zip file but without submission.xml and submit.ready)
-			sample = os.path.relpath(dirpath, root) # dirpath should be <batch_id>/<sample_id>, genbank submission files are stored in a subfolder called <sample name>
-			# todo: I don't love just assigning this here, not stable...makes assumptions
-			database = 'genbank' # genbank
+			# Handle non-ftp submissions (directories with .sqn files but without submission.xml and submit.ready)
+			# Extract the sample_id from the leaf directory name; os.path.relpath would include
+			# parent dirs (e.g. "genbank/sample123") which is not a valid sample identifier.
+			sample = os.path.basename(dirpath)
+			database = 'genbank'
 			logging.info(f"Found sample {sample} to submit to {database} at {dirpath}")
 			if params['dry_run']:
 				sendemail(sample, config, mode, dirpath)
