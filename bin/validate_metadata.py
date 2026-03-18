@@ -233,8 +233,23 @@ class GetMetaAsDf:
 			df = pd.read_csv(meta_path, sep='\t', dtype=str, na_filter=False)
 		else:
 			df = pd.read_excel(meta_path, header=[1], dtype=str, engine="openpyxl", index_col=None, na_filter=False)
-		df = df.loc[:, ~df.columns.str.contains('^Unnamed')] # Remove "Unnamed" col that sometimes gets imported due to trailing commas
-		# Check for duplicate columns - pandas imports duplicate columns with .1, .2 endings so detect these and return an error if found
+		df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+		# Map common NCBI source modifier column names to TOSTADAS names
+		column_aliases = {
+			'SeqId': 'sample_name',
+			'Strain': 'isolate',
+			'Collection_date': 'collection_date',
+			'Host': 'host',
+		}
+		df.rename(columns={k: v for k, v in column_aliases.items() if k in df.columns and v not in df.columns}, inplace=True)
+		# Split NCBI-style "USA:State" country field into country + state
+		if 'Country' in df.columns and 'country' not in df.columns:
+			split = df['Country'].str.split(':', n=1, expand=True)
+			df['country'] = split[0].str.strip()
+			if split.shape[1] > 1:
+				df['state'] = split[1].str.strip()
+			df.drop(columns=['Country'], inplace=True)
+		# Check for duplicate columns
 		duplicate_pattern = r"\.\d+$"  # Matches column names ending with .1, .2, etc.
 		mangled_columns = [re.sub(duplicate_pattern, "", col) for col in df.columns if any(re.match(rf"^{re.escape(base)}{duplicate_pattern}$", col) for base in df.columns if base != col)]
 		duplicate_bases = list(set(mangled_columns))
