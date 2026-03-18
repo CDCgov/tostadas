@@ -40,30 +40,35 @@ workflow GENBANK_WORKFLOW {
             }
 
     GENBANK(file(updated_meta_file))
-    // todo: this fetching code won't work because of the directory structure; genbank really needs to be a separate nextflow pipeline
-    // if (params.organism_type in ['sars', 'flu', 'bacteria', 'eukaryote']) {
-    //     WAIT( GENBANK.out.submission_batch_folder.map { calc_wait_time() } )
-    //     AGGREGATE_SUBMISSIONS(GENBANK.out.submission_batch_folder,
-    //                         params.submission_config,
-    //                         file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"), WAIT.out)
-    //}
+
+    // GenBank processing takes days to weeks depending on organism type.
+    // Accessions must be fetched separately after NCBI finishes processing.
+    if (params.submission) {
+        log.info "GenBank submission complete. Run '--workflow fetch_accessions' after NCBI has processed your submission to retrieve accessions."
+    }
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {
-    // glob for all subdirectories starting with "batch_" and collect into one list
+    // GenBank submissions are stored under a genbank/ subdirectory;
+    // biosample/SRA submissions are stored directly under submission_outdir.
+    def base_dir = "${params.outdir}/${params.metadata_basename}/${params.submission_outdir}"
+    def genbank_dir = "${base_dir}/genbank"
+    def search_dir = file(genbank_dir).isDirectory() ? genbank_dir : base_dir
+
     batches = Channel.fromPath(
-        "${params.outdir}/${params.metadata_basename}/${params.submission_outdir}/batch_*",
+        "${search_dir}/batch_*",
         type: 'dir'
     ).map { dir ->
         def meta = [ batch_id: dir.baseName ]
         tuple(meta, dir)
-    } // meta = batch_id, dir = path to batch_id dir
-    log.info "Fetching report.xml files for submissions in ${params.outdir}/${params.metadata_basename}/${params.submission_outdir}"
-    // use a dummy channel placeholder in place of the WAIT utility, which isn't used in this workflow, 
+    }
+    log.info "Fetching report.xml files for submissions in ${search_dir}"
+    // Dummy channel placeholder for the WAIT signal, which is not needed here
     dummy_wait = Channel.value(true)
     AGGREGATE_SUBMISSIONS(batches,
                           params.submission_config,
-                          file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"), dummy_wait)
+                          file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"),
+                          dummy_wait)
 }
 
 workflow UPDATE_SUBMISSION_WORKFLOW {
