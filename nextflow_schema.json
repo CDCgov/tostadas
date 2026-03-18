@@ -62,6 +62,12 @@
           "description": "Virus subtype for annotation; accepts: mpxv, rsv, variola.",
           "hidden": false
         },
+        "mol_type": {
+          "type": "string",
+          "description": "Molecule type for GenBank submission; accepts: genomic, viral cRNA.",
+          "default": "genomic",
+          "hidden": false
+        },
         "ref_fasta_path": {
           "type": "string",
           "format": "file-path",
@@ -92,7 +98,7 @@
           "type": "string",
           "format": "directory-path",
           "description": "File path to liftoff specific sub-workflow outputs",
-          "default": "liftoff_outputs",
+          "default": "repeatmasker_liftoff_outputs",
           "hidden": true
         },
         "lift_print_version_exit": {
@@ -192,7 +198,7 @@
         "repeat_library": {
           "type": "string",
           "description": "Path to the repeat library file used by RepeatMasker.",
-          "default": "${projectDir}/assets/lib/MPOX_repeats_lib.fasta",
+          "default": "${projectDir}/assets/lib/mpxv_repeats_lib.fasta",
           "pattern": "^\\S+\\.(fasta|fa|fna|ffn|faa|frn|fasta\\.gz|fa\\.gz|fna\\.gz|ffn\\.gz|faa\\.gz|frn\\.gz|fasta\\.zip|fa\\.zip|fna\\.zip|ffn\\.zip|faa\\.zip|frn\\.zip|fasta\\.bz2|fa\\.bz2|fna\\.bz2|ffn\\.bz2|faa\\.bz2|frn\\.bz2|fasta\\.tar\\.bz2|fa\\.tar\\.bz2|fna\\.tar\\.bz2|ffn\\.tar\\.bz2|faa\\.tar\\.bz2|frn\\.tar\\.bz2|fasta\\.tar|fa\\.tar|fna\\.tar|ffn\\.tar|faa\\.tar|frn\\.tar|fasta\\.tar\\.gz|fa\\.tar\\.gz|fna\\.tar\\.gz|ffn\\.tar\\.gz|faa\\.tar\\.gz|frn\\.tar\\.gz)$",
           "hidden": true
         },
@@ -384,9 +390,9 @@
           "hidden": false
         },
         "submission_wait_time": {
-          "type": "integer",
+          "type": "string",
           "description": "Calculated based on sample number (3 * 60 secs * sample_num)",
-          "default": 380,
+          "default": "calc",
           "hidden": false
         },
         "send_submission_email": {
@@ -405,6 +411,26 @@
           "type": "boolean",
           "description": "Simulate submission and print a log.",
           "default": false,
+          "hidden": false
+        },
+        "strip_pub_block": {
+          "type": "boolean",
+          "description": "If true, removes pub citation and DBLink blocks from .sqn per NCBI preference.",
+          "default": false,
+          "hidden": false
+        },
+        "genome_representation": {
+          "type": "string",
+          "description": "WGS genome representation for GenBank submission.",
+          "default": "Full",
+          "enum": ["Full", "Partial"],
+          "hidden": false
+        },
+        "expected_final_version": {
+          "type": "string",
+          "description": "WGS expected final version for GenBank submission.",
+          "default": "Yes",
+          "enum": ["Yes", "No"],
           "hidden": false
         },
         "biosample_fields_key": {
@@ -444,7 +470,7 @@
         "batch_size": {
           "type": "integer",
           "description": "The number of samples to prepare in one submission file.",
-          "default": 1,
+          "default": 5,
           "hidden": false
         },
         "env_yml": {
@@ -483,7 +509,7 @@
           "type": "string",
           "format": "directory-path",
           "description": "File path to vadr specific sub-workflow outputs",
-          "default": "vadr_outputs",
+          "default": "vadr_clean_outputs",
           "hidden": true
         },
         "vadr_models_dir": {
@@ -521,7 +547,7 @@
         "remove_demographic_info": {
           "type": "boolean",
           "description": "Flag that, if false, will remove any potentially identifying demographic data",
-          "default": true,
+          "default": false,
           "hidden": false
         },
         "overwrite_output": {
