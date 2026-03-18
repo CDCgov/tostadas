@@ -101,7 +101,7 @@ workflow BIOSAMPLE_UPDATE {
         rebatch_meta_ch,
         rebatch_tsv_ch,
         orig_submission_dir_ch,
-        params.submission_config
+        file(params.submission_config)
     )
 
     emit:
