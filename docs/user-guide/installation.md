@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [Environment Setup](#environment-setup)
+  - [Nextflow Version Compatibility](#nextflow-version-compatibility)
 - [Run a test submission](#run-a-test-submission)
 - [Start submitting your own data](#start-submitting-your-own-data)
 
@@ -10,8 +11,21 @@
 
 ### Dependencies:
 
-*   Nextflow v. 21.10.3 or newer
+*   Nextflow v. 24.04.0 or newer (see [Nextflow Version Compatibility](#nextflow-version-compatibility) below)
 *   Compute environment (docker, singularity or conda)
+
+### Nextflow Version Compatibility
+
+This pipeline uses the **nf-schema@2.3.0** plugin for parameter validation, which requires **Nextflow 23.10.0 or later**. The minimum supported version for TOSTADAS is **24.04.0**.
+
+| Nextflow Version | Status |
+|---|---|
+| 25.10.4 | Tested on HPC |
+| latest-edge | Tested in CI |
+| 24.04.0+ | Minimum supported version |
+| < 24.04.0 | Not supported |
+
+**nf-schema plugin note:** Users running Nextflow v24 or later may see a warning that the nf-schema plugin must be installed. To resolve this, install the plugin manually by following the [Nextflow offline plugin usage instructions](https://www.nextflow.io/docs/latest/plugins.html#offline-usage).
 
 ❗ Note: If you are a CDC user, please follow the set-up instructions found on this page: [CDC User Guide](../user-guide/cdc-user-guide.md)
 

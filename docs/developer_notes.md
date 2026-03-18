@@ -164,4 +164,4 @@ The workflow runs METADATA_VALIDATION, CHECK_VALIDATION_ERRORS, and WRITE_VALIDA
 6. Outstanding to-do notes in `submission_helper.py`: 
         Line 963: These are hard-coded but probably need to be controlled during GENBANK_VALIDATION somehow.
         Line 982: This is not an issue, it's actually more of a reminder to me that the way Biosample and SRA XML files get made is different from Genbank (they are called differently in submission_prep.py). 
-        Line 1273: We never did figure out if locus tag prefix can be set automatically. I think it has to be assigned before, which means it must be specified in `${params.bakta_locus_tag}`
+        Line ~1222: Resolved. The locus tag prefix cannot be fetched programmatically from NCBI; it must be registered under the BioProject first, then specified via `--bakta_locus_tag`. A warning is now logged when no locus tag is found in the GFF.
