@@ -4,6 +4,7 @@
 # Refactored and updated by J Rowell, AK Gupta, and KA O'Connell
 
 import os
+import logging
 import pandas as pd
 import warnings
 import re
