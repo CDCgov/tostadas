@@ -147,12 +147,13 @@ workflow GENBANK {
                 def enabledDatabases = missingFasta ? [] : ['genbank'] 
                 return tuple(meta, samples, enabledDatabases)
             }
-        }
-        
 
         // Run submission using the batch channel
-        SUBMISSION(submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
-                params.submission_config)
+        SUBMISSION(
+            submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
+            params.submission_config
+        )
+    }
 
 	emit:
     submission_batch_folder = params.submission ? SUBMISSION.out.submission_batch_folder : null
