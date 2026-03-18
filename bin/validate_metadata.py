@@ -223,9 +223,16 @@ class GetMetaAsDf:
 		self.df = self.load_meta()
 
 	def load_meta(self):
-		""" Loads the metadata file in as a dataframe from an Excel file (.xlsx)
+		""" Loads the metadata file as a dataframe. Supports Excel (.xlsx),
+		    CSV (.csv), and TSV (.tsv, .src, .txt) formats.
 		"""
-		df = pd.read_excel(self.parameters['meta_path'], header=[1], dtype = str, engine = "openpyxl", index_col=None, na_filter=False)
+		meta_path = self.parameters['meta_path']
+		if meta_path.endswith('.csv'):
+			df = pd.read_csv(meta_path, dtype=str, na_filter=False)
+		elif meta_path.endswith(('.tsv', '.src', '.txt')):
+			df = pd.read_csv(meta_path, sep='\t', dtype=str, na_filter=False)
+		else:
+			df = pd.read_excel(meta_path, header=[1], dtype=str, engine="openpyxl", index_col=None, na_filter=False)
 		df = df.loc[:, ~df.columns.str.contains('^Unnamed')] # Remove "Unnamed" col that sometimes gets imported due to trailing commas
 		# Check for duplicate columns - pandas imports duplicate columns with .1, .2 endings so detect these and return an error if found
 		duplicate_pattern = r"\.\d+$"  # Matches column names ending with .1, .2, etc.
