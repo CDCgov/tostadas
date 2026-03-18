@@ -124,12 +124,10 @@ def main_prepare():
 			# copy/Symlink raw files to SRA folder
 			prepare_sra_fastqs(samp_list, submission_dir, copy=False)
 			
-	# 3) Prepare GenBank submission, per-sample
+	# 3) Prepare GenBank submission, per-sample under genbank/ parent directory
 	if params['genbank']:
 		for s in samples:
-			# todo: the batches aren't used in genbank, but we can't leave them out here because the same PREP_SUBMISSION and SUBMIT_SUBMISSION processes drive all submission types
-			# this results in an ugly structure of batch_1/sample_1, batch_2/sample_2, etc. for genbank only
-			submission_dir = os.path.join(output_root, s.sample_id)
+			submission_dir = os.path.join(output_root, 'genbank', s.sample_id)
 			os.makedirs(submission_dir, exist_ok=True)
 			gb = GenbankSubmission(
 				parameters=params,
