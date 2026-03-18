@@ -20,6 +20,7 @@ process METADATA_VALIDATION {
     script:
         def remove_demographic_info = params.remove_demographic_info == true ? '--remove_demographic_info' : ''
         def validate_custom_fields = params.validate_custom_fields == true ? '--validate_custom_fields' : ''
+        def fasta_dir = params.fasta_dir ? "--fasta_dir ${params.fasta_dir}" : ''
 
         """
         validate_metadata.py \
@@ -30,6 +31,7 @@ process METADATA_VALIDATION {
             --date_format_flag $params.date_format_flag \
             $remove_demographic_info $validate_custom_fields \
             --config_file $submission_config \
-            --biosample_fields_key $params.biosample_fields_key
+            --biosample_fields_key $params.biosample_fields_key \
+            $fasta_dir
         """
 }

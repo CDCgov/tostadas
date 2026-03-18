@@ -161,7 +161,8 @@ class GetParams:
 		# initialize parser
 		parser = argparse.ArgumentParser(description="Parameters for Running Metadata Validation")
 		# required parameters (do not have default)
-		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for Metadata")
+		parser.add_argument("--meta_path", type=str, help="Path to metadata file (.xlsx, .csv, .tsv, .src)")
+		parser.add_argument("--fasta_dir", type=str, default="", help="Directory containing FASTA files. If provided, auto-populates fasta_path by matching sample_name to filenames.")
 		# optional parameters
 		parser.add_argument("--batch_size", type=int, default=1, 
 					  		help="Number of samples to process per batch")
@@ -271,8 +272,23 @@ class GetMetaAsDf:
 		if df['sample_name'].isnull().any() or (df['sample_name'].str.strip() == "").any():
 			missing_indices = df[df['sample_name'].isnull() | (df['sample_name'].str.strip() == "")].index.tolist()
 			error_message = f"Error: The metadata file contains missing values in the 'sample_name' column at rows: {missing_indices}. Please provide valid sample names."
-			print(error_message, file=sys.stderr)  # Print the error message to stderr
+			print(error_message, file=sys.stderr)
 			sys.exit(1)
+
+		# Auto-populate fasta_path from --fasta_dir if fasta_path column is missing or empty
+		fasta_dir = self.parameters.get('fasta_dir', '')
+		if fasta_dir and ('fasta_path' not in df.columns or df['fasta_path'].eq('').all()):
+			fasta_extensions = ['.fasta', '.fa', '.fna', '.fas']
+			def find_fasta(sample_name):
+				for ext in fasta_extensions:
+					path = os.path.join(fasta_dir, f"{sample_name}{ext}")
+					if os.path.isfile(path):
+						return path
+				return ''
+			df['fasta_path'] = df['sample_name'].apply(find_fasta)
+			missing = df[df['fasta_path'] == '']['sample_name'].tolist()
+			if missing:
+				logging.warning(f"No FASTA files found in {fasta_dir} for {len(missing)} samples: {missing[:5]}{'...' if len(missing) > 5 else ''}")
 
 		return df
 
