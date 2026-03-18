@@ -12,6 +12,7 @@ process PREP_SUBMISSION {
 
     input:
     tuple val(meta), val(samples), val(enabledDatabases)
+    path(batch_tsv)
     path(submission_config)
     
     output:
@@ -50,7 +51,7 @@ process PREP_SUBMISSION {
     submission_prep.py \
         --submission_name ${meta.batch_id} \
         --config_file $submission_config  \
-        --metadata_file ${meta.batch_tsv} \
+        --metadata_file ${batch_tsv} \
         --identifier ${params.metadata_basename} \
         --species $params.organism_type \
         --mol_type '$params.mol_type' \
