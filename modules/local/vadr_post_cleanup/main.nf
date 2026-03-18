@@ -6,7 +6,7 @@
 process VADR_POST_CLEANUP {
     
     conda(params.vadr_env_yml)
-    container 'docker.io/staphb/vadr:latest'
+    container 'docker.io/staphb/tostadas:latest'
 
     input:
     tuple val(meta), path(vadr_outputs)
