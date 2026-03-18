@@ -291,7 +291,8 @@ class GetMetaAsDf:
 			df['fasta_path'] = df['sample_name'].apply(find_fasta)
 			missing = df[df['fasta_path'] == '']['sample_name'].tolist()
 			if missing:
-				logging.warning(f"No FASTA files found in {fasta_dir} for {len(missing)} samples: {missing[:5]}{'...' if len(missing) > 5 else ''}")
+				logging.warning(f"Skipping {len(missing)} samples with no FASTA in {fasta_dir}: {missing[:5]}{'...' if len(missing) > 5 else ''}")
+				df = df[df['fasta_path'] != '']
 
 		return df
 
