@@ -1111,8 +1111,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 		alt_submitter_email = self.submission_config["Submitter"]["@alt_email"]
 		affil = self.submission_config["Submitting_Org"]
 		div = self.submission_config["Submitting_Org_Dept"]
-		publication_status = self.safe_text(self.genbank_metadata['publication_status'])
-		publication_title = self.safe_text(self.genbank_metadata['publication_title'])
+		publication_status = self.safe_text(self.genbank_metadata.get('publication_status', 'Unpublished'))
+		publication_title = self.safe_text(self.genbank_metadata.get('publication_title', 'Unpublished'))
 		street = self.submission_config["Street"]
 		city = self.submission_config["City"]
 		sub = self.submission_config["State"]
