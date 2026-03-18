@@ -3,7 +3,7 @@
 ## PATHOGEN ANNOTATION AND SUBMISSION PIPELINE
 
 <!-- [![GitHub Downloads](https://img.shields.io/github/downloads/CDCgov/tostadas/total.svg?style=social&logo=github&label=Download)](https://github.com/CDCgov/tostadas/releases) -->
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
 For the complete TOSTADAS documentation, please see the [Complete Documentation](https://cdcgov.github.io/tostadas/)
 
@@ -12,14 +12,14 @@ For the complete TOSTADAS documentation, please see the [Complete Documentation]
 ❗ Important Note: This pipeline uses the nf-schema plugin to validate pipeline parameters. Users with Nextflow version 24 or later may encounter a warning message indicating that the plugin must be installed. To resolve this warning message, please install the plugin manually by following the instructions found in this [link](https://www.nextflow.io/docs/latest/plugins.html#offline-usage)
 
 ## Overview
-**T O S T A D A S**  
-**T**oolkit for **O**pen **S**equence **T**riage, **A**nnotation, and **DA**tabase **S**ubmission  
-  
-A portable, open-source pipeline designed to streamline submission of pathogen genomic data to public repositories.  Reducing barriers to timely data submission increases the value of public repositories for both public health decision making and scientific research. TOSTADAS facilitates routine sequence submission by standardizing and automating: 
+**T O S T A D A S**
+**T**oolkit for **O**pen **S**equence **T**riage, **A**nnotation, and **DA**tabase **S**ubmission
 
-+ Metadata Validation   
-+ Genome Annotation    
-+ File submission    
+A portable, open-source pipeline designed to streamline submission of pathogen genomic data to public repositories.  Reducing barriers to timely data submission increases the value of public repositories for both public health decision making and scientific research. TOSTADAS facilitates routine sequence submission by standardizing and automating:
+
++ Metadata Validation
++ Genome Annotation
++ File submission
 
 TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses, Measles, RSV, and select bacteria. Testing for additional pathogens is planned for future releases.
 
@@ -32,10 +32,10 @@ For non-CDC users, please follow the instructions below.
 git clone https://github.com/CDCgov/tostadas.git
 ```
 ! Note: If you already have Nextflow installed in your local environment, skip ahead to step 5.
-### 2. Install mamba and add it to your PATH 
+### 2. Install mamba and add it to your PATH
 
- **2a. Install mamba** 
- 
+ **2a. Install mamba**
+
 ❗ Note: If you have mamba installed in your local environment, skip ahead to step 3 ([Create and activate a conda environment](https://github.com/CDCgov/tostadas/edit/dev/README.md#3-create-and-activate-a-conda-environment))
 ```
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
@@ -49,7 +49,7 @@ export PATH="$HOME/mambaforge/bin:$PATH"
 ```
 mamba install -c bioconda nextflow
 ```
-### 4. Update the default submissions config file with your NCBI username and password 
+### 4. Update the default submissions config file with your NCBI username and password
 ```
 # update this config file (you don't have to use vim)
 vim conf/submission_config.yaml
@@ -57,29 +57,29 @@ vim conf/submission_config.yaml
 ### 5. Run the workflow with default parameters and the local run environment:
 ```
 # test command for virus reads
-nextflow run main.nf -profile test,<singularity|docker|conda> --species virus
+nextflow run main.nf -profile test,virus,<singularity|docker|conda>
 ```
-The pipeline outputs appear in `tostadas/test_output`
+The pipeline outputs appear in `results/`
 
 ### 6. Start running your own analysis
 
 **Annotate and submit viral reads**
 ```
-nextflow run main.nf -profile <docker|singularity> --workflow biosample_and_sra --species virus --submission --annotation --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
+nextflow run main.nf -profile virus,<docker|singularity> --workflow biosample_and_sra --submission --annotation --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
 ```
 **Annotate and submit bacterial reads**
 ```
-nextflow run main.nf -profile <docker|singularity> --workflow biosample_and_sra --species bacteria --submission --annotation --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --outdir <path/to/output/dir/>
+nextflow run main.nf -profile bacteria,<docker|singularity> --workflow biosample_and_sra --submission --annotation --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --outdir <path/to/output/dir/>
 ```
 
 **Submit to GenBank**
 
-GenBank submission requires a modified metadata file that includes the GenBank accession ID. This file will be generated as an output of the biosample and SRA workflow and can be found in the results directory, for example: test_output/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx.
+GenBank submission requires a modified metadata file that includes the GenBank accession ID. This file will be generated as an output of the biosample and SRA workflow and can be found in the results directory, for example: results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx.
 
 To submit reads to GenBank, use the following command:
 
 ```
-nextflow run main.nf -profile <docker|singularity> --workflow genbank --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --updated_meta_path <path/to/updated/metadata/file>
+nextflow run main.nf -profile mpox,<docker|singularity> --workflow genbank --dry_run false --submission_config <path/to/submission_config.yaml> --updated_meta_path <path/to/updated/metadata/file>
 ```
 
 **Annotate and submit measles reads to GenBank**
@@ -96,17 +96,17 @@ Refer to the github pages website for more information on input parameters and u
 To fetch and parse report.xml files from a previous submission, use the following command:
 
 ```
-nextflow run main.nf -profile <docker|singularity> --workflow fetch_accessions --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --meta_path assets/sample_metadata/mpxv_test_metadata
+nextflow run main.nf -profile mpox,<docker|singularity> --workflow fetch_accessions --dry_run false --submission_config <path/to/submission_config.yaml> --meta_path assets/sample_metadata/mpxv_test_metadata.xlsx
 ```
 
 **Submit updates to a BioSample submission**
 
-CBI allows UI-less updating of BioSample submissions, and TOSTADAS can do this using the `--workflow update_submission` workflow option.
+NCBI allows UI-less updating of BioSample submissions, and TOSTADAS can do this using the `--workflow update_submission` workflow option.
 
-To submit updated metadata to biosample, use the following command: 
+To submit updated metadata to biosample, use the following command:
 
 ```
-nextflow run main.nf -profile <docker|singularity> --workflow update_submission --dry_run false --species mpxv --submission_config <path/to/submission_config.yaml> --original_submission_dir <results/mpxv_test_metadata/submission_outputs> --meta_path <path/to/updated/metadata/file>
+nextflow run main.nf -profile mpox,<docker|singularity> --workflow update_submission --dry_run false --submission_config <path/to/submission_config.yaml> --original_submission_outdir <results/mpxv_test_metadata/submission_outputs> --meta_path <path/to/updated/metadata/file>
 ```
 
 Please make sure your updated metadata Excel file has a `biosample_accession` column that contains accurate accession IDs.  TOSTADAS does not check these for accuracy.  Please make sure they are correct.
@@ -116,7 +116,7 @@ Note: TOSTADAS uses the `ncbi-spuid` field to match samples in the metadata file
 ### 7. Custom metadata validation and custom BioSample package
 
 TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; version 1.0) NCBI BioSample package for submissions to the BioSample repository. You can submit using a different BioSample package by doing the following:
-1. Change the package name in the `conf/submission_config.yaml`. Choose one of the available [NCBI BioSample packages](https://www.ncbi.nlm.nih.gov/biosample/docs/packages/). 
+1. Change the package name in the `conf/submission_config.yaml`. Choose one of the available [NCBI BioSample packages](https://www.ncbi.nlm.nih.gov/biosample/docs/packages/).
 2. Add the necessary fields for your BioSample package to your input Excel file.
 3. Add those fields as keys to the JSON file (`assets/custom_meta_fields/example_custom_fields.json`) and provide key info as needed.
     replace_empty_with: TOSTADAS will replace any empty cells with this value (Example application: NCBI expects some value for any mandatory field, so if empty you may want to change it to "Not Provided".)
@@ -124,18 +124,44 @@ TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; ver
 
 **Submit to a custom BioSample package**
 ```
-nextflow run main.nf -profile <docker|singularity> --workflow biosample_and_sra --species virus --submission --annotation --sra true --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file  <path/to/metadata_custom_fields.json>
+nextflow run main.nf -profile virus,<docker|singularity> --workflow biosample_and_sra --submission --annotation --sra true --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --custom_fields_file  <path/to/metadata_custom_fields.json> --validate_custom_fields
 ```
+
+### Available Profiles
+
+Organism and program profiles are combined with a container profile when running the pipeline. For example: `-profile mpox,docker` or `-profile test,virus,singularity`.
+
+| Profile    | Type     | Description                                        |
+|------------|----------|----------------------------------------------------|
+| `test`     | Test     | Runs a small test dataset to verify installation   |
+| `mpox`     | Organism | Mpox virus configuration                           |
+| `rsv`      | Organism | Respiratory syncytial virus configuration          |
+| `measles`  | Organism | Measles virus configuration (uses VADR annotation) |
+| `bacteria` | Organism | Bacterial genome configuration (uses Bakta)        |
+| `virus`    | Organism | General virus configuration                        |
+| `nwss`     | Program  | National Wastewater Surveillance System config     |
+| `pulsenet` | Program  | PulseNet configuration                             |
+| `docker`   | Container | Run with Docker                                   |
+| `singularity` | Container | Run with Singularity                          |
+| `conda`    | Container | Run with Conda/Mamba                              |
+
 ### Workflow Parameters Overview
 
 This section outlines the primary parameters available for configuring and running the TOSTADAS pipeline effectively, allowing users to tailor the workflow for their needs:
 
-| Parameter               | Description                                                                                       | Input Required           |
-|-------------------------|---------------------------------------------------------------------------------------------------|--------------------------|
-| `--annotation`          | Toggle for running annotation                                                                     | Yes (true/false as bool) |
-| `--submission`          | Toggle for running submission                                                                     | Yes (true/false as bool) |
-| `--update_submission`   | Toggle to update data for existing BioSample or SRA records(currently in progress)                                       | Yes (true/false as bool) |
-| `--workflow`            | Specifies the workflow to execute, allowing users to choose the appropriate processing method.   | Yes (string)             |
+| Parameter                    | Description                                                                                       | Input Required           |
+|------------------------------|---------------------------------------------------------------------------------------------------|--------------------------|
+| `--workflow`                 | Workflow to execute: `biosample_and_sra`, `genbank`, `fetch_accessions`, `update_submission`, `full_submission` | Yes (string) |
+| `--annotation`               | Toggle for running annotation                                                                     | Yes (true/false as bool) |
+| `--submission`               | Toggle for running submission                                                                     | Yes (true/false as bool) |
+| `--meta_path`                | Path to metadata Excel file (.xlsx)                                                               | Yes (path)               |
+| `--updated_meta_path`        | Path to accession-augmented metadata file (required for genbank workflow)                          | Yes (path)               |
+| `--outdir`                   | Output directory                                                                                  | No (default: `results`)  |
+| `--organism_type`            | Organism type: `virus`, `bacteria`, `eukaryote`                                                   | No (set by profile)      |
+| `--virus_subtype`            | Virus subtype: `mpxv`, `rsv`, `mev`                                                              | No (set by profile)      |
+| `--submission_config`        | Path to NCBI credentials config (submission_config.yaml)                                          | Yes (path)               |
+| `--dry_run`                  | Log what would be submitted without connecting to NCBI                                            | No (true/false as bool)  |
+| `--batch_size`               | Number of samples per submission batch                                                            | No (default: 5)          |
 
 #### Workflow Options
 
@@ -144,7 +170,8 @@ The following workflows are available for the `--workflow` parameter:
 - **biosample_and_sra**: Runs a submission to BioSample and SRA.
 - **genbank**: Runs a GenBank submission.
 - **fetch_accessions**: Fetches reports and updates the metadata file.
-- **full_submission**: Executes BioSample and SRA submissions, waits 60 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
+- **update_submission**: Updates data for existing BioSample or SRA records.
+- **full_submission**: Executes BioSample and SRA submissions, waits 30 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
 
 **Note**: The GenBank submission cannot complete without a BioSample accession ID.
 
@@ -162,14 +189,14 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 **Solution:** Locate the image (e.g., `$HOME/.singularity/staphb-tostadas-latest.img`) and delete it. This will force Nextflow to pull the latest version.
 
-#### 2. Pipeline hangs indefinitely during the submission step, or you get a "duplicate BioSeq ID error"  
+#### 2. Pipeline hangs indefinitely during the submission step, or you get a "duplicate BioSeq ID error"
 
 **Issue:** This may be caused by duplicate sample IDs in the FASTA file (e.g., a multicontig FASTA). This is only a problem for submissions to Genbank using `table2asn`.
 
 **Solution:** Review the sequence headers in the sample FASTA files and ensure that each header is unique.
 
 ## Get in Touch
-If you need to report a bug, suggest new features, or just say “thanks”, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we’ll try to get back to you as soon as possible!
+If you need to report a bug, suggest new features, or just say "thanks", [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we'll try to get back to you as soon as possible!
 
 ## Acknowledgements
 ### Contributors
