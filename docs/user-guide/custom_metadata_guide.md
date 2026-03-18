@@ -90,7 +90,7 @@ There are two Nextflow parameters used:
 
 ** NOTE: The default value for validate_custom_fields is __False__ in the test profile, therefore this must be changed to __True__ if doing a test run. 
 
-Once the JSON file for custom fields is set up, and the parameters above have been properly populated, the next step is to initiate the typical nextflow run for the pipeline (information can be found in the README.md here: [Quick Start](../README.md#quick-start)) 
+Once the JSON file for custom fields is set up, and the parameters above have been properly populated, the next step is to initiate the typical nextflow run for the pipeline (information can be found in the README.md here: [Quick Start](installation.md#run-a-test-submission)) 
 
 ## Outputs:
 

@@ -41,4 +41,4 @@ Update your metadata path to point to all of your samples for submissions
 `nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false`
 
 ### 8. Troubleshooting
-View [the docs](https://cdcgov.github.io/tostadas/user-guide/quick-start/#troubleshooting)
+View [the docs](https://cdcgov.github.io/tostadas/user-guide/troubleshooting/)
