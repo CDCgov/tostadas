@@ -21,6 +21,7 @@ process METADATA_VALIDATION {
         def remove_demographic_info = params.remove_demographic_info == true ? '--remove_demographic_info' : ''
         def validate_custom_fields = params.validate_custom_fields == true ? '--validate_custom_fields' : ''
         def fasta_dir = params.fasta_dir ? "--fasta_dir ${params.fasta_dir}" : ''
+        def genbank_only = params.genbank_only == true ? '--genbank_only' : ''
 
         """
         validate_metadata.py \
@@ -32,6 +33,6 @@ process METADATA_VALIDATION {
             $remove_demographic_info $validate_custom_fields \
             --config_file $submission_config \
             --biosample_fields_key $params.biosample_fields_key \
-            $fasta_dir
+            $fasta_dir $genbank_only
         """
 }

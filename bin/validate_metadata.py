@@ -183,8 +183,10 @@ class GetParams:
 					  		help="Flag for whether or not validate custom fields ")
 		parser.add_argument("--config_file", type=str, 
 					  		help="Path to submission config file with a valid BioSample_package key")
-		parser.add_argument("--biosample_fields_key", type=str, 
+		parser.add_argument("--biosample_fields_key", type=str,
 					  		help="Path to file with BioSample required fields information")
+		parser.add_argument("--genbank_only", action="store_true", default=False,
+							help="Skip BioSample/SRA-specific validation (for GenBank-only SQN generation)")
 		return parser
 
 	def get_restrictions(self):
@@ -320,32 +322,36 @@ class ValidateChecks:
 	def validate_main(self):
 		""" Main function that performs metadata validation
 		"""
-		# check ncbi-spuid uniqueness
-		self.check_unique_spuid()
+		genbank_only = self.parameters.get('genbank_only', False)
+
+		if not genbank_only:
+			# check ncbi-spuid uniqueness
+			self.check_unique_spuid()
 
 		# checks date
 		if self.parameters['date_format_flag'].lower() != 'o':
 			self.check_date()
 
-		# check authors
-		try:
-			self.check_authors()
-		except:
-			self.global_log.append("\n\t Invalid Author Name, please list as full names separated by ;")
-		
-		# checks required and optional BioSample package fields 
-		self.check_meta_core()
+		if not genbank_only:
+			# check authors
+			try:
+				self.check_authors()
+			except:
+				self.global_log.append("\n\t Invalid Author Name, please list as full names separated by ;")
 
-		# removes demographic data if user requested
-		if self.parameters['remove_demographic_info'] is True:
-			self.global_log.append(f"\n\t\t'remove_demographic_info' flag is True. Sample demographic data will be removed if present.")
-			self.check_meta_case()
+			# checks required and optional BioSample package fields
+			self.check_meta_core()
 
-		# check SRA data fields
-		self.check_illumina_nanopore()
+			# removes demographic data if user requested
+			if self.parameters['remove_demographic_info'] is True:
+				self.global_log.append(f"\n\t\t'remove_demographic_info' flag is True. Sample demographic data will be removed if present.")
+				self.check_meta_case()
 
-		# check custom data fields
-		self.check_custom_fields(self.parameters['custom_fields_file'])
+			# check SRA data fields
+			self.check_illumina_nanopore()
+
+			# check custom data fields
+			self.check_custom_fields(self.parameters['custom_fields_file'])
 
 		# write error file
 		self.report_errors()
@@ -409,28 +415,38 @@ class ValidateChecks:
 		if flag not in {"v", "s"}:
 			raise ValueError(f"Unknown date_format_flag: {flag}")
 
+		month_map = {'jan':'01','feb':'02','mar':'03','apr':'04','may':'05','jun':'06',
+					'jul':'07','aug':'08','sep':'09','oct':'10','nov':'11','dec':'12'}
+
 		def validate_and_format(row):
-			date_str = str(row['collection_date'])
+			date_str = str(row['collection_date']).strip()
 			sample = row['sample_name']
 
-			if not date_str or date_str.strip() == "":
+			if not date_str:
 				self.sample_log[sample].append("ERROR: Missing collection_date.")
 				return date_str
 
-			match = re.match(r"^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?", date_str)
-			if not match:
-				self.sample_log[sample].append(f"ERROR: Invalid date format: '{date_str}'")
-				return date_str
+			# Standard YYYY-MM-DD or YYYY-MM or YYYY/MM/DD
+			match = re.match(r"^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?$", date_str)
+			if match:
+				year, month, day = match.groups()
+				if len(year) == 2:
+					self.sample_log[sample].append(f"ERROR: Year is two digits: '{year}'")
+					return date_str
+				month = month.zfill(2) if month else "01"
+				day = day.zfill(2) if day else "01"
+				return f"{year}-{month}-{day}" if flag == "v" else f"{year}-{month}"
 
-			year, month, day = match.groups()
-			if len(year) == 2:
-				self.sample_log[sample].append(f"ERROR: Year is two digits: '{year}'")
-				return date_str
+			# NCBI source modifier formats: Mon-YYYY, Mon.YY, Mon-YY
+			match = re.match(r"^([A-Za-z]{3})[-.](\d{2,4})$", date_str)
+			if match:
+				mon, yr = match.group(1).lower(), match.group(2)
+				if mon in month_map:
+					year = f"20{yr}" if len(yr) == 2 else yr
+					return f"{year}-{month_map[mon]}-01" if flag == "v" else f"{year}-{month_map[mon]}"
 
-			month = month.zfill(2) if month else "01"
-			day = day.zfill(2) if day else "01"
-
-			return f"{year}-{month}-{day}" if flag == "v" else f"{year}-{month}"
+			self.sample_log[sample].append(f"ERROR: Invalid date format: '{date_str}'")
+			return date_str
 
 		self.metadata_df["collection_date"] = self.metadata_df.apply(validate_and_format, axis=1)
 
