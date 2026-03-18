@@ -398,7 +398,7 @@ class Sample:
 		self.fasta_file = fasta_file
 		self.annotation_file = annotation_file
 		# ftp_upload is true if GenBank FTP submission is supported for that species, otherwise false
-		self.ftp_upload = species in {"flu", "sars", "bacteria"} # flu, sars, bacteria currently support ftp upload to GenBank
+		self.ftp_upload = species in {"flu", "sars", "bacteria", "eukaryote"} # species that support FTP upload to GenBank
 	def __repr__(self):
 		return (
 			f"Sample(sample_id={self.sample_id}, batch_id={self.batch_id}, "
@@ -889,10 +889,12 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.genbank_metadata = parser.extract_genbank_metadata()
 		os.makedirs(self.outdir, exist_ok=True)
 
-	def xml_create_bankit(self, submission):
+	def xml_create_bankit(self):
 		"""
-		Prepares a submission for ftp upload via Bank-It
-		Used for SARS-CoV-2 and influenza submissions
+		Prepares a submission XML for FTP upload via Bank-It.
+		Used for SARS-CoV-2 and influenza submissions. When no annotation
+		file is provided, includes an auto_remove_failed_seqs attribute so
+		NCBI performs annotation server-side.
 		"""
 		# Create submission xml
 		self.submission_root = ET.Element('Submission')
@@ -927,16 +929,23 @@ class GenbankSubmission(XMLSubmission, Submission):
 			attribute.text = 'BankIt_influenza_api'
 		else:
 			logging.error("Species must be one of: sras, flu")
-			raise ValueError("Species must be one of: sars, influenza") 
+			raise ValueError("Species must be one of: sars, influenza")
+		# When no annotation file is provided, signal NCBI to auto-annotate
+		if not self.sample.annotation_file:
+			auto_annotate = ET.SubElement(add_files, 'Attribute', {'name': 'auto_remove_failed_seqs'})
+			auto_annotate.text = 'yes'
 		# Identifier section
 		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		identifier = ET.SubElement(add_files, 'Identifier')
 		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(f'{self.top_metadata["ncbi-spuid"]}-GB')
-	
+		self.finalize_xml()
+
 	def xml_create_wgs(self):
-		# Create root Submission element
-		self.init_xml_root() # Write first part of submission.xml (Description)
+		"""Builds the WGS Action block onto the existing submission_root.
+		Callers are responsible for invoking init_xml_root() before and
+		finalize_xml() after, matching the BioSample/SRA pattern.
+		"""
 		# --- Action: AddFiles (WGS) ---
 		action1 = ET.SubElement(self.submission_root, "Action")
 		add_files = ET.SubElement(action1, "AddFiles", target_db="WGS")
@@ -961,13 +970,15 @@ class GenbankSubmission(XMLSubmission, Submission):
 		ref_id = ET.SubElement(attribute_ref, "RefId")
 		primary_id = ET.SubElement(ref_id, "PrimaryId", db="BioSample")
 		primary_id.text = self.safe_text(self.genbank_metadata["biosample_accession"])
+		# When no annotation file is provided, request NCBI PGAP annotation
+		if not self.sample.annotation_file:
+			annotate_attr = ET.SubElement(add_files, 'Attribute', {'name': 'annotate'})
+			annotate_attr.text = 'yes'
 		# Identifier with SPUID
 		identifier = ET.SubElement(add_files, "Identifier")
 		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(f'{self.top_metadata["ncbi-spuid"]}-GB')
-		self.finalize_xml()
-		# todo: the order & placement of these calls is different from BS and SRA, and this bothers me
 
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
@@ -1179,7 +1190,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 
 	# Functions for running table2asn
 	def get_gff_locus_tag(self):
-		""" Read the locus lag from the GFF3 file for use in table2asn command"""
+		""" Read the locus tag from the GFF3 file for use in table2asn command"""
 		locus_tag = None
 		if not self.sample.annotation_file.endswith('.tbl'):
 			with open(self.sample.annotation_file, 'r') as file:
@@ -1219,10 +1230,21 @@ class GenbankSubmission(XMLSubmission, Submission):
 		table2asn_path = shutil.which('table2asn')
 		if not table2asn_path:
 			raise FileNotFoundError("table2asn executable not found in PATH.")
-		# Check if a GFF file is supplied and extract the locus tag
-		# todo: the locus tag needs to be fetched (?) after BioSample is assigned (it appears under Manage Data for the BioProject)
+		# Check if a GFF file is supplied and extract the locus tag.
+		# The locus tag prefix is assigned by NCBI after BioProject registration and appears
+		# under "Manage Data" for the BioProject. It cannot be fetched programmatically via
+		# the NCBI API. If annotation was performed with Bakta, set --bakta_locus_tag so
+		# the prefix appears in the GFF and can be extracted here automatically.
 		if self.sample.annotation_file:
 			locus_tag = self.get_gff_locus_tag()
+			if not locus_tag:
+				logging.warning(
+					"No locus tag prefix found in the annotation file for sample '%s'. "
+					"For WGS submissions, NCBI requires a locus tag prefix registered under your BioProject. "
+					"Set --bakta_locus_tag to the prefix assigned by NCBI so it is embedded in the GFF output. "
+					"Without it, table2asn will run without -locus-tag-prefix and the submission may be rejected.",
+					self.sample.sample_id
+				)
 			gff_dest = os.path.join(self.outdir, os.path.basename(self.sample.annotation_file))
 			symlink_or_copy(self.sample.annotation_file, gff_dest)
 		# Construct the table2asn command
@@ -1283,8 +1305,10 @@ class GenbankSubmission(XMLSubmission, Submission):
 			pass
 
 	def _workflow_bacteria_euk(self):
-		# Prepare a WGS ftp submission
+		# Prepare a WGS ftp submission (init/finalize pattern matches BioSample/SRA)
+		self.init_xml_root()
 		self.xml_create_wgs()
+		self.finalize_xml()
 		self.prep_table2asn_files()
 		# Delete all but the sqn file 
 		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff', '*.fsa']:
