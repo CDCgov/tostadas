@@ -178,8 +178,8 @@ class MainUtility:
                                     break
                         else:
                             continue
-                    # Skip invalid qualifier names (e.g. numeric keys)
-                    if key[0].isdigit():
+                    # Skip invalid qualifier names (e.g. empty or numeric keys)
+                    if not key or key[0].isdigit():
                         continue
                     # Skip CDS-only qualifiers on gene features
                     if _type == 'gene' and key in ('codon_start', 'product', 'protein_id', 'transl_except', 'transl_table'):
