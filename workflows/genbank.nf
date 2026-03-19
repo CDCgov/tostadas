@@ -65,8 +65,6 @@ workflow GENBANK {
                 [meta, batch_tsv]
             }
 
-    // Todo: We need to run GENBANK_VALIDATION per sample not per batch
-
     // Flatten metadata into per-sample tuples
     sample_ch = metadata_batch_ch.flatMap { meta, _batch_tsv ->
         def rows = meta.batch_tsv.splitCsv(header: true, sep: '\t')
