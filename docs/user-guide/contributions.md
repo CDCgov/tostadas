@@ -2,6 +2,7 @@
 
 The following individuals have contributed directly to the development of the TOSTADAS pipeline:
 
+- [Josh Forstedt](https://github.com/jforstedt)
 - [Kyle O'Connell](https://github.com/kyleoconnell22)
 - [Jessica Rowell](https://github.com/jessicarowell)
 - Yesh Kulasekarapandian
