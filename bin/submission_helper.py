@@ -1096,6 +1096,11 @@ class GenbankSubmission(XMLSubmission, Submission):
 	def create_source_file(self):
 		# Sequence_ID must match the FASTA header for table2asn to link source data
 		seq_id = self.sample.sample_id
+		if self.sample.fasta_file and os.path.isfile(self.sample.fasta_file):
+			with open(self.sample.fasta_file) as fh:
+				header = fh.readline().strip().lstrip('>')
+				if header:
+					seq_id = header.split()[0]
 
 		# Fall back to country + state when geo_loc_name is absent
 		country = self.biosample_metadata.get("geo_loc_name")
