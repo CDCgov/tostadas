@@ -81,7 +81,7 @@ def main_prepare():
 			sample=None,
 			accession_id=None,
 			identifier=identifier,
-			wastewater=params.get('wastewater', False)
+			biosample_pkg=params.get('biosample_pkg')
 		)
 		bs.init_xml_root()
 		for s in samples:
@@ -112,7 +112,7 @@ def main_prepare():
 				sample=None,
 				accession_id=None,
 				identifier=identifier,
-				wastewater=params.get('wastewater', False)
+				biosample_pkg=params.get('biosample_pkg')
 			)
 			sra.init_xml_root()
 			for s in samp_list:

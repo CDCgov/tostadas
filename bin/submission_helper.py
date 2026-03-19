@@ -396,6 +396,12 @@ class GetParams:
 		"""
 		args = self.get_args().parse_args()
 		parameters = vars(args)
+		# Resolve backward-compatible --wastewater / --onehealth flags into biosample_pkg
+		if parameters.get('biosample_pkg') is None:
+			if parameters.get('wastewater'):
+				parameters['biosample_pkg'] = 'wastewater'
+			elif parameters.get('onehealth'):
+				parameters['biosample_pkg'] = 'onehealth'
 		return parameters
 
 	@staticmethod
@@ -424,7 +430,9 @@ class GetParams:
 		parser.add_argument("--genbank", help="Optional flag to run Genbank submission", action="store_const", default=False, const=True)
 		parser.add_argument("--biosample", help="Optional flag to run BioSample submission", action="store_const", default=False, const=True)
 		parser.add_argument("--sra", help="Optional flag to run SRA submission", action="store_const", default=False, const=True)
-		parser.add_argument("--wastewater", action="store_true", help="Prepare submission with wastewater specific metadata")
+		parser.add_argument("--wastewater", action="store_true", help="Deprecated: use --biosample_pkg wastewater instead")
+		parser.add_argument("--onehealth", action="store_true", help="Deprecated: use --biosample_pkg onehealth instead")
+		parser.add_argument("--biosample_pkg", type=str, default=None, help="BioSample package type (e.g. wastewater, onehealth)")
 		parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
 		parser.add_argument("--genome_representation", type=str, default="Full", help="WGS genome representation value (Full or Partial)")
 		parser.add_argument("--expected_final_version", type=str, default="Yes", help="WGS expected final version value (Yes or No)")
@@ -529,7 +537,19 @@ class MetadataParser:
 		record = self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 		# Filter out empty/NaN values
 		return {k: v for k, v in record.items() if pd.notna(v) and v != ""}
-	
+
+	def extract_onehealth_metadata(self):
+		# Columns for the NCBI One Health Enteric package (Pathogen.env.1.0 / Pathogen.cl.1.0)
+		columns = ["strain", "isolate", "isolation_source", "host", "organism", "collection_date",
+			"country", "state", "collected_by", "sample_type", "lat_lon", "host_sex", "host_age",
+			"host_disease", "race", "ethnicity", "purpose_of_sampling", "source_type", "animal_environment",
+			"description"]
+		all_columns = columns + self.custom_columns
+		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
+		record = self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+		# Filter out empty/NaN values
+		return {k: v for k, v in record.items() if pd.notna(v) and v != ""}
+
 	def extract_sra_metadata(self):
 		rename_fields = {
 			'sequencing_instrument': 'instrument_model',
@@ -813,6 +833,7 @@ class XMLSubmission(ABC):
 		self.top_metadata = parser.extract_top_metadata()
 		self.biosample_metadata = parser.extract_biosample_metadata()
 		self.wastewater_metadata = parser.extract_wastewater_metadata()
+		self.onehealth_metadata = parser.extract_onehealth_metadata()
 		all_platform_metadata = self.sra_metadata = parser.extract_sra_metadata()
 		# If illumina & nanopore, platform will be specified
 		if platform:
@@ -842,11 +863,18 @@ class XMLSubmissionMixin(ABC):
 
 class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
-				 submission_dir, type, sample, accession_id=None, identifier=None, wastewater=False):
+				 submission_dir, type, sample, accession_id=None, identifier=None,
+				 wastewater=False, biosample_pkg=None):
 		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample)
 		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
-		self.wastewater = bool(wastewater)
+		# Support both the legacy wastewater flag and the newer biosample_pkg parameter
+		if biosample_pkg:
+			self.biosample_pkg = biosample_pkg
+		elif wastewater:
+			self.biosample_pkg = 'wastewater'
+		else:
+			self.biosample_pkg = None
 		os.makedirs(self.outdir, exist_ok=True)
 
 	def add_action_block(self, submission):
@@ -891,8 +919,13 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	
 	def add_attributes_block(self, biosample):
 		attributes = ET.SubElement(biosample, 'Attributes')
-		# Select the appropriate metadata source
-		metadata = self.wastewater_metadata if self.wastewater else self.biosample_metadata
+		# Select the appropriate metadata source based on BioSample package type
+		if self.biosample_pkg == 'wastewater':
+			metadata = self.wastewater_metadata
+		elif self.biosample_pkg == 'onehealth':
+			metadata = self.onehealth_metadata
+		else:
+			metadata = self.biosample_metadata
 		# Fields to ignore when adding attributes
 		ignored_fields = {'organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2'}
 		
@@ -904,12 +937,19 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 
 class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
-				 submission_dir, type, samples, sample, accession_id=None, identifier=None, wastewater=False):
+				 submission_dir, type, samples, sample, accession_id=None, identifier=None,
+				 wastewater=False, biosample_pkg=None):
 		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample)
 		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
 		self.samples = samples
-		self.wastewater = bool(wastewater)
+		# Support both the legacy wastewater flag and the newer biosample_pkg parameter
+		if biosample_pkg:
+			self.biosample_pkg = biosample_pkg
+		elif wastewater:
+			self.biosample_pkg = 'wastewater'
+		else:
+			self.biosample_pkg = None
 		os.makedirs(self.outdir, exist_ok=True)
 
 	def add_action_block(self, submission):

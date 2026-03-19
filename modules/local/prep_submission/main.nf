@@ -32,7 +32,7 @@ process PREP_SUBMISSION {
     def biosample = "biosample" in enabledDatabases ? '--biosample' : ''
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
-    def wastewater = params.biosample_pkg == 'wastewater' ? '--wastewater' : ''
+    def biosample_pkg_flag = params.biosample_pkg ? "--biosample_pkg ${params.biosample_pkg}" : ''
     def strip_pub = params.strip_pub_block == true ? '--strip_pub_block' : ''
     def sbt_flag = params.sbt ? "--sbt ${params.sbt}" : ''
 
@@ -65,7 +65,7 @@ process PREP_SUBMISSION {
         $test_flag \
         $send_submission_email \
         $sra $biosample $genbank \
-        $wastewater \
+        $biosample_pkg_flag \
         $dry_run \
         $strip_pub \
         --genome_representation '$params.genome_representation' \
