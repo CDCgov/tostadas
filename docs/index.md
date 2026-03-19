@@ -26,7 +26,7 @@ Optional gene calling and feature annotation of assembled genomes (FASTA) using 
 
 (2) VADR (viral)
 
-*   Annotates genomes using a set of homologous reference models. TOSTADAS comes packaged with support for [monkeypox virus](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models) and a full list of supported pathogens is available from [VADR GitHub Repository](https://github.com/ncbi/vadr).
+*   Annotates genomes using a set of homologous reference models. TOSTADAS comes packaged with support for [monkeypox virus](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models), RSV, and measles. A full list of supported pathogens is available from the [VADR GitHub Repository](https://github.com/ncbi/vadr).
 
 (3) Bakta (bacterial)
 

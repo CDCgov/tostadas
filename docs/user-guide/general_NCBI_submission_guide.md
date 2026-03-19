@@ -9,7 +9,7 @@
 
 ## General
 
-TOSTADAS lets users submit samples to various NCBI databases with ease. For many of the databases, the pipeline leverages FTP communication to submit samples in an automated manner. TOSTADAS creates many custom log files locally for the submission process and returns valuable information / documents created at the NCBI endpoint as well. Through frequent conversations with personnel from NCBI, TOSTADAS will be continuously updated with any improvments to existing submission mechanisms and/or the implementation of completely new ones from NCBI, in order to provide the best experience for our users.
+TOSTADAS lets users submit samples to various NCBI databases with ease. For many of the databases, the pipeline leverages FTP communication to submit samples in an automated manner. TOSTADAS creates many custom log files locally for the submission process and returns valuable information / documents created at the NCBI endpoint as well. Through frequent conversations with personnel from NCBI, TOSTADAS will be continuously updated with any improvements to existing submission mechanisms and/or the implementation of completely new ones from NCBI, in order to provide the best experience for our users.
 
 ### What is NCBI?
 
@@ -22,7 +22,7 @@ NCBI continues to evolve, offering a wide range of tools and resources to suppor
 To submit to NCBI using TOSTADAS, you first need to establish an account with NCBI. If you're submitting on behalf of a group (e.g., a CDC branch, or a state Public Health Lab), you will want to create one account for your center to use.
 NCBI has information on how to create an account [here](https://www.nlm.nih.gov/ncbi/workshops/2023-06_organizing-biology-data/supplemental-files/NCBIAccountFlyer.pdf).  You may already have a personal NCBI account, but you should create a Center-level account.  You will need to configure the TOSTADAS submission config file with your NCBI account username and password to facilitate submissions via ftp.
 
-TO create a Center Account:
+To create a Center Account:
     
     *   Contact the following e-mail for account creation: sra@ncbi.nlm.nih.gov and provide the following information:
         *   Suggested center abbreviation (16 char max)

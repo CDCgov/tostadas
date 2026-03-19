@@ -1,4 +1,7 @@
 # VADR Install Guide for Biolinux
+
+> **Note:** Manual VADR installation is only necessary if you are running the pipeline outside of a container. When using the Docker or Singularity profiles, the pipeline handles VADR model setup automatically through the `VADR_MODEL_SETUP` process, which downloads the covariance model file from the URL specified by `vadr_cm_url` if it is not already present. No manual steps are required in that case.
+
 ### **1. Clone the Repo**
 
 First, make sure that you are inside of the root directory of the tostadas repository, and then run the following:

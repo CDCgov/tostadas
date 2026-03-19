@@ -25,6 +25,7 @@ The outputs are recorded in the directory specified within the nextflow.config f
         *   errors
         *   fasta
         *   tsv\_per\_sample
+        *   batch\_summary.json (records batch composition for reproducible re-submissions)
 *   repeatmasker\_liftoff\_outputs (name configurable with `final_liftoff_outdir`)
     *   name of metadata sample file
         *   errors
@@ -43,11 +44,13 @@ The outputs are recorded in the directory specified within the nextflow.config f
     *   gff
     *   tbl
 *   submission\_outputs (name and path configurable with `submission_outdir`)
-    *   individual\_sample\_batch\_folder
+    *   batch\_N
         *   biosample
         *   sra
-        *   genbank
+        *   genbank/
+            *   submission files (.sqn, .zip, submission.xml)
         *   log\_file
+        *   batch\_summary.json
 *   final\_submission\_outputs (name and path configurable with `final_submission_outdir`)
     *   updated\_metadata\_Excel\_file
     *   submission\_report\_file

@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | fasta | .fasta | Single sample fasta sequence file(s) |
 | fastq | .fastq | Single sample fastq sequence file(s) |
-| metadata | .xlsx | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
+| metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
 | ref\_fasta | .fasta | Reference genome to use for the liftoff\_submission branch of the pipeline |
 | ref\_gff | .gff | Reference GFF3 file to use for the liftoff\_submission branch of the pipeline |
 | submission\_config | .yaml | configuration file for submitting to NCBI, sample versions can be found in repo |
@@ -34,7 +34,7 @@ All annotation workflows require single sample fasta input files. Input fasta fi
 | Input files | File type | Description |
 | --- | --- | --- |
 | fastq | .fastq | Single sample fastq sequence file(s) |
-| metadata |     | .xlsx |
+| metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
 | submission\_config | .yaml | configuration file for submitting to NCBI, sample versions can be found in repo |
 
 ❗ This pipeline has been tested with paired-end sequence data.

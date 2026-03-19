@@ -46,6 +46,11 @@ The following workflows are available for the `--workflow` parameter:
 | --batch_size | The number of samples to prepare in one submission file. | No (integer) |
 | --organism_type | Used for annotation and to choose GenBank workflow. Options: bacteria, virus, eukaryote | No (string) |
 | --virus_subtype | Used for VADR annotation. Options: mpxv, rsv, mev.| No (string) |
+| --mol_type | Molecule type passed to table2asn (e.g., "genomic", "viral cRNA"). Used by measles and RSV profiles. | No (string, default: "genomic") |
+| --biosample_pkg | BioSample package type (e.g., wastewater, onehealth). | No (string, default: null) |
+| --genome_representation | WGS genome representation. Accepted values are Full or Partial. | No (string, default: "Full") |
+| --expected_final_version | WGS expected final version. Accepted values are Yes or No. | No (string, default: "Yes") |
+| --strip_pub_block | Removes publication citation and DBLink blocks from .sqn files per NCBI preference. Used by the measles profile. | No (true/false as bool, default: false) |
 
 ## General Output
 
@@ -92,7 +97,9 @@ The following workflows are available for the `--workflow` parameter:
 | --- | --- | --- |
 | --vadr | Toggle for running VADR annotation | Yes (true/false as bool) |
 | --vadr_outdir | File path to vadr specific sub-workflow outputs | Yes (folder name as string) |
-| --vadr_models_dir | File path to models for MPXV used by VADR annotation | Yes (folder name as string) |
+| --vadr_models_dir | Directory containing VADR models for the target virus subtype | Yes (folder name as string) |
+| --vadr_opts | Additional flags passed to VADR annotation (e.g., "-r --xnocomp" for RSV). | No (string, default: empty) |
+| --vadr_cm_url | URL to download a VADR covariance model if one is not present locally. | No (string, default: empty) |
 
 ## BAKTA
 

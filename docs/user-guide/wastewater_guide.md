@@ -13,7 +13,7 @@ This workflow uses Nextflow to automate submission of FASTQ read files to NCBI's
 + [Review Nextflow Getting Started](https://www.nextflow.io/docs/latest/) if you have never used Nextflow before
 + [Install Nextflow](https://www.nextflow.io/docs/latest/install.html)
 + Clone the TOSTADAS GitHub repository: `git clone https://github.com/CDCgov/tostadas.git`
-+ Register for an [NCBI Center Account](https://cdcgov.github.io/tostadas/user-guide/general_NCBI_submission_guide/#ncbi-center-account)
++ Register for an [NCBI Center Account](general_NCBI_submission_guide.md#ncbi-center-account)
 + [Create an NCBI Bioproject](https://www.protocols.io/view/ncbi-submission-protocol-for-sars-cov-2-wastewater-ewov14w27vr2/v7?version_warning=no&step=3). Link to the NWSS umbrella Bioproject (PRJNA747181).
 
 ### 2. Fill out Metadata for all samples
@@ -41,4 +41,4 @@ Update your metadata path to point to all of your samples for submissions
 `nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false`
 
 ### 8. Troubleshooting
-View [the docs](https://cdcgov.github.io/tostadas/user-guide/troubleshooting/)
+View [the docs](troubleshooting.md)
