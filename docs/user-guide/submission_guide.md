@@ -5,6 +5,7 @@
 - [Choosing a workflow](#choosing-a-workflow)
 - [Choosing an organism type and/or virus subtype](#choosing-an-organism-type-andor-virus-subtype)
 - [Using specific profiles](#using-specific-profiles)
+- [Metadata input formats](#metadata-input-formats)
 - [Other customizations](#other-customizations)
 - [Submitting to Production](#submitting-to-production)
 - [Typical example workflow](#typical-example-workflow)
@@ -21,7 +22,7 @@
 
 ## Putting together the Nextflow command
 
-Your basic command starts like this: `nextflow run main.nf -profile <docker|singularity|conda>` but needs to be confiured further. See below.
+Your basic command starts like this: `nextflow run main.nf -profile <docker|singularity|conda>` but needs to be configured further. See below.
 
 ## Choosing a workflow
 
@@ -54,6 +55,38 @@ TOSTADAS supports some profiles to make submission easier.  These are specified 
 - **mpox**: Sets defaults for MPOX submission (to run a test MPOX submission, use `profile test,mpox,<docker|singularity|conda>`)
 - **rsv**: Sets defaults for RSV submission (to run a test RSV submission, use `profile test,rsv,<docker|singularity|conda>`)
 - **measles**: Sets defaults for Measles submission (to run a test Measles submission, use `profile test,measles,<docker|singularity|conda>`)
+
+## Metadata input formats
+
+TOSTADAS accepts metadata in `.xlsx`, `.csv`, `.tsv`, and `.src` (NCBI source modifier) formats via the `--meta_path` parameter.
+
+When using `.src` files, column names are automatically mapped to TOSTADAS fields:
+
+| Source Modifier Column | TOSTADAS Field |
+|---|---|
+| `SeqId` / `SeqID` | `sample_name` |
+| `Strain` | `strain` |
+| `Collection_date` | `collection_date` |
+| `Host` | `host` |
+| `Isolate` | `isolate` |
+
+The `Country` field, when provided in `USA:State` format, is automatically split into its component parts.
+
+### Collection date formats
+
+Collection dates can be provided in ISO 8601 format (YYYY-MM-DD or YYYY-MM) or in NCBI abbreviated formats such as `Mon-YYYY` (e.g., Aug-2025) or `Mon.YY` (e.g., Aug.25). Abbreviated formats are converted to ISO 8601 (YYYY-MM) during validation.
+
+### Auto-populating FASTA paths with --fasta_dir
+
+When `--fasta_dir` is set, TOSTADAS scans the specified directory for FASTA files (`.fasta`, `.fa`, `.fna`, `.fas`) and matches them to the `sample_name` column in your metadata. Matched files are used to populate `fasta_path` automatically, eliminating the need to list file paths in the metadata for large sample sets. Samples without a matching FASTA file are skipped with a warning.
+
+### GenBank-only mode
+
+Use `--genbank_only` to skip BioSample/SRA-specific validation (ncbi-spuid, authors, isolation_source checks). This is useful when generating SQN files for GenBank submission without needing to register BioSamples.
+
+### Using an existing .sbt template
+
+Pass `--sbt <path/to/template.sbt>` to provide a pre-existing template file from NCBI's template tool. When set, TOSTADAS uses this file directly for table2asn instead of generating one from submission_config.yaml. This is useful when reusing `.sbt` files from other pipelines or NCBI's web-based template generator.
 
 ## Other customizations
 

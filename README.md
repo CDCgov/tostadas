@@ -67,6 +67,10 @@ The pipeline outputs appear in `results/`
 ```
 nextflow run main.nf -profile virus,<docker|singularity> --workflow biosample_and_sra --submission --annotation --outdir <path/to/output/dir/> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml>
 ```
+Metadata can also be provided as `.csv`, `.tsv`, or `.src` (NCBI source modifier) files. Column names from `.src` files are automatically mapped to TOSTADAS fields (e.g., `SeqId` to `sample_name`, `Collection_date` to `collection_date`). The `Country` field in `USA:State` format is auto-split into separate values.
+
+To avoid listing FASTA paths in the metadata file, use `--fasta_dir` to point to a directory of FASTA files. TOSTADAS matches each `sample_name` to filenames (`.fasta`, `.fa`, `.fna`, `.fas`) in that directory and fills in `fasta_path` automatically. Samples without a matching file are skipped with a warning.
+
 **Annotate and submit bacterial reads**
 ```
 nextflow run main.nf -profile bacteria,<docker|singularity> --workflow biosample_and_sra --submission --annotation --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --download_bakta_db --bakta_db_type <light|full> --outdir <path/to/output/dir/>
@@ -81,6 +85,10 @@ To submit reads to GenBank, use the following command:
 ```
 nextflow run main.nf -profile mpox,<docker|singularity> --workflow genbank --dry_run false --submission_config <path/to/submission_config.yaml> --updated_meta_path <path/to/updated/metadata/file>
 ```
+
+To generate SQN files for GenBank without BioSample/SRA submission, add `--genbank_only` to skip BioSample/SRA-specific validation (ncbi-spuid, authors, isolation_source checks).
+
+If you already have a `.sbt` template file from NCBI's template tool, pass it with `--sbt <path/to/template.sbt>` to use it directly for table2asn instead of generating one from submission_config.yaml.
 
 **Annotate and submit measles reads to GenBank**
 
@@ -154,7 +162,10 @@ This section outlines the primary parameters available for configuring and runni
 | `--workflow`                 | Workflow to execute: `biosample_and_sra`, `genbank`, `fetch_accessions`, `update_submission`, `full_submission` | Yes (string) |
 | `--annotation`               | Toggle for running annotation                                                                     | Yes (true/false as bool) |
 | `--submission`               | Toggle for running submission                                                                     | Yes (true/false as bool) |
-| `--meta_path`                | Path to metadata Excel file (.xlsx)                                                               | Yes (path)               |
+| `--meta_path`                | Path to metadata file (.xlsx, .csv, .tsv, or .src)                                                | Yes (path)               |
+| `--fasta_dir`                | Directory of FASTA files; auto-populates `fasta_path` by matching `sample_name` to filenames      | No (path)                |
+| `--genbank_only`             | Skip BioSample/SRA-specific validation; use when generating SQN files for GenBank only            | No (true/false as bool)  |
+| `--sbt`                      | Path to an existing .sbt template file for table2asn (bypasses auto-generation)                   | No (path)                |
 | `--updated_meta_path`        | Path to accession-augmented metadata file (required for genbank workflow)                          | Yes (path)               |
 | `--outdir`                   | Output directory                                                                                  | No (default: `results`)  |
 | `--organism_type`            | Organism type: `virus`, `bacteria`, `eukaryote`                                                   | No (set by profile)      |

@@ -9,7 +9,8 @@ Default parameters are given in the nextflow.config file. This table lists the p
 | Param | Description | Input Required |
 | --- | --- | --- |
 | --ref_fasta_path | Reference Sequence file path | Yes (path as string) |
-| --meta_path | Meta-data file path for samples | Yes (path as string) |
+| --meta_path | Metadata file path (.xlsx, .csv, .tsv, or .src) | Yes (path as string) |
+| --fasta_dir | Directory of FASTA files; auto-populates `fasta_path` by matching `sample_name` to filenames (.fasta, .fa, .fna, .fas) | No (path as string) |
 | --ref_gff_path | Reference gff file path for annotation | Yes (path as string) |
 
 ## General Subworkflow
@@ -20,6 +21,8 @@ Default parameters are given in the nextflow.config file. This table lists the p
 | --annotation | Toggle for running annotation (only runs in genbank workflow) | Yes (true/false as bool) |
 | --dry_run | Simulate submission and print a log. | No (true/false) |
 | --workflow | Specifies the workflow to execute, allowing users to choose the appropriate processing method. | Yes (string) |
+| --genbank_only | Skip BioSample/SRA-specific validation; use when generating SQN files for GenBank only | No (true/false as bool) |
+| --sbt | Path to an existing .sbt template file for table2asn (bypasses auto-generation from submission_config.yaml) | No (path as string) |
 
 #### Workflow Options
 
