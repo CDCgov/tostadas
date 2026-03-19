@@ -187,6 +187,10 @@ class MainUtility:
 
             if not line:
                 break
+def coord_int(val):
+    """Extract numeric value from a coordinate that may have partial markers (<, >)."""
+    return int(re.sub(r'[^0-9]', '', str(val)))
+
 class GFFChecks:
     def __init__(self, parameters=None):
         self.parameters = parameters
@@ -214,7 +218,7 @@ class GFFChecks:
 
     def check_repeat_regions(self, line_dict, repeat_flag, sample, repeat_region_counter, check_second_repeat, index, second_itr_index):
         if repeat_region_counter == 1:
-            if int(line_dict['coord1']) != 1 and int(line_dict['coord2']) != 1:
+            if coord_int(line_dict['coord1']) != 1 and coord_int(line_dict['coord2']) != 1:
                 if line_dict['orientation'] == '+':
                     line_dict['coord1'] = 1
                 else:
@@ -226,9 +230,9 @@ class GFFChecks:
         return line_dict, repeat_flag, second_itr_index, check_second_repeat
 
     def check_second_itr(self, samp_lines, repeat_flag, sample, second_itr_index):
-        end_coord = max(int(samp_lines[-1][1]['coord1']), int(samp_lines[-1][1]['coord2']))
+        end_coord = max(coord_int(samp_lines[-1][1]['coord1']), coord_int(samp_lines[-1][1]['coord2']))
         target_line = samp_lines[second_itr_index][1]
-        if max(int(target_line['coord1']), int(target_line['coord2'])) < end_coord:
+        if max(coord_int(target_line['coord1']), coord_int(target_line['coord2'])) < end_coord:
             if target_line['orientation'] == '+':
                 target_line['coord2'] = end_coord
             else:
@@ -476,25 +480,18 @@ class MainVADRFuncs:
         self.new_error_file = open(os.path.join(self.parameters['output_path'], 'errors/annotation_error.txt'), 'w', encoding='utf-8')
     
     def get_orientation(self):
-        # strip any non numerical characters
-        self.line_dict['coord1'] = re.sub(r'[^0-9]', '', self.line_dict['coord1'])
-        self.line_dict['coord2'] = re.sub(r'[^0-9]', '', self.line_dict['coord2'])
+        # Extract numeric values for comparison, preserving partial markers (<, >)
+        num1 = int(re.sub(r'[^0-9]', '', self.line_dict['coord1']))
+        num2 = int(re.sub(r'[^0-9]', '', self.line_dict['coord2']))
+        # Strip non-numeric chars from coords but keep < and > partial markers
+        self.line_dict['coord1'] = re.sub(r'[^0-9<>]', '', self.line_dict['coord1'])
+        self.line_dict['coord2'] = re.sub(r'[^0-9<>]', '', self.line_dict['coord2'])
 
-        # get the orientation based on coordinates 
-        if int(self.line_dict['coord1']) < int(self.line_dict['coord2']):
-            # then forward (+)
+        # get the orientation based on coordinates
+        if num1 < num2:
             self.line_dict['orientation'] = '+'
-            try: 
-                assert (int(self.line_dict['coord1']) - int(self.line_dict['coord2'])) < 0 
-            except AssertionError:
-                raise AssertionError(f"Found coordinate1 < coordinate2 but this is incorrect!")
-        elif int(self.line_dict['coord1']) > int(self.line_dict['coord2']):
-            # then reversed (-)
+        elif num1 > num2:
             self.line_dict['orientation'] = '-'
-            try: 
-                assert (int(self.line_dict['coord1']) - int(self.line_dict['coord2'])) > 0 
-            except AssertionError:
-                raise AssertionError(f"Found coordinate1 > coordinate2 but this is incorrect!")
             # switch it for the sake of consistency 
             # self.line_dict['coord1'], self.line_dict['coord2'] = self.line_dict['coord2'], self.line_dict['coord1']
         else: 
