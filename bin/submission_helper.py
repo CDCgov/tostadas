@@ -1054,10 +1054,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
-		# Fall back to sample_id when ncbi-spuid-sra is empty (non-SRA submissions)
-		seq_id = self.top_metadata.get("ncbi-spuid-sra")
-		if pd.isna(seq_id) if isinstance(seq_id, float) else not seq_id:
-			seq_id = self.sample.sample_id
+		# Sequence_ID must match the FASTA header for table2asn to link source data
+		seq_id = self.sample.sample_id
 
 		# Fall back to country + state when geo_loc_name is absent
 		country = self.biosample_metadata.get("geo_loc_name")
