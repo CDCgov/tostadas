@@ -5,8 +5,6 @@
 */
 process UPDATE_SUBMISSION {
 
-    publishDir "${params.output_dir}/${params.submission_output_dir}", mode: 'copy', overwrite: params.overwrite_output
-
     conda(params.env_yml)
     container 'docker.io/staphb/tostadas:latest'
 

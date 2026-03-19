@@ -39,7 +39,7 @@ workflow BIOSAMPLE_UPDATE {
 	CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
 		if (status == "ERROR") {
 			log.info "Validation failed. Please check ${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/error.txt"
-			workflow.abort()
+			System.exit(1)
 		}
 	}
 
@@ -55,7 +55,7 @@ workflow BIOSAMPLE_UPDATE {
     def batch_summary = file("${params.original_submission_outdir}/../${params.validation_outdir}/batched_tsvs/batch_summary.json")
     if (!batch_summary.exists()) {
         log.error "Missing batch_summary.json at: ${batch_summary}"
-        workflow.abort()
+        System.exit(1)
     }
 
     // Step 4: rebatch new metadata to match original batch groupings

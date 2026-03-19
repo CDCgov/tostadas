@@ -41,7 +41,7 @@ workflow BIOSAMPLE_AND_SRA {
 	CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
 		if (status == "ERROR") {
 			log.info "Validation failed. Please check ${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/error.txt"
-			workflow.abort()
+			System.exit(1)
 		}
 	}
 
