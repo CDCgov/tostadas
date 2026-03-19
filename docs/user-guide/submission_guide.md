@@ -32,7 +32,7 @@ Choose how you want to run TOSTADAS using the `--workflow` parameter:
 - **genbank**: Runs a GenBank submission. This requires an updated metadata file that includes `biosample_accession` as required by NCBI.
 - **fetch_accessions**: Fetches reports and updates the metadata file.
 - **full_submission**: Executes BioSample and SRA submissions, waits 30 seconds multiplied by `--batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
-- **update_submission**: Executes a BioSample submission using an updated metadata Excel file.
+- **update_submission**: Executes a BioSample submission using an updated metadata Excel file. **Note:** This workflow currently supports BioSample updates only. SRA and GenBank updates are not supported.
 
 ## Choosing an organism type and/or virus subtype
 

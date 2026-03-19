@@ -161,7 +161,9 @@ The workflow runs METADATA_VALIDATION, CHECK_VALIDATION_ERRORS, and WRITE_VALIDA
 5. For update_submission, the metadata file is not being copied to the workDir, it's being referenced from its own workDir.  This is not ideal Nextflow coding, and should be changed so that it copies the actual file.  
    It's happening because of the channel construction (which is being made from a json file in REBATCH_METADATA process). I think this can be pretty easily modified to just output the channel.
 
-6. Outstanding to-do notes in `submission_helper.py`: 
+6. The `update_submission` workflow only supports BioSample updates. The `enabled` list in `REBATCH_METADATA` (`modules/local/rebatch_metadata/main.nf`) is hardcoded to `["biosample"]`, so the workflow never generates update submissions for SRA or GenBank. Extending this would require changes to both `REBATCH_METADATA` and the `UPDATE_SUBMISSION` process, plus end-to-end testing for each additional database.
+
+7. Outstanding to-do notes in `submission_helper.py`: 
         Line 963: These are hard-coded but probably need to be controlled during GENBANK_VALIDATION somehow.
         Line 982: This is not an issue, it's actually more of a reminder to me that the way Biosample and SRA XML files get made is different from Genbank (they are called differently in submission_prep.py). 
         Line ~1222: Resolved. The locus tag prefix cannot be fetched programmatically from NCBI; it must be registered under the BioProject first, then specified via `--bakta_locus_tag`. A warning is now logged when no locus tag is found in the GFF.
