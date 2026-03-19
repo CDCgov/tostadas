@@ -1,4 +1,4 @@
-# More Submission Details
+# Submission Details
 
 ## Table of Contents
 
