@@ -428,6 +428,7 @@ class GetParams:
 		parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
 		parser.add_argument("--genome_representation", type=str, default="Full", help="WGS genome representation value (Full or Partial)")
 		parser.add_argument("--expected_final_version", type=str, default="Yes", help="WGS expected final version value (Yes or No)")
+		parser.add_argument("--sbt", type=str, default="", help="Path to .sbt template file (skips authorset generation)")
 		return parser
 
 class SubmissionConfigParser:
@@ -1238,12 +1239,16 @@ class GenbankSubmission(XMLSubmission, Submission):
 		""" Creates authorset (sbt), comment (cmt), source (src) files
 			Runs table2asn on them
 		"""
-		# Create the source df
 		self.create_source_file()
-		# Create Structured Comment file
 		self.create_comment_file()
-		# Create authorset file
-		self.create_authorset_file()
+		sbt_file = self.parameters.get('sbt', '')
+		if sbt_file and os.path.isfile(sbt_file):
+			shutil.copy2(sbt_file, os.path.join(self.outdir, "authorset.sbt"))
+		elif sbt_file:
+			logging.warning(f"--sbt file not found: {sbt_file}. Generating authorset.sbt from config.")
+			self.create_authorset_file()
+		else:
+			self.create_authorset_file()
 		# Copy the fasta for table2asn
 		renamed_fasta = os.path.join(self.outdir, "sequence.fsa")
 		symlink_or_copy(self.sample.fasta_file, renamed_fasta)

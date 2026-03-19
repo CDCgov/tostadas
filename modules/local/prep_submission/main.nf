@@ -34,6 +34,7 @@ process PREP_SUBMISSION {
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
     def wastewater = params.biosample_pkg == 'wastewater' ? '--wastewater' : ''
     def strip_pub = params.strip_pub_block == true ? '--strip_pub_block' : ''
+    def sbt_flag = params.sbt ? "--sbt ${params.sbt}" : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
@@ -68,6 +69,7 @@ process PREP_SUBMISSION {
         $dry_run \
         $strip_pub \
         --genome_representation '$params.genome_representation' \
-        --expected_final_version '$params.expected_final_version'
+        --expected_final_version '$params.expected_final_version' \
+        $sbt_flag
     """
 }
