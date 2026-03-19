@@ -14,7 +14,7 @@
         "biosample_pkg": {
           "type": "string",
           "default": null,
-          "description": "Flag indicating a pre-configured BioSample pkg; accepts: wastewater, pulsenet, null."
+          "description": "Flag indicating a pre-configured BioSample pkg; accepts: wastewater, onehealth, null."
         },
         "meta_path": {
           "type": "string",
@@ -22,6 +22,11 @@
           "description": "Meta-data file path for samples",
           "default": "/tostadas/assets/metadata_template.xlsx",
           "pattern": "^\\S+\\.(xlsx|xls|xlsm|xlsb|csv)$"
+        },
+        "fasta_dir": {
+          "type": "string",
+          "description": "Directory of FASTA files; auto-populates fasta_path by matching sample_name to filenames",
+          "default": ""
         },
         "outdir": {
           "type": "string",
@@ -36,6 +41,11 @@
         "annotation": {
           "description": "Toggle for running annotation",
           "type": "boolean",
+          "default": false
+        },
+        "genbank_only": {
+          "type": "boolean",
+          "description": "Skip BioSample/SRA-specific validation for GenBank-only SQN generation",
           "default": false
         },
         "submission": {
@@ -388,6 +398,11 @@
           "default": "${projectDir}/bin/config_files/<your-ncbi-config>.yaml",
           "pattern": "^\\S+\\.(yaml|yml)$",
           "hidden": false
+        },
+        "sbt": {
+          "type": "string",
+          "description": "Path to .sbt template file for table2asn; skips authorset generation if provided",
+          "default": ""
         },
         "submission_wait_time": {
           "type": "string",
