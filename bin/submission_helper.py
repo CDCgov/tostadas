@@ -1348,8 +1348,13 @@ class GenbankSubmission(XMLSubmission, Submission):
 		Executes table2asn with appropriate flags and handles errors.
 		"""
 		logging.info("Running table2asn...")
-		# Check if table2asn executable exists in PATH
-		table2asn_path = shutil.which('table2asn')
+		# Prefer table2asn from the repo bin/ directory (may be newer than container version)
+		script_dir = os.path.dirname(os.path.abspath(__file__))
+		local_table2asn = os.path.join(script_dir, 'table2asn')
+		if os.path.isfile(local_table2asn) and os.access(local_table2asn, os.X_OK):
+			table2asn_path = local_table2asn
+		else:
+			table2asn_path = shutil.which('table2asn')
 		if not table2asn_path:
 			raise FileNotFoundError("table2asn executable not found in PATH.")
 		# Check if a GFF file is supplied and extract the locus tag.
