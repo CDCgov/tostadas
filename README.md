@@ -232,11 +232,87 @@ The submission portion of this pipeline was adapted from SeqSender. To find more
 
 :link: RepeatMasker Documentation: https://www.repeatmasker.org/
 
-## CDC Metadata
-```
-Organization: NCEZID-OAMD
-contact email: ncezid_shareit@cdc.gov
-exemption status: NA
-exemption justification: NA
-description fields: Nextflow workflow for viral and bacterial annotation and automated upload to NCBI databases
-```
+---
+
+## Public Domain Standard Notice
+
+This repository constitutes a work of the United States Government and is not
+subject to domestic copyright protection under 17 USC § 105. This repository
+is in the public domain within the United States, and copyright and related
+rights in the work worldwide are waived through the
+[CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
+All contributions to this repository will be released under the CC0 dedication.
+By submitting a pull request you are agreeing to comply with this waiver of
+copyright interest.
+
+## License Standard Notice
+
+The repository utilizes code licensed under the terms of the Apache Software
+License and therefore is licensed under ASL v2 or later.
+
+This source code in this repository is free: you can redistribute it and/or
+modify it under the terms of the Apache Software License version 2, or (at
+your option) any later version.
+
+This source code in this repository is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the Apache Software
+License for more details.
+
+You should have received a copy of the Apache Software License along with this
+program. If not, see https://www.apache.org/licenses/LICENSE-2.0.html.
+
+The source code forked from other open source projects will inherit its license.
+
+## Privacy Standard Notice
+
+This repository contains only non-sensitive, publicly available data and
+information. All material and community participation is covered by the
+[Disclaimer](DISCLAIMER.md) and [Code of Conduct](code-of-conduct.md). For
+more information about CDC's privacy policy, please visit
+https://www.cdc.gov/other/privacy.html.
+
+## Contributing Standard Notice
+
+Anyone is encouraged to contribute to the repository by
+[forking](https://help.github.com/articles/fork-a-repo) and submitting a pull
+request. (If you are new to GitHub, you might start with a
+[basic tutorial](https://help.github.com/articles/set-up-git).) By contributing
+to this project, you grant a world-wide, royalty-free, perpetual, irrevocable,
+non-exclusive, transferable license to all users under the terms of the
+[Apache Software License v2](https://www.apache.org/licenses/LICENSE-2.0.html)
+or later.
+
+All comments, messages, pull requests, and other submissions received through
+CDC including this GitHub page may be subject to applicable federal law,
+including but not limited to the Federal Records Act, and may be archived. Learn
+more at https://www.cdc.gov/other/privacy.html.
+
+## Records Management Standard Notice
+
+This repository is not a source of government records but is a copy to increase
+collaboration and collaborative potential. All government records will be
+published through the [CDC web site](https://www.cdc.gov).
+
+## Additional Standard Notices
+
+Please refer to [CDC's Template Repository](https://github.com/CDCgov/template)
+for more information about [contributing to this repository](https://github.com/CDCgov/template/blob/master/CONTRIBUTING.md),
+[public domain notices and disclaimers](https://github.com/CDCgov/template/blob/master/DISCLAIMER.md),
+and [code of conduct](https://github.com/CDCgov/template/blob/master/code-of-conduct.md).
+
+## SHARE IT Act Compliance
+
+The [SHARE IT Act](https://github.com/CDCgov/ShareIT-Act) is a federal law
+that requires government agencies like CDC to be more transparent about the
+software built using federal funds.
+
+**Organization:** CDC/NCEZID/OAMD
+**Contact email:** ncezid_shareit@cdc.gov
+
+TOSTADAS (Toolkit for Open Sequence Triage, Annotation and DAtabase Submission)
+is a Nextflow pipeline for pathogen genomic data validation, annotation, and
+submission to NCBI public databases (BioSample, SRA, GenBank). It supports
+multiple organism types including viruses (measles, RSV, mpox), bacteria, and
+eukaryotes with automated metadata validation, VADR/Bakta/RepeatMasker
+annotation, and FTP-based submission.
