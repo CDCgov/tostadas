@@ -47,10 +47,10 @@ FTP submission to GenBank is only supported for bacteria and eukaryote assemblie
 
 TOSTADAS supports some profiles to make submission easier.  These are specified in the `-profile` option. See [Custom metadata validation and custom BioSample package](#custom-metadata-validation-and-custom-biosample-package) for more detail.
 
-- **test**: Runs a test submission. It prepares all the files but does not actually submit to the test server. To submit to the test server, add `dry_run false`
+- **test**: Runs a test submission. It prepares all the files but does not actually submit to the test server. To submit to the test server, add `--dry_run false`
 - **nwss**: Submits to SARS-CoV-2.wwsurv.1.0 BioSample package.
 - **pulsenet**: Submits to OneHealthEnteric.1.0 BioSample package.
-- **virus**: Sets defaults for virus submission (to run a test bacteria submission, use `profile test,virus,<docker|singularity|conda>`)
+- **virus**: Sets defaults for virus submission (to run a test virus submission, use `profile test,virus,<docker|singularity|conda>`)
 - **bacteria**: Sets defaults for bacteria submission (to run a test bacteria submission, use `profile test,bacteria,<docker|singularity|conda>`)
 - **mpox**: Sets defaults for MPOX submission (to run a test MPOX submission, use `profile test,mpox,<docker|singularity|conda>`)
 - **rsv**: Sets defaults for RSV submission (to run a test RSV submission, use `profile test,rsv,<docker|singularity|conda>`)
@@ -185,7 +185,7 @@ These times are approximate and depend on NCBI queue depth. Production submissio
 
 ## Submission config fields
 
-The fields and corresponding example values can be found here: [Submission Config](https://github.com/CDCgov/tostadas/raw/master/conf/submission_config.yaml).
+The fields and corresponding example values can be found here: [Submission Config](https://github.com/CDCgov/tostadas/raw/main/conf/submission_config.yaml).
 
 | Field Name                    | Description                                             | Input Required   |
 |--------------------------|---------------------------------------------------------|------------------|

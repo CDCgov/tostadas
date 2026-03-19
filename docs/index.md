@@ -14,7 +14,7 @@ TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing us
 
 ### (1) Metadata Validation
 
-Verifies that user-provided metadata conforms to NCBI standards and match the sequence data file(s), all of which are organized in an Excel spreadsheet ([example file](https://github.com/CDCgov/tostadas/blob/dev/assets/metadata_template.xlsx)). By default, TOSTADAS uses a set of metadata fields appropriate for most pathogen genomic data submissions, but can be configured to accommodate custom metadata fields specific to any use case. A full guide to using custom metadata fields can be found here: [Custom Metadata Guide](user-guide/custom_metadata_guide.md)
+Verifies that user-provided metadata conforms to NCBI standards and match the sequence data file(s), all of which are organized in an Excel spreadsheet ([example file](https://github.com/CDCgov/tostadas/blob/main/assets/metadata_template.xlsx)). By default, TOSTADAS uses a set of metadata fields appropriate for most pathogen genomic data submissions, but can be configured to accommodate custom metadata fields specific to any use case. A full guide to using custom metadata fields can be found here: [Custom Metadata Guide](user-guide/custom_metadata_guide.md)
 
 ### (2) Gene Annotation
 
@@ -26,11 +26,11 @@ Optional gene calling and feature annotation of assembled genomes (FASTA) using 
 
 (2) VADR (viral)
 
-*   Annotates genomes using a set of homologous reference models. TOSTADAS comes packaged with support for [monkeypox virus](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models), RSV, and measles. A full list of supported pathogens is available from the [VADR GitHub Repository](https://github.com/ncbi/vadr).
+*   Annotates genomes using a set of homologous reference models. TOSTADAS comes packaged with support for [monkeypox virus](https://github.com/CDCgov/tostadas/tree/main/vadr_files/mpxv-models), RSV, and measles. A full list of supported pathogens is available from the [VADR GitHub Repository](https://github.com/ncbi/vadr).
 
 (3) Bakta (bacterial)
 
-*   Annotates bacterial genomes and plasmids using [Bakta](https://github.com/CDCgov/tostadas/tree/master#gene-annotation). Execution requires a reference database ([found here](https://zenodo.org/records/10522951)), which can be downloaded at runtime. All annotation options produce a general feature format file (GFF) and NCBI feature table (TBL) compatible with downstream NCBI submission requirements.
+*   Annotates bacterial genomes and plasmids using [Bakta](https://github.com/CDCgov/tostadas/tree/main#gene-annotation). Execution requires a reference database ([found here](https://zenodo.org/records/10522951)), which can be downloaded at runtime. All annotation options produce a general feature format file (GFF) and NCBI feature table (TBL) compatible with downstream NCBI submission requirements.
 
 ### (3) Submission
 
@@ -41,7 +41,7 @@ Prepare necessary submission files for BioSample, SRA, and/or GenBank depending 
 
 ### ⚙️ General Usage
 
-| [📖 Overview](index.md) | [1️⃣ Installation](user-guide/installation.md#environment-setup) | [2️⃣ General NCBI Guide](user-guide/general_NCBI_submission_guide.md#ncbi-center-account) | [3️⃣ Submission Guide](user-guide/submission_guide.md) | [4️⃣ Output](user-guide/outputs.md) | [5️⃣ Parameters](user-guide/parameters.md) | [6️⃣ Profiles](user-guide/profile.md) |
+| [📖 Overview](index.md) | [1️⃣ Installation](user-guide/installation.md#environment-setup) | [2️⃣ General NCBI Guide](user-guide/general_NCBI_submission_guide.md#ncbi-center-account) | [3️⃣ Submission Guide](user-guide/submission_guide.md) | [4️⃣ Output](user-guide/outputs.md) | [5️⃣ Parameters](user-guide/parameters.md) | [6️⃣ Submission Details](user-guide/profile.md) |
 | --- | --- | --- | --- | --- | --- | --- |
 
 ### 🧪 Advanced Usage

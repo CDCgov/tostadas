@@ -2,12 +2,12 @@
 
 The following individuals have contributed directly to the development of the TOSTADAS pipeline:
 
-- [Kyle O'Connell](kyleoconnell)
-- [Jessica Rowell](jessicarowell)
+- [Kyle O'Connell](https://github.com/kyleoconnell22)
+- [Jessica Rowell](https://github.com/jessicarowell)
 - Yesh Kulasekarapandian
-- [Ankush Gupta](ankushkgupta2)
-- [Cole Tindall](CTindall-1)
-- [Ramiya Sivakumar](RamiyapriyaS)
+- [Ankush Gupta](https://github.com/ankushkgupta2)
+- [Cole Tindall](https://github.com/CTindall-1)
+- [Ramiya Sivakumar](https://github.com/RamiyapriyaS)
 - [Samantha Sevilla](https://github.com/slsevilla)
 
 The following individuals have contributed to the overall design, and testing, of the TOSTADAS pipeline:

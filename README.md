@@ -36,7 +36,7 @@ git clone https://github.com/CDCgov/tostadas.git
 
  **2a. Install mamba**
 
-❗ Note: If you have mamba installed in your local environment, skip ahead to step 3 ([Create and activate a conda environment](https://github.com/CDCgov/tostadas/edit/dev/README.md#3-create-and-activate-a-conda-environment))
+❗ Note: If you have mamba installed in your local environment, skip ahead to step 3 ([Create and activate a conda environment](https://github.com/CDCgov/tostadas/edit/main/README.md#3-create-and-activate-a-conda-environment))
 ```
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
 bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
@@ -204,7 +204,7 @@ The submission portion of this pipeline was adapted from SeqSender. To find more
 
 ## Resources
 
-:link: NCBI Submission Guidelines: https://submit.ncbi.nlm.nih.gov/sarscov2/sra/#step6
+:link: NCBI Submission Guidelines: https://submit.ncbi.nlm.nih.gov/
 
 :link: SeqSender Documentation: https://github.com/CDCgov/seqsender
 

@@ -60,7 +60,7 @@ Test your install by running `perl vadr/v-annotate.pl`.
 
 It will probably fail with either (1) ```use: command not found``` or (2) ```Cant locate XYZ package in @INC```. 
 
-If it works as expected, skip to #5 to export your variables. Else, you can now begin the process of troubleshooting by installing the required PERL libraries.
+If it works as expected, skip to step 6 to export your variables. Else, you can now begin the process of troubleshooting by installing the required PERL libraries.
 
 **To Install Bio/Easel/MSA.pl**
 ```
