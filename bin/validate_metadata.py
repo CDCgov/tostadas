@@ -174,9 +174,10 @@ class GetParams:
 		parser.add_argument("-k", "--remove_demographic_info", action="store_true", default=False,
 							help="Flag to remove potentially identifying demographic info if provided otherwise no change will be made " +
 								 "Applies to host_sex, host_age, race, ethnicity.")
-		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v'],
+		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v', 'n'],
 							help="Flag to differ date output, s = default (YYYY-MM), " +
-								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
+								 "o = original (skips date validation), v = verbose (YYYY-MM-DD), " +
+								 "n = NCBI short month (Mon.YY)")
 		parser.add_argument("--custom_fields_file", type=str, 
 					  		help="File containing custom fields, datatypes, and which samples to check")
 		parser.add_argument("--validate_custom_fields", action="store_true", default=True, 
@@ -412,11 +413,12 @@ class ValidateChecks:
 		""" Validates and reformats dates based on date_format_flag value
 		"""
 		flag = self.parameters.get("date_format_flag", "").lower()
-		if flag not in {"v", "s"}:
+		if flag not in {"v", "s", "n"}:
 			raise ValueError(f"Unknown date_format_flag: {flag}")
 
 		month_map = {'jan':'01','feb':'02','mar':'03','apr':'04','may':'05','jun':'06',
 					'jul':'07','aug':'08','sep':'09','oct':'10','nov':'11','dec':'12'}
+		reverse_month_map = {v: k.capitalize() for k, v in month_map.items()}
 
 		def validate_and_format(row):
 			date_str = str(row['collection_date']).strip()
@@ -435,7 +437,12 @@ class ValidateChecks:
 					return date_str
 				month = month.zfill(2) if month else "01"
 				day = day.zfill(2) if day else "01"
-				return f"{year}-{month}-{day}" if flag == "v" else f"{year}-{month}"
+				if flag == "v":
+					return f"{year}-{month}-{day}"
+				elif flag == "n":
+					return f"{reverse_month_map.get(month, month)}.{year[2:]}"
+				else:
+					return f"{year}-{month}"
 
 			# NCBI source modifier formats: Mon-YYYY, Mon.YY, Mon-YY
 			match = re.match(r"^([A-Za-z]{3})[-.](\d{2,4})$", date_str)
@@ -443,7 +450,12 @@ class ValidateChecks:
 				mon, yr = match.group(1).lower(), match.group(2)
 				if mon in month_map:
 					year = f"20{yr}" if len(yr) == 2 else yr
-					return f"{year}-{month_map[mon]}-01" if flag == "v" else f"{year}-{month_map[mon]}"
+					if flag == "v":
+						return f"{year}-{month_map[mon]}-01"
+					elif flag == "n":
+						return f"{mon.capitalize()}.{year[2:]}"
+					else:
+						return f"{year}-{month_map[mon]}"
 
 			self.sample_log[sample].append(f"ERROR: Invalid date format: '{date_str}'")
 			return date_str
