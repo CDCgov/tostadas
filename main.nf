@@ -26,10 +26,12 @@ workflow BIOSAMPLE_AND_SRA_WORKFLOW {
 }
 
 workflow GENBANK_WORKFLOW {
-    // Set default for updated_meta_path if not already defined
-    def updated_meta_file = params.updated_meta_path && params.updated_meta_path != '' ?
-        file(params.updated_meta_path) :
-        file("${params.outdir}/${params.metadata_basename}/${params.final_submission_outdir}/${params.metadata_basename}_updated.xlsx")
+    // In genbank_only mode, use meta_path directly (no prior BioSample/SRA run needed)
+    def updated_meta_file = params.genbank_only ?
+        file(params.meta_path) :
+        params.updated_meta_path && params.updated_meta_path != '' ?
+            file(params.updated_meta_path) :
+            file("${params.outdir}/${params.metadata_basename}/${params.final_submission_outdir}/${params.metadata_basename}_updated.xlsx")
 
     // Log an error if the updated metadata file doesn't exist
     if (!updated_meta_file.exists()) {
