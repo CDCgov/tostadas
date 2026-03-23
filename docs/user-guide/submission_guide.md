@@ -81,6 +81,19 @@ TOSTADAS can chunk large datasets into smaller groups to submit to NCBI's server
 
 Another example: the `--dry_run` flag (which prepares files for submission but does not upload to the server) defaults to `true` for the test profile and `false` otherwise, but you can override it by specifying `--dry_run <true|false>` on the command line.
 
+## SFTP Submission Mode
+
+By default, TOSTADAS uploads submission files to NCBI via FTP. If your institution's firewall blocks FTP traffic (port 21), use SFTP instead by setting the `--submission_mode` parameter:
+
+```bash
+nextflow run main.nf -profile singularity,mpox --workflow biosample_and_sra --submission_mode sftp --submission_config conf/submission_config.yaml
+```
+
+When using SFTP mode, the `submission_config.yaml` must include the `NCBI_sftp_host` field with the NCBI SFTP hostname. All other submission behavior -- file preparation, batching, report polling -- is identical to FTP mode.
+
+!!! note
+    SFTP uses SSH-based file transfer and is not blocked by firewalls that restrict traditional FTP. If FTP submissions fail with connection timeouts, switching to SFTP mode is the recommended solution.
+
 ## Submitting to Production
 
 TOSTADAS defaults to submitting to the test server even if not using the test profile, to avoid accidentally pushing data to NCBI's Production server.
@@ -218,6 +231,26 @@ The fields and corresponding example values can be found here: [Submission Confi
 | Name                   | Leave blank                                                                      | Yes (blank)    |
 | First                  | Submitter's first name                                                           | Yes (string)   |
 | Last                   | Submitter's last name                                                            | Yes (string)   |
+
+## Supported Organism Profiles
+
+The table below summarizes the built-in organism profiles, their annotation tools, GenBank submission methods, and key configuration parameters. Each profile is activated by adding its name to the `-profile` option (e.g., `-profile mpox,singularity`).
+
+| Profile | Organism Type | Annotation Tool | GenBank Method | Key Parameters |
+|---------|--------------|-----------------|----------------|----------------|
+| `mpox` | virus | RepeatMasker + Liftoff | Email (SQN zip) | `virus_subtype = 'mpxv'`, `repeatmasker_liftoff = true` |
+| `rsv` | virus | VADR | Email (SQN zip) | `virus_subtype = 'rsv'`, `mol_type = 'viral cRNA'`, `vadr_opts = '-r --xnocomp'` |
+| `measles` | virus | VADR | Email (SQN zip) | `virus_subtype = 'mev'`, `mol_type = 'viral cRNA'`, `strip_pub_block = true`, `date_format_flag = 'n'` |
+| `virus` | virus | None (NCBI-side) | BankIt FTP | `annotation = false`, no `virus_subtype` set |
+| `bacteria` | bacteria | Bakta | WGS FTP | `bakta = true`, `bakta_db_type = 'light'`, `download_bakta_db = true` |
+| `nwss` | -- | None | -- (BioSample/SRA only) | `biosample_pkg = 'wastewater'`, `validate_custom_fields = true` |
+| `pulsenet` | -- | None | -- (BioSample/SRA only) | `biosample_pkg = 'onehealth'`, `validate_custom_fields = true` |
+
+!!! note
+    The `nwss` and `pulsenet` profiles are BioSample/SRA submission profiles. They do not set an organism type or run annotation, and are not used for GenBank submission.
+
+!!! tip
+    Profiles can be combined. For example, `-profile test,measles,singularity` runs a measles test submission using Singularity containers.
 
 ## Custom metadata validation and custom BioSample package
 
