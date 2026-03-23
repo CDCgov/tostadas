@@ -149,7 +149,7 @@ The workflow runs METADATA_VALIDATION, CHECK_VALIDATION_ERRORS, and WRITE_VALIDA
         Output: a tuple containing the batch directory, and a prep_submission log file.
 
 
-## Known issues and idiosyncracies
+## Known issues and idiosyncrasies
 
 1. The pipeline doesn't fetch Genbank accession IDs, but it could if they are available.  Doing so will require some optional handling for downstream report csv and updated metadata file generation.
 

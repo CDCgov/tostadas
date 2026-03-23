@@ -11,7 +11,7 @@ and update snapshots if needed.
 
 ---
 
-## 1. Install nf-test
+## Install nf-test
 
 Install nf-test globally (only needed once):
 
@@ -25,7 +25,7 @@ Make sure it's available in your PATH:
 nf-test version
 ```
 
-## 2. Run the tests
+## Run Tests
 
 Run all tests in the tests/ folder:
 
@@ -39,7 +39,7 @@ Run a specific test file:
 nf-test test tests/<name_of_test>.nf.test
 ```
 
-## 3. Updating snapshots
+## Update Snapshots
 
 If the test output has intentionally changed, you'll need to update the saved
 snapshots so the tests will pass again:
@@ -50,7 +50,7 @@ nf-test test --update-snapshots
 
 Commit and push the updated .snap files.
 
-## 4. Matching the CI environment
+## Match the CI Environment
 
 Our CI workflow pins the Nextflow version it uses.
 To match it locally, set the same version before running tests:

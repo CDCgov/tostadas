@@ -2,19 +2,19 @@
 
 If you need to report a bug, suggest new features, or just say “thanks”, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we’ll try to get back to you as soon as possible!
 
-## Steps to Open Issue Request:
+## Opening an Issue
 
-### (1) Select appropriate template
-Following the link above, there are four options for issue templates and your selection will depend on  
-(1) if you are a user vs maintainer/collaborator and  
-(2) if the request pertains to a bug vs feature enhancement.  
+### Select a Template
+Following the link above, there are four options for issue templates and your selection will depend on
+- whether you are a user vs maintainer/collaborator, and
+- whether the request pertains to a bug vs feature enhancement.
 Please select the template that accurately reflects your situation.
 
-### (2) Fill out necessary information
+### Provide Details
 Once the appropriate template has been selected, you must fill/answer all fields/questions specified.  
 The information provided will be valuable in getting more information about the issue and any necessary context surrounding it.
 
-### (3) Submit the Issue
+### Submit
 Once all information has been provided, you may now submit it!
 
 Please allow for some turnaround time for us to review the issue and potentially start addressing it.  

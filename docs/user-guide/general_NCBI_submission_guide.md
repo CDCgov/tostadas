@@ -13,37 +13,37 @@ NCBI continues to evolve, offering a wide range of tools and resources to suppor
 ### NCBI Center Account
 
 To submit to NCBI using TOSTADAS, you first need to establish an account with NCBI. If you're submitting on behalf of a group (e.g., a CDC branch, or a state Public Health Lab), you will want to create one account for your center to use.
-NCBI has information on how to create an account [here](https://www.nlm.nih.gov/ncbi/workshops/2023-06_organizing-biology-data/supplemental-files/NCBIAccountFlyer.pdf).  You may already have a personal NCBI account, but you should create a Center-level account.  You will need to configure the TOSTADAS submission config file with your NCBI account username and password to facilitate submissions via ftp.
+NCBI has information on how to create an account [here](https://www.nlm.nih.gov/ncbi/workshops/2023-06_organizing-biology-data/supplemental-files/NCBIAccountFlyer.pdf). You may already have a personal NCBI account, but you should create a Center-level account. You will need to configure the TOSTADAS submission config file with your NCBI account username and password to facilitate submissions via ftp.
 
 To create a Center Account:
 
-    *   Contact the following e-mail for account creation: sra@ncbi.nlm.nih.gov and provide the following information:
-        *   Suggested center abbreviation (16 char max)
-        *   Center name (full), center URL & mailing address (including country and postcode)
-        *   Phone number (main phone for center or lab)
-        *   Contact person (someone likely to remain at the location for an extended time)
-        *   Contact email (ideally a service account monitored by several people)
-        *   Whether you intend to submit via FTP or command line Aspera (ascp)
-    *   Gain access to an upload directory: Following center account creation, a test area and a production area will be created. Deposit the XML file and related data files into a directory and follow the instructions SRA provides via email to indicate when files are ready to trigger the pipeline.
-    *   GISAID: GISAID support is not yet implemented but it may be added in the future.
+- Contact the following e-mail for account creation: sra@ncbi.nlm.nih.gov and provide the following information:
+    - Suggested center abbreviation (16 char max)
+    - Center name (full), center URL & mailing address (including country and postcode)
+    - Phone number (main phone for center or lab)
+    - Contact person (someone likely to remain at the location for an extended time)
+    - Contact email (ideally a service account monitored by several people)
+    - Whether you intend to submit via FTP or command line Aspera (ascp)
+- Gain access to an upload directory: Following center account creation, a test area and a production area will be created. Deposit the XML file and related data files into a directory and follow the instructions SRA provides via email to indicate when files are ready to trigger the pipeline.
+- GISAID: GISAID support is not yet implemented but it may be added in the future.
 
-### Key NCBI Repositories TOSTADAS Supports:
+### Key NCBI Repositories TOSTADAS Supports
 
-#### 1. BioProject / BioSample
+#### BioProject and BioSample
 
-- **Description:** BioProject and BioSample are databases that organize and store information about biological projects and samples, respectively, providing context for genomic data submissions.
-- **URL:** [BioProject](https://www.ncbi.nlm.nih.gov/bioproject/) / [BioSample](https://www.ncbi.nlm.nih.gov/biosample/)
+- **Description** -- BioProject and BioSample are databases that organize and store information about biological projects and samples, respectively, providing context for genomic data submissions.
+- **URL** -- [BioProject](https://www.ncbi.nlm.nih.gov/bioproject/) / [BioSample](https://www.ncbi.nlm.nih.gov/biosample/)
 
-#### 2. SRA
+#### SRA
 
-- **Description:** SRA is a repository that archives and provides access to raw sequence data, including next-generation sequencing data, facilitating the exploration of genomic datasets.
-- **URL:** [SRA](https://www.ncbi.nlm.nih.gov/sra)
+- **Description** -- SRA is a repository that archives and provides access to raw sequence data, including next-generation sequencing data, facilitating the exploration of genomic datasets.
+- **URL** -- [SRA](https://www.ncbi.nlm.nih.gov/sra)
 
-#### 3. GenBank
+#### GenBank
 
-- **Description:** GenBank is a DNA sequence database that collects and archives genomic data from researchers worldwide. It plays a pivotal role in the sharing and dissemination of genetic information.
-- **URL:** [General GenBank Docs](https://www.ncbi.nlm.nih.gov/genbank/)
-- **URL2:** [Formatting for GenBank](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table)
+- **Description** -- GenBank is a DNA sequence database that collects and archives genomic data from researchers worldwide. It plays a pivotal role in the sharing and dissemination of genetic information.
+- **URL** -- [General GenBank Docs](https://www.ncbi.nlm.nih.gov/genbank/)
+- **URL2** -- [Formatting for GenBank](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table)
 
 ## More Information For Each Database
 
@@ -51,9 +51,34 @@ Each database under NCBI has different functions/use-cases, and therefore each r
 
 It's important to note that the specific requirements for data submission to these databases can evolve, and it's recommended to refer to the latest guidelines provided by the National Center for Biotechnology Information (NCBI) or the respective databases for the most up-to-date information.
 
-| **Database**                      | **Minimum Required Files**                                       | **Optional Files**                                              | **Required Metadata Fields**                                      | **Optional Metadata Fields**                            | **Current Submission Mechanisms**                                           |
-|--------------------------------|--------------------------------------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------|----------------------------------------------------|------------------------------------------------------------------------|
-| **SRA (Sequence Read Archive)** | Raw sequence data files (e.g., FASTQ, BAM), XML metadata file                   | Quality control reports, Experimental design details                                      | Sample name, Organism                                                    | Yes (Strain, Sex, Developmental Stage, etc.)                 | Web-based submission portal, Command-line tools (e.g., `SRA Toolkit`), FTP |
-| **GenBank**                     | Nucleotide or protein sequence file (FASTA format), Annotation file (GenBank format as a .tbl or .gff)           | Sequencing trace files, Supplementary data files                                         | Organism, Locus tag                                                        | Yes (Strain, Taxonomy ID, etc.)                               | BankIt submission tool, Sequin interactive submission tool, table2asn via FTP or email |
-| **BioSample**                   | XML metadata file                                             | Additional sample attributes file                             | Sample name, Organism                                                     | Yes (Strain, Sex, etc.)                                       | Web-based submission portal, Submission through BioProject or other NCBI databases |
-| **Joint BioSample/SRA**         | Raw sequence data files (e.g., FASTQ, BAM), XML metadata file (BioSample and SRA metadata combined)                   | Quality control reports, Experimental design details                                    | Sample name, Organism                                                    | Yes (Strain, Sex, Developmental Stage, etc.)                  | Web-based submission portal, Command-line tools (e.g., `SRA Toolkit`), FTP   |
+### SRA (Sequence Read Archive)
+
+- **Minimum Required Files** -- Raw sequence data files (e.g., FASTQ, BAM), XML metadata file
+- **Optional Files** -- Quality control reports, Experimental design details
+- **Required Metadata Fields** -- Sample name, Organism
+- **Optional Metadata Fields** -- Strain, Sex, Developmental Stage, etc.
+- **Current Submission Mechanisms** -- Web-based submission portal, Command-line tools (e.g., `SRA Toolkit`), FTP
+
+### GenBank
+
+- **Minimum Required Files** -- Nucleotide or protein sequence file (FASTA format), Annotation file (GenBank format as a .tbl or .gff)
+- **Optional Files** -- Sequencing trace files, Supplementary data files
+- **Required Metadata Fields** -- Organism, Locus tag
+- **Optional Metadata Fields** -- Strain, Taxonomy ID, etc.
+- **Current Submission Mechanisms** -- BankIt submission tool, Sequin interactive submission tool, table2asn via FTP or email
+
+### BioSample
+
+- **Minimum Required Files** -- XML metadata file
+- **Optional Files** -- Additional sample attributes file
+- **Required Metadata Fields** -- Sample name, Organism
+- **Optional Metadata Fields** -- Strain, Sex, etc.
+- **Current Submission Mechanisms** -- Web-based submission portal, Submission through BioProject or other NCBI databases
+
+### Joint BioSample/SRA
+
+- **Minimum Required Files** -- Raw sequence data files (e.g., FASTQ, BAM), XML metadata file (BioSample and SRA metadata combined)
+- **Optional Files** -- Quality control reports, Experimental design details
+- **Required Metadata Fields** -- Sample name, Organism
+- **Optional Metadata Fields** -- Strain, Sex, Developmental Stage, etc.
+- **Current Submission Mechanisms** -- Web-based submission portal, Command-line tools (e.g., `SRA Toolkit`), FTP

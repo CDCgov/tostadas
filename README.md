@@ -20,9 +20,9 @@ For the complete TOSTADAS documentation, please see the [Complete Documentation]
 
 A portable, open-source pipeline designed to streamline submission of pathogen genomic data to public repositories.  Reducing barriers to timely data submission increases the value of public repositories for both public health decision making and scientific research. TOSTADAS facilitates routine sequence submission by standardizing and automating:
 
-+ Metadata Validation
-+ Genome Annotation
-+ File submission
+- Metadata Validation
+- Genome Annotation
+- File submission
 
 TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses, Measles, RSV, and select bacteria. Testing for additional pathogens is planned for future releases.
 
@@ -33,47 +33,47 @@ TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing us
 
 For non-CDC users, please follow the instructions below.
 
-### 1. Clone the repository to your local machine
+### Clone the Repository
 
 ```bash
 git clone https://github.com/CDCgov/tostadas.git
 ```
 
 !!! note
-    If you already have Nextflow installed in your local environment, skip ahead to step 5.
+    If you already have Nextflow installed in your local environment, proceed to the [Update the Submission Config](#update-the-submission-config) section below.
 
-### 2. Install mamba and add it to your PATH
+### Install Mamba
 
-**2a. Install mamba**
+**Install mamba:**
 
 !!! note
-    If you have mamba installed in your local environment, skip ahead to step 3 ([Create and activate a conda environment](#3-install-nextflow-using-mamba-and-the-bioconda-channel)).
+    If you have mamba installed in your local environment, proceed to the [Install Nextflow](#install-nextflow) section below.
 
 ```bash
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
 bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
 ```
 
-**2b. Add mamba to PATH:**
+**Add mamba to PATH:**
 
 ```bash
 export PATH="$HOME/mambaforge/bin:$PATH"
 ```
 
-### 3. Install Nextflow using mamba and the bioconda Channel
+### Install Nextflow
 
 ```bash
 mamba install -c bioconda nextflow
 ```
 
-### 4. Update the default submissions config file with your NCBI username and password
+### Update the Submission Config
 
 ```bash
 # update this config file (you don't have to use vim)
 vim conf/submission_config.yaml
 ```
 
-### 5. Run the workflow with default parameters and the local run environment:
+### Run the Test Workflow
 
 ```bash
 # test command for virus reads
@@ -82,7 +82,7 @@ nextflow run main.nf -profile test,mpox,<singularity|docker|conda>
 
 The pipeline outputs appear in `results/`
 
-### 6. Start running your own analysis
+### Run Your Own Analysis
 
 **Annotate and submit viral reads**
 
@@ -146,7 +146,7 @@ Please make sure your updated metadata Excel file has a `biosample_accession` co
 
 Note: TOSTADAS uses the `ncbi-spuid` field to match samples in the metadata file and the original submission.xml.  The `sample_name` field is not preserved in the submission.xml, so it cannot be used as an identifier for this workflow.
 
-### 7. Custom metadata validation and custom BioSample package
+### Custom Metadata Validation
 
 TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; version 1.0) NCBI BioSample package for submissions to the BioSample repository. You can submit using a different BioSample package by doing the following:
 1. Change the package name in the `conf/submission_config.yaml`. Choose one of the available [NCBI BioSample packages](https://www.ncbi.nlm.nih.gov/biosample/docs/packages/).

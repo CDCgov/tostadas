@@ -1,37 +1,37 @@
 # Submission Details
 
-## Input Files Required:
+## Input Files Required
 
 !!! warning
     Currently, the pipeline does not accept input files containing period marks `.` in their naming convention.
 
-### (A) Running Annotation and Submission to GenBank and SRA:
+### Running Annotation and Submission
 
 | Input files | File type | Description |
-| --- | --- | --- |
+|---|---|---|
 | fasta | .fasta | Single sample fasta sequence file(s) |
 | fastq | .fastq | Single sample fastq sequence file(s) |
 | metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
 | ref\_fasta | .fasta | Reference genome to use for the liftoff\_submission branch of the pipeline |
 | ref\_gff | .gff | Reference GFF3 file to use for the liftoff\_submission branch of the pipeline |
-| submission\_config | .yaml | configuration file for submitting to NCBI, sample versions can be found in repo |
+| submission\_config | .yaml | Configuration file for submitting to NCBI, sample versions can be found in repo |
 
 All annotation workflows require single sample fasta input files. Input fasta files can contain multiple contigs or chromosomes, but all sequences in the file must come from the same specimen.
 
-### (B) Running SRA Submission only:
+### Running SRA Submission Only
 
 | Input files | File type | Description |
-| --- | --- | --- |
+|---|---|---|
 | fastq | .fastq | Single sample fastq sequence file(s) |
 | metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
-| submission\_config | .yaml | configuration file for submitting to NCBI, sample versions can be found in repo |
+| submission\_config | .yaml | Configuration file for submitting to NCBI, sample versions can be found in repo |
 
 !!! note
     This pipeline has been tested with paired-end sequence data.
 
 Example metadata: [mpxv_test_metadata.xlsx](../assets/sample_metadata/mpxv_test_metadata.xlsx)
 
-## Understanding Profiles and Environments:
+## Understanding Profiles and Environments
 
 Within the nextflow pipeline the `-profile` parameter is required to specify the computing environment of the run. The options of `docker`, `singularity` or `conda` can passed in. The conda environment is less stable than the docker or singularity. We recommend you choose docker or singularity when running the pipeline.
 
@@ -39,35 +39,39 @@ Optionally, the `test` option can be specified in the `-profile` parameter. If t
 
 See more about our custom built-in profiles in [Using specific profiles](submission_guide.md#using-specific-profiles).
 
-## Perform a Dry Run:
+## Perform a Dry Run
 
-For any workflow, you can add `--dry_run true` to run through all the steps but not actually upload files to NCBI's server.  This option produces a few submission log files you can read to check which folders will be uploaded and where they will be uploaded on the host server.
+For any workflow, you can add `--dry_run true` to run through all the steps but not actually upload files to NCBI's server. This option produces a few submission log files you can read to check which folders will be uploaded and where they will be uploaded on the host server.
 
-## Submitting to BioSample and/or SRA:
+## Submitting to BioSample and/or SRA
 
-Use the `--workflow biosample_and_sra` workflow option to submit to BioSample and SRA.  Turn off SRA submission by specifying `--sra false`.  Turn off BioSample submission using `--biosample false`
+Use the `--workflow biosample_and_sra` workflow option to submit to BioSample and SRA. Turn off SRA submission by specifying `--sra false`. Turn off BioSample submission using `--biosample false`.
 
-Note: The column `ncbi-spuid` in the metadata template is used as the BioSample SPUID, and the column `ncbi-spuid-sra` is used as the SRA SPUID.  These two fields need to be unique for each sample.
-NCBI uses SPUID as temporary linkage IDs to connect a BioSample and corresponding SRA submission.
+!!! note
+    The column `ncbi-spuid` in the metadata template is used as the BioSample SPUID, and the column `ncbi-spuid-sra` is used as the SRA SPUID. These two fields need to be unique for each sample. NCBI uses SPUID as temporary linkage IDs to connect a BioSample and corresponding SRA submission.
 
-Note: SRA submission supports uploading both Nanopore and Illumina data. These will be processed as separate submission.xml files and separate uploads, as required by NCBI.
+!!! note
+    SRA submission supports uploading both Nanopore and Illumina data. These will be processed as separate submission.xml files and separate uploads, as required by NCBI.
 
-## Submitting to GenBank:
+## Submitting to GenBank
 
-Use the `--workflow genbank` workflow option to submit to GenBank. Please note that a GenBank submission requires a BioSample accession ID assigned by NCBI.  If you successfully ran `--workflow biosample_and_sra` previously, you can find your updated metadata file in the `accessions` folder by default.  Check it to make sure your accession IDs were successfully assigned.  Supply this file using `--updated_meta_path` (*NOT* `--meta_path`).  Note: TOSTADAS will automatically search for `--updated_meta_path` in your `--outdir` if you don't explicitly provide it.
+Use the `--workflow genbank` workflow option to submit to GenBank. Please note that a GenBank submission requires a BioSample accession ID assigned by NCBI. If you successfully ran `--workflow biosample_and_sra` previously, you can find your updated metadata file in the `accessions` folder by default. Check it to make sure your accession IDs were successfully assigned. Supply this file using `--updated_meta_path` (*NOT* `--meta_path`).
+
+!!! note
+    TOSTADAS will automatically search for `--updated_meta_path` in your `--outdir` if you don't explicitly provide it.
 
 !!! warning
-    You can only submit raw files to SRA, not to Genbank.
+    You can only submit raw files to SRA, not to GenBank.
 
-## Fetching NCBI Accession IDs:
+## Fetching NCBI Accession IDs
 
 TOSTADAS will go search for and fetch report.xml files, aggregate the results into a csv file, and create an updated metadata Excel file including the validated metadata and accession IDs, if assigned.
 This report CSV file and updated metadata Excel file are placed in the `accessions` folder by default.
 
-Run this workflow using `--workflow fetch_accessions`.  Provide the same `--outdir` and `--meta_path` you provided for the original submission, as TOSTADAS uses these two parameters to find your submission folder and fetch the corresponding reports.
+Run this workflow using `--workflow fetch_accessions`. Provide the same `--outdir` and `--meta_path` you provided for the original submission, as TOSTADAS uses these two parameters to find your submission folder and fetch the corresponding reports.
 If you change the naming of this folder structure, this workflow will not run.
 
-## Running Update Submission:
+## Running Update Submission
 
 NCBI allows UI-less updating of BioSample submissions, and TOSTADAS can do this using the `--workflow update_submission` workflow option.
 
@@ -76,6 +80,8 @@ TOSTADAS will validate the metadata, recreate the same batches as in the origina
 
 It will save the updated submissions as date-stamped batch folders under `--outdir` and within a subdirectory called the basename of your metadata file.
 
-Note: TOSTADAS uses the `ncbi-spuid` field to match samples in the metadata file and the original submission.xml.  The `sample_name` field is not preserved in the submission.xml, so it cannot be used as an identifier for this workflow.
+!!! note
+    TOSTADAS uses the `ncbi-spuid` field to match samples in the metadata file and the original submission.xml. The `sample_name` field is not preserved in the submission.xml, so it cannot be used as an identifier for this workflow.
 
-Note: Please make sure your updated metadata Excel file has a `biosample_accession` column that contains accurate accession IDs.  TOSTADAS does not check these for accuracy.  Please make sure they are correct.
+!!! warning
+    Please make sure your updated metadata Excel file has a `biosample_accession` column that contains accurate accession IDs. TOSTADAS does not check these for accuracy.
