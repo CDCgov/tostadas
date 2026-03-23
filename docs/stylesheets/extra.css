@@ -13,6 +13,15 @@
   --md-accent-fg-color: #4DA3E8;
 }
 
+/* Make nav section titles more visually distinct */
+.md-nav__item--nested > .md-nav__link {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: var(--md-default-fg-color--light);
+}
+
 /* Pipeline flow arrows */
 .flow-arrow {
   text-align: center;
