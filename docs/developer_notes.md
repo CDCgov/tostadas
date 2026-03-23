@@ -37,7 +37,7 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
                         Input: the validation log. Outputs: status ("OK" or "ERROR"), and pipeline exists if status is "ERROR".
 
 3. WRITE_VALIDATED_FULL_TSV: Process that collects the batch tsv files in `batched_tsvs` and concatenates them into one validated tsv file.
-                        Input: a list of all batched_tsv files. Output: `$params.outdir/$params.accessions_outdir/validated_metadata_all_samples.tsv`.
+                        Input: a list of all batched_tsv files. Output: `$params.outdir/$params.validation_outdir/validated_metadata_all_samples.tsv`.
                         This output file will be used in the AGGREGATE_SUBMISSIONS subworkflow.
 
 4. SUBMISSION: Subworkflow that runs two (2) processes.
@@ -58,7 +58,7 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
 5. AGGREGATE_SUBMISSIONS: Subworkflow that runs three (3) processes:
 
     POLL_AND_FETCH_REPORTS: Process that polls the NCBI FTP server with exponential backoff (from `poll_initial_interval` to `poll_max_interval`, up to `poll_timeout`) until reports are available, then fetches and parses them into a batch-specific csv report file. This replaces the previous WAIT + FETCH_REPORTS two-step approach.
-                   Publishes the results to `$params.submission_outdir`
+                   Publishes the results to `$params.accessions_outdir`
                    Input: Submission batch directory and submission config file. Output: fetch_submission log and batch report csv file.
 
     AGGREGATE_REPORTS: Process that collates the individual batch report csvs into one final report.csv

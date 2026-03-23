@@ -40,7 +40,7 @@ The following workflows are available for the `--workflow` parameter:
 
 | Param | Description | Input Required |
 | --- | --- | --- |
-| --date_format_flag | Flag to specify the date format. Options: s (default, YYYY-MM), v (verbose, YYYY-MM-DD), o (original, unchanged) | Yes (string) |
+| --date_format_flag | Flag to specify the date format. Options: s (default, YYYY-MM), v (verbose, YYYY-MM-DD), o (original, unchanged), n (NCBI short month, Mon.YY) | Yes (string) |
 | --publish_dir_mode | Mode for publishing directory, e.g., 'copy' or 'move' | Yes (string) |
 | --remove_demographic_info | Flag to remove demographic info. If true, values in host_sex, host_age, race, ethnicity are set to 'Not Provided' | Yes (true/false) |
 | --batch_size | The number of samples to prepare in one submission file. | No (integer) |
