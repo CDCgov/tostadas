@@ -53,7 +53,7 @@ workflow GENBANK {
 
     CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
 		if (status == "ERROR") {
-			log.error "Validation failed. Please check ${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/error.txt"
+			log.error "Validation failed. Please check ${params.outdir}/${params.validation_outdir}/error.txt"
 			System.exit(1)
 		}
 	}

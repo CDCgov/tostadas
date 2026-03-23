@@ -21,7 +21,7 @@ workflow GENBANK_WORKFLOW {
         file(params.meta_path) :
         params.updated_meta_path && params.updated_meta_path != '' ?
             file(params.updated_meta_path) :
-            file("${params.outdir}/${params.metadata_basename}/${params.final_submission_outdir}/${params.metadata_basename}_updated.xlsx")
+            file("${params.outdir}/${params.accessions_outdir}/${params.metadata_basename}_updated.xlsx")
 
     // Log an error if the updated metadata file doesn't exist
     if (!updated_meta_file.exists()) {
@@ -43,7 +43,7 @@ workflow GENBANK_WORKFLOW {
 workflow FETCH_ACCESSIONS_WORKFLOW {
     // GenBank submissions are stored under a genbank/ subdirectory;
     // biosample/SRA submissions are stored directly under submission_outdir.
-    def base_dir = "${params.outdir}/${params.metadata_basename}/${params.submission_outdir}"
+    def base_dir = "${params.outdir}/${params.submission_outdir}"
     def genbank_dir = "${base_dir}/genbank"
     def search_dir = file(genbank_dir).isDirectory() ? genbank_dir : base_dir
 
@@ -57,7 +57,7 @@ workflow FETCH_ACCESSIONS_WORKFLOW {
     log.info "Fetching report.xml files for submissions in ${search_dir}"
     AGGREGATE_SUBMISSIONS(batches,
                           params.submission_config,
-                          file("${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/validated_metadata_all_samples.tsv"))
+                          file("${params.outdir}/${params.validation_outdir}/validated_metadata_all_samples.tsv"))
 }
 
 workflow UPDATE_SUBMISSION_WORKFLOW {

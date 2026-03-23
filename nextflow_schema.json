@@ -104,11 +104,11 @@
           "default": true,
           "hidden": false
         },
-        "final_liftoff_outdir": {
+        "annotation_outdir": {
           "type": "string",
           "format": "directory-path",
-          "description": "File path to liftoff specific sub-workflow outputs",
-          "default": "repeatmasker_liftoff_outputs",
+          "description": "Directory name for annotation outputs (vadr, bakta, liftoff subdirs)",
+          "default": "annotation",
           "hidden": true
         },
         "lift_print_version_exit": {
@@ -222,13 +222,6 @@
           "description": "Bakta database type (light or full)",
           "default": "light",
           "hidden": false
-        },
-        "bakta_outdir": {
-          "type": "string",
-          "format": "directory-path",
-          "description": "File path to bakta specific sub-workflow outputs",
-          "default": "bakta_outputs",
-          "hidden": true
         },
         "bakta_min_contig_length": {
           "type": "integer",
@@ -506,25 +499,18 @@
           "default": "${projectDir}/environments/vadr_env.yml",
           "hidden": true
         },
-        "final_submission_outdir": {
+        "accessions_outdir": {
           "type": "string",
           "format": "directory-path",
-          "description": "Either name or relative/absolute path for the final outputs from submission report fetching",
-          "default": "final_submission_outputs",
+          "description": "Directory name for accession outputs from submission report fetching",
+          "default": "accessions",
           "hidden": true
         },
         "submission_outdir": {
           "type": "string",
           "format": "directory-path",
-          "description": "Either name or relative/absolute path for the outputs from submission",
-          "default": "submission_outputs",
-          "hidden": true
-        },
-        "vadr_outdir": {
-          "type": "string",
-          "format": "directory-path",
-          "description": "File path to vadr specific sub-workflow outputs",
-          "default": "vadr_clean_outputs",
+          "description": "Directory name for submission outputs",
+          "default": "submission",
           "hidden": true
         },
         "vadr_models_dir": {
@@ -549,8 +535,8 @@
         "validation_outdir": {
           "type": "string",
           "format": "directory-path",
-          "description": "File path for outputs specific to validate sub-workflow",
-          "default": "validation_outputs",
+          "description": "Directory name for validation outputs",
+          "default": "validation",
           "hidden": true
         },
         "date_format_flag": {

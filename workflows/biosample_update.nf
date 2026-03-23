@@ -38,7 +38,7 @@ workflow BIOSAMPLE_UPDATE {
     // Get status from the check
 	CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
 		if (status == "ERROR") {
-			log.info "Validation failed. Please check ${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/error.txt"
+			log.info "Validation failed. Please check ${params.outdir}/${params.validation_outdir}/error.txt"
 			System.exit(1)
 		}
 	}
