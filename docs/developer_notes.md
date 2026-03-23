@@ -6,16 +6,13 @@ The workflows are:
 1. BIOSAMPLE_AND_SRA: Performs submission to BioSample and SRA repositories, fetches the reports, aggregates them and updates the metadata Excel file with assigned accession IDs.
 2. GENBANK: performs annotation (optional, if `$params.annotation` is true), and then performs submission to GenBank repository.
 
-The user options for "workflow" are:
-1. `--workflow biosample_and_sra`: Runs BIOSAMPLE_AND_SRA, then runs the AGGREGATE_SUBMISSIONS subworkflow (fetches reports, aggregates them, updates metadata file)
-2. `--workflow genbank`: Runs GENBANK workflow. It expects `--updated_meta_path` to point to an Excel file that matches the format of a validated metadata file (output of BIOSAMPLE_AND_SRA).
-                It automatically looks for this in the output directory in a subdirectory called `accessions` (`$params.outdir/$params.accessions_outdir`)
-3. `--workflow fetch_accessions`: Runs AGGREGATE_SUBMISSIONS. It will look in `--outdir` for the batch directories under `submission/`.
-                         It fetches the report.xml files for biosample and sra submissions for each batch. It needs your NCBI Center credentials from `submission_config.yaml`
-4. `--workflow full_submission`: Runs BIOSAMPLE_AND_SRA, then polls NCBI for reports using POLL_AND_FETCH_REPORTS (with exponential backoff from `poll_initial_interval` to `poll_max_interval`, up to `poll_timeout`), then runs AGGREGATE_SUBMISSIONS, then runs GENBANK.
-                         The old WAIT + FETCH_REPORTS approach has been replaced by a single POLL_AND_FETCH_REPORTS process that retries automatically until reports are available or the timeout is reached.
-5. `--workflow update_submission`: Runs BIOSAMPLE_UPDATE workflow.  It is used to submit updates to biosample accessions.
-                           It requires an Excel metadata file with biosample_accession, such as the one output by BIOSAMPLE_AND_SRA in: `$params.outdir/$params.accessions_outdir`.
+The user options for `--workflow` are:
+
+- **`biosample_and_sra`** -- Runs BIOSAMPLE_AND_SRA, then runs the AGGREGATE_SUBMISSIONS subworkflow (fetches reports, aggregates them, updates metadata file).
+- **`genbank`** -- Runs GENBANK workflow. Expects `--updated_meta_path` to point to a validated metadata file (output of BIOSAMPLE_AND_SRA). Automatically looks for this in `$params.outdir/$params.accessions_outdir`.
+- **`fetch_accessions`** -- Runs AGGREGATE_SUBMISSIONS. Looks in `--outdir` for batch directories under `submission/`. Fetches report.xml files for biosample and SRA submissions. Requires NCBI Center credentials from `submission_config.yaml`.
+- **`full_submission`** -- Runs BIOSAMPLE_AND_SRA, then polls NCBI for reports using POLL_AND_FETCH_REPORTS (exponential backoff from `poll_initial_interval` to `poll_max_interval`, up to `poll_timeout`), then runs AGGREGATE_SUBMISSIONS, then runs GENBANK.
+- **`update_submission`** -- Runs BIOSAMPLE_UPDATE workflow. Submits updates to biosample accessions. Requires a metadata file with `biosample_accession` column, such as the one output by BIOSAMPLE_AND_SRA in `$params.outdir/$params.accessions_outdir`.
 
 ## Workflow-Specific Details and Notes
 
@@ -26,45 +23,22 @@ The master branch supports individual sample submission only. The dev branch add
 This workflow consists of the following processes and two subworkflows (SUBMISSION and AGGREGATE_SUBMISSIONS).
 The user can submit only to biosample by setting `$params.sra = false` or to both biosample and sra using `$params.sra = true`.
 
-1. METADATA_VALIDATION: Process that expects an Excel file (`$params.meta_path`), performs validation and outputs tsv files (and an error log). 
-                        Each tsv files contains valid metadata for a number of submissions specified by `$params.batch_size`.
-                        Outputs are here: `$params.outdir/$params.validation_outdir/batched_tsvs`.  By default, it is: $outdir/validation/batched_tsvs
+**METADATA_VALIDATION** -- Expects an Excel file (`$params.meta_path`), performs validation, and outputs batch TSV files and an error log. Each TSV contains valid metadata for a number of submissions specified by `$params.batch_size`. Outputs to `$params.outdir/$params.validation_outdir/batched_tsvs`.
 
-2. CHECK_VALIDATION_ERRORS: Process that exits the pipeline if at least one ERROR is found in the validation log.  ERRORs will not pass NCBI submission checks.
-                        Input: the validation log. Outputs: status ("OK" or "ERROR"), and pipeline exists if status is "ERROR".
+**CHECK_VALIDATION_ERRORS** -- Exits the pipeline if at least one ERROR is found in the validation log. Input: the validation log. Output: status ("OK" or "ERROR").
 
-3. WRITE_VALIDATED_FULL_TSV: Process that collects the batch tsv files in `batched_tsvs` and concatenates them into one validated tsv file.
-                        Input: a list of all batched_tsv files. Output: `$params.outdir/$params.validation_outdir/validated_metadata_all_samples.tsv`.
-                        This output file will be used in the AGGREGATE_SUBMISSIONS subworkflow.
+**WRITE_VALIDATED_FULL_TSV** -- Collects the batch TSV files and concatenates them into one validated TSV. Output: `$params.outdir/$params.validation_outdir/validated_metadata_all_samples.tsv`. This file is used in the AGGREGATE_SUBMISSIONS subworkflow.
 
-4. SUBMISSION: Subworkflow that runs two (2) processes.
-               Input: a Nextflow channel for one batch. Output: the submission folder (as a Nextflow channel) for that batch.
+**SUBMISSION** -- Subworkflow that runs two processes:
 
-    PREP_SUBMISSION: Process that prepares all the submissions. This instantiates biosample and sra class instances, creates submission.xml and submit.ready files, and symlinks fastq files for sra submission.  
-                     This is the script that creates the batch_<n>/<biosample|sra|genbank> folders. 
-                     Most of its helper functions are in submission_helper.py.
-                     Input: a tuple containing the list of samples and corresponding batch_id, and the submission config file. Output: a tuple containing the batch directory, and a prep_submission log file.
+- **PREP_SUBMISSION** -- Prepares all submissions. Creates `submission.xml` and `submit.ready` files, symlinks FASTQ files for SRA. Creates the `batch_<n>/<biosample|sra|genbank>` folder structure. Most helper functions are in `submission_helper.py`.
+- **SUBMIT_SUBMISSION** -- Uploads submission folders to NCBI FTP. Run with `$params.dry_run` to preview actions. Folder names on NCBI FTP follow the pattern: `submit/Test/<metadata_filename>_<batch_n>_<biosample|sra>/`. When submitting both Illumina and Nanopore data to SRA, these are placed in separate subdirectories (`illumina/` and `nanopore/`) since each requires its own `submission.xml`.
 
-    SUBMIT_SUBMISSION: Process that actually submits the folders. Run with `$params.dry_run` to see what it will do (e.g., "would upload Folder X to Folder Y via ftp").
-                Folder names on NCBI ftp site are constructed based on local names and following NCBI's requirement that each folder ONLY contain one XML, one submit.ready, and (if sra) the relevant raw sequence files.
-                The folder structure will look like this: (local) submission/<batch_n>/<biosample|sra>/ → (remote) submit/Test/<your_metadata_filename>_<batch_n>_<biosample|sra>/
-                NOTE: when submitting both Illumina and Nanopore data to SRA, these have to be in different submission.xml files. Therefore, they need to be in different folders, so they go here:
-                    (local) submission/<batch_n>/<sra>/<illumina|nanopore> → (remote) submit/Test/<your_metadata_filename>_<batch_n>_<sra>_<illumina|nanopore>/
-                Input: a tuple containing containing the batch directory, and the submission config file. Output: a tuple containing the batch directory, and a submission log file.
+**AGGREGATE_SUBMISSIONS** -- Subworkflow that runs three processes:
 
-5. AGGREGATE_SUBMISSIONS: Subworkflow that runs three (3) processes:
-
-    POLL_AND_FETCH_REPORTS: Process that polls the NCBI FTP server with exponential backoff (from `poll_initial_interval` to `poll_max_interval`, up to `poll_timeout`) until reports are available, then fetches and parses them into a batch-specific csv report file. This replaces the previous WAIT + FETCH_REPORTS two-step approach.
-                   Publishes the results to `$params.accessions_outdir`
-                   Input: Submission batch directory and submission config file. Output: fetch_submission log and batch report csv file.
-
-    AGGREGATE_REPORTS: Process that collates the individual batch report csvs into one final report.csv
-                   Input: Collected list (actually a Nextflow channel) of all the report csvs. Output: `$params.outdir/$params.accessions_outdir/submission_report.csv`
-
-    JOIN_ACCESSIONS_WITH_METADATA: Updates the initial Excel file with the accession IDs, which is needed for genbank submission.
-                   Input: `$params.outdir/$params.accessions_outdir/submission_report.csv` (AGGREGATE_REPORTS output)
-                          `$params.outdir/$params.accessions_outdir/validated_metadata_all_samples.tsv` (WRITE_VALIDATED_FULL_TSV output)
-                   Output: `$params.outdir/$params.accessions_outdir/<your_metadata_filename>__updated.xlsx`
+- **POLL_AND_FETCH_REPORTS** -- Polls the NCBI FTP server with exponential backoff (from `poll_initial_interval` to `poll_max_interval`, up to `poll_timeout`) until reports are available, then fetches and parses them into a batch-specific CSV report. Publishes to `$params.accessions_outdir`.
+- **AGGREGATE_REPORTS** -- Collates individual batch report CSVs into one final `submission_report.csv`. Output: `$params.outdir/$params.accessions_outdir/submission_report.csv`.
+- **JOIN_ACCESSIONS_WITH_METADATA** -- Updates the initial Excel file with accession IDs. Output: `$params.outdir/$params.accessions_outdir/<metadata_filename>_updated.xlsx`.
 
 ### Submitting to GenBank
 
@@ -77,49 +51,31 @@ If `$params.annotation = true`, it performs annotation as follows.
 And it performs submission.  It does not fetch the accession IDs because at the time of development, many GenBank submissions are not done via ftp.
 
 
-1. The updated metadata file is rebatched for GenBank submission using the same batch structure as the BioSample/SRA submission.
-            Inputs: Path to the updated Excel file and batch size value. Outputs: Path to all the batch tsv files.
+The updated metadata file is rebatched for GenBank submission using the same batch structure as the BioSample/SRA submission.
 
-2. GENBANK_VALIDATION: Process that validates the fasta file according to NCBI requirements.
-            Inputs: Tuple including a path to the original fasta. Outputs: Tuple including a path to the validated fasta, which is the original fasta renamed to `<original name>_cleaned.fsa`
+**GENBANK_VALIDATION** -- Validates the FASTA file according to NCBI requirements. Outputs the validated FASTA renamed to `<original_name>_cleaned.fsa`.
 
-if `$params.annotation = true` and `$params.repeatmasker_liftoff = true`:
-    NOTE: This can take the path to any repeats library and ref files by specifying `$params.repeat_library`, `$params.ref_fasta_path`, and `$params.ref_gff_path`.
+If `$params.annotation = true`, one of the following annotation subworkflows runs depending on organism type and configuration:
 
-3. REPEATMASKER_LIFTOFF: Subworkflow consisting of three (3) processes
-            Inputs: validated fasta. Outputs: validated fasta and gff.
-    REPEATMASKER: Process that runs RepeatMasker.
-            Inputs: fasta and repeats library. Outputs: all the outputs of repeatmasker (.cat, .gff, .tbl, .masked, .out)
-    LIFTOFF_CLI: Process that runs liftoff.
-            Inputs: fasta, reference fasta, reference gff. Outputs: all the outputs of liftoff (fasta, .gff, errors log)
-    CONCAT_GFFS: Process that joins the annotations from RepeatMasker and Liftoff.
-            Inputs: Tuple containing the fasta, the repeatmasker gff, and the liftoff gff; and a reference gff. Outputs: .gff, .tbl, errors log
+**REPEATMASKER_LIFTOFF** (when `$params.repeatmasker_liftoff = true`) -- Subworkflow with three processes. Custom repeats library and reference files can be specified via `$params.repeat_library`, `$params.ref_fasta_path`, and `$params.ref_gff_path`.
 
-if `$params.annotation = true` and `$params.vadr = true`:
-    NOTE: The vadr model library can be specified using `$params.vadr_models_dir`, BUT it uses `$params.virus_subtype` as the value for `mkey`. 
-    Run the vadr container, and run `v-annotate.pl -h` for more details on what `mkey` is, and see the VADR_ANNOTATION process (`--mkey ${params.virus_subtype}`).
-    To add more libraries will require a bit of development effort but is not difficult. 
+- **REPEATMASKER** -- Runs RepeatMasker. Outputs: .cat, .gff, .tbl, .masked, .out
+- **LIFTOFF_CLI** -- Runs Liftoff. Inputs: FASTA, reference FASTA, reference GFF. Outputs: FASTA, .gff, errors log
+- **CONCAT_GFFS** -- Joins annotations from RepeatMasker and Liftoff. Outputs: .gff, .tbl, errors log
 
-3. RUN_VADR: Subworkflow consisting of three (3) processes
-            Inputs: validated fasta. Outputs: .gff, .tbl, errors log.
-    VADR_TRIM: Process that runs fasta-trim-terminal-ambigs.pl.
-            Inputs: fasta. Outputs: trimmed.fasta
-    VADR_ANNOTATION: Process that annotates the fasta using the model library specified.
-            Inputs: trimmed.fasta and path to vadr models directory. Outputs: path to vadr output files in a folder that has the format: `<sample_id>_<virus_subtype>`
-    VADR_POST_CLEANUP: Process that performs final cleanup of annotations
-            Inputs: path to vadr outputs from VADR_ANNOTATION. Outputs: .gff, .tbl, errors log.
-    SUMMARY: Process that generates batch-level VADR summary reports after all samples have been annotated.
-            Inputs: collected outputs from VADR_POST_CLEANUP. Outputs: batch_pass_fail.tsv (per-sample pass/fail status) and batch_alerts.tsv (per-sample alert details), matching the vscan-aglab summary output format. Published to annotation/vadr/.
+**RUN_VADR** (when `$params.vadr = true`) -- Subworkflow with four processes. The VADR model library is specified via `$params.vadr_models_dir` and uses `$params.virus_subtype` as the `mkey` value.
 
-if `$params.annotation = true` and `$params.bakta = true` and `$params.organism_type = bacteria`:
-3. RUN_BAKTA: Subworkflow consisting of two (2) processes.  These are the only two nf-core modules in this pipeline.
-            Inputs: fasta. Outputs: gff and fasta.
-    BAKTA_BAKTADBDOWNLOAD: Process that downloads the bakta db specified.
-    BAKTA_BAKTA: Process that annotates the fasta.
-            Inputs: fasta, path to the bakta db, `params.bakta_proteins` and `params.bakta_prodigal_tf`. Outputs: all the bakta output files
+- **VADR_TRIM** -- Runs `fasta-trim-terminal-ambigs.pl`. Outputs: trimmed FASTA
+- **VADR_ANNOTATION** -- Annotates the FASTA using the specified model library. Outputs: VADR output directory (`<sample_id>_<virus_subtype>`)
+- **VADR_POST_CLEANUP** -- Final cleanup of annotations. Outputs: .gff, .tbl, errors log
+- **SUMMARY** -- Generates batch-level VADR summary reports. Outputs: `batch_pass_fail.tsv` and `batch_alerts.tsv`, published to `annotation/vadr/`
 
-4. SUBMISSION: Subworkflow, same as for submitting to biosample and sra but only runs for genbank.
-            GenBank submission uses process aliases (PREP_GENBANK and SUBMIT_GENBANK) so that its outputs are written to separate directories from BioSample/SRA submission outputs. This prevents overwriting in full_submission mode where both run in the same pipeline execution.
+**RUN_BAKTA** (when `$params.bakta = true` and `$params.organism_type = bacteria`) -- Subworkflow with two nf-core modules.
+
+- **BAKTA_BAKTADBDOWNLOAD** -- Downloads the specified Bakta database
+- **BAKTA_BAKTA** -- Annotates the FASTA. Outputs: all Bakta output files
+
+**SUBMISSION_GENBANK** -- Same subworkflow structure as BioSample/SRA submission but uses process aliases (PREP_GENBANK and SUBMIT_GENBANK) so that GenBank outputs are written to separate directories. This prevents overwriting in `full_submission` mode.
 
 
 ### Updating a BioSample Submission
@@ -136,32 +92,17 @@ It has to do this in order to validate that certain metadata are unchanged from 
 
 The workflow runs METADATA_VALIDATION, CHECK_VALIDATION_ERRORS, and WRITE_VALIDATED_FULL_TSV as in BIOSAMPLE_AND_SRA workflow.  After that, it diverges as follows:
 
-1. REBATCH_METADATA: Process that recreates the original batches to match the data as `${params.original_submission_outdir}`.
-        Input: `$params.outdir/$params.accessions_outdir/validated_metadata_all_samples.tsv` (WRITE_VALIDATED_FULL_TSV output),
-                `${params.original_submission_outdir}/../${params.validation_outdir}/batched_tsvs/batch_summary.json`
-        Output: paths to the rebatched json and tsv files.
+**REBATCH_METADATA** -- Recreates the original batches to match the data in `${params.original_submission_outdir}`. Inputs: `validated_metadata_all_samples.tsv` and the original `batch_summary.json`. Outputs: rebatched JSON and TSV files.
 
-2. UPDATE_SUBMISSION: Process that updates the biosample submission.
-        Input: a tuple containing the list of samples and corresponding batch_id, and the submission config file, the original submission directory, and the submission config file.
-        Output: a tuple containing the batch directory, and a prep_submission log file.
+**UPDATE_SUBMISSION** -- Updates the biosample submission. Inputs: batch samples, submission config, and original submission directory. Outputs: updated batch directory and log file.
 
 
-## Known issues and idiosyncrasies
+## Known Issues
 
-1. The pipeline does not fetch Genbank accession IDs, but it could if they are available.  Doing so will require some optional handling for downstream report csv and updated metadata file generation.
-
-2. Additional testing is required for the update_submissions workflow, and additional nf-tests should be created for the additional processes.
-
-3. A specific line may need to be added to the GenBank XML file (where appropriate) indicating NCBI should perform annotations. The pipeline may need to be adjusted such that if there is no gff file provided in the channel, this line gets added to the XML file for appropriate GenBank submissions (i.e., only those that are submitted via ftp). Also, GenBank sqn file needs to be rigorously validated (SARS and flu have not been tested at all).
-   
-4. Need some robust checking for the vadr_models_dir vs. species (see notes under annotation).
-
-5. For update_submission, the metadata file is not being copied to the workDir; it is being referenced from its own workDir. This is not ideal Nextflow coding, and should be changed so that it copies the actual file.
-   This is happening because of the channel construction (which is being made from a json file in REBATCH_METADATA process). This should be modified to output the channel directly.
-
-6. The `update_submission` workflow only supports BioSample updates. The `enabled` list in `REBATCH_METADATA` (`modules/local/rebatch_metadata/main.nf`) is hardcoded to `["biosample"]`, so the workflow never generates update submissions for SRA or GenBank. Extending this would require changes to both `REBATCH_METADATA` and the `UPDATE_SUBMISSION` process, plus end-to-end testing for each additional database.
-
-7. Outstanding to-do notes in `submission_helper.py`: 
-        Line 963: These values are hard-coded and should be made configurable via GENBANK_VALIDATION.
-        Line 982: Note: BioSample and SRA XML files are generated differently from GenBank XML files (see submission_prep.py). 
-        Line ~1222: Resolved. The locus tag prefix cannot be fetched programmatically from NCBI; it must be registered under the BioProject first, then specified via `--bakta_locus_tag`. A warning is now logged when no locus tag is found in the GFF.
+- GenBank accession fetching is enabled but may require additional handling for downstream report CSV and updated metadata file generation.
+- Additional testing is required for the `update_submission` workflow. More nf-tests should be created.
+- A specific annotation directive line may need to be added to the GenBank XML for FTP-based submissions when no GFF is provided. GenBank SQN files for SARS and flu have not been tested.
+- VADR model directory vs. virus subtype validation has been added as a pre-flight check, but additional robustness may be needed.
+- In `update_submission`, the metadata file is referenced from its work directory rather than being staged as a proper Nextflow input. This should be refactored.
+- The `update_submission` workflow only supports BioSample updates. The `enabled` list in `REBATCH_METADATA` is hardcoded to `["biosample"]`. Extending to SRA or GenBank updates requires changes to both `REBATCH_METADATA` and `UPDATE_SUBMISSION`.
+- In `submission_helper.py`, some GenBank validation values (around line 963) are hard-coded and should be made configurable. BioSample/SRA XML generation differs from GenBank XML generation (see `submission_prep.py`). The locus tag prefix issue (line ~1222) has been resolved with a logged warning.
