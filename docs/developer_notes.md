@@ -97,6 +97,50 @@ The workflow runs METADATA_VALIDATION, CHECK_VALIDATION_ERRORS, and WRITE_VALIDA
 **UPDATE_SUBMISSION** -- Updates the biosample submission. Inputs: batch samples, submission config, and original submission directory. Outputs: updated batch directory and log file.
 
 
+## Adding a New Organism Profile
+
+To add support for a new organism, follow this checklist:
+
+- [ ] **Create a config file** -- Copy an existing config file in `conf/` (e.g., `conf/rsv.config`) and rename it to match the new organism (e.g., `conf/neworganism.config`).
+
+- [ ] **Set organism parameters** -- In the new config file, set the required parameters:
+
+    ```groovy
+    params {
+        organism_type       = 'virus'       // virus, bacteria, or eukaryote
+        virus_subtype       = 'neworg'      // identifier used as VADR mkey (virus only)
+        mol_type            = 'genomic'     // or 'viral cRNA' for negative-sense RNA viruses
+        vadr                = true          // set to true if using VADR annotation
+        bakta               = false         // set to true for bacterial annotation
+        repeatmasker_liftoff = false        // set to true for RepeatMasker + Liftoff
+        vadr_models_dir     = "${projectDir}/vadr_files/neworg-models"
+        vadr_opts           = ""            // VADR CLI options (e.g., '-r --xnocomp')
+        vadr_cm_url         = ""            // URL to download the covariance model if not bundled
+        meta_path           = "${projectDir}/assets/sample_metadata/neworg_test_metadata.xlsx"
+    }
+    ```
+
+- [ ] **Add VADR models** -- If using VADR, place the model files in the directory specified by `vadr_models_dir` (e.g., `vadr_files/neworg-models/`). If the models are hosted externally, set `vadr_cm_url` so the pipeline can download them.
+
+- [ ] **Register the profile** -- Add the new profile to the `profiles` block in `nextflow.config`:
+
+    ```groovy
+    profiles {
+        // ... existing profiles ...
+        neworganism { includeConfig 'conf/neworganism.config' }
+    }
+    ```
+
+- [ ] **Create test metadata** -- Add a test metadata Excel file and test FASTA file under `assets/sample_metadata/` so the profile can be validated with the `test` profile.
+
+- [ ] **Test the profile** -- Run the pipeline with the test profile to verify annotation and submission file generation:
+
+    ```bash
+    nextflow run main.nf -profile test,neworganism,<docker|singularity> --workflow genbank --dry_run true
+    ```
+
+- [ ] **Update documentation** -- Add the new profile to the supported organisms table in `docs/user-guide/submission_guide.md`.
+
 ## Known Issues
 
 - GenBank accession fetching is enabled but may require additional handling for downstream report CSV and updated metadata file generation.

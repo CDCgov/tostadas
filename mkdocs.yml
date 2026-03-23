@@ -18,25 +18,23 @@ theme:
     - content.code.copy
     - navigation.footer
     - navigation.instant
-    - navigation.tabs
     - navigation.top
-    - navigation.indexes
     - navigation.sections
+    - navigation.expand
     - search.suggest
     - search.highlight
   palette:
     - scheme: default
-      primary: indigo
-      accent: indigo
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
-      accent: indigo
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
+
+extra_css:
+  - stylesheets/extra.css
 
 # Plugins
 plugins:
@@ -106,6 +104,7 @@ nav:
     - Output: user-guide/outputs.md
     - Parameters: user-guide/parameters.md
     - Submission Details: user-guide/profile.md
+    - Measles Submission: user-guide/measles_guide.md
   - CDC Specific Usage:
     - CDC User Guide: user-guide/cdc-user-guide.md
   - Advanced Usage:
@@ -113,9 +112,11 @@ nav:
     - User Provided Annotation: user-guide/user_provided_annotation_guide.md
     - VADR Installation: user-guide/vadr_install.md
     - Wastewater Submission: user-guide/wastewater_guide.md
+    - PulseNet Submission: user-guide/pulsenet_guide.md
   - Developer Guide:
     - Developer Notes: developer_notes.md
   - Support:
     - Get in Touch: user-guide/get-in-touch.md
     - Troubleshooting: user-guide/troubleshooting.md
+    - Glossary: user-guide/glossary.md
     - Contributions: user-guide/contributions.md
