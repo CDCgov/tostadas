@@ -259,6 +259,25 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 				logging.error(f"Timeout occurred while trying to fetch report for {db} ({platform or 'default'})")
 	return reports_fetched
 
+def is_report_complete(report_path):
+	"""Check if report.xml has reached terminal status.
+	Returns (is_complete, status_summary)."""
+	try:
+		tree = ET.parse(report_path)
+		root = tree.getroot()
+		terminal = {'processed-ok', 'processed-error', 'deleted'}
+		statuses = []
+		for action in root.iter('Action'):
+			status = action.get('status', 'unknown')
+			statuses.append(status)
+		if not statuses:
+			root_status = root.get('status', 'unknown')
+			statuses.append(root_status)
+		all_terminal = all(s in terminal for s in statuses)
+		return all_terminal, ','.join(set(statuses))
+	except Exception as e:
+		return False, f"parse_error: {e}"
+
 def parse_report_xml_to_df(report_path):
 	"""
 	Parses a report.xml file containing multiple samples.
