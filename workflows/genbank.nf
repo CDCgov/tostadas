@@ -20,6 +20,9 @@ include { RUN_VADR                                          		} from "../subwork
 // get BAKTA subworkflow
 include { RUN_BAKTA                                         		} from "../subworkflows/local/bakta"
 
+// get summary report process
+include { SUMMARY                                           		} from "../modules/local/summary/main"
+
 // get submission related process/subworkflows
 include { SUBMISSION_GENBANK                                		} from "../subworkflows/local/submission_genbank"
 /*
@@ -112,6 +115,9 @@ workflow GENBANK {
                     .map { meta, fasta, _gff -> [meta.sample_id, meta, fasta] }
                     .join(RUN_VADR.out.tbl.map { meta, tbl -> [meta.sample_id, tbl] })
                     .map { _sample_id, meta, fasta, new_tbl -> [meta, fasta, new_tbl] }
+
+                // Generate batch summary reports from VADR output
+                RUN_VADR.out.vadr_outputs.map { _meta, outputs -> outputs }.collect() | SUMMARY
             }
 
         } else if (params.organism_type == 'bacteria' && params.bakta) {
