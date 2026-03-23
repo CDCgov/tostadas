@@ -76,7 +76,7 @@ vim conf/submission_config.yaml
 nextflow run main.nf -profile mpox,test,<singularity|docker|conda> --workflow biosample_and_sra
 ```
 
-The pipeline outputs appear in `tostadas/results`
+The pipeline outputs appear in `results/`
 
 ## Start submitting your own data
 

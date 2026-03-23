@@ -16,8 +16,6 @@ The user options for `--workflow` are:
 
 ## Workflow-Specific Details and Notes
 
-The master branch supports individual sample submission only. The dev branch adds batch submission support.
-
 ### Submitting to BioSample and SRA
 
 This workflow consists of the following processes and two subworkflows (SUBMISSION and AGGREGATE_SUBMISSIONS).
@@ -43,7 +41,7 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
 ### Submitting to GenBank
 
 This requires `--updated_meta_path`. It can be specified in `nextflow.config`.
-If not specified, it looks for the output of JOIN_ACCESSIONS_WITH_METADATA (`$params.outdir/$params.accessions_outdir/<your_metadata_filename>__updated.xlsx`)
+If not specified, it looks for the output of JOIN_ACCESSIONS_WITH_METADATA (`$params.outdir/$params.accessions_outdir/<your_metadata_filename>_updated.xlsx`)
 
 GENBANK workflow does not validate metadata. It is assumed the user will run biosample_and_sra first (because GenBank submission requires a BioSample accession ID). 
 It validates the fasta file.

@@ -39,7 +39,7 @@ params {
 | `virus_subtype` | `mev` | Selects the measles VADR model set |
 | `mol_type` | `viral cRNA` | Declares molecule type as complementary RNA (measles is a negative-sense RNA virus) |
 | `strip_pub_block` | `true` | Removes publication citation and DBLink blocks from the SQN file, as preferred by NCBI for measles submissions |
-| `date_format_flag` | `n` | Formats collection dates in NCBI month format (`Mon-YYYY`) |
+| `date_format_flag` | `n` | Formats collection dates in NCBI short month format (`Mon.YY`, e.g., `Jan.25`) |
 
 ## Metadata Format
 

@@ -1,29 +1,31 @@
 # Get in Touch
 
-If you need to report a bug, suggest new features, or just say “thanks”, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we’ll try to get back to you as soon as possible!
+To report a bug, suggest new features, or provide feedback, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose). The development team will respond as soon as possible.
 
 ## Opening an Issue
 
 ### Select a Template
-Following the link above, there are four options for issue templates and your selection will depend on
-- whether you are a user vs maintainer/collaborator, and
-- whether the request pertains to a bug vs feature enhancement.
-Please select the template that accurately reflects your situation.
+
+Following the link above, there are four options for issue templates. Selection depends on:
+
+- Whether the reporter is a user or maintainer/collaborator
+- Whether the request pertains to a bug or feature enhancement
+
+Select the template that accurately reflects the situation.
 
 ### Provide Details
-Once the appropriate template has been selected, you must fill/answer all fields/questions specified.  
-The information provided will be valuable in getting more information about the issue and any necessary context surrounding it.
+
+Once the appropriate template has been selected, fill out all required fields and questions. The information provided will be valuable in understanding the issue and any necessary context.
 
 ### Submit
-Once all information has been provided, you may now submit it!
 
-Please allow for some turnaround time for us to review the issue and potentially start addressing it.  
-If this is an urgent request and you have not heard from us nor see any progress being made after quite some time (longer than a week),  
-feel free to start a discussion (found here: [Start New Discussion](https://github.com/CDCgov/tostadas/discussions)) mentioning the following:
+Once all information has been provided, submit the issue.
+
+Please allow turnaround time for the team to review the issue and begin addressing it. If the request is urgent and no progress is visible after one week, start a discussion at [Start New Discussion](https://github.com/CDCgov/tostadas/discussions) mentioning the following:
 
 - Issue Number
 - Date Submitted
 - General Background on Bug/Feature
 - Reason for Urgency
 
-And we will get back to you as soon as possible.
+The development team will respond as soon as possible.

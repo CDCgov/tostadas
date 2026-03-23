@@ -11,8 +11,8 @@ For the complete TOSTADAS documentation, please see the [Complete Documentation]
 
 ### Plugin Compatibility Warning
 
-!!! warning
-    This pipeline uses the nf-schema plugin to validate pipeline parameters. Users with Nextflow version 24 or later may encounter a warning message indicating that the plugin must be installed. To resolve this warning message, please install the plugin manually by following the instructions found in this [link](https://www.nextflow.io/docs/latest/plugins.html#offline-usage).
+> [!WARNING]
+> This pipeline uses the nf-schema plugin to validate pipeline parameters. Users with Nextflow version 24 or later may encounter a warning message indicating that the plugin must be installed. To resolve this warning message, please install the plugin manually by following the instructions found in this [link](https://www.nextflow.io/docs/latest/plugins.html#offline-usage).
 
 ## Overview
 
@@ -28,8 +28,8 @@ TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing us
 
 ## Installation and Quick Start
 
-!!! note
-    If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](./docs/user-guide/cdc-user-guide.md)
+> [!NOTE]
+> If you are a CDC user, please follow the set-up instructions found here: [CDC User Guide](./docs/user-guide/cdc-user-guide.md)
 
 For non-CDC users, please follow the instructions below.
 
@@ -39,15 +39,15 @@ For non-CDC users, please follow the instructions below.
 git clone https://github.com/CDCgov/tostadas.git
 ```
 
-!!! note
-    If you already have Nextflow installed in your local environment, proceed to the [Update the Submission Config](#update-the-submission-config) section below.
+> [!NOTE]
+> If you already have Nextflow installed in your local environment, proceed to the [Update the Submission Config](#update-the-submission-config) section below.
 
 ### Install Mamba
 
 **Install mamba:**
 
-!!! note
-    If you have mamba installed in your local environment, proceed to the [Install Nextflow](#install-nextflow) section below.
+> [!NOTE]
+> If you have mamba installed in your local environment, proceed to the [Install Nextflow](#install-nextflow) section below.
 
 ```bash
 curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh

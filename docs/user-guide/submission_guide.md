@@ -98,7 +98,7 @@ When using SFTP mode, the `submission_config.yaml` must include the `NCBI_sftp_h
 
 TOSTADAS defaults to submitting to the test server even if not using the test profile, to avoid accidentally pushing data to NCBI's Production server.
 
-When testing is complete and are ready to submit for production, add `--prod_submission` to your command line (or change `prod_submission` to `true` in `nextflow.config`).
+When testing is complete and you are ready to submit to production, add `--prod_submission` to your command line (or change `prod_submission` to `true` in `nextflow.config`).
 
 ## Typical example workflow
 
@@ -288,7 +288,7 @@ TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; ver
 
 ### Built-in BioSample package profiles
 
-TOSTADAS has built-in profiles for two BioSample packages to support specific programs. These profiles automatically import a custom_fields JSON file preconfigured for that package. Here's how to use them:
+TOSTADAS has built-in profiles for two BioSample packages to support specific programs. These profiles automatically import a custom_fields JSON file preconfigured for that package. The following describes how to use them:
 
 - **SARS-CoV-2.wwsurv.1.0**
     1. Change the BioSample_package field in `conf/submission_config.yaml` to `SARS-CoV-2.wwsurv.1.0`
