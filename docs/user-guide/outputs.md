@@ -14,36 +14,34 @@ The workflow will generate outputs in the following order:
     *   Annotates sample genomes outputting .gff
 *   Submission
     *   Formats for database submission
-    *   This section runs twice, with the second run occurring after a wait time to allow for all samples to be uploaded to NCBI.
+    *   In full\_submission mode, the pipeline polls NCBI for reports using exponential backoff before proceeding to GenBank submission.
 
 ## Output Directory Formatting:
 
 The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:
 
-*   validation\_outputs (name configurable with `validation_outdir`)
-    *   name of metadata sample file
-        *   errors
-        *   fasta
-        *   tsv\_per\_sample
-        *   batch\_summary.json (records batch composition for reproducible re-submissions)
-*   repeatmasker\_liftoff\_outputs (name configurable with `final_liftoff_outdir`)
-    *   name of metadata sample file
-        *   errors
-        *   fasta
-        *   liftoff
-        *   tbl
-*   vadr\_clean\_outputs (name configurable with `vadr_outdir`)
-    *   name of metadata sample file
+*   validation/ (name configurable with `validation_outdir`)
+    *   errors
+    *   fasta
+    *   tsv\_per\_sample
+    *   batch\_summary.json (records batch composition for reproducible re-submissions)
+*   annotation/liftoff/ (name configurable with `annotation_outdir`)
+    *   errors
+    *   fasta
+    *   liftoff
+    *   tbl
+*   annotation/vadr/ (name configurable with `annotation_outdir`)
     *   errors
     *   fasta
     *   gffs
     *   tbl
-*   bakta\_outputs (name configurable with `bakta_outdir`)
-    *   name of metadata sample file
+    *   batch\_pass\_fail.tsv (per-sample pass/fail summary from VADR)
+    *   batch\_alerts.tsv (per-sample alert details from VADR)
+*   annotation/bakta/ (name configurable with `annotation_outdir`)
     *   fasta
     *   gff
     *   tbl
-*   submission\_outputs (name and path configurable with `submission_outdir`)
+*   submission/ (name and path configurable with `submission_outdir`)
     *   batch\_N
         *   biosample
         *   sra
@@ -51,7 +49,7 @@ The outputs are recorded in the directory specified within the nextflow.config f
             *   submission files (.sqn, .zip, submission.xml)
         *   log\_file
         *   batch\_summary.json
-*   final\_submission\_outputs (name and path configurable with `final_submission_outdir`)
+*   accessions/ (name and path configurable with `accessions_outdir`)
     *   updated\_metadata\_Excel\_file
     *   submission\_report\_file
 
@@ -64,4 +62,4 @@ The pipeline outputs include:
 *   separate gff files for each sample
 *   separate tbl files containing feature information for each sample
 *   submission log files
-    *   This output is found in the submission\_outputs file in your specified output\_directory
+    *   This output is found in the submission/ directory within your specified output\_directory

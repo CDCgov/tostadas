@@ -2,7 +2,7 @@
 
 Default parameters are given in the nextflow.config file. This table lists the parameters that can be changed to a value, path or true/false. When changing these parameters pay attention to the required inputs and make sure that paths line-up and values are within range. To change a parameter you may change with a flag after the nextflow command or change them within your nextflow.config file.
 
-*   Please note the correct formatting and the default calculation of submission_wait_time at the bottom of the params table.
+*   Please note the correct formatting of parameter values. The `submission_wait_time` parameter is deprecated; see the smart polling parameters (`poll_initial_interval`, `poll_max_interval`, `poll_timeout`) in the Submission section.
 
 ## Input Files
 
@@ -31,7 +31,7 @@ The following workflows are available for the `--workflow` parameter:
 - **biosample_and_sra**: Runs a submission to BioSample and SRA.
 - **genbank**: Runs a GenBank submission.
 - **fetch_accessions**: Fetches reports and updates the metadata file.
-- **full_submission**: Executes BioSample and SRA submissions, waits 30 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
+- **full_submission**: Executes BioSample and SRA submissions, polls NCBI for reports using exponential backoff (30s--120s intervals, 30min timeout), updates the metadata file with accession IDs, and then performs the GenBank submission.
 - **update_submission**: Executes a BioSample submission using an updated metadata Excel file.
 
 **Note**: The GenBank submission cannot complete without a BioSample accession ID.
@@ -58,13 +58,14 @@ The following workflows are available for the `--workflow` parameter:
 | --- | --- | --- |
 | --outdir | File path to submit outputs from pipeline | Yes (path as string) |
 | --overwrite_output | Toggle to overwriting output files in directory | Yes (true/false as bool) |
-| --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
+| --annotation_outdir | Base directory name for annotation outputs (vadr, bakta, liftoff subdirectories) | No (folder name as string, default: "annotation") |
+| --accessions_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path, default: "accessions") |
 
 ## Validation
 
 | Param | Description | Input Required |
 | --- | --- | --- |
-| --validation_outdir | File path for outputs specific to validate sub-workflow | Yes (folder name as string) |
+| --validation_outdir | File path for outputs specific to validate sub-workflow | No (folder name as string, default: "validation") |
 | --validate_custom_fields | Toggle checks/transformations for custom metadata fields on/off | No (true/false as bool) |
 | --custom_fields_file | Path to the JSON file containing custom metadata fields and their information | No (path as string) |
 
@@ -72,7 +73,7 @@ The following workflows are available for the `--workflow` parameter:
 
 | Param | Description | Input Required |
 | --- | --- | --- |
-| --final_liftoff_outdir | File path to liftoff specific sub-workflow outputs | Yes (folder name as string) |
+| --annotation_outdir | Base directory name for annotation outputs (liftoff outputs go to annotation/liftoff/) | No (folder name as string, default: "annotation") |
 | --lift_print_version_exit | Print version and exit the program | Yes (true/false) |
 | --lift_print_help_exit | Print help and exit the program | Yes (true/false) |
 | --lift_parallel_processes | Number of parallel processes to use for liftoff | Yes (integer) |
@@ -96,7 +97,7 @@ The following workflows are available for the `--workflow` parameter:
 | Param | Description | Input Required |
 | --- | --- | --- |
 | --vadr | Toggle for running VADR annotation | Yes (true/false as bool) |
-| --vadr_outdir | File path to vadr specific sub-workflow outputs | Yes (folder name as string) |
+| --annotation_outdir | Base directory name for annotation outputs (VADR outputs go to annotation/vadr/) | No (folder name as string, default: "annotation") |
 | --vadr_models_dir | Directory containing VADR models for the target virus subtype | Yes (folder name as string) |
 | --vadr_opts | Additional flags passed to VADR annotation (e.g., "-r --xnocomp" for RSV). | No (string, default: empty) |
 | --vadr_cm_url | URL to download a VADR covariance model if one is not present locally. | No (string, default: empty) |
@@ -111,7 +112,7 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --bakta_db_path | Path to Bakta database if user is supplying database | No (path to database) |
 | --download_bakta_db | Option to download Bakta database. Default is empty string; the bacteria profile sets it to true. | No (true/false or empty string) |
 | --bakta_db_type | Bakta database type (light or full) | Yes (string) |
-| --bakta_outdir | File path to bakta specific sub-workflow outputs | Yes (folder name as string) |
+| --annotation_outdir | Base directory name for annotation outputs (Bakta outputs go to annotation/bakta/) | No (folder name as string, default: "annotation") |
 | --bakta_min_contig_length | Minimum contig size | Yes (integer) |
 | --bakta_threads | Number of threads to use while running annotation | Yes (integer) |
 | --bakta_genus | Organism genus name | Yes (N/A or name as string) |
@@ -130,11 +131,14 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --- | --- | --- |
 | --biosample | Submit to BioSample | Yes (true/false as bool) |
 | --sra | Submit to SRA | Yes (true/false as bool) |
-| --submission_outdir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
-| --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
+| --submission_outdir | Either name or relative/absolute path for the outputs from submission | No (name or path as string, default: "submission") |
+| --accessions_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path, default: "accessions") |
 | --prod_submission | Whether to submit to NCBI's production server. When false (default), submissions go to the test server. | No (true/false as bool, default: false) |
 | --submission_config | Configuration file for submission to public repos | Yes (path as string) |
-| --submission_wait_time | Time in seconds to wait before fetching reports. Default is the string `'calc'`, which computes 30 seconds * batch_size at runtime. Can be overridden with an integer. | No (string or integer, default: 'calc') |
+| --submission_wait_time | **Deprecated.** Replaced by smart polling parameters below. Ignored if set. | No (deprecated) |
+| --poll_initial_interval | Initial polling interval in seconds for fetching NCBI reports | No (integer, default: 30) |
+| --poll_max_interval | Maximum polling interval in seconds (backoff cap) | No (integer, default: 120) |
+| --poll_timeout | Maximum total time in seconds to poll before giving up | No (integer, default: 1800) |
 | --send_submission_email | Toggle email notification on/off | Yes (true/false as bool) |
 | --submission_mode | Mode of submission | Yes (string) |
 

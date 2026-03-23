@@ -65,14 +65,14 @@ Note: SRA submission supports uploading both Nanopore and Illumina data. These w
 
 ## Submitting to GenBank: 
 
-Use the `--workflow genbank` workflow option to submit to GenBank. Please note that a GenBank submission requires a BioSample accession ID assigned by NCBI.  If you successfully ran `--workflow biosample_and_sra` previously, you can find your updated metadata file in the `final_submission_outputs` folder by default.  Check it to make sure your accession IDs were successfully assigned.  Supply this file using `--updated_meta_path` (*NOT* `--meta_path`).  Note: TOSTADAS will automatically search for `--updated_meta_path` in your `--outdir` if you don't explicitly provide it.
+Use the `--workflow genbank` workflow option to submit to GenBank. Please note that a GenBank submission requires a BioSample accession ID assigned by NCBI.  If you successfully ran `--workflow biosample_and_sra` previously, you can find your updated metadata file in the `accessions` folder by default.  Check it to make sure your accession IDs were successfully assigned.  Supply this file using `--updated_meta_path` (*NOT* `--meta_path`).  Note: TOSTADAS will automatically search for `--updated_meta_path` in your `--outdir` if you don't explicitly provide it.
 
 ❗ Note: you can only submit raw files to SRA, not to Genbank.
 
 ## Fetching NCBI Accession IDs:
 
 TOSTADAS will go search for and fetch report.xml files, aggregate the results into a csv file, and create an updated metadata Excel file including the validated metadata and accession IDs, if assigned.
-This report CSV file and updated metadata Excel file are placed in the `final_submission_outputs` folder by default.
+This report CSV file and updated metadata Excel file are placed in the `accessions` folder by default.
 
 Run this workflow using `--workflow fetch_accessions`.  Provide the same `--outdir` and `--meta_path` you provided for the original submission, as TOSTADAS uses these two parameters to find your submission folder and fetch the corresponding reports.
 If you change the naming of this folder structure, this workflow will not run.

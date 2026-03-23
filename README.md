@@ -78,7 +78,7 @@ nextflow run main.nf -profile bacteria,<docker|singularity> --workflow biosample
 
 **Submit to GenBank**
 
-GenBank submission requires a modified metadata file that includes the GenBank accession ID. This file will be generated as an output of the biosample and SRA workflow and can be found in the results directory, for example: results/mpxv_test_metadata/final_submission_outputs/mpxv_test_metadata_updated.xlsx.
+GenBank submission requires a modified metadata file that includes the GenBank accession ID. This file will be generated as an output of the biosample and SRA workflow and can be found in the results directory, for example: results/accessions/mpxv_test_metadata_updated.xlsx.
 
 To submit reads to GenBank, use the following command:
 
@@ -114,7 +114,7 @@ NCBI allows UI-less updating of BioSample submissions, and TOSTADAS can do this 
 To submit updated metadata to biosample, use the following command:
 
 ```
-nextflow run main.nf -profile mpox,<docker|singularity> --workflow update_submission --dry_run false --submission_config <path/to/submission_config.yaml> --original_submission_outdir <results/mpxv_test_metadata/submission_outputs> --meta_path <path/to/updated/metadata/file>
+nextflow run main.nf -profile mpox,<docker|singularity> --workflow update_submission --dry_run false --submission_config <path/to/submission_config.yaml> --original_submission_outdir <results/submission> --meta_path <path/to/updated/metadata/file>
 ```
 
 Please make sure your updated metadata Excel file has a `biosample_accession` column that contains accurate accession IDs.  TOSTADAS does not check these for accuracy.  Please make sure they are correct.
@@ -182,7 +182,7 @@ The following workflows are available for the `--workflow` parameter:
 - **genbank**: Runs a GenBank submission.
 - **fetch_accessions**: Fetches reports and updates the metadata file.
 - **update_submission**: Updates data for existing BioSample or SRA records.
-- **full_submission**: Executes BioSample and SRA submissions, waits 30 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
+- **full_submission**: Executes BioSample and SRA submissions, polls NCBI for reports using exponential backoff (30s--120s intervals, 30min timeout), updates the metadata file with accession IDs, and then performs the GenBank submission.
 
 **Note**: The GenBank submission cannot complete without a BioSample accession ID.
 
