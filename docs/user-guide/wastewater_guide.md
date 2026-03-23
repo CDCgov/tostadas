@@ -9,7 +9,7 @@ This workflow uses Nextflow to automate submission of FASTQ read files to NCBI's
 - **SRA submission** -- Submit each FASTQ file to SRA database and return an Accession ID
 
 !!! tip
-    We recommend that you use the singularity or docker profile if possible, and only use conda when containers are not an option.
+    The Singularity or Docker profile is recommended if possible. Use Conda only when containers are not an option.
 
 ## Prerequisites
 

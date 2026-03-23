@@ -16,11 +16,11 @@ Choose how you want to run TOSTADAS using the `--workflow` parameter:
 
 ## Choosing an organism type and/or virus subtype
 
-If you want to run viral annotation, you need to specify a `--virus_subtype <mpxv|rsv|mev>`. This tells TOSTADAS which annotator profile to use if you're running VADR.
+If you want to run viral annotation, you need to specify a `--virus_subtype <mpxv|rsv|mev>`. This tells TOSTADAS which annotator profile to use if you are running VADR.
 
 If you want to run bacterial annotation, you need to specify `--organism_type bacteria`. This tells TOSTADAS to annotate using bakta. You can instead use a profile (see [Using specific profiles](#using-specific-profiles)).
 
-If you're submitting to GenBank (the only option if you want to run annotation), you need to specify `--organism_type <virus|bacteria|eukaryote>`. This tells TOSTADAS which kind of GenBank submission to do.
+When submitting to GenBank (the only option if you want to run annotation), you need to specify `--organism_type <virus|bacteria|eukaryote>`. This tells TOSTADAS which kind of GenBank submission to do.
 FTP submission to GenBank is only supported for bacteria and eukaryote assemblies. Virus assemblies must be submitted via email (either using TOSTADAS or manually emailing the files in the results folder).
 
 ## Using specific profiles
@@ -74,22 +74,22 @@ All the custom parameters for TOSTADAS are found in nextflow.config and the conf
 
 For example, the default output directory is `results`, but you can override that and choose your own output directory using `--outdir path/to/my/output` in your command.
 
-TOSTADAS can chunk large datasets into smaller groups to submit to NCBI's servers using the `--batch_size` flag. If you have a metadata Excel file with 200 samples, you can submit them in batches of 50 by adding `--batch_size 50` to your command. This groups 50 samples at a time into one submission file for each data repository. NCBI much prefers this over submitting samples one-at-a-time.
+TOSTADAS can chunk large datasets into smaller groups to submit to NCBI's servers using the `--batch_size` flag. If you have a metadata Excel file with 200 samples, you can submit them in batches of 50 by adding `--batch_size 50` to your command. This groups 50 samples at a time into one submission file for each data repository. NCBI recommends batch submissions over individual sample submissions.
 
 !!! tip
-    We **highly** recommend you submit using batches. We suggest 50 as a maximum batch size.
+    Batch submission is strongly recommended. A maximum batch size of 50 is suggested.
 
-Another example: the `--dry_run` flag (which prepares files for submission but doesn't upload to the server) defaults to `true` for the test profile and `false` otherwise, but you can override it by specifying `--dry_run <true|false>` on the command line.
+Another example: the `--dry_run` flag (which prepares files for submission but does not upload to the server) defaults to `true` for the test profile and `false` otherwise, but you can override it by specifying `--dry_run <true|false>` on the command line.
 
 ## Submitting to Production
 
 TOSTADAS defaults to submitting to the test server even if not using the test profile, to avoid accidentally pushing data to NCBI's Production server.
 
-When you've completed testing and are ready to submit for production, add `--prod_submission` to your command line (or change `prod_submission` to `true` in `nextflow.config`).
+When testing is complete and are ready to submit for production, add `--prod_submission` to your command line (or change `prod_submission` to `true` in `nextflow.config`).
 
 ## Typical example workflow
 
-We'll run test submissions to BioSample and SRA using the test MPOX data included in the repository.
+The following example runs test submissions to BioSample and SRA using the test MPOX data included in the repository.
 
 Submit to biosample and sra:
 
@@ -100,22 +100,22 @@ nextflow run main.nf -profile test,singularity,mpox --workflow biosample_and_sra
 !!! warning
     Remember to add credentials to your submission_config.yaml file.
 
-Fetch the accessions if they weren't assigned (this workflow creates an updated Metadata Excel file with the validated fields and the accession IDs):
+Fetch the accessions if they were not assigned (this workflow creates an updated Metadata Excel file with the validated fields and the accession IDs):
 
 ```bash
 nextflow run main.nf -profile test,singularity,mpox --workflow fetch_accessions --dry_run false --submission_config conf/submission_config.yaml
 ```
 
-Submit an updated biosample submission (open the updated Excel file from results/accessions/mpxv_test_metadata_updated.xlsx and add some fake SAMN IDs first):
+Submit an updated biosample submission (open the updated Excel file from results/accessions/mpxv_test_metadata_updated.xlsx and populate it with placeholder SAMN IDs):
 
 ```bash
 nextflow run main.nf -profile test,singularity,mpox --workflow update_submission --dry_run false --submission_config conf/submission_config.yaml --batch_size 5 --original_submission_outdir results/submission --meta_path results/accessions/mpxv_test_metadata_updated.xlsx
 ```
 
 !!! warning
-    This won't run without those fake SAMN IDs in the biosample_accession field.
+    This command will not run without placeholder SAMN IDs in the biosample_accession field.
 
-Now we'll run a test GenBank submission using the test bacteria data included in the repository.
+The following example runs a test GenBank submission using the test bacteria data included in the repository.
 
 Submit to BioSample first (because GenBank requires a BioSample accession):
 
@@ -123,10 +123,10 @@ Submit to BioSample first (because GenBank requires a BioSample accession):
 nextflow run main.nf -profile test,singularity,bacteria --workflow biosample_and_sra --dry_run false --submission_config conf/submission_config.yaml
 ```
 
-Open the updated Excel file from results/accessions/bacteria_test_metadata_1_updated.xlsx and add some fake SAMN IDs first.
+Open the updated Excel file from results/accessions/bacteria_test_metadata_1_updated.xlsx and populate it with placeholder SAMN IDs.
 
 !!! warning
-    The next command won't run without the fake SAMN IDs in biosample_accession column.
+    The next command will not execute without placeholder SAMN IDs in the biosample_accession column.
 
 ```bash
 nextflow run main.nf -profile test,singularity,bacteria --workflow genbank --dry_run false --submission_config conf/submission_config.yaml --annotation --download_bakta_db --bakta_db_type light

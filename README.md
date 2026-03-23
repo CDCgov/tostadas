@@ -69,7 +69,7 @@ mamba install -c bioconda nextflow
 ### Update the Submission Config
 
 ```bash
-# update this config file (you don't have to use vim)
+# update this config file (use any text editor)
 vim conf/submission_config.yaml
 ```
 
@@ -142,7 +142,7 @@ To submit updated metadata to biosample, use the following command:
 nextflow run main.nf -profile mpox,<docker|singularity> --workflow update_submission --dry_run false --submission_config <path/to/submission_config.yaml> --original_submission_outdir <results/submission> --meta_path <path/to/updated/metadata/file>
 ```
 
-Please make sure your updated metadata Excel file has a `biosample_accession` column that contains accurate accession IDs.  TOSTADAS does not check these for accuracy.  Please make sure they are correct.
+Ensure the `biosample_accession` column contains valid accession IDs. TOSTADAS does not verify accession accuracy.
 
 Note: TOSTADAS uses the `ncbi-spuid` field to match samples in the metadata file and the original submission.xml.  The `sample_name` field is not preserved in the submission.xml, so it cannot be used as an identifier for this workflow.
 
@@ -153,7 +153,7 @@ TOSTADAS defaults to Pathogen.cl.1.0 (Pathogen: clinical or host-associated; ver
 2. Add the necessary fields for your BioSample package to your input Excel file.
 3. Add those fields as keys to the JSON file (`assets/custom_meta_fields/example_custom_fields.json`) and provide key info as needed.
     replace_empty_with: TOSTADAS will replace any empty cells with this value (Example application: NCBI expects some value for any mandatory field, so if empty you may want to change it to "Not Provided".)
-    new_field_name: TOSTADAS will replace the field name in your metadata Excel file with this value. (Example application: you get weekly metadata Excel files and they specify 'animal_environment' but NCBI expects 'animal_env'; you can specify this once in the JSON file and it will changed on every run.)
+    new_field_name: TOSTADAS will replace the field name in your metadata Excel file with this value. (Example application: you get weekly metadata Excel files and they specify 'animal_environment' but NCBI expects 'animal_env'; you can specify this once in the JSON file and it will be changed on every run.)
 
 **Submit to a custom BioSample package**
 
@@ -219,7 +219,7 @@ For more detailed information on each parameter and additional configurations, p
 For common issues and solutions, see the [Troubleshooting Guide](https://cdcgov.github.io/tostadas/user-guide/troubleshooting/).
 
 ## Get in Touch
-If you need to report a bug, suggest new features, or just say "thanks", [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we'll try to get back to you as soon as possible!
+To report a bug, suggest new features, or provide feedback, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and the development team will respond as soon as possible.
 
 ## Acknowledgements
 ### Contributors

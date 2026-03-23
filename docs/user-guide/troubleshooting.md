@@ -57,4 +57,4 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 ## Get in Touch
 
-If you need to report a bug, suggest new features, or just say "thanks", [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and we'll try to get back to you as soon as possible!
+To report a bug, suggest new features, or provide feedback, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and the development team will respond as soon as possible.

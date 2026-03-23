@@ -5,7 +5,7 @@
 
 ## Clone the Repository
 
-First, make sure that you are inside of the root directory of the tostadas repository, and then run the following:
+Ensure the working directory is the root of the TOSTADAS repository, and then run the following:
 
 ```bash
 git clone https://github.com/ncbi/vadr.git
@@ -60,7 +60,7 @@ curl https://ftp.ncbi.nlm.nih.gov/pub/nawrocki/vadr-models/mpxv/1.4.2-1/vadr-mod
 tar -xf mpxv-models.tar.gz && mv vadr-models-mpxv-* mpxv-models
 ```
 
-You also need to copy the modified model file that includes the ITRs from our MPXV repo.
+The modified model file that includes the ITRs from the MPXV repository must also be copied.
 
 ```bash
 cp ../vadr_files/mpxv.rpt.minfo mpxv-models/
@@ -84,12 +84,12 @@ Test your install by running:
 perl vadr/v-annotate.pl
 ```
 
-It will probably fail with one of the following:
+Common failure modes include:
 
 - `use: command not found`
 - `Cant locate XYZ package in @INC`
 
-If it works as expected, proceed to the [Run the Annotation Script](#run-the-annotation-script) section. Else, you can now begin the process of troubleshooting by installing the required PERL libraries.
+If the command executes successfully, proceed to the [Export Paths](#export-paths) section. Otherwise, install the required Perl libraries as described below.
 
 **To Install Bio/Easel/MSA.pl:**
 

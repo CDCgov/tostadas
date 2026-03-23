@@ -1,4 +1,4 @@
-# Notes for Developers (and Confused Users)
+# Developer Notes
 
 ## Outline
 
@@ -19,19 +19,16 @@ The user options for "workflow" are:
 
 ## Workflow-Specific Details and Notes
 
-The master branch conducts sample submissions one at a time (not in batch).  It has a different command (notably, no `dry_run` flag and no `workflow` flag because it only run ones workflow).
-One CDC team is still using the master branch, and was not ready to test and adapt their workflow for the dev branch (i.e., to handle batch sample submissions) as of August 2025.
-
-**So dev cannot be merged to master.**
+The master branch supports individual sample submission only. The dev branch adds batch submission support.
 
 ### Submitting to BioSample and SRA
 
-This workflow is pretty straightforward.  It has a few standalone processes and two subworkflows (SUBMISSION and AGGREGATE_SUBMISSIONS).
+This workflow consists of the following processes and two subworkflows (SUBMISSION and AGGREGATE_SUBMISSIONS).
 The user can submit only to biosample by setting `$params.sra = false` or to both biosample and sra using `$params.sra = true`.
 
 1. METADATA_VALIDATION: Process that expects an Excel file (`$params.meta_path`), performs validation and outputs tsv files (and an error log). 
                         Each tsv files contains valid metadata for a number of submissions specified by `$params.batch_size`.
-                        Outputs are here: `$params.outdir/$params.validation_outdir/batched_tsvs`.  By default, it's: $outdir/validation/batched_tsvs
+                        Outputs are here: `$params.outdir/$params.validation_outdir/batched_tsvs`.  By default, it is: $outdir/validation/batched_tsvs
 
 2. CHECK_VALIDATION_ERRORS: Process that exits the pipeline if at least one ERROR is found in the validation log.  ERRORs will not pass NCBI submission checks.
                         Input: the validation log. Outputs: status ("OK" or "ERROR"), and pipeline exists if status is "ERROR".
@@ -51,7 +48,7 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
     SUBMIT_SUBMISSION: Process that actually submits the folders. Run with `$params.dry_run` to see what it will do (e.g., "would upload Folder X to Folder Y via ftp").
                 Folder names on NCBI ftp site are constructed based on local names and following NCBI's requirement that each folder ONLY contain one XML, one submit.ready, and (if sra) the relevant raw sequence files.
                 The folder structure will look like this: (local) submission/<batch_n>/<biosample|sra>/ → (remote) submit/Test/<your_metadata_filename>_<batch_n>_<biosample|sra>/
-                NOTE: if you're submitting both Illumina and Nanopore data to SRA, these have to be in different submission.xml files. Therefore, they need to be in different folders, so they go here:
+                NOTE: when submitting both Illumina and Nanopore data to SRA, these have to be in different submission.xml files. Therefore, they need to be in different folders, so they go here:
                     (local) submission/<batch_n>/<sra>/<illumina|nanopore> → (remote) submit/Test/<your_metadata_filename>_<batch_n>_<sra>_<illumina|nanopore>/
                 Input: a tuple containing containing the batch directory, and the submission config file. Output: a tuple containing the batch directory, and a submission log file.
 
@@ -74,7 +71,7 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
 This requires `--updated_meta_path`. It can be specified in `nextflow.config`.
 If not specified, it looks for the output of JOIN_ACCESSIONS_WITH_METADATA (`$params.outdir/$params.accessions_outdir/<your_metadata_filename>__updated.xlsx`)
 
-GENBANK workflow doesn't validate metadata. It is assumed the user will run biosample_and_sra first (because GenBank submission requires a BioSample accession ID). 
+GENBANK workflow does not validate metadata. It is assumed the user will run biosample_and_sra first (because GenBank submission requires a BioSample accession ID). 
 It validates the fasta file.
 If `$params.annotation = true`, it performs annotation as follows.
 And it performs submission.  It does not fetch the accession IDs because at the time of development, many GenBank submissions are not done via ftp.
@@ -128,11 +125,11 @@ if `$params.annotation = true` and `$params.bakta = true` and `$params.organism_
 ### Updating a BioSample Submission
 
 This workflow requires that `${params.meta_path}` point to a metadata file with the updated biosample fields and a `biosample_accession` column with a valid Accession ID. 
-The workflow as-is DOES NOT check the validity of the biosample accession because there is no straightforward way to do that.  Please make sure your accession ID is valid and correct.
+The workflow as-is does not check the validity of the biosample accession because there is no straightforward way to do that.  Please make sure your accession ID is valid and correct.
 
 The workflow also requires `${params.original_submission_outdir}` which should point to your original NCBI submission for these samples.
 It is expecting that the original submission was made with Tostadas, so it wants a path ending in `submission` (`${params.submission_outdir}`) here.
-It's going to look through the batch folders for `biosample/submission.xml` to validate that certain fields are unchanged, as required by NCBI.
+It will look through the batch folders for `biosample/submission.xml` to validate that certain fields are unchanged, as required by NCBI.
 
 It also expects to find the batch_summary.json file from the original submission (in validation/batched_tsvs) and it uses this file to recreate the same batches as in the original submission.
 It has to do this in order to validate that certain metadata are unchanged from the original submission, and to update the original submission with the PrimaryId.
@@ -151,20 +148,20 @@ The workflow runs METADATA_VALIDATION, CHECK_VALIDATION_ERRORS, and WRITE_VALIDA
 
 ## Known issues and idiosyncrasies
 
-1. The pipeline doesn't fetch Genbank accession IDs, but it could if they are available.  Doing so will require some optional handling for downstream report csv and updated metadata file generation.
+1. The pipeline does not fetch Genbank accession IDs, but it could if they are available.  Doing so will require some optional handling for downstream report csv and updated metadata file generation.
 
-2. The update_submissions workflow was added very late and I didn't have time to rigorously test it. More testing should be done, and additional nf-tests created for the additional processes.
+2. Additional testing is required for the update_submissions workflow, and additional nf-tests should be created for the additional processes.
 
-3. I believe a specific line needs to be added to the GenBank XML file (where appropriate) indicating NCBI should perform annotations.  So the pipeline may be to be adjusted such that if there is no gff file provided in the channel, this line gets added to the XML file for appropriate GenBank submissions (i.e., only those that are submitted via ftp). Also, GenBank sqn file needs to be rigorously validated (sars and flu haven't been tested at all).
+3. A specific line may need to be added to the GenBank XML file (where appropriate) indicating NCBI should perform annotations. The pipeline may need to be adjusted such that if there is no gff file provided in the channel, this line gets added to the XML file for appropriate GenBank submissions (i.e., only those that are submitted via ftp). Also, GenBank sqn file needs to be rigorously validated (SARS and flu have not been tested at all).
    
 4. Need some robust checking for the vadr_models_dir vs. species (see notes under annotation).
 
-5. For update_submission, the metadata file is not being copied to the workDir, it's being referenced from its own workDir.  This is not ideal Nextflow coding, and should be changed so that it copies the actual file.  
-   It's happening because of the channel construction (which is being made from a json file in REBATCH_METADATA process). I think this can be pretty easily modified to just output the channel.
+5. For update_submission, the metadata file is not being copied to the workDir; it is being referenced from its own workDir. This is not ideal Nextflow coding, and should be changed so that it copies the actual file.
+   This is happening because of the channel construction (which is being made from a json file in REBATCH_METADATA process). This should be modified to output the channel directly.
 
 6. The `update_submission` workflow only supports BioSample updates. The `enabled` list in `REBATCH_METADATA` (`modules/local/rebatch_metadata/main.nf`) is hardcoded to `["biosample"]`, so the workflow never generates update submissions for SRA or GenBank. Extending this would require changes to both `REBATCH_METADATA` and the `UPDATE_SUBMISSION` process, plus end-to-end testing for each additional database.
 
 7. Outstanding to-do notes in `submission_helper.py`: 
-        Line 963: These are hard-coded but probably need to be controlled during GENBANK_VALIDATION somehow.
-        Line 982: This is not an issue, it's actually more of a reminder to me that the way Biosample and SRA XML files get made is different from Genbank (they are called differently in submission_prep.py). 
+        Line 963: These values are hard-coded and should be made configurable via GENBANK_VALIDATION.
+        Line 982: Note: BioSample and SRA XML files are generated differently from GenBank XML files (see submission_prep.py). 
         Line ~1222: Resolved. The locus tag prefix cannot be fetched programmatically from NCBI; it must be registered under the BioProject first, then specified via `--bakta_locus_tag`. A warning is now logged when no locus tag is found in the GFF.

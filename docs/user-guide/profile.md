@@ -33,11 +33,11 @@ Example metadata: [mpxv_test_metadata.xlsx](../assets/sample_metadata/mpxv_test_
 
 ## Understanding Profiles and Environments
 
-Within the nextflow pipeline the `-profile` parameter is required to specify the computing environment of the run. The options of `docker`, `singularity` or `conda` can passed in. The conda environment is less stable than the docker or singularity. We recommend you choose docker or singularity when running the pipeline.
+Within the nextflow pipeline the `-profile` parameter is required to specify the computing environment of the run. The options of `docker`, `singularity` or `conda` can passed in. The Conda environment has known compatibility limitations compared to Docker or Singularity. Docker or Singularity is recommended when running the pipeline.
 
 Optionally, the `test` option can be specified in the `-profile` parameter. If test is not specified, parameters are read from the nextflow.config file. The test params should remain the same for testing purposes.
 
-See more about our custom built-in profiles in [Using specific profiles](submission_guide.md#using-specific-profiles).
+See more about the custom built-in profiles in [Using specific profiles](submission_guide.md#using-specific-profiles).
 
 ## Perform a Dry Run
 
@@ -58,7 +58,7 @@ Use the `--workflow biosample_and_sra` workflow option to submit to BioSample an
 Use the `--workflow genbank` workflow option to submit to GenBank. Please note that a GenBank submission requires a BioSample accession ID assigned by NCBI. If you successfully ran `--workflow biosample_and_sra` previously, you can find your updated metadata file in the `accessions` folder by default. Check it to make sure your accession IDs were successfully assigned. Supply this file using `--updated_meta_path` (*NOT* `--meta_path`).
 
 !!! note
-    TOSTADAS will automatically search for `--updated_meta_path` in your `--outdir` if you don't explicitly provide it.
+    TOSTADAS will automatically search for `--updated_meta_path` in your `--outdir` if it is not explicitly provided.
 
 !!! warning
     You can only submit raw files to SRA, not to GenBank.
