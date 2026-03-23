@@ -399,8 +399,26 @@
         },
         "submission_wait_time": {
           "type": "string",
-          "description": "Calculated based on sample number (3 * 60 secs * sample_num)",
+          "description": "DEPRECATED: replaced by smart polling params (poll_initial_interval, poll_max_interval, poll_timeout)",
           "default": "calc",
+          "hidden": true
+        },
+        "poll_initial_interval": {
+          "type": "integer",
+          "description": "Seconds between initial poll attempts for NCBI report.xml",
+          "default": 30,
+          "hidden": false
+        },
+        "poll_max_interval": {
+          "type": "integer",
+          "description": "Maximum seconds between poll attempts (exponential backoff cap)",
+          "default": 120,
+          "hidden": false
+        },
+        "poll_timeout": {
+          "type": "integer",
+          "description": "Total timeout in seconds for polling NCBI report.xml",
+          "default": 1800,
           "hidden": false
         },
         "send_submission_email": {
