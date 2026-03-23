@@ -222,8 +222,10 @@ For common issues and solutions, see the [Troubleshooting Guide](https://cdcgov.
 To report a bug, suggest new features, or provide feedback, [open an issue](https://github.com/CDCgov/tostadas/issues/new/choose) and the development team will respond as soon as possible.
 
 ## Acknowledgements
+
 ### Contributors
-Josh Forstedt | Jessica Rowell | Kyle O'Connell | Yesh Kulasekarapandian | Ankush Gupta | Cole Tindall | Ramiya Sivakumar | Swarnali Louha | Michael Desch | Ethan Hetrick | Nick Johnson | Kristen Knipe | Shatavia Morrison | Yuanyuan Wang | Michael Weigand | Dhwani Batra | Jason Caravas | Lynsey Kovar | Hunter Seabolt | Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Matt Mauldin | Dakota Howard | Ben Rambo-Martin | James Heuser | Justin Lee | Mili Sheth
+
+[Hunter Seabolt](https://github.com/hseabolt) | [Josh Forstedt](https://github.com/jforstedt) | [Jessica Rowell](https://github.com/jessicarowell) | [Kyle O'Connell](https://github.com/kyleoconnell) | [Yesh Kulasekarapandian](https://github.com/yeshtables) | [Ankush Gupta](https://github.com/ankushkgupta2) | [Cole Tindall](https://github.com/CTindall-1) | [Ramiya Sivakumar](https://github.com/RamiyapriyaS-Deloitte) | [Swarnali Louha](https://github.com/Swarnali3) | Michael Desch | [Ethan Hetrick](https://github.com/Ethan-Hetrick) | Nick Johnson | Kristen Knipe | [Shatavia Morrison](https://github.com/SMorrison42) | Yuanyuan Wang | Michael Weigand | Dhwani Batra | [Jason Caravas](https://github.com/jacaravas) | [Lynsey Kovar](https://github.com/lkov0) | Crystal Gigante | Christina Hutson | Brent Jenkins | Yu Li | Ana Litvintseva | Matt Mauldin | [Dakota Howard](https://github.com/dthoward96) | [Ben Rambo-Martin](https://github.com/nbx0) | James Heuser | Justin Lee | Mili Sheth
 
 ### Tools
 The submission portion of this pipeline was adapted from SeqSender. To find more information on this tool, please refer to their GitHub page: [SeqSender](https://github.com/CDCgov/seqsender)
