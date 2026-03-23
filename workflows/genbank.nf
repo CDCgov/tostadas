@@ -21,7 +21,7 @@ include { RUN_VADR                                          		} from "../subwork
 include { RUN_BAKTA                                         		} from "../subworkflows/local/bakta"
 
 // get submission related process/subworkflows
-include { SUBMISSION		                                		} from "../subworkflows/local/submission"
+include { SUBMISSION_GENBANK                                		} from "../subworkflows/local/submission_genbank"
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 									MAIN WORKFLOW
@@ -146,12 +146,12 @@ workflow GENBANK {
             }
 
         // Run submission using the batch channel
-        SUBMISSION(
+        SUBMISSION_GENBANK(
             submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
             params.submission_config
         )
     }
 
 	emit:
-    submission_batch_folder = params.submission ? SUBMISSION.out.submission_batch_folder : null
+    submission_batch_folder = params.submission ? SUBMISSION_GENBANK.out.submission_batch_folder : null
 }
