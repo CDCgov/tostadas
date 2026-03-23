@@ -31,19 +31,15 @@ To create a Center Account:
 
 #### BioProject and BioSample
 
-- **Description** -- BioProject and BioSample are databases that organize and store information about biological projects and samples, respectively, providing context for genomic data submissions.
-- **URL** -- [BioProject](https://www.ncbi.nlm.nih.gov/bioproject/) / [BioSample](https://www.ncbi.nlm.nih.gov/biosample/)
+[BioProject](https://www.ncbi.nlm.nih.gov/bioproject/) and [BioSample](https://www.ncbi.nlm.nih.gov/biosample/) are databases that organize and store information about biological projects and samples, respectively, providing context for genomic data submissions.
 
 #### SRA
 
-- **Description** -- SRA is a repository that archives and provides access to raw sequence data, including next-generation sequencing data, facilitating the exploration of genomic datasets.
-- **URL** -- [SRA](https://www.ncbi.nlm.nih.gov/sra)
+The [Sequence Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra) archives and provides access to raw sequence data, including next-generation sequencing data, facilitating the exploration of genomic datasets.
 
 #### GenBank
 
-- **Description** -- GenBank is a DNA sequence database that collects and archives genomic data from researchers worldwide. It plays a pivotal role in the sharing and dissemination of genetic information.
-- **URL** -- [General GenBank Docs](https://www.ncbi.nlm.nih.gov/genbank/)
-- **URL2** -- [Formatting for GenBank](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table)
+[GenBank](https://www.ncbi.nlm.nih.gov/genbank/) is a DNA sequence database that collects and archives genomic data from researchers worldwide. See the [formatting guide](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table) for submission file requirements.
 
 ## More Information For Each Database
 
