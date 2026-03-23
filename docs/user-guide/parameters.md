@@ -34,7 +34,8 @@ The following workflows are available for the `--workflow` parameter:
 - **full_submission**: Executes BioSample and SRA submissions, polls NCBI for reports using exponential backoff (30s--120s intervals, 30min timeout), updates the metadata file with accession IDs, and then performs the GenBank submission.
 - **update_submission**: Executes a BioSample submission using an updated metadata Excel file.
 
-**Note**: The GenBank submission cannot complete without a BioSample accession ID.
+!!! note
+    The GenBank submission cannot complete without a BioSample accession ID.
 
 ## General Settings
 
@@ -143,7 +144,10 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | --submission_mode | Mode of submission | Yes (string) |
 
 ## Update Submission
+
+| Param | Description | Input Required |
+| --- | --- | --- |
 | --original_submission_outdir | Either name or relative/absolute path for the outputs from original submission (the one being updated) | Yes (name or path as string) |
 
-❗ Important note about `send_submission_email`: An email is only triggered if Genbank is being submitted to AND `table2asn` is the `genbank_submission_type`. As for the recipient, this must be specified within your submission config file under 'general' as `notif_email_recipient`.
-
+!!! warning "About `send_submission_email`"
+    An email is only triggered if Genbank is being submitted to AND `table2asn` is the `genbank_submission_type`. As for the recipient, this must be specified within your submission config file under 'general' as `notif_email_recipient`.

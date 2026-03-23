@@ -1,12 +1,12 @@
-# TOSTADAS &#8594; <span style="color:blue"><u>**T**</u></span>oolkit for <span style="color:blue"><u>**O**</u></span>pen <span style="color:blue"><u>**S**</u></span>equence <span style="color:blue"><u>**T**</u></span>riage, <span style="color:blue"><u>**A**</u></span>nnotation and <span style="color:blue"><u>**DA**</u></span>tabase <span style="color:blue"><u>**S**</u></span>ubmission :dna: :computer:
+# TOSTADAS -- Toolkit for Open Sequence Triage, Annotation and Database Submission
 
-## PATHOGEN ANNOTATION AND SUBMISSION PIPELINE
-  
-A portable, open-source pipeline designed to streamline submission of pathogen genomic data to public repositories.  Reducing barriers to timely data submission increases the value of public repositories for both public health decision making and scientific research. TOSTADAS facilitates routine sequence submission by standardizing and automating: 
+## Pathogen Annotation and Submission Pipeline
 
-+ Metadata Validation   
-+ Genome Annotation    
-+ File submission    
+A portable, open-source pipeline designed to streamline submission of pathogen genomic data to public repositories. Reducing barriers to timely data submission increases the value of public repositories for both public health decision making and scientific research. TOSTADAS facilitates routine sequence submission by standardizing and automating:
+
++ Metadata Validation
++ Genome Annotation
++ File submission
 
 TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses, RSV, Measles, and select bacteria.
 
@@ -36,28 +36,26 @@ Optional gene calling and feature annotation of assembled genomes (FASTA) using 
 
 Prepare necessary submission files for BioSample, SRA, and/or GenBank depending on the provided inputs and perform optional upload to NCBI via ftp. This workflow was adapted from the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
 
+---
 
-## 🚀 Quick Links
+## Quick Links
 
-### ⚙️ General Usage
+### General Usage
 
-| [📖 Overview](index.md) | [1️⃣ Installation](user-guide/installation.md#environment-setup) | [2️⃣ General NCBI Guide](user-guide/general_NCBI_submission_guide.md#ncbi-center-account) | [3️⃣ Submission Guide](user-guide/submission_guide.md) | [4️⃣ Output](user-guide/outputs.md) | [5️⃣ Parameters](user-guide/parameters.md) | [6️⃣ Submission Details](user-guide/profile.md) |
+| [Overview](index.md) | [Installation](user-guide/installation.md#environment-setup) | [General NCBI Guide](user-guide/general_NCBI_submission_guide.md#ncbi-center-account) | [Submission Guide](user-guide/submission_guide.md) | [Output](user-guide/outputs.md) | [Parameters](user-guide/parameters.md) | [Submission Details](user-guide/profile.md) |
 | --- | --- | --- | --- | --- | --- | --- |
 
-### 🧪 Advanced Usage
+### Advanced Usage
 
-| [1️⃣ Custom Metadata](user-guide/custom_metadata_guide.md) | [2️⃣ User Provided Annotation](user-guide/user_provided_annotation_guide.md) | [3️⃣ VADR Installation](user-guide/vadr_install.md) | [4️⃣ Wastewater Submission](user-guide/wastewater_guide.md) |
+| [Custom Metadata](user-guide/custom_metadata_guide.md) | [User Provided Annotation](user-guide/user_provided_annotation_guide.md) | [VADR Installation](user-guide/vadr_install.md) | [Wastewater Submission](user-guide/wastewater_guide.md) |
 | --- | --- | --- | --- |
 
-### 🏢 CDC-Specific Usage
+### CDC-Specific Usage
 
-| 📋 Guides |
-| --- |
 | [CDC User Guide](user-guide/cdc-user-guide.md#cdc-user-guide) |
+| --- |
 
-### 💡 Help & FAQ
+### Help and Support
 
-| [❓ Help](user-guide/get-in-touch.md) | [🧩 Contribute](user-guide/contributions.md) |
-| --- | --- |
-| [Get in Touch](user-guide/get-in-touch.md) | [Contributions](user-guide/contributions.md) |
-| [Troubleshooting](user-guide/troubleshooting.md) |  |
+| [Get in Touch](user-guide/get-in-touch.md) | [Contributions](user-guide/contributions.md) | [Troubleshooting](user-guide/troubleshooting.md) |
+| --- | --- | --- |

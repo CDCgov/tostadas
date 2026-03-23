@@ -1,20 +1,9 @@
 # Submission Details
 
-## Table of Contents
-
-- [Input Files Required](#input-files-required)
-  - [(A) Running Annotation and Submission to GenBank and SRA](#a-running-annotation-and-submission-to-genbank-and-sra)
-  - [(B) Running SRA Submission only](#b-running-sra-submission-only)
-- [Understanding Profiles and Environments](#understanding-profiles-and-environments)
-- [Perform a Dry Run](#perform-a-dry-run)
-- [Submitting to BioSample and/or SRA](#submitting-to-biosample-andor-sra)
-- [Submitting to GenBank](#submitting-to-genbank)
-- [Fetching NCBI Accession IDs](#fetching-ncbi-accession-ids)
-- [Running Update Submission](#running-update-submission)
-
 ## Input Files Required:
 
-❗ Note: Currently, the pipeline does not accept input files containing period marks . in their naming convention.
+!!! warning
+    Currently, the pipeline does not accept input files containing period marks `.` in their naming convention.
 
 ### (A) Running Annotation and Submission to GenBank and SRA:
 
@@ -37,10 +26,10 @@ All annotation workflows require single sample fasta input files. Input fasta fi
 | metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
 | submission\_config | .yaml | configuration file for submitting to NCBI, sample versions can be found in repo |
 
-❗ This pipeline has been tested with paired-end sequence data.
+!!! note
+    This pipeline has been tested with paired-end sequence data.
 
 Example metadata: [mpxv_test_metadata.xlsx](../assets/sample_metadata/mpxv_test_metadata.xlsx)
-
 
 ## Understanding Profiles and Environments:
 
@@ -63,11 +52,12 @@ NCBI uses SPUID as temporary linkage IDs to connect a BioSample and correspondin
 
 Note: SRA submission supports uploading both Nanopore and Illumina data. These will be processed as separate submission.xml files and separate uploads, as required by NCBI.
 
-## Submitting to GenBank: 
+## Submitting to GenBank:
 
 Use the `--workflow genbank` workflow option to submit to GenBank. Please note that a GenBank submission requires a BioSample accession ID assigned by NCBI.  If you successfully ran `--workflow biosample_and_sra` previously, you can find your updated metadata file in the `accessions` folder by default.  Check it to make sure your accession IDs were successfully assigned.  Supply this file using `--updated_meta_path` (*NOT* `--meta_path`).  Note: TOSTADAS will automatically search for `--updated_meta_path` in your `--outdir` if you don't explicitly provide it.
 
-❗ Note: you can only submit raw files to SRA, not to Genbank.
+!!! warning
+    You can only submit raw files to SRA, not to Genbank.
 
 ## Fetching NCBI Accession IDs:
 
@@ -89,4 +79,3 @@ It will save the updated submissions as date-stamped batch folders under `--outd
 Note: TOSTADAS uses the `ncbi-spuid` field to match samples in the metadata file and the original submission.xml.  The `sample_name` field is not preserved in the submission.xml, so it cannot be used as an identifier for this workflow.
 
 Note: Please make sure your updated metadata Excel file has a `biosample_accession` column that contains accurate accession IDs.  TOSTADAS does not check these for accuracy.  Please make sure they are correct.
-

@@ -9,16 +9,21 @@ repo_url: https://github.com/CDCgov/tostadas/
 edit_uri: https://github.com/CDCgov/tostadas/edit/main/docs/
 
 # Copyright
-copyright: Copyright &copy; 2026 CDC SciComp
+copyright: Public Domain - CDC
 
 # Configuration
 theme:
   name: material
   features:
+    - content.code.copy
+    - navigation.footer
+    - navigation.instant
     - navigation.tabs
     - navigation.top
     - navigation.indexes
-    - toc.integrate 
+    - navigation.sections
+    - search.suggest
+    - search.highlight
   palette:
     - scheme: default
       primary: indigo
@@ -27,8 +32,8 @@ theme:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
     - scheme: slate
-      primary: red
-      accent: red
+      primary: indigo
+      accent: indigo
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
@@ -36,7 +41,7 @@ theme:
 # Plugins
 plugins:
   - search
-  - git-revision-date
+  - git-revision-date-localized
   - minify:
       minify_html: true
 
@@ -59,11 +64,8 @@ markdown_extensions:
   - markdown.extensions.md_in_html
   - markdown.extensions.def_list
   - markdown.extensions.footnotes
-  - markdown.extensions.meta
   - markdown.extensions.toc:
       permalink: true
-  - pymdownx.arithmatex:
-      generic: true
   - pymdownx.betterem:
       smart_enable: all
   - pymdownx.caret
@@ -83,7 +85,11 @@ markdown_extensions:
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       check_paths: true
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.tasklist:
@@ -92,22 +98,24 @@ markdown_extensions:
 
 # Page Tree
 nav:
-  - Background : index.md
+  - Overview: index.md
   - General Usage:
-    - 1. Installation: user-guide/installation.md
-    - 2. General NCBI Guide: user-guide/general_NCBI_submission_guide.md
-    - 3. Submission Guide: user-guide/submission_guide.md
-    - 4. Output: user-guide/outputs.md
-    - 5. Parameters: user-guide/parameters.md
-    - 6. Submission Details: user-guide/profile.md
+    - Installation: user-guide/installation.md
+    - NCBI Database Guide: user-guide/general_NCBI_submission_guide.md
+    - Submission Guide: user-guide/submission_guide.md
+    - Output: user-guide/outputs.md
+    - Parameters: user-guide/parameters.md
+    - Submission Details: user-guide/profile.md
   - CDC Specific Usage:
-    - 1. CDC User-Guide: user-guide/cdc-user-guide.md
+    - CDC User Guide: user-guide/cdc-user-guide.md
   - Advanced Usage:
-    - 1. Custom Metadata: user-guide/custom_metadata_guide.md
-    - 2. User Provided Annotation: user-guide/user_provided_annotation_guide.md
-    - 3. VADR Installation: user-guide/vadr_install.md
-    - 4. Wastewater Submission: user-guide/wastewater_guide.md
-  - FAQ:
+    - Custom Metadata: user-guide/custom_metadata_guide.md
+    - User Provided Annotation: user-guide/user_provided_annotation_guide.md
+    - VADR Installation: user-guide/vadr_install.md
+    - Wastewater Submission: user-guide/wastewater_guide.md
+  - Developer Guide:
+    - Developer Notes: developer_notes.md
+  - Support:
     - Get in Touch: user-guide/get-in-touch.md
     - Troubleshooting: user-guide/troubleshooting.md
     - Contributions: user-guide/contributions.md

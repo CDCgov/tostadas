@@ -1,12 +1,15 @@
 # NWSS Sequence Submission User Guide
 
 ### Overview
-This workflow uses Nextflow to automate submission of FASTQ read files to NCBI's SRA database. It includes three steps. 
+
+This workflow uses Nextflow to automate submission of FASTQ read files to NCBI's SRA database. It includes three steps.
+
 + Metadata validation: Check that your Excel data conforms to NCBI expectations
 + Biosample submission: Submit each sample to Biosample database and return Biosample ID
 + SRA submission: Submit each FASTQ file to SRA database and return an Accession ID
 
-***We recommend that you use the singularity or docker profile if possible, and only use conda when containers are not an option.***
+!!! tip
+    We recommend that you use the singularity or docker profile if possible, and only use conda when containers are not an option.
 
 ### 1. Prerequisites
 
@@ -21,24 +24,39 @@ This workflow uses Nextflow to automate submission of FASTQ read files to NCBI's
 Download the Excel [template for wastewater metadata](https://github.com/CDCgov/tostadas/raw/main/assets/sample_metadata/wastewater_biosample_template.xlsx) and fill out following the examples in the sheet. Rename your file.
 
 ### 3. Fill out the submission config file
+
 Add your center information to this [configuration file](https://github.com/CDCgov/tostadas/raw/main/conf/submission_config.yaml). Make sure for Biosample package you enter `SARS-CoV-2.wwsurv.1.0`. Rename the file as needed, but make sure you keep it in the conf/ directory.
 
 ### 4. Test your set up with the test profile
-Run the following command to test your setup
-`nextflow run main.nf -profile nwss,test,[docker,singularity,conda]`
+
+Run the following command to test your setup:
+
+```bash
+nextflow run main.nf -profile nwss,test,[docker,singularity,conda]
+```
 
 ### 5. Run a test with real data
-Add a few of your actual samples to the Excel metadata sheet and submit these to the test server. NCBI provides a test server to validate the ftp connection before submitting to production. 
 
-`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --dry_run false`
+Add a few of your actual samples to the Excel metadata sheet and submit these to the test server. NCBI provides a test server to validate the ftp connection before submitting to production.
+
+```bash
+nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --dry_run false
+```
 
 ### 6. Submit small sample to production server
 
-`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false`
+```bash
+nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false
+```
 
 ### 7. Submit all samples to production server
-Update your metadata path to point to all of your samples for submissions
-`nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false`
+
+Update your metadata path to point to all of your samples for submissions:
+
+```bash
+nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false
+```
 
 ### 8. Troubleshooting
+
 View [the docs](troubleshooting.md)
