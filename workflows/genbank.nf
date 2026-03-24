@@ -23,6 +23,9 @@ include { RUN_BAKTA                                         		} from "../subwork
 // get summary report process
 include { SUMMARY                                           		} from "../modules/local/summary/main"
 
+// get QC report process
+include { QC_REPORT                                         		} from "../modules/local/qc_report/main"
+
 // get submission related process/subworkflows
 include { SUBMISSION_GENBANK                                		} from "../subworkflows/local/submission_genbank"
 /*
@@ -155,6 +158,14 @@ workflow GENBANK {
         SUBMISSION_GENBANK(
             submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
             params.submission_config
+        )
+    }
+
+    // Generate QC report sorting SQNs into pass/fail based on VADR results
+    if (params.submission && params.vadr) {
+        QC_REPORT(
+            SUMMARY.out.pass_fail,
+            SUBMISSION_GENBANK.out.submission_batch_folder.map { _meta, dir -> dir }.collect()
         )
     }
 
