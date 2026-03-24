@@ -126,6 +126,7 @@ def main_prepare():
 			
 	# 3) Prepare GenBank submission, per-sample under genbank/ parent directory
 	if params['genbank']:
+		failed_samples = []
 		for s in samples:
 			submission_dir = os.path.join(output_root, 'genbank', s.sample_id)
 			os.makedirs(submission_dir, exist_ok=True)
@@ -142,7 +143,17 @@ def main_prepare():
 				accession_id=None,
 				identifier=identifier
 			)
-			gb.genbank_submission_driver()
+			try:
+				gb.genbank_submission_driver()
+				if getattr(gb, 'table2asn_failed', False):
+					failed_samples.append(s.sample_id)
+					logging.warning("Skipping sample '%s' due to table2asn failure.", s.sample_id)
+			except Exception as e:
+				failed_samples.append(s.sample_id)
+				logging.error("Sample '%s' failed during GenBank prep: %s", s.sample_id, str(e))
+		if failed_samples:
+			logging.warning("The following %d sample(s) failed GenBank preparation: %s", len(failed_samples), ', '.join(failed_samples))
+		logging.info("GenBank preparation complete: %d succeeded, %d failed.", len(samples) - len(failed_samples), len(failed_samples))
 
 if __name__=="__main__":
 	main_prepare()

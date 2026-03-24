@@ -1410,12 +1410,16 @@ class GenbankSubmission(XMLSubmission, Submission):
 			cmd.append(f"{self.outdir}/source.src")
 		# Run the command and capture errors
 		logging.info(f'table2asn command: {shlex.join(cmd)}')
-		try:
-			result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-			logging.info(f"table2asn output: {result.stdout}")
-		except subprocess.CalledProcessError as e:
-			logging.debug(f"Error running table2asn: {e.stderr}")
-			raise
+		result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+		if result.returncode != 0:
+			logging.error(
+				"table2asn failed for sample '%s' (exit code %d): %s",
+				self.sample.sample_id, result.returncode, result.stderr.strip()
+			)
+			self.table2asn_failed = True
+			return
+		self.table2asn_failed = False
+		logging.info(f"table2asn output: {result.stdout}")
 
 	def prep_zip_folder(self):
 		""" Prepare files for manual upload to GenBank because FTP support not available 
