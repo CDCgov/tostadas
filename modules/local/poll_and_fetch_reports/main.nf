@@ -19,6 +19,7 @@ process POLL_AND_FETCH_REPORTS {
     output:
     path("${submission_folder}/fetch_submission.log"), emit: submission_log
     path("${submission_folder}/*.csv"), emit: submission_report, optional: true
+    path("${submission_folder}/**/report.xml"), emit: report_xml, optional: true
 
     script:
     def test_flag = params.prod_submission == false ? '--test' : ''
