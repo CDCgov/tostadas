@@ -1326,7 +1326,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 				logging.info(f"Stripped pub block from {sqn_file}")
 			with open(sqn_file, 'w') as f:
 				f.write(content)
-		logging.info(f"Genbank files prepared for {self.sample.sample_id}")
+		if not getattr(self, 'table2asn_failed', False):
+			logging.info(f"Genbank files prepared for {self.sample.sample_id}")
 
 	# Functions for running table2asn
 	def get_gff_locus_tag(self):
@@ -1442,6 +1443,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 		# Prepare a Bank-It ftp submission
 		self.xml_create_bankit()
 		self.prep_table2asn_files()
+		if getattr(self, 'table2asn_failed', False):
+			return
 		self.prep_zip_folder()
 		submit_ready_file = os.path.join(self.outdir, 'submit.ready')
 		with open(submit_ready_file, 'w') as fh:
@@ -1453,7 +1456,9 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.xml_create_wgs()
 		self.finalize_xml()
 		self.prep_table2asn_files()
-		# Delete all but the sqn file 
+		if getattr(self, 'table2asn_failed', False):
+			return
+		# Delete all but the sqn file
 		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff', '*.fsa']:
 			pattern = os.path.join(self.outdir, p)
 			for f in glob.glob(pattern):
@@ -1466,6 +1471,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 	def _workflow_virus(self):
 		# Prepare a manual submission
 		self.prep_table2asn_files()
+		if getattr(self, 'table2asn_failed', False):
+			return
 		self.prep_zip_folder()
 
 	def genbank_submission_driver(self):
