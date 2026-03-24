@@ -21,7 +21,7 @@ process QC_REPORT {
     awk -F'\\t' 'NR>1 && \$8>0 {gsub(/_mev\\.vadr\\.mdl/,"",\$1); print \$1}' ${pass_fail_tsv} > fail_list.txt
 
     # Sort SQN files into pass/fail
-    find . -name "*.sqn" -not -path "./sqn_pass/*" -not -path "./sqn_fail/*" | while read sqn; do
+    find -L . -name "*.sqn" -not -path "./sqn_pass/*" -not -path "./sqn_fail/*" | while read sqn; do
         sample=\$(basename \$(dirname "\$sqn"))
         if grep -qF "\$sample" fail_list.txt; then
             cp "\$sqn" sqn_fail/
