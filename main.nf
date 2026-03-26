@@ -41,11 +41,14 @@ workflow GENBANK_WORKFLOW {
 }
 
 workflow FETCH_ACCESSIONS_WORKFLOW {
-    // GenBank submissions are stored under a genbank/ subdirectory;
-    // biosample/SRA submissions are stored directly under submission_outdir.
+    // Search for batch directories in both biosample_sra and genbank submission paths
     def base_dir = "${params.outdir}/${params.submission_outdir}"
+    def biosample_sra_dir = "${base_dir}/biosample_sra"
     def genbank_dir = "${base_dir}/genbank"
-    def search_dir = file(genbank_dir).isDirectory() ? genbank_dir : base_dir
+
+    // Prefer biosample_sra for fetching accessions; fall back to genbank, then base
+    def search_dir = file(biosample_sra_dir).isDirectory() ? biosample_sra_dir :
+                     file(genbank_dir).isDirectory() ? genbank_dir : base_dir
 
     batches = Channel.fromPath(
         "${search_dir}/batch_*",
