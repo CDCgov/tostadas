@@ -946,7 +946,7 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		else:
 			metadata = self.biosample_metadata
 		# Fields to ignore when adding attributes
-		ignored_fields = {'organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2'}
+		ignored_fields = {'organism', 'country', 'state', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2'}
 		
 		# Add attributes for all non-ignored fields
 		for attr_name, attr_value in metadata.items():
