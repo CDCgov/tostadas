@@ -130,10 +130,13 @@ def main_prepare():
 		for s in samples:
 			submission_dir = os.path.join(output_root, 'genbank', s.sample_id)
 			os.makedirs(submission_dir, exist_ok=True)
+			sample_metadata_df = metadata_df[metadata_df['sample_name'] == s.sample_id]
+			if sample_metadata_df.empty:
+				sample_metadata_df = metadata_df
 			gb = GenbankSubmission(
 				parameters=params,
 				submission_config=config,
-				metadata_df=metadata_df,
+				metadata_df=sample_metadata_df,
 				outdir=submission_dir,
 				submission_mode=params['submission_mode'],
 				submission_dir=submission_dir,
