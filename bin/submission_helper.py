@@ -1142,6 +1142,9 @@ class GenbankSubmission(XMLSubmission, Submission):
 		}
 		if bioproject and str(bioproject).strip() not in ("", "nan", "Not Provided"):
 			source_data["BioProject"] = bioproject
+		biosample_accession = self.genbank_metadata.get("biosample_accession") or self.biosample_metadata.get("biosample_accession") or self.top_metadata.get("biosample_accession")
+		if biosample_accession and str(biosample_accession).strip() not in ("", "nan", "Not Provided"):
+			source_data["BioSample"] = biosample_accession
 		source_df = pd.DataFrame([source_data])
 		source_df.to_csv(os.path.join(self.outdir, "source.src"), sep="\t", index=False)
 
