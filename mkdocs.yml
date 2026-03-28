@@ -1,10 +1,10 @@
 # Project Information
-site_name: Tostadas
+site_name: TOSTADAS
 site_author: SciComp
 site_description: >-
   Tostadas
 # Repository
-repo_name: CDCgov/Tostadas
+repo_name: CDCgov/tostadas
 repo_url: https://github.com/CDCgov/tostadas/
 edit_uri: https://github.com/CDCgov/tostadas/edit/main/docs/
 
@@ -97,26 +97,26 @@ markdown_extensions:
 # Page Tree
 nav:
   - Overview: index.md
-  - General Usage:
+  - Getting Started:
     - Installation: user-guide/installation.md
-    - NCBI Database Guide: user-guide/general_NCBI_submission_guide.md
+    - NCBI Account Setup: user-guide/general_NCBI_submission_guide.md
+  - User Guide:
     - Submission Guide: user-guide/submission_guide.md
-    - Output: user-guide/outputs.md
-    - Parameters: user-guide/parameters.md
-    - Submission Details: user-guide/profile.md
     - Measles Submission: user-guide/measles_guide.md
-  - CDC Specific Usage:
+    - Wastewater Submission: user-guide/wastewater_guide.md
+    - PulseNet Submission: user-guide/pulsenet_guide.md
     - CDC User Guide: user-guide/cdc-user-guide.md
-  - Advanced Usage:
+  - Annotation:
     - Custom Metadata: user-guide/custom_metadata_guide.md
     - User Provided Annotation: user-guide/user_provided_annotation_guide.md
     - VADR Installation: user-guide/vadr_install.md
-    - Wastewater Submission: user-guide/wastewater_guide.md
-    - PulseNet Submission: user-guide/pulsenet_guide.md
+  - Reference:
+    - Parameters: user-guide/parameters.md
+    - Output: user-guide/outputs.md
+    - Glossary: user-guide/glossary.md
   - Developer Guide:
     - Developer Notes: developer_notes.md
   - Support:
-    - Get in Touch: user-guide/get-in-touch.md
     - Troubleshooting: user-guide/troubleshooting.md
-    - Glossary: user-guide/glossary.md
+    - Get in Touch: user-guide/get-in-touch.md
     - Contributions: user-guide/contributions.md

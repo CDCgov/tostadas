@@ -61,8 +61,9 @@ If `$params.annotation = true`, one of the following annotation subworkflows run
 - **LIFTOFF_CLI** -- Runs Liftoff. Inputs: FASTA, reference FASTA, reference GFF. Outputs: FASTA, .gff, errors log
 - **CONCAT_GFFS** -- Joins annotations from RepeatMasker and Liftoff. Outputs: .gff, .tbl, errors log
 
-**RUN_VADR** (when `$params.vadr = true`) -- Subworkflow with four processes. The VADR model library is specified via `$params.vadr_models_dir` and uses `$params.virus_subtype` as the `mkey` value.
+**RUN_VADR** (when `$params.vadr = true`) -- Subworkflow with five processes. The VADR model library is specified via `$params.vadr_models_dir` and uses `$params.virus_subtype` as the `mkey` value.
 
+- **VADR_MODEL_SETUP** -- Prepares the VADR model directory. Downloads the covariance model file if `vadr_cm_url` is set and the model is missing or is a Git LFS pointer. Builds Infernal indices if needed.
 - **VADR_TRIM** -- Runs `fasta-trim-terminal-ambigs.pl`. Outputs: trimmed FASTA
 - **VADR_ANNOTATION** -- Annotates the FASTA using the specified model library. Outputs: VADR output directory (`<sample_id>_<virus_subtype>`)
 - **VADR_POST_CLEANUP** -- Final cleanup of annotations. Outputs: .gff, .tbl, errors log
@@ -147,4 +148,4 @@ To add support for a new organism, follow this checklist:
 - VADR model directory vs. virus subtype validation has been added as a pre-flight check, but additional robustness may be needed.
 - In `update_submission`, the metadata file is referenced from its work directory rather than being staged as a proper Nextflow input. This should be refactored.
 - The `update_submission` workflow only supports BioSample updates. The `enabled` list in `REBATCH_METADATA` is hardcoded to `["biosample"]`. Extending to SRA or GenBank updates requires changes to both `REBATCH_METADATA` and `UPDATE_SUBMISSION`.
-- In `submission_helper.py`, some GenBank validation values (around line 963) are hard-coded and should be made configurable. BioSample/SRA XML generation differs from GenBank XML generation (see `submission_prep.py`). The locus tag prefix issue (line ~1222) has been resolved with a logged warning.
+- In `submission_helper.py`, some GenBank validation values (in the GenBank validation constants) are hard-coded and should be made configurable. BioSample/SRA XML generation differs from GenBank XML generation (see `submission_prep.py`). The locus tag prefix issue (in the locus tag handling section) has been resolved with a logged warning.

@@ -20,37 +20,70 @@ The workflow will generate outputs in the following order:
 
 The outputs are recorded in the directory specified within the nextflow.config file and will contain the following:
 
-- `validation/` (name configurable with `--validation_outdir`)
-    - `errors`
-    - `fasta`
-    - `tsv_per_sample`
-    - `batch_summary.json` (records batch composition for reproducible re-submissions)
-- `annotation/liftoff/` (name configurable with `--annotation_outdir`)
-    - `errors`
-    - `fasta`
-    - `liftoff`
-    - `tbl`
-- `annotation/vadr/` (name configurable with `--annotation_outdir`)
-    - `errors`
-    - `fasta`
-    - `gffs`
-    - `tbl`
-    - `batch_pass_fail.tsv` (per-sample pass/fail summary from VADR)
-    - `batch_alerts.tsv` (per-sample alert details from VADR)
-- `annotation/bakta/` (name configurable with `--annotation_outdir`)
-    - `fasta`
-    - `gff`
-    - `tbl`
-- `submission/` (name and path configurable with `--submission_outdir`)
-    - `batch_N`
-        - `biosample`
-        - `sra`
-        - `genbank/` -- submission files (.sqn, .zip, submission.xml)
-        - `log_file`
-        - `batch_summary.json`
-- `accessions/` (name and path configurable with `--accessions_outdir`)
-    - `updated_metadata_Excel_file`
-    - `submission_report_file`
+```
+<outdir>/
+├── validation/
+│   ├── batched_tsvs/
+│   │   ├── batch_1.tsv ... batch_N.tsv
+│   │   └── batch_summary.json
+│   ├── error.txt
+│   ├── genbank/
+│   │   └── <sample>_cleaned.fsa
+│   └── validated_metadata_all_samples.tsv
+├── annotation/
+│   └── vadr/  (or bakta/ or liftoff/)
+│       ├── <sample>/
+│       │   ├── gffs/
+│       │   ├── tbl/
+│       │   └── errors/
+│       ├── batch_pass_fail.tsv
+│       └── batch_alerts.tsv
+├── submission/
+│   ├── biosample_sra/
+│   │   └── batch_N/
+│   │       ├── biosample/
+│   │       │   ├── submission.xml
+│   │       │   └── submit.ready
+│   │       ├── sra/ (if SRA data submitted)
+│   │       ├── prep_submission.log
+│   │       └── submission.log
+│   └── genbank/
+│       ├── batch_N/
+│       │   └── genbank/
+│       │       └── <sample>/
+│       │           ├── <sample>.sqn
+│       │           ├── <sample>.zip
+│       │           ├── <sample>.tbl
+│       │           └── sequence.fsa
+│       ├── all_pass_sqn/
+│       │   └── *.sqn (VADR-passing samples)
+│       ├── all_fail_sqn/
+│       │   └── *.sqn (VADR-failing samples)
+│       ├── submission_qc_report.tsv
+│       ├── prep_submission.log
+│       └── submission.log
+└── accessions/
+    ├── batch_N/
+    │   └── biosample/
+    │       └── report.xml
+    ├── submission_report.csv
+    └── <metadata_name>_updated.xlsx
+```
+
+### QC Report and SQN Sorting
+
+When VADR annotation is enabled, the `QC_REPORT` process sorts SQN files by annotation status and produces a summary report under `submission/genbank/`:
+
+- **`all_pass_sqn/`** contains SQN files for samples that passed VADR annotation with no fatal alerts. These samples are ready for GenBank submission.
+- **`all_fail_sqn/`** contains SQN files for samples that triggered VADR alerts such as frameshifts, premature stop codons, or low-similarity regions. These samples were not submitted automatically.
+- **`submission_qc_report.tsv`** lists each sample alongside its VADR status (PASS or FAIL), providing a single file for reviewing annotation outcomes across the entire run.
+
+!!! warning
+    Samples in `all_fail_sqn/` should be reviewed before submitting to NCBI. Common causes of failure include sequencing errors, low-quality regions, and genuine biological mutations (e.g., frameshifts). Some failures may be resolvable by trimming or correcting the input sequence.
+
+### BioSample Accession Embedding in SQN Files
+
+In `full_submission` mode, the SQN file's DBLink section contains both the BioProject accession and the BioSample accession (SAMN number). This happens automatically because the pipeline merges accessions retrieved from NCBI into the metadata before the GenBank prep step. As a result, the generated SQN files already contain the correct BioSample linkage without manual intervention.
 
 ## Understanding Pipeline Outputs
 
@@ -92,7 +125,7 @@ The pipeline outputs include:
 | File | Description |
 |------|-------------|
 | `accessions/submission_report.csv` | Parsed NCBI accession report. Contains the submission status and assigned accession numbers (BioSample, SRA, GenBank) for each sample, extracted from NCBI report XML files. |
-| `accessions/merged_metadata.tsv` | Original input metadata augmented with accession IDs retrieved from NCBI. This file combines the validated metadata with BioSample accessions, SRA accessions, and any GenBank accessions available at the time of report retrieval. Use this file as input for downstream workflows (e.g., the `genbank` workflow requires `biosample_accession` values). |
+| `accessions/<metadata_name>_updated.xlsx` | Original input metadata augmented with accession IDs retrieved from NCBI. The filename is based on the input metadata file name. This file combines the validated metadata with BioSample accessions, SRA accessions, and any GenBank accessions available at the time of report retrieval. Use this file as input for downstream workflows (e.g., the `genbank` workflow requires `biosample_accession` values). |
 
 ## Interpreting VADR Results
 

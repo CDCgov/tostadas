@@ -42,6 +42,18 @@
 
 ## Tools
 
+**Bakta**
+:   A tool for rapid annotation of bacterial genomes and plasmids. Produces GFF3, GenBank flat file, and other annotation formats.
+
+**Liftoff**
+:   A tool that maps annotations from a reference genome to a target genome. Used with RepeatMasker for poxvirus annotation.
+
+**Nextflow**
+:   A workflow management system used to build and run the TOSTADAS pipeline. Handles job scheduling, containerization, and pipeline orchestration.
+
+**RepeatMasker**
+:   A tool for identifying and annotating repetitive elements in genomic sequences. Used in the Liftoff annotation pathway for poxvirus genomes.
+
 **table2asn**
 :   An NCBI command-line tool that converts a FASTA file, feature table, and source modifiers into an ASN.1 Sequin file (.sqn) for GenBank submission. It validates the input data and reports errors in the generated output.
 
@@ -59,5 +71,11 @@
 **batch_size**
 :   The number of samples grouped into a single submission package. Controlled with `--batch_size`. NCBI recommends batch submissions over individual sample submissions. A batch size of 25--50 is typical.
 
+**BioSample package**
+:   A predefined set of metadata attributes required by NCBI for a specific sample type (e.g., Pathogen.cl.1.0 for clinical pathogens, SARS-CoV-2.wwsurv.1.0 for wastewater surveillance).
+
 **center account**
 :   An organizational account registered with NCBI for programmatic submissions via FTP/SFTP. Unlike personal NCBI accounts, center accounts are tied to an institution and are required for automated submission workflows. Credentials are configured in `submission_config.yaml`.
+
+**WGS (Whole Genome Shotgun)**
+:   Whole Genome Shotgun sequencing. A sequencing strategy that sequences the entire genome in fragments, which are then assembled computationally.

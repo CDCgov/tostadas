@@ -43,3 +43,15 @@ All annotation options produce a general feature format file (GFF) and NCBI feat
 ### Submission
 
 Prepares necessary submission files for BioSample, SRA, and/or GenBank depending on the provided inputs and performs optional upload to NCBI via FTP. This workflow was adapted from the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
+
+---
+
+## Getting Started
+
+To begin using TOSTADAS:
+
+1. [Install the pipeline](user-guide/installation.md)
+2. [Set up your NCBI center account](user-guide/general_NCBI_submission_guide.md)
+3. [Run your first submission](user-guide/submission_guide.md)
+
+For organism-specific guides, see [Measles](user-guide/measles_guide.md), [Wastewater (NWSS)](user-guide/wastewater_guide.md), or [PulseNet](user-guide/pulsenet_guide.md).

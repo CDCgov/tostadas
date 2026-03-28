@@ -4,6 +4,35 @@
 
 Your basic command starts like this: `nextflow run main.nf -profile <docker|singularity|conda>` but needs to be configured further. See below.
 
+## Input File Requirements
+
+!!! warning
+    The pipeline does not accept input files containing period marks (`.`) in their file names.
+
+### Running Annotation and Submission
+
+| Input files | File type | Description |
+|---|---|---|
+| fasta | .fasta | Single sample fasta sequence file(s) |
+| fastq | .fastq | Single sample fastq sequence file(s) |
+| metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
+| ref\_fasta | .fasta | Reference genome to use for the liftoff\_submission branch of the pipeline |
+| ref\_gff | .gff | Reference GFF3 file to use for the liftoff\_submission branch of the pipeline |
+| submission\_config | .yaml | Configuration file for submitting to NCBI, sample versions can be found in repo |
+
+All annotation workflows require single sample fasta input files. Input fasta files can contain multiple contigs or chromosomes, but all sequences in the file must come from the same specimen.
+
+### Running SRA Submission Only
+
+| Input files | File type | Description |
+|---|---|---|
+| fastq | .fastq | Single sample fastq sequence file(s) |
+| metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
+| submission\_config | .yaml | Configuration file for submitting to NCBI, sample versions can be found in repo |
+
+!!! note
+    This pipeline has been tested with paired-end sequence data.
+
 ## Choosing a workflow
 
 Choose how you want to run TOSTADAS using the `--workflow` parameter:
@@ -60,6 +89,11 @@ Collection dates can be provided in ISO 8601 format (YYYY-MM-DD or YYYY-MM) or i
 
 When `--fasta_dir` is set, TOSTADAS scans the specified directory for FASTA files (`.fasta`, `.fa`, `.fna`, `.fas`) and matches them to the `sample_name` column in your metadata. Matched files are used to populate `fasta_path` automatically, eliminating the need to list file paths in the metadata for large sample sets. Samples without a matching FASTA file are skipped with a warning.
 
+### BioSample and SRA SPUIDs
+
+!!! note
+    The column `ncbi-spuid` in the metadata template is used as the BioSample SPUID, and the column `ncbi-spuid-sra` is used as the SRA SPUID. These two fields need to be unique for each sample. NCBI uses SPUID as temporary linkage IDs to connect a BioSample and corresponding SRA submission.
+
 ### GenBank-only mode
 
 Use `--genbank_only` to skip BioSample/SRA-specific validation (ncbi-spuid, authors, isolation_source checks). This is useful when generating SQN files for GenBank submission without needing to register BioSamples.
@@ -98,7 +132,7 @@ When using SFTP mode, the `submission_config.yaml` must include the `NCBI_sftp_h
 
 TOSTADAS defaults to submitting to the test server even if not using the test profile, to avoid accidentally pushing data to NCBI's Production server.
 
-When testing is complete and you are ready to submit to production, add `--prod_submission` to your command line (or change `prod_submission` to `true` in `nextflow.config`).
+When testing is complete and you are ready to submit to production, add `--prod_submission true` to your command line (or change `prod_submission` to `true` in `nextflow.config`).
 
 ## Typical example workflow
 
@@ -220,10 +254,11 @@ The fields and corresponding example values can be found here: [Submission Confi
 | Street                 | Street address of the organization or company                                    | Yes (string)   |
 | City                   | City of the organization or company                                              | Yes (string)   |
 | State                  | State of the organization or company                                             | Yes (string)   |
-| Postal_Code            | Zip code of the organization or company                                          | Yes (string)   |
+| Postal_code            | Zip code of the organization or company                                          | Yes (string)   |
 | Country                | Country of the organization or company                                           | Yes (string)   |
 | Email                  | Submitter's email address                                                        | Yes (string)   |
 | Phone                  | Submitter's phone number                                                         | No (string)    |
+| Submission_Title       | Title for the NCBI submission (e.g., MeV_YYYYMMDD_consensus)                     | No (string)    |
 | Specified_Release_Date | Specify a date to release the samples to the public repository                   | No (string)    |
 | Submitter              | Leave blank                                                                      | Yes (blank)    |
 | '@email'               | Submitter's email address                                                        | Yes (string)   |
@@ -240,7 +275,7 @@ The table below summarizes the built-in organism profiles, their annotation tool
 |---------|--------------|-----------------|----------------|----------------|
 | `mpox` | virus | RepeatMasker + Liftoff | Email (SQN zip) | `virus_subtype = 'mpxv'`, `repeatmasker_liftoff = true` |
 | `rsv` | virus | VADR | Email (SQN zip) | `virus_subtype = 'rsv'`, `mol_type = 'viral cRNA'`, `vadr_opts = '-r --xnocomp'` |
-| `measles` | virus | VADR | Email (SQN zip) | `virus_subtype = 'mev'`, `mol_type = 'viral cRNA'`, `strip_pub_block = true`, `date_format_flag = 'n'` |
+| `measles` | virus | VADR | Email (SQN zip) | `virus_subtype = 'mev'`, `mol_type = 'viral cRNA'`, `vadr_opts = '-r --indefclass 0.01'`, `strip_pub_block = true`, `date_format_flag = 'n'` |
 | `virus` | virus | None (NCBI-side) | BankIt FTP | `annotation = false`, no `virus_subtype` set |
 | `bacteria` | bacteria | Bakta | WGS FTP | `bakta = true`, `bakta_db_type = 'light'`, `download_bakta_db = true` |
 | `nwss` | -- | None | -- (BioSample/SRA only) | `biosample_pkg = 'wastewater'`, `validate_custom_fields = true` |

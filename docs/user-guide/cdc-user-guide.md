@@ -47,6 +47,9 @@ nextflow run main.nf -profile singularity,scicomp_rosalind --workflow full_submi
 
 This profile sets appropriate executor settings, queue configurations, and resource defaults for the CDC HPC scheduler.
 
+!!! note
+    The `scicomp_rosalind` profile is defined in the external SciComp configuration file loaded via the `-c` flag, not in the TOSTADAS `nextflow.config`. The `-c /scicomp/reference-pure/nextflow/nextflow-configs/latest.scicomp.config` flag must be included for this profile to be available.
+
 ### CDC Nextflow Configuration
 
 Load the shared Nextflow configuration file maintained by the SciComp team:

@@ -80,6 +80,9 @@ Measles strain names follow the WHO convention: `MVs/State.USA/Mon.YY` (or the e
 
 The format uses forward slashes as delimiters and abbreviated month-year notation. Ensure strain names in the metadata follow this convention for consistency with GenBank records.
 
+!!! warning "Spaces in Strain Names"
+    FASTA headers must not contain spaces. table2asn truncates the sequence ID at the first space, which prevents source modifiers from being applied to the SQN file. Replace spaces with underscores in both the strain name and the FASTA header. For example, use `MVs/South_Dakota.USA/Dec.25/1276` instead of `MVs/South Dakota.USA/Dec.25/1276`. The `geo_loc_name` field should retain the space (e.g., `USA:South Dakota`) as NCBI expects it in that format.
+
 ## Running the Pipeline
 
 Measles submissions typically use the GenBank-only workflow because BioSample/SRA registration is handled separately or is not required.

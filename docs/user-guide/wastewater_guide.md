@@ -5,7 +5,7 @@
 This workflow uses Nextflow to automate submission of FASTQ read files to NCBI's SRA database. It includes three steps:
 
 - **Metadata validation** -- Check that your Excel data conforms to NCBI expectations
-- **Biosample submission** -- Submit each sample to Biosample database and return Biosample ID
+- **BioSample submission** -- Submit each sample to BioSample database and return BioSample ID
 - **SRA submission** -- Submit each FASTQ file to SRA database and return an Accession ID
 
 !!! tip
@@ -30,7 +30,7 @@ Download the Excel [template for wastewater metadata](https://github.com/CDCgov/
 
 ## Configure Submission Settings
 
-Add your center information to this [configuration file](https://github.com/CDCgov/tostadas/raw/main/conf/submission_config.yaml). Make sure for Biosample package you enter `SARS-CoV-2.wwsurv.1.0`. Rename the file as needed, but make sure you keep it in the `conf/` directory.
+Add your center information to this [configuration file](https://github.com/CDCgov/tostadas/raw/main/conf/submission_config.yaml). Make sure for BioSample package you enter `SARS-CoV-2.wwsurv.1.0`. Rename the file as needed, but make sure you keep it in the `conf/` directory.
 
 ## Test with the Test Profile
 
@@ -45,13 +45,13 @@ nextflow run main.nf -profile nwss,test,<docker|singularity|conda>
 Add a few of your actual samples to the Excel metadata sheet and submit these to the test server. NCBI provides a test server to validate the ftp connection before submitting to production.
 
 ```bash
-nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --dry_run false
+nextflow run main.nf -profile nwss,<docker|singularity|conda> --workflow biosample_and_sra --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --dry_run false
 ```
 
 ## Submit a Small Batch to Production
 
 ```bash
-nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false
+nextflow run main.nf -profile nwss,<docker|singularity|conda> --workflow biosample_and_sra --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false
 ```
 
 ## Submit All Samples to Production
@@ -59,7 +59,7 @@ nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/
 Update your metadata path to point to all of your samples for submissions:
 
 ```bash
-nextflow run main.nf -profile nwss,<docker|singularity|conda> --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false
+nextflow run main.nf -profile nwss,<docker|singularity|conda> --workflow biosample_and_sra --meta_path <path/to/metadata_file.xlsx> --submission_config <path/to/submission_config.yaml> --outdir <path/to/outdir> --prod_submission true --dry_run false
 ```
 
 ## Troubleshooting

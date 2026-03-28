@@ -82,7 +82,7 @@ The pipeline outputs appear in `results/`
 
 Create an NCBI Center Account. See [NCBI Center Account](general_NCBI_submission_guide.md#ncbi-center-account)
 
-Choose a workflow and specify your profile or (optionally, for annotation and GenBank submission) an `organism_Type` and `virus_subtype`. See: [Putting together the Nextflow command](submission_guide.md#putting-together-the-nextflow-command)
+Choose a workflow and specify your profile or (optionally, for annotation and GenBank submission) an `organism_type` and `virus_subtype`. See: [Putting together the Nextflow command](submission_guide.md#putting-together-the-nextflow-command)
 
 Refer to the [Submission Guide](submission_guide.md) for important details about parameters to specify. Pay particular attention to the following:
 

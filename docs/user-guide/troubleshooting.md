@@ -4,11 +4,17 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 ## Common Issues and Solutions
 
-### table2asn Not on PATH
+### Outdated Cached Container Image
 
 **Issue:** Nextflow is using an outdated cached image.
 
 **Solution:** Locate the image (e.g., `$HOME/.singularity/staphb-tostadas-latest.img`) and delete it. This will force Nextflow to pull the latest version.
+
+### Spaces in FASTA Headers Cause Missing Source Modifiers
+
+**Issue:** Spaces in FASTA header lines cause table2asn to truncate the sequence ID at the first space. Everything after the space is treated as a description, not part of the identifier. This prevents table2asn from matching the sequence to its corresponding row in the source modifier file (source.src), resulting in missing source modifiers (no BioProject, BioSample, country, etc.) in the SQN file.
+
+**Solution:** Ensure FASTA headers do not contain spaces. Replace any spaces with underscores in both the FASTA header and the corresponding `Sequence_ID` or `Strain` field in the metadata. The `geo_loc_name` field may retain spaces as NCBI expects them in that format (e.g., `USA:South Dakota`).
 
 ### Pipeline Hangs Indefinitely
 
