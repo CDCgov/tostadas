@@ -530,7 +530,7 @@ class MetadataParser:
 			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra']  # Main columns
+		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra', 'biosample_accession']  # Main columns
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	
@@ -996,11 +996,16 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
 		primaryid_bioproject = ET.SubElement(refid_bioproject, "PrimaryId")
 		primaryid_bioproject.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
-		# BioSample reference
+		# BioSample reference: prefer existing accession (SAMN…) when present, else fall back to SPUID
 		attribute_ref_id_biosample = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
 		refid_biosample = ET.SubElement(attribute_ref_id_biosample, "RefId")
-		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
-		spuid_biosample.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+		biosample_accession = self.top_metadata.get('biosample_accession')
+		if biosample_accession is not None and pd.notna(biosample_accession) and str(biosample_accession).strip() not in ("", "Not Provided"):
+			primaryid_biosample = ET.SubElement(refid_biosample, "PrimaryId", db="BioSample")
+			primaryid_biosample.text = self.safe_text(biosample_accession)
+		else:
+			spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
+			spuid_biosample.text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		# Identifier
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
