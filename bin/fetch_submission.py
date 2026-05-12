@@ -23,6 +23,11 @@ def get_args():
                         help="True if submitting to Test, false if submitting to Production")
     parser.add_argument("--dry_run", action="store_true",
                         help="Perform a dry run (don't fetch files).")
+    parser.add_argument("--use_llm", action="store_true", default=False,
+                        help="Use LLM (OpenAI) to interpret NCBI report errors. "
+                             "Requires OPENAI_API_KEY env var or .env file.")
+    parser.add_argument("--llm_model", type=str, default="gpt-4o-mini",
+                        help="OpenAI model to use for LLM features (default: gpt-4o-mini)")
     return parser
 
 def main_fetch():
@@ -83,7 +88,13 @@ def main_fetch():
     )
 
     # Parse and save the results
-    parse_and_save_reports(reports_fetched, params["submission_folder"], params["batch_id"])
+    parse_and_save_reports(
+        reports_fetched,
+        params["submission_folder"],
+        params["batch_id"],
+        use_llm=params.get("use_llm", False),
+        llm_model=params.get("llm_model", "gpt-4o-mini"),
+    )
     logging.info(f"Reports parsed and saved for batch: {params['batch_id']}")
 
 if __name__ == "__main__":
