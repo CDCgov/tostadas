@@ -10,6 +10,12 @@ process PREP_SUBMISSION {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
+    errorStrategy { task.attempt <= 2 ? 'retry' : 'finish' }
+    maxRetries 2
+
+    secret 'NCBI_USERNAME'
+    secret 'NCBI_PASSWORD'
+
     input:
     tuple val(meta), val(samples), val(enabledDatabases)
     path(submission_config)

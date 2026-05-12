@@ -10,6 +10,13 @@ process SUBMIT_SUBMISSION {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
+    // Retry on transient FTP/SFTP failures; Python-level retry handles per-file
+    errorStrategy { task.attempt <= 2 ? 'retry' : 'finish' }
+    maxRetries 2
+
+    secret 'NCBI_USERNAME'
+    secret 'NCBI_PASSWORD'
+
     input:
     tuple val(meta), path(submission_files)
     path(submission_config)
