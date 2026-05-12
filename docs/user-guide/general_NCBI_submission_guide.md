@@ -1,74 +1,82 @@
 # NCBI Databases Overview
 
-## Table of Contents
-- [General](#general)
-    - [What is NCBI](#what-is-ncbi)
-    - [NCBI Center Account](#ncbi-center-account)
-    - [Key NCBI Repositories TOSTADAS Supports](#key-ncbi-repositories-tostadas-supports)
-- [More Information For Each Database](#more-information-for-each-database)
+TOSTADAS submits genomic data to three NCBI public repositories: BioSample, SRA, and GenBank. This page explains what each database is and how to set up an NCBI account for automated submission.
 
-## General
+---
 
-TOSTADAS lets users submit samples to various NCBI databases with ease. For many of the databases, the pipeline leverages FTP communication to submit samples in an automated manner. TOSTADAS creates many custom log files locally for the submission process and returns valuable information / documents created at the NCBI endpoint as well. Through frequent conversations with personnel from NCBI, TOSTADAS will be continuously updated with any improvments to existing submission mechanisms and/or the implementation of completely new ones from NCBI, in order to provide the best experience for our users.
+## NCBI Center Account
 
-### What is NCBI?
+To use TOSTADAS's automated FTP submission, you need an **NCBI Center Account** — this is different from a personal NCBI login. If you're submitting on behalf of a lab, department, or public health program, one Center Account should serve your entire group.
 
-The National Center for Biotechnology Information (NCBI) is a division of the National Library of Medicine (NLM) at the National Institutes of Health (NIH). NCBI plays a crucial role in advancing bioinformatics, genomics, and computational biology. Its primary mission is to provide access to and facilitate the use of a vast array of biomedical and genomic information.
+**To create a Center Account,** email `sra@ncbi.nlm.nih.gov` with:
 
-NCBI continues to evolve, offering a wide range of tools and resources to support researchers, healthcare professionals, and the broader scientific community in accessing and utilizing biological information.
+- Suggested center abbreviation (16 characters max)
+- Center full name, URL, and mailing address
+- Phone number
+- Contact person name and email (ideally a monitored service account)
+- Whether you'll submit via FTP or Aspera
 
-### NCBI Center Account
+NCBI will create a test area and a production area for you and send connection details by email. You'll use these credentials in your `submission_config.yaml`.
 
-To submit to NCBI using TOSTADAS, you first need to establish an account with NCBI. If you're submitting on behalf of a group (e.g., a CDC branch, or a state Public Health Lab), you will want to create one account for your center to use.
-NCBI has information on how to create an account [here](https://www.nlm.nih.gov/ncbi/workshops/2023-06_organizing-biology-data/supplemental-files/NCBIAccountFlyer.pdf).  You may already have a personal NCBI account, but you should create a Center-level account.  You will need to configure the TOSTADAS submission config file with your NCBI account username and password to facilitate submissions via ftp.
+---
 
-TO create a Center Account:
-    
-    *   Contact the following e-mail for account creation: sra@ncbi.nlm.nih.gov and provide the following information:
-        *   Suggested center abbreviation (16 char max)
-        *   Center name (full), center URL & mailing address (including country and postcode)
-        *   Phone number (main phone for center or lab)
-        *   Contact person (someone likely to remain at the location for an extended time)
-        *   Contact email (ideally a service account monitored by several people)
-        *   Whether you intend to submit via FTP or command line Aspera (ascp)
-    *   Gain access to an upload directory: Following center account creation, a test area and a production area will be created. Deposit the XML file and related data files into a directory and follow the instructions SRA provides via email to indicate when files are ready to trigger the pipeline.
-    *   GISAID: GISAID support is not yet implemented but it may be added in the future.
+## Databases TOSTADAS supports
 
-### Key NCBI Repositories TOSTADAS Supports:
+### BioSample
 
-#### 1. **BioProject / BioSample:**
-   - **Description:** BioProject and BioSample are databases that organize and store information about biological projects and samples, respectively, providing context for genomic data submissions.
-   - **URL:** [BioProject](https://www.ncbi.nlm.nih.gov/bioproject/) / [BioSample](https://www.ncbi.nlm.nih.gov/biosample/)
+BioSample stores structured metadata about biological specimens. Every NCBI submission starts here — BioSample accessions (`SAMN########`) are required before you can submit to GenBank.
 
-#### 2. **SRA:**
-   - **Description:** SRA is a repository that archives and provides access to raw sequence data, including next-generation sequencing data, facilitating the exploration of genomic datasets.
-   - **URL:** [SRA](https://www.ncbi.nlm.nih.gov/sra)
+TOSTADAS handles BioSample submission via XML + FTP. The BioSample package (e.g., `Pathogen.cl.1.0`) determines which metadata fields are required.
 
-#### 3. **GenBank:**
-   - **Description:** GenBank is a DNA sequence database that collects and archives genomic data from researchers worldwide. It plays a pivotal role in the sharing and dissemination of genetic information.
-   - **URL:** [General GenBank Docs](https://www.ncbi.nlm.nih.gov/genbank/)
-   - **URL2:** [Formatting for GenBank](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table)
+- [BioSample documentation](https://www.ncbi.nlm.nih.gov/biosample/docs/)
+- [Available BioSample packages](https://www.ncbi.nlm.nih.gov/biosample/docs/packages/)
 
-## More Information For Each Database
+### SRA (Sequence Read Archive)
 
-Each database under NCBI has different functions/use-cases, and therefore each requires a unique set of files, as well as formatting/content properties for each. 
+SRA stores raw sequencing reads (FASTQ, BAM). TOSTADAS uploads your FASTQ files via FTP alongside an XML manifest.
 
-It's important to note that the specific requirements for data submission to these databases can evolve, and it's recommended to refer to the latest guidelines provided by the National Center for Biotechnology Information (NCBI) or the respective databases for the most up-to-date information.
+Both Illumina and Nanopore data are supported. Mixed sequencing types are split into separate submission XMLs automatically.
 
+- [SRA documentation](https://www.ncbi.nlm.nih.gov/sra/docs/)
 
-| **Database**                      | **Minimum Required Files**                                       | **Optional Files**                                              | **Required Metadata Fields**                                      | **Optional Metadata Fields**                            | **Current Submission Mechanisms**                                           |
-|--------------------------------|--------------------------------------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------|----------------------------------------------------|------------------------------------------------------------------------|
-| **SRA (Sequence Read Archive)** | Raw sequence data files (e.g., FASTQ, BAM), XML metadata file                   | Quality control reports, Experimental design details                                      | Sample name, Organism                                                    | Yes (Strain, Sex, Developmental Stage, etc.)                 | Web-based submission portal, Command-line tools (e.g., `SRA Toolkit`), FTP |
-| **GenBank**                     | Nucleotide or protein sequence file (FASTA format), Annotation file (GenBank format as a .tbl or .gff)           | Sequencing trace files, Supplementary data files                                         | Organism, Locus tag                                                        | Yes (Strain, Taxonomy ID, etc.)                               | BankIt submission tool, Sequin interactive submission tool, table2asn via FTP or email |
-| **BioSample**                   | XML metadata file                                             | Additional sample attributes file                             | Sample name, Organism                                                     | Yes (Strain, Sex, etc.)                                       | Web-based submission portal, Submission through BioProject or other NCBI databases |
-| **Joint BioSample/SRA**         | Raw sequence data files (e.g., FASTQ, BAM), XML metadata file (BioSample and SRA metadata combined)                   | Quality control reports, Experimental design details                                    | Sample name, Organism                                                    | Yes (Strain, Sex, Developmental Stage, etc.)                  | Web-based submission portal, Command-line tools (e.g., `SRA Toolkit`), FTP   
+### GenBank
 
+GenBank stores assembled genome sequences with annotation. GenBank submission requires:
+1. A BioSample accession (from a prior BioSample submission)
+2. Annotated sequence files (FASTA + GFF/TBL, produced by TOSTADAS's annotation step)
 
+TOSTADAS uses `table2asn` to produce ASN.1 submission files and uploads them via FTP (bacteria/eukaryotes) or email (viruses).
 
+- [GenBank documentation](https://www.ncbi.nlm.nih.gov/genbank/)
+- [GenBank submission formatting](https://www.ncbi.nlm.nih.gov/books/NBK566986/)
 
+---
 
+## Submission mechanics
 
+| Database | Submission method | File format |
+|---|---|---|
+| BioSample | FTP | XML |
+| SRA | FTP | XML + FASTQ |
+| GenBank (bacteria/eukaryote) | FTP | ASN.1 (`.sqn`) from table2asn |
+| GenBank (virus) | Email | ASN.1 (`.sqn`) from table2asn |
 
+TOSTADAS deposits files into your NCBI submission directory, then polls for `report.xml` to retrieve accession IDs. The `--submission_wait_time` parameter (default: `calc` = 30s × batch_size) controls how long to wait before polling.
 
+---
 
+## SPUID — the key identifier
 
+NCBI uses **SPUIDs** (Submitter Provided Unique Identifiers) to link records across databases. Your metadata file has two SPUID columns:
+- `ncbi-spuid` — links BioSample records
+- `ncbi-spuid-sra` — links SRA records to the corresponding BioSample
+
+These must be unique per sample and consistent across submission and update runs. TOSTADAS uses them (not `sample_name`) when matching records for `update_submission`.
+
+---
+
+## BioProject
+
+Before submitting samples, create a BioProject at [submit.ncbi.nlm.nih.gov](https://submit.ncbi.nlm.nih.gov/subs/bioproject/) to organize your submissions. Link related BioProjects to umbrella projects where applicable (e.g., NWSS wastewater: `PRJNA747181`).
+
+Add your BioProject accession to your metadata file in the `bioproject_accession` column.

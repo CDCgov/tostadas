@@ -1,65 +1,67 @@
-# TOSTADAS &#8594; <span style="color:blue"><u>**T**</u></span>oolkit for <span style="color:blue"><u>**O**</u></span>pen <span style="color:blue"><u>**S**</u></span>equence <span style="color:blue"><u>**T**</u></span>riage, <span style="color:blue"><u>**A**</u></span>nnotation and <span style="color:blue"><u>**DA**</u></span>tabase <span style="color:blue"><u>**S**</u></span>ubmission :dna: :computer:
+# TOSTADAS — Toolkit for Open Sequence Triage, Annotation and DAta Submission
 
-## PATHOGEN ANNOTATION AND SUBMISSION PIPELINE
-  
-A portable, open-source pipeline designed to streamline submission of pathogen genomic data to public repositories.  Reducing barriers to timely data submission increases the value of public repositories for both public health decision making and scientific research. TOSTADAS facilitates routine sequence submission by standardizing and automating: 
+A portable, open-source Nextflow pipeline that automates pathogen genomic data submission to NCBI public repositories. TOSTADAS reduces the barrier to timely data sharing by handling the error-prone steps of metadata validation, genome annotation, and file submission in a single reproducible workflow.
 
-+ Metadata Validation   
-+ Genome Annotation    
-+ File submission    
+## What TOSTADAS Does
 
-TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both. The current release has been tested with sequence data from Poxviruses and select bacteria. Testing for additional pathogen is planned for future releases.
+### 1 — Metadata Validation
 
-The current release is tested with sequence data from Poxviruses and select bacteria but TOSTADAS is designed to be flexible, modular, and pathogen agnostic, allowing users to customize their submission of raw read data, assembled genomes, or both.
+Reads your Excel metadata file, checks it against NCBI requirements for your chosen BioSample package, flags problems, and produces cleaned batch TSV files ready for submission. Supports custom BioSample packages and optional LLM-powered error suggestions.
 
-## Pipeline Summary
+### 2 — Genome Annotation (optional)
 
-### (1) Metadata Validation
+Annotates assembled genomes before GenBank submission using whichever tool fits your pathogen:
 
-Verifies that user-provided metadata conforms to NCBI standards and match the sequence data file(s), all of which are organized in an Excel spreadsheet ([example file](https://github.com/CDCgov/tostadas/blob/dev/assets/metadata_template.xlsx)). By default, TOSTADAS uses a set of metadata fields appropriate for most pathogen genomic data submissions, but can be configured to accommodate custom metadata fields specific to any use case. A full guide to using custom metadata fields can be found here: [Custom Metadata Guide](https://github.com/CDCgov/tostadas/blob/457242fb15973f69cb3578367317a8b5e7c619f7/docs/custom_metadata_guide.md)
+| Tool | Best for |
+|---|---|
+| RepeatMasker + Liftoff | Poxviruses (mpox, variola) |
+| VADR | Mpox, RSV |
+| Bakta | Bacteria |
 
-### (2) Gene Annotation
+You can also supply your own pre-annotated GFF/TBL files and skip this step.
 
-Optional gene calling and feature annotation of assembled genomes (FASTA) using one of the following:
+### 3 — Submission
 
-(1) RepeatMasker + Liftoff (viral)
+Packages files into NCBI-compliant submission bundles, uploads them via FTP/SFTP, waits for processing, fetches `report.xml`, and writes a final accession CSV plus an updated Excel file with accession IDs filled in.
 
-*   Optimized for variola and mpox genomes, this workflow combines [RepeatMasker](https://www.repeatmasker.org/) for annotating repeat motifs and [Liftoff](https://github.com/agshumate/Liftoff) to annotate functional regions. Execution requires a reference genome (FASTA) and feature list (GFF3) definition. Modifications likely necessary for use with other pathogens.
+Supports BioSample, SRA, and GenBank. All three can be chained with `--workflow full_submission`.
 
-(2) VADR (viral)
+---
 
-*   Annotates genomes using a set of homologous reference models. TOSTADAS comes packaged with support for [monkeypox virus](https://github.com/CDCgov/tostadas/tree/master/vadr_files/mpxv-models) and a full list of supported pathogens is available from [VADR GitHub Repository](https://github.com/ncbi/vadr).
+## Quick Start
 
-(3) Bakta (bacterial)
+```bash
+# 1. Clone
+git clone https://github.com/CDCgov/tostadas.git && cd tostadas
 
-*   Annotates bacterial genomes and plasmids using [Bakta](https://github.com/CDCgov/tostadas/tree/master#gene-annotation). Execution requires a reference database ([found here](https://zenodo.org/records/10522951)), which can be downloaded at runtime. All annotation options produce a general feature format file (GFF) and NCBI feature table (TBL) compatible with downstream NCBI submission requirements.
+# 2. Add NCBI credentials
+cp conf/submission_config.yaml conf/my_config.yaml
+# Fill in NCBI_username, NCBI_password, NCBI_Namespace, etc.
 
-### (3) Submission
+# 3. Test run (dry-run by default)
+nextflow run main.nf \
+  -profile test,mpox,singularity \
+  --workflow biosample_and_sra \
+  --submission_config conf/my_config.yaml
+```
 
-Prepare necessary submission files for BioSample, SRA, and/or GenBank depending on the provided inputs and perform optional upload to NCBI via ftp. This workflow was adapted from the [SeqSender](https://github.com/CDCgov/seqsender) public database submission pipeline.
+See the [Installation Guide](user-guide/installation.md) for full setup instructions.
 
+---
 
-## 🚀 Quick Links
+## Quick Links
 
-### ⚙️ General Usage
+### General Usage
 
-| [📖 Overview](index.md) | [1️⃣ Installation](user-guide/installation.md#environment-setup) | [2️⃣ General NCBI Guide](user-guide/general_NCBI_submission_guide.md#ncbi-center-account) | [3️⃣ Submission Guide](user-guide/submission_guide.md) | [4️⃣ Output](user-guide/outputs.md) | [5️⃣ Parameters](user-guide/parameters.md) | [6️⃣ Profiles](user-guide/profile.md) |
-| --- | --- | --- | --- | --- | --- | --- |
+| [Installation](user-guide/installation.md) | [NCBI Account Setup](user-guide/general_NCBI_submission_guide.md) | [Submission Guide](user-guide/submission_guide.md) | [Parameters](user-guide/parameters.md) | [Outputs](user-guide/outputs.md) | [Profiles](user-guide/profile.md) |
+|---|---|---|---|---|---|
 
-### 🧪 Advanced Usage
+### Advanced Usage
 
-| [1️⃣ Custom Metadata](user-guide/custom_metadata_guide.md) | [2️⃣ User Provided Annotation](user-guide/user_provided_annotation_guide.md) | [3️⃣ VADR Installation](user-guide/vadr_install.md) | [4️⃣ Wastewater Submission](user-guide/wastewater_guide.md) |
-| --- | --- | --- | --- |
+| [Custom Metadata](user-guide/custom_metadata_guide.md) | [User-Provided Annotation](user-guide/user_provided_annotation_guide.md) | [Wastewater Submission](user-guide/wastewater_guide.md) | [VADR Installation](user-guide/vadr_install.md) |
+|---|---|---|---|
 
-### 🏢 CDC-Specific Usage
+### Help
 
-| 📋 Guides |
-| --- |
-| [CDC User Guide](user-guide/cdc-user-guide.md#cdc-user-guide) |
-
-### 💡 Help & FAQ
-
-| [❓ Help](user-guide/get-in-touch.md) | [🧩 Contribute](user-guide/contributions.md) |
-| --- | --- |
-| [Get in Touch](user-guide/get-in-touch.md) | [Contributions](user-guide/contributions.md) |
-| [Troubleshooting](user-guide/troubleshooting.md) |  |
+| [Troubleshooting](user-guide/troubleshooting.md) | [Get in Touch](user-guide/get-in-touch.md) | [Contributors](user-guide/contributions.md) |
+|---|---|---|
