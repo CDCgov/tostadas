@@ -1,43 +1,88 @@
-# User Provided Annotation Guide
+# User-Provided Annotation Guide
 
-## Table of Contents
-- [Introduction](#introduction)
- - [Using Table2asn (GenBank)](#using-table2asn-genbank)
-    - [Gene Annotation Formatting](#gene-annotation-formatting)
+If you have already-annotated genomes, you can skip TOSTADAS's built-in annotation steps and provide your own GFF or TBL files directly for GenBank submission.
 
-## Introduction
+---
 
-GenBank is the database primarily associated with genome annotations. The minimum required files for GenBank include a nucleotide or protein sequence file (FASTA format) and an annotation file (GenBank format). The annotation file typically contains information about features such as genes, coding regions, and other elements in the sequence.
+## When to use this
 
-On the other hand, databases like SRA (Sequence Read Archive), BioSample, and Joint BioSample/SRA primarily deal with raw sequence data, metadata about samples, and experimental details. They do not necessarily require genome annotation files.
+- You have annotation files from a previous pipeline run or external tool
+- Your pathogen isn't supported by RepeatMasker/Liftoff, VADR, or Bakta
+- You're re-submitting previously annotated sequences
 
-General information about annotation examples can be found [here](https://www.ncbi.nlm.nih.gov/WebSub/html/annot_examples.html). This documentation provided by NCBI gives information on relevant features based on your sequence/gene type (mRNA, Prokaryote, Eukaryote, Viral, etc.), genomic elements, and types of database submissions that NCBI expects.
+---
 
-## Using Table2asn (GenBank)
+## Required files
 
-A popular method for GenBank submission is to use [table2asn](https://www.ncbi.nlm.nih.gov/genbank/table2asn/). 
+GenBank submission via `table2asn` requires three files per sample, all sharing the same basename:
 
-Table2asn is a command-line program that creates sequence records for submission to GenBank (.sqn file for every .fsa file). This tool outputs an ASN.1 (Abstract Syntax Notation 1) text file with the same basename and a .sqn suffix as well. 
+| File | Extension | Description |
+|---|---|---|
+| Sequence | `.fasta` | Assembled genome sequence |
+| Annotation | `.gff` or `.tbl` | Feature annotations |
+| Template | `.sbt` | Submitter info (TOSTADAS generates this from your submission config) |
 
-Required inputs into table2asn are the following (click the name to view required formatting/general information for each input file): 
-* [Template File](https://www.ncbi.nlm.nih.gov/genbank/table2asn/#Template) (.sbt)
-    * TOSTADAS handles the creation of this based on your metadata information and contents within your submission config file 
-* [FASTA File](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.FASTA_Formatting) (.fasta)
-* [Genome Annotation File](https://www.ncbi.nlm.nih.gov/books/NBK566986/#qkstrt_Format_Sub.Source_Modifier_Table) (.gff or .tbl)
-    * Please note that either a .gff formatted file (GenBank prokaryotic or eukaryotic genomes can use GFF3 files in a GenBank-specific format) or a .tbl formatted file can be used for your annotations
-    * Each of these annotation files need to have the same name prefix as its corresponding .fasta file (i.e. helicase.fsa and helicase.tbl) (i.e. helicase.fsa and helicase.gff)
+TOSTADAS generates the `.sbt` template automatically. You supply the `.fasta` and annotation files.
 
-### Gene Annotation Formatting 
+**Naming requirement:** The FASTA and annotation files must share the same prefix. For example:
+- `sample001.fasta` + `sample001.tbl`
+- `sample001.fasta` + `sample001.gff`
 
-In order to successfully submit samples to GenBank using table2asn, specific requirements for formatting and content must be followed. 
+---
 
-The requirements for GFF3 annotation files can be found [here](https://www.ncbi.nlm.nih.gov/genbank/genomes_gff/).
+## Annotation file formats
 
+### GFF3
 
+Use NCBI's GenBank-specific GFF3 format. Requirements:
+- `##gff-version 3` header
+- Features anchored to the sequence IDs in your FASTA
+- CDS features must have `protein_id` or `locus_tag` attributes
 
+Full GFF3 spec for GenBank: [NCBI GFF3 documentation](https://www.ncbi.nlm.nih.gov/genbank/genomes_gff/)
 
+### Feature Table (.tbl)
 
+The `.tbl` format is a flat text format used by `table2asn`. It lists coordinates and qualifiers for each feature.
 
+Feature table examples: [NCBI annotation examples](https://www.ncbi.nlm.nih.gov/WebSub/html/annot_examples.html)
 
+---
 
+## table2asn
 
+TOSTADAS uses `table2asn` internally to convert FASTA + annotation files into NCBI ASN.1 (`.sqn`) format for submission. You don't need to run it manually — TOSTADAS handles it in the GenBank submission step.
+
+If you want to test your annotation files locally before running the pipeline:
+
+```bash
+table2asn -i sample001.fasta -f sample001.tbl -t template.sbt -o sample001.sqn
+```
+
+Check the resulting `.sqn` and `.val` files for validation errors before running the full submission pipeline.
+
+---
+
+## Running with your own annotation files
+
+Set `--annotation false` to skip TOSTADAS's annotation steps and point directly to your pre-annotated files. The pipeline expects them in a flat directory:
+
+```bash
+nextflow run main.nf \
+  -profile singularity \
+  --workflow genbank \
+  --annotation false \
+  --meta_path path/to/metadata.xlsx \
+  --submission_config conf/my_config.yaml
+```
+
+Make sure the FASTA files referenced in your metadata match the annotation files in the same directory, sharing the same basename prefix.
+
+---
+
+## Additional NCBI resources
+
+- [GenBank submission overview](https://www.ncbi.nlm.nih.gov/genbank/)
+- [table2asn documentation](https://www.ncbi.nlm.nih.gov/genbank/table2asn/)
+- [Annotation examples by organism type](https://www.ncbi.nlm.nih.gov/WebSub/html/annot_examples.html)
+- [Source modifier table formatting](https://www.ncbi.nlm.nih.gov/books/NBK566986/)

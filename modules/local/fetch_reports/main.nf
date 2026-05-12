@@ -16,10 +16,15 @@ process FETCH_REPORTS {
     output:
     path("${submission_folder}/fetch_submission.log"), emit: submission_log, optional: false
     path("${submission_folder}/*.csv"), emit: submission_report, optional: true
+    path("${submission_folder}/*_llm_interpretation.txt"), emit: llm_report, optional: true
+
+    secret 'OPENAI_API_KEY'
 
     script:
     def test_flag = params.prod_submission == false ? '--test' : ''
     def dry_run_flag = params.dry_run == true ? '--dry_run' : ''
+    def use_llm = params.use_llm == true ? '--use_llm' : ''
+    def llm_model = params.use_llm == true ? "--llm_model ${params.llm_model}" : ''
 
     """
     fetch_submission.py \
@@ -29,6 +34,7 @@ process FETCH_REPORTS {
         --batch_id ${meta.batch_id} \
         --submission_mode ${params.submission_mode} \
         ${test_flag} \
-        ${dry_run_flag}
+        ${dry_run_flag} \
+        ${use_llm} ${llm_model}
     """
 }

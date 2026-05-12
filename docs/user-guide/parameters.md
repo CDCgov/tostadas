@@ -1,135 +1,156 @@
 # Parameters
 
-Default parameters are given in the nextflow.config file. This table lists the parameters that can be changed to a value, path or true/false. When changing these parameters pay attention to the required inputs and make sure that paths line-up and values are within range. To change a parameter you may change with a flag after the nextflow command or change them within your nextflow.config file.
+All parameters have defaults in `nextflow.config`. Override any of them on the command line with `--param_name value`, or set them permanently in your own config file.
 
-*   Please note the correct formatting and the default calculation of submission_wait_time at the bottom of the params table.
+---
 
 ## Input Files
 
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --ref_fasta_path | Reference Sequence file path | Yes (path as string) |
-| --meta_path | Meta-data file path for samples | Yes (path as string) |
-| --ref_gff_path | Reference gff file path for annotation | Yes (path as string) |
+| Parameter | Description | Default |
+|---|---|---|
+| `--ref_fasta_path` | Reference FASTA file | mpox NC063383 |
+| `--meta_path` | Metadata Excel file (`.xlsx`) | mpox template |
+| `--ref_gff_path` | Reference GFF for annotation | mpox NC063383 |
 
-## General Subworkflow
+---
 
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --submission | Toggle for running submission | Yes (true/false as bool) |
-| --annotation | Toggle for running annotation (only runs in genbank workflow) | Yes (true/false as bool) |
-| --dry_run | Simulate submission and print a log. | No (true/false) |
-| --workflow | Specifies the workflow to execute, allowing users to choose the appropriate processing method. | Yes (string) |
+## Workflow
 
-#### Workflow Options
+| Parameter | Description | Default |
+|---|---|---|
+| `--workflow` | Which workflow to run (see options below) | `biosample_and_sra` |
+| `--submission` | Enable/disable submission step | `true` |
+| `--annotation` | Enable/disable annotation step | `true` |
+| `--dry_run` | Prepare files but skip FTP upload | `false` |
+| `--prod_submission` | Submit to Production instead of Test | `false` |
 
-The following workflows are available for the `--workflow` parameter:
+### `--workflow` options
 
-- **biosample_and_sra**: Runs a submission to BioSample and SRA.
-- **genbank**: Runs a GenBank submission.
-- **fetch_accessions**: Fetches reports and updates the metadata file.
-- **full_submission**: Executes BioSample and SRA submissions, waits 60 seconds multiplied by `params.batch_size`, fetches reports, updates the metadata file with accession IDs, and then performs the GenBank submission.
-- **update_submission**: Executes a BioSample submission using an updated metadata Excel file.
+| Value | What it does |
+|---|---|
+| `biosample_and_sra` | Submit to BioSample and SRA |
+| `genbank` | Submit to GenBank (requires BioSample accessions) |
+| `fetch_accessions` | Pull `report.xml` and update the metadata Excel file |
+| `full_submission` | BioSample + SRA → wait → fetch accessions → GenBank |
+| `update_submission` | Re-submit BioSample with an updated metadata file |
 
-**Note**: The GenBank submission cannot complete without a BioSample accession ID.
+---
 
-## General Settings
+## Organism / Package
 
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --date_format_flag | Flag to specify the date format. Options: s (default, YYYY-MM), v (verbose, YYYY-MM-DD), o (original, unchanged) | Yes (string) |
-| --publish_dir_mode | Mode for publishing directory, e.g., 'copy' or 'move' | Yes (string) |
-| --remove_demographic_info | Flag to remove demographic info. If true, values in host_sex, host_age, race, ethnicity are set to 'Not Provided' | Yes (true/false) |
-| --batch_size | The number of samples to prepare in one submission file. | No (integer) |
-| --organism_type | Used for annotation and to choose GenBank workflow. Options: bacteria, virus, eukaryote | No (integer) |
-| --virus_subtype | Used for VADR annotation. Options: mpxv, rsv.| No (integer) |
+| Parameter | Description | Options |
+|---|---|---|
+| `--organism_type` | Organism type (controls annotation and GenBank format) | `virus`, `bacteria`, `eukaryote` |
+| `--virus_subtype` | Virus subtype (controls VADR models and repeat library) | `mpxv`, `rsv`, `variola` |
+| `--biosample_pkg` | Override BioSample package | e.g. `wastewater`, `onehealth` |
 
-## General Output
-
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --outdir | File path to submit outputs from pipeline | Yes (path as string) |
-| --overwrite_output | Toggle to overwriting output files in directory | Yes (true/false as bool) |
-| --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
-
-## Validation
-
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --validation_outdir | File path for outputs specific to validate sub-workflow | Yes (folder name as string) |
-| --validate_custom_fields | Toggle checks/transformations for custom metadata fields on/off | No (true/false as bool) |
-| --custom_fields_file | Path to the JSON file containing custom metadata fields and their information | No (path as string) |
-
-## Liftoff
-
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --final_liftoff_outdir | File path to liftoff specific sub-workflow outputs | Yes (folder name as string) |
-| --lift_print_version_exit | Print version and exit the program | Yes (true/false) |
-| --lift_print_help_exit | Print help and exit the program | Yes (true/false) |
-| --lift_parallel_processes | Number of parallel processes to use for liftoff | Yes (integer) |
-| --lift_child_feature_align_threshold | Map only if its child features align with sequence identity greater than this value | Yes (float) |
-| --lift_unmapped_features_file_name | Name of unmapped features file | Yes (path as string) |
-| --lift_copy_threshold | Minimum sequence identity in exons/CDS for which a gene is considered a copy; default is 1.0 | Yes (float) |
-| --lift_distance_scaling_factor | Distance scaling factor; default is 2.0 | Yes (float) |
-| --lift_flank | Amount of flanking sequence to align as a fraction of gene length | Yes (float between 0.0 and 1.0) |
-| --lift_overlap | Maximum fraction of overlap allowed by two features | Yes (float between 0.0 and 1.0) |
-| --lift_mismatch | Mismatch penalty in exons when finding best mapping; default is 2 | Yes (integer) |
-| --lift_gap_open | Gap open penalty in exons when finding best mapping; default is 2 | Yes (integer) |
-| --lift_gap_extend | Gap extend penalty in exons when finding best mapping; default is 1 | Yes (integer) |
-| --lift_minimap_path | Path to minimap if you did not use conda or pip | Yes (N/A or path as string) |
-| --lift_feature_database_name | Name of the feature database, if none, will use ref gff path to construct one | Yes (N/A or name as string) |
-| --lift_feature_types | Path to the file containing feature types | Yes (path as string) |
-| --lift_coverage_threshold | Minimum coverage threshold for feature mapping | Yes (float) |
-| --repeatmasker_liftoff | Flag to enable or disable RepeatMasker and Liftoff steps | Yes (true/false) |
-
-## VADR
-
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --vadr | Toggle for running VADR annotation | Yes (true/false as bool) |
-| --vadr_outdir | File path to vadr specific sub-workflow outputs | Yes (folder name as string) |
-| --vadr_models_dir | File path to models for MPXV used by VADR annotation | Yes (folder name as string) |
-
-## BAKTA
-
-Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `--bakta_`. For more details, visit the [Bakta GitHub page](https://github.com/oschwengers/bakta).
-
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --bakta | Toggle for running Bakta annotation | Yes (true/false as bool) |
-| --bakta_db_path | Path to Bakta database if user is supplying database | No (path to database) |
-| --download_bakta_db | Option to download Bakta database | Yes (true/false) |
-| --bakta_db_type | Bakta database type (light or full) | Yes (string) |
-| --bakta_outdir | File path to bakta specific sub-workflow outputs | Yes (folder name as string) |
-| --bakta_min_contig_length | Minimum contig size | Yes (integer) |
-| --bakta_threads | Number of threads to use while running annotation | Yes (integer) |
-| --bakta_genus | Organism genus name | Yes (N/A or name as string) |
-| --bakta_species | Organism species name | Yes (N/A or name as string) |
-| --bakta_strain | Organism strain name | Yes (N/A or name as string) |
-| --bakta_plasmid | Name of plasmid | Yes (unnamed or name as string) |
-| --bakta_locus | Locus prefix | Yes (contig or name as string) |
-| --bakta_locus_tag | Locus tag prefix | Yes (autogenerated or name as string) |
-| --bakta_translation_table | Translation table | Yes (integer) |
-| --bakta_gram | Gram type for signal peptide predictions | No ('+' '-' '?') |
-| --save_reference | Option to save the downloaded Bakta database | No (true/false) |
+---
 
 ## Submission
 
-| Param | Description | Input Required |
-| --- | --- | --- |
-| --biosample | Submit to BioSample | Yes (true/false as bool) |
-| --sra | Submit to SRA | Yes (true/false as bool) |
-| --submission_outdir | Either name or relative/absolute path for the outputs from submission | Yes (name or path as string) |
-| --final_submission_outdir | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path) |
-| --prod_submission | Whether to submit samples for test or actual production | Yes (prod or test as string) |
-| --submission_config | Configuration file for submission to public repos | Yes (path as string) |
-| --submission_wait_time | Calculated based on sample number (3 \* 60 secs \* sample_num) | integer (seconds) |
-| --send_submission_email | Toggle email notification on/off | Yes (true/false as bool) |
-| --submission_mode | Mode of submission | Yes (string) |
+| Parameter | Description | Default |
+|---|---|---|
+| `--submission_config` | Path to submission config YAML | `conf/submission_config.yaml` |
+| `--submission_mode` | Upload protocol | `ftp` (`sftp` also supported) |
+| `--biosample` | Submit to BioSample | `true` |
+| `--sra` | Submit to SRA | `true` |
+| `--batch_size` | Samples per submission batch | `5` |
+| `--submission_wait_time` | Seconds to wait before fetching reports (`calc` = 30s × batch_size) | `calc` |
+| `--submission_outdir` | Directory for raw submission outputs | `submission_outputs` |
+| `--final_submission_outdir` | Directory for reports and updated Excel | `final_submission_outputs` |
+| `--original_submission_outdir` | Path to original submission outputs (for `update_submission` workflow) | `""` |
+| `--send_submission_email` | Send email notification when GenBank submission completes | `false` |
 
-## Update Submission
-| --original_submission_outdir | Either name or relative/absolute path for the outputs from original submission (the one being updated) | Yes (name or path as string) |
+> **Tip:** We strongly recommend `--batch_size 50` or less for large datasets. NCBI prefers batched submissions over hundreds of individual files.
 
-❗ Important note about `send_submission_email`: An email is only triggered if Genbank is being submitted to AND `table2asn` is the `genbank_submission_type`. As for the recipient, this must be specified within your submission config file under 'general' as `notif_email_recipient`.
+---
 
+## Validation
+
+| Parameter | Description | Default |
+|---|---|---|
+| `--validation_outdir` | Output directory for validation results | `validation_outputs` |
+| `--date_format_flag` | Date output format: `s` (YYYY-MM), `v` (YYYY-MM-DD), `o` (unchanged) | `s` |
+| `--remove_demographic_info` | Replace host_sex, host_age, race, ethnicity with "Not Provided" | `false` |
+| `--validate_custom_fields` | Enable validation of custom metadata fields | `false` |
+| `--custom_fields_file` | Path to custom fields JSON | example JSON in `assets/` |
+
+---
+
+## LLM Features
+
+| Parameter | Description | Default |
+|---|---|---|
+| `--use_llm` | Enable OpenAI-powered validation hints and report interpretation | `false` |
+| `--llm_model` | OpenAI model to use | `gpt-4o-mini` |
+
+When `--use_llm true` is set, the pipeline:
+- Reads validation errors and writes plain-English fix suggestions to `error_llm_suggestions.txt`
+- Interprets NCBI `report.xml` results and writes a summary to `<batch_id>_llm_interpretation.txt`
+
+The API key is read from (in order): Nextflow Secret `OPENAI_API_KEY`, `.env` file, environment variable `OPENAI_API_KEY`.
+
+When `--use_llm false` (default), no OpenAI calls are made and behavior is identical to the pre-LLM version.
+
+---
+
+## Annotation
+
+### General
+
+| Parameter | Description | Default |
+|---|---|---|
+| `--repeatmasker_liftoff` | Use RepeatMasker + Liftoff (poxviruses) | `true` |
+| `--vadr` | Use VADR annotation | `false` |
+| `--bakta` | Use Bakta annotation (bacteria) | `false` |
+| `--final_liftoff_outdir` | Output directory for Liftoff results | `repeatmasker_liftoff_outputs` |
+| `--vadr_outdir` | Output directory for VADR results | `vadr_clean_outputs` |
+| `--bakta_outdir` | Output directory for Bakta results | `bakta_outputs` |
+
+### Liftoff tuning
+
+| Parameter | Description | Default |
+|---|---|---|
+| `--lift_parallel_processes` | Parallel processes | `8` |
+| `--lift_coverage_threshold` | Min coverage for feature mapping | `0.5` |
+| `--lift_child_feature_align_threshold` | Min identity for child features | `0.5` |
+| `--lift_copy_threshold` | Min identity to call a gene a copy | `1.0` |
+| `--lift_distance_scaling_factor` | Distance scaling factor | `2.0` |
+| `--lift_flank` | Flanking fraction of gene length | `0.0` |
+| `--lift_overlap` | Max overlap fraction | `0.1` |
+| `--lift_mismatch` | Mismatch penalty | `2` |
+| `--lift_gap_open` | Gap open penalty | `2` |
+| `--lift_gap_extend` | Gap extend penalty | `1` |
+| `--lift_unmapped_features_file_name` | Unmapped features output filename | `output.unmapped_features.txt` |
+| `--lift_feature_types` | Path to feature types file | `assets/feature_types.txt` |
+| `--lift_minimap_path` | Path to minimap2 binary (if not on PATH) | `N/A` |
+| `--lift_feature_database_name` | Feature database name (built from GFF if not set) | `N/A` |
+
+### Bakta
+
+All Bakta parameters use the `--bakta_` prefix. See [Bakta docs](https://github.com/oschwengers/bakta) for full details.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `--bakta_db_type` | Database size | `light` |
+| `--bakta_db_path` | Path to existing Bakta database | `""` |
+| `--download_bakta_db` | Download Bakta database at runtime | `""` |
+| `--bakta_min_contig_length` | Minimum contig length | `5` |
+| `--bakta_threads` | CPU threads | `2` |
+| `--bakta_gram` | Gram type for signal peptide prediction | `?` |
+| `--bakta_genus` | Genus name | `N/A` |
+| `--bakta_species` | Species name | `N/A` |
+| `--bakta_strain` | Strain name | `N/A` |
+| `--bakta_translation_table` | Translation table number | `11` |
+| `--bakta_compliant` | Force INSDC-compliant output | `true` |
+
+---
+
+## General / Output
+
+| Parameter | Description | Default |
+|---|---|---|
+| `--outdir` | Top-level output directory | `results` |
+| `--publish_dir_mode` | How Nextflow copies outputs (`copy`, `move`, `link`) | `copy` |
+| `--overwrite_output` | Overwrite existing outputs | `true` |
+| `--save_reference` | Save the downloaded reference/database | `false` |

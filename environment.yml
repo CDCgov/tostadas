@@ -39,3 +39,6 @@ dependencies:
   - xz=5.2.5=h516909a_1
   - yaml=0.2.5=h7f98852_2
   - xmltodict=0.13.0=pyhd8ed1ab_0
+  - pip:
+    - openai>=1.0
+    - python-dotenv>=1.0
