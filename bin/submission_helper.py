@@ -864,7 +864,8 @@ class XMLSubmission(ABC):
 		# Call subclass-specific methods to add the unique parts (guard the calls because GenbankSubmission doesn't use them)
 		if hasattr(self, "add_action_block") and hasattr(self, "add_attributes_block"):
 			anchor_element = self.add_action_block(self.submission_root)
-			self.add_attributes_block(anchor_element)
+			if anchor_element is not None:
+				self.add_attributes_block(anchor_element)
 		else:
 			logging.debug(f"{type(self).__name__} does not implement action/attributes block additions.")
 
@@ -898,6 +899,10 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		os.makedirs(self.outdir, exist_ok=True)
 
 	def add_action_block(self, submission):
+		existing_samn = self.top_metadata.get('biosample_accession')
+		if existing_samn is not None and pd.notna(existing_samn) and str(existing_samn).strip() not in ("", "Not Provided"):
+			logging.info(f"Skipping BioSample creation for sample with existing accession {existing_samn}")
+			return None
 		action = ET.SubElement(submission, 'Action')
 		add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
 		data = ET.SubElement(add_data, 'Data', {'content_type': 'xml'})
