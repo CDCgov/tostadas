@@ -530,7 +530,8 @@ class MetadataParser:
 			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra', 'biosample_accession']  # Main columns
+		columns = ['sequence_name', 'title', 'description', 'design_description', 'hold_until_publish_date',
+				   'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra', 'biosample_accession']
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	
@@ -990,6 +991,11 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		for attr_name, attr_value in self.sra_metadata.items():
 			attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
 			attribute.text = self.safe_text(attr_value)
+		for top_attr in ('title', 'design_description', 'hold_until_publish_date'):
+			v = self.top_metadata.get(top_attr)
+			if v is not None and pd.notna(v) and str(v).strip() not in ('', 'Not Provided'):
+				attribute = ET.SubElement(add_files, 'Attribute', {'name': top_attr})
+				attribute.text = self.safe_text(v)
 		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		# BioProject reference
 		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
