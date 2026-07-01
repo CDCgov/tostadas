@@ -21,6 +21,7 @@ Email: test@cdc.gov
 Phone: ""
 Specified_Release_Date: ""
 Submission_Title: ""
+Submission_Comment: ""
 Submitter:
   '@email': test9@cdc.gov
   '@alt_email': test@cdc.gov

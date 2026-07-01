@@ -881,13 +881,18 @@ class XMLSubmission(ABC):
 		self.submission_root = ET.Element('Submission')
 		# Description
 		description = ET.SubElement(self.submission_root, 'Description')
+		submission_title = str(self.submission_config.get('Submission_Title') or '').strip()
+		submission_comment = str(self.submission_config.get('Submission_Comment') or '').strip()
+		if submission_title:
+			title = ET.SubElement(description, 'Title')
+			title.text = submission_title
 		if "Specified_Release_Date" in self.submission_config:
 			release_date_value = self.submission_config["Specified_Release_Date"]
 			if release_date_value and release_date_value != "Not Provided":
 				release_date = ET.SubElement(description, "Hold")
 				release_date.set("release_date", release_date_value)
 		comment = ET.SubElement(description, 'Comment')
-		comment.text = "Batch submission"  # Or use description from the batch
+		comment.text = submission_comment or submission_title or "Batch submission"
 		# Organization
 		organization_attributes = {
 			'role': self.submission_config['Role'],
@@ -1196,7 +1201,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
-		seq_id = self.biosample_metadata.get("strain") or self.sample.sample_id
+		seq_id = self.sample.sample_id or self.biosample_metadata.get("strain")
 
 		# Fall back to country + state when geo_loc_name is absent
 		country = self.biosample_metadata.get("geo_loc_name")
