@@ -116,8 +116,9 @@ workflow GENBANK {
                 RUN_VADR(annotation_input_ch.map { meta, fasta, _gff -> [meta, fasta] })
                 annotation_input_ch = annotation_input_ch
                     .map { meta, fasta, _gff -> [meta.sample_id, meta, fasta] }
-                    .join(RUN_VADR.out.tbl.map { meta, tbl -> [meta.sample_id, tbl] })
-                    .map { _sample_id, meta, fasta, new_tbl -> [meta, fasta, new_tbl] }
+                    .join(RUN_VADR.out.tbl.map          { meta, tbl -> [meta.sample_id, tbl] })
+                    .join(RUN_VADR.out.vadr_outputs.map { meta, dir -> [meta.sample_id, dir] })
+                    .map { _sample_id, meta, fasta, new_tbl, vadr_dir -> [meta + [vadr_dir: vadr_dir], fasta, new_tbl] }
 
                 // Generate batch summary reports from VADR output
                 RUN_VADR.out.vadr_outputs.map { _meta, outputs -> outputs }.collect() | SUMMARY

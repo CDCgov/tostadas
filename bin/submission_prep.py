@@ -63,7 +63,8 @@ def main_prepare():
 			species	 = params['species'],
 			databases   = [db for db in params if params[db] and db in ['biosample','sra','genbank']],
 			fasta_file  = d.get('fasta'),
-			annotation_file = d.get('gff')
+			annotation_file = d.get('gff'),
+			vadr_dir    = d.get('vadr_dir')
 		))
 
 	# 1) Prepare BioSample XML + submit.ready

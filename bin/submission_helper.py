@@ -52,6 +52,66 @@ def get_compound_extension(filename):
 	else:
 		return ''  # No extension
 
+def _read_sqc_mdl_cov(sqc_path):
+	"""[(seq_name, mdl_cov)] from a VADR .vadr.sqc file (col 2 name, col 12 mdl cov)."""
+	rows = []
+	with open(sqc_path) as f:
+		for line in f:
+			if line.startswith('#') or not line.strip():
+				continue
+			cols = line.split()
+			if len(cols) < 12:
+				continue
+			try:
+				rows.append((cols[1], float(cols[11])))
+			except ValueError:
+				continue
+	return rows
+
+def _read_sgm_trc(sgm_path):
+	"""{seq_name: [trc, ...]} from a VADR .vadr.sgm file (col 2 name, col 17 trc)."""
+	trc = {}
+	with open(sgm_path) as f:
+		for line in f:
+			if line.startswith('#') or not line.strip():
+				continue
+			cols = line.split()
+			if len(cols) < 17:
+				continue
+			trc.setdefault(cols[1], []).append(cols[16])
+	return trc
+
+def completeness_from_vadr(vadr_dir, seq_name, threshold):
+	"""Return 'complete' iff VADR model coverage >= threshold and the sequence is not
+	truncated, else ''. Coverage is the .sqc 'mdl cov' fraction (organism-agnostic, no
+	hardcoded bp); truncated iff any .sgm 'trc' value != 'no'. A single-sequence per-sample
+	dir resolves without a name match; a multi-sequence dir matches col 2 to seq_name."""
+	if not vadr_dir or threshold is None:
+		return ""
+	sqc = sorted(glob.glob(os.path.join(vadr_dir, "*.vadr.sqc")))
+	sgm = sorted(glob.glob(os.path.join(vadr_dir, "*.vadr.sgm")))
+	if not sqc or not sgm:
+		return ""
+	cov_rows = _read_sqc_mdl_cov(sqc[0])
+	if not cov_rows:
+		return ""
+	if len(cov_rows) == 1:
+		mdl_cov = cov_rows[0][1]
+		trc_key = None
+	else:
+		match = [c for c in cov_rows if c[0] == seq_name]
+		if not match:
+			return ""
+		mdl_cov = match[0][1]
+		trc_key = seq_name
+	trc_map = _read_sgm_trc(sgm[0])
+	if trc_key is None:
+		trc_vals = [v for vals in trc_map.values() for v in vals]
+	else:
+		trc_vals = trc_map.get(trc_key, [])
+	truncated = any(v != "no" for v in trc_vals)
+	return "complete" if (mdl_cov >= threshold and not truncated) else ""
+
 def sendemail(sample_id, config_dict, mode, submission_dir, dry_run=True):
 	# Get email addresses from config
 	table2asn_email = config_dict.get("table2asn_email")
@@ -421,6 +481,10 @@ class GetParams:
 				parameters['biosample_pkg'] = 'wastewater'
 			elif parameters.get('onehealth'):
 				parameters['biosample_pkg'] = 'onehealth'
+		# completeness_min_coverage: out-of-range or null => feature off
+		cmin = parameters.get('completeness_min_coverage')
+		if cmin is not None and not (0 < cmin <= 1):
+			parameters['completeness_min_coverage'] = None
 		return parameters
 
 	@staticmethod
@@ -456,6 +520,8 @@ class GetParams:
 		parser.add_argument("--genome_representation", type=str, default="Full", help="WGS genome representation value (Full or Partial)")
 		parser.add_argument("--expected_final_version", type=str, default="Yes", help="WGS expected final version value (Yes or No)")
 		parser.add_argument("--sbt", type=str, default="", help="Path to .sbt template file (skips authorset generation)")
+		parser.add_argument("--completeness_min_coverage", type=float, default=None,
+							help="If set (0<x<=1), GenBank completeness is derived from VADR .sqc model coverage when the metadata completeness cell is blank")
 		return parser
 
 class SubmissionConfigParser:
@@ -486,7 +552,7 @@ class SubmissionConfigParser:
 		return config_dict
 
 class Sample:
-	def __init__(self, sample_id, batch_id, species, databases, fastq1=None, fastq2=None, nanopore=None, fasta_file=None, annotation_file=None):
+	def __init__(self, sample_id, batch_id, species, databases, fastq1=None, fastq2=None, nanopore=None, fasta_file=None, annotation_file=None, vadr_dir=None):
 		self.sample_id = sample_id
 		self.batch_id = batch_id
 		self.fastq1 = fastq1
@@ -496,6 +562,7 @@ class Sample:
 		self.databases = databases
 		self.fasta_file = fasta_file
 		self.annotation_file = annotation_file
+		self.vadr_dir = vadr_dir
 		# ftp_upload is true if GenBank FTP submission is supported for that species, otherwise false
 		self.ftp_upload = species in {"flu", "sars", "bacteria", "eukaryote"} # species that support FTP upload to GenBank
 	def __repr__(self):
@@ -531,7 +598,7 @@ class MetadataParser:
 			return []
 	def extract_top_metadata(self):
 		columns = ['sequence_name', 'title', 'description', 'design_description', 'hold_until_publish_date',
-				   'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra', 'biosample_accession']
+				   'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra', 'biosample_accession', 'completeness']
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	
@@ -1326,7 +1393,25 @@ class GenbankSubmission(XMLSubmission, Submission):
 			self.create_authorset_file()
 		# Copy the fasta for table2asn
 		renamed_fasta = os.path.join(self.outdir, "sequence.fsa")
-		symlink_or_copy(self.sample.fasta_file, renamed_fasta)
+		completeness = self.top_metadata.get('completeness')
+		completeness = '' if (isinstance(completeness, float) and pd.isna(completeness)) else str(completeness or '').strip()
+		# metadata override wins; otherwise derive from VADR coverage when the param is set
+		cmin = self.parameters.get('completeness_min_coverage')
+		if not completeness and cmin is not None and getattr(self.sample, 'vadr_dir', None):
+			completeness = completeness_from_vadr(self.sample.vadr_dir, self.sample.sample_id, cmin)
+		if completeness:
+			# append [completeness=<value>] to every defline; write a fresh real file so
+			# the symlink default never edits the source fasta in place
+			if os.path.islink(renamed_fasta) or os.path.exists(renamed_fasta):
+				os.remove(renamed_fasta)
+			with open(self.sample.fasta_file, 'r') as src, open(renamed_fasta, 'w') as dst:
+				for line in src:
+					if line.startswith('>'):
+						dst.write(f"{line.rstrip()} [completeness={completeness}]\n")
+					else:
+						dst.write(line)
+		else:
+			symlink_or_copy(self.sample.fasta_file, renamed_fasta)
 		# Run table2asn
 		self.run_table2asn()
 		# Post-process .sqn

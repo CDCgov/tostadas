@@ -35,6 +35,7 @@ process PREP_SUBMISSION {
     def biosample_pkg_flag = params.biosample_pkg ? "--biosample_pkg ${params.biosample_pkg}" : ''
     def strip_pub = params.strip_pub_block == true ? '--strip_pub_block' : ''
     def sbt_flag = params.sbt ? "--sbt ${params.sbt}" : ''
+    def cmin = params.completeness_min_coverage != null ? "--completeness_min_coverage ${params.completeness_min_coverage}" : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
@@ -44,7 +45,8 @@ process PREP_SUBMISSION {
             sample.get("fq2")      ? "fq2=${sample.fq2}"       : null,
             sample.get("nnp")      ? "nnp=${sample.nanopore}"  : null,
             sample.get("fasta")    ? "fasta=${sample.fasta}"   : null,
-            sample.get("gff")      ? "gff=${sample.gff}"       : null
+            sample.get("gff")      ? "gff=${sample.gff}"       : null,
+            sample.meta.get("vadr_dir") ? "vadr_dir=${sample.meta.vadr_dir}" : null
         ].findAll { it != null }
         .join(',')
         return "\"${s}\""
@@ -70,6 +72,7 @@ process PREP_SUBMISSION {
         $strip_pub \
         --genome_representation '$params.genome_representation' \
         --expected_final_version '$params.expected_final_version' \
-        $sbt_flag
+        $sbt_flag \
+        $cmin
     """
 }
