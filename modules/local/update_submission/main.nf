@@ -37,7 +37,7 @@ process UPDATE_SUBMISSION {
 
     // batch_tsv is now a Nextflow-staged path input so it resolves inside
     // the container on cloud executors; using `${meta.batch_tsv}` (a raw
-    // workDir URI string) fails with FileNotFoundError on Google Batch.
+    // workDir URI string) fails with FileNotFoundError on those executors.
     """
     submission_update.py \
         --submission_folder ${original_submissions_dir} \
