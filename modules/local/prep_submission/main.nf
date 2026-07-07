@@ -40,11 +40,20 @@ process PREP_SUBMISSION {
     // (rather than the original workDir URI stored in the samples map) is
     // what makes cloud executors work: on Google Batch the URI resolves to
     // a container-local /tostadas-work/<hash>/... path that doesn't exist.
-    def fasta_iter = fastas.iterator()
-    def gff_iter   = gffs.iterator()
-    def fq1_iter   = fq1s.iterator()
-    def fq2_iter   = fq2s.iterator()
-    def nnp_iter   = nnps.iterator()
+    //
+    // Nextflow binds `path` inputs to a Path object when it receives a
+    // single file and to a List when it receives multiple. Calling
+    // `.iterator()` on a Path iterates its NAME SEGMENTS (e.g., "fastas",
+    // then "AF266288_cleaned.fsa"), so we must coerce to a list before
+    // iterating. Empty lists (batches with no files of that type) stay as
+    // empty lists and never get iterated because the sample map doesn't
+    // declare that key.
+    def asList = { v -> (v instanceof List) ? v : (v ? [v] : []) }
+    def fasta_iter = asList(fastas).iterator()
+    def gff_iter   = asList(gffs).iterator()
+    def fq1_iter   = asList(fq1s).iterator()
+    def fq2_iter   = asList(fq2s).iterator()
+    def nnp_iter   = asList(nnps).iterator()
 
     def sample_args_list = samples.collect { sample ->
         def s = [
