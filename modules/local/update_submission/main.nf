@@ -12,10 +12,10 @@ process UPDATE_SUBMISSION {
         'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
 
     input:
-    tuple val(meta), val(samples), val(enabledDatabases)
+    tuple val(meta), val(samples), val(enabledDatabases), path(batch_tsv)
     path(original_submissions_dir)
     path(submission_config)
-    
+
     output:
     tuple val(meta), path("${meta.batch_id}_biosample_update_[0-9]*"), emit: submission_batch_folder
     path("${meta.batch_id}/update_submission.log"), emit: submission_log, optional: true
@@ -35,16 +35,19 @@ process UPDATE_SUBMISSION {
     }
     def sample_args = sample_args_list.collect { "--sample ${it}" }.join(' ')
 
+    // batch_tsv is now a Nextflow-staged path input so it resolves inside
+    // the container on cloud executors; using `${meta.batch_tsv}` (a raw
+    // workDir URI string) fails with FileNotFoundError on Google Batch.
     """
     submission_update.py \
         --submission_folder ${original_submissions_dir} \
         --submission_name ${meta.batch_id} \
         --config_file ${submission_config}  \
-        --metadata_file ${meta.batch_tsv} \
+        --metadata_file $batch_tsv \
         --identifier ${params.metadata_basename} \
         --outdir  ${meta.batch_id} \
         --submission_mode ${params.submission_mode} \
         $test_flag \
-        $dry_run 
+        $dry_run
     """
 }

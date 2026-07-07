@@ -132,14 +132,34 @@ workflow GENBANK {
                     batch_id : batch_id,
                     batch_tsv: samples[0].meta.batch_tsv
                 ]
-                def enabledDatabases = missingFasta ? [] : ['genbank'] 
-                return tuple(meta, samples, enabledDatabases)
+                def enabledDatabases = missingFasta ? [] : ['genbank']
+
+                // Emit files as separate list items so PREP_SUBMISSION can
+                // declare them as `path` inputs and Nextflow stages them
+                // into the container. Passing paths only through the
+                // `samples` map (a `val` input) leaves them as raw
+                // workDir URIs, which fail on cloud executors where the
+                // referenced /tostadas-work/<hash>/... path doesn't exist
+                // inside the task container. Lists are in the same order
+                // as `samples`, with entries omitted where a sample lacks
+                // that file; the module walks samples in the same order
+                // to zip them back together.
+                def batch_tsv_file = samples[0].meta.batch_tsv
+                def fasta_files    = samples.collect { it.fasta }.findAll { it != null }
+                def gff_files      = samples.collect { it.gff }.findAll { it != null }
+                def fq1_files      = []
+                def fq2_files      = []
+                def nnp_files      = []
+
+                return tuple(meta, samples, enabledDatabases,
+                             batch_tsv_file, fasta_files, gff_files,
+                             fq1_files, fq2_files, nnp_files)
             }
         }
-        
+
 
         // Run submission using the batch channel
-        SUBMISSION(submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
+        SUBMISSION(submission_batch_ch, // tuple(meta, samples, enabledDatabases, batch_tsv, fastas, gffs, fq1s, fq2s, nnps)
                 params.submission_config)
 
 	emit:

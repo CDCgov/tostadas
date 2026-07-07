@@ -11,7 +11,7 @@ include { SUBMIT_SUBMISSION     } from '../../modules/local/submit_submission/ma
 
 workflow SUBMISSION {
     take:
-        submission_ch         // (meta: [batch_id: ..., batch_tsv: ...], samples: [ [meta, fasta, fq1, fq2, nnp, gff], ... ]), enabledDatabases (list)
+        submission_ch         // tuple(meta, samples, enabledDatabases, batch_tsv, fastas, gffs, fq1s, fq2s, nnps) — file lists are staged into the PREP_SUBMISSION container by declaring them as `path` inputs; sample paths must not be resolved from the raw workDir URI stored in the samples map (fails on cloud executors)
         submission_config
 
     main:
