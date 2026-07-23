@@ -16,7 +16,14 @@ process PREP_SUBMISSION {
 
     output:
     tuple val(meta), path("${meta.batch_id}"), emit: submission_files
-    path("${meta.batch_id}/prep_submission.log"), emit: submission_log, optional: true
+    // Removed: path("${meta.batch_id}/prep_submission.log"), emit: submission_log, optional: true
+    // On Nextflow's Google Batch executor, `optional: true` isn't fully
+    // respected during output staging: staging attempts `mv` on the
+    // declared file even when it doesn't exist, failing the task with
+    // `mv: cannot stat '.../prep_submission.log'`. The log file (when
+    // created by submission_prep.py) is still emitted as part of the
+    // catch-all `path("${meta.batch_id}")` output above, so nothing
+    // downstream needs the separate emit.
 
     when:
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases

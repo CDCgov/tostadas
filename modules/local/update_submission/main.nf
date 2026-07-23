@@ -18,7 +18,9 @@ process UPDATE_SUBMISSION {
 
     output:
     tuple val(meta), path("${meta.batch_id}_biosample_update_[0-9]*"), emit: submission_batch_folder
-    path("${meta.batch_id}/update_submission.log"), emit: submission_log, optional: true
+    // Removed: path("${meta.batch_id}/update_submission.log"), emit: submission_log, optional: true
+    // Same rationale as prep_submission/main.nf: `optional: true` isn't
+    // fully respected during Nextflow Google Batch output staging.
 
     when:
     "sra" in enabledDatabases || "genbank" in enabledDatabases || "biosample" in enabledDatabases
