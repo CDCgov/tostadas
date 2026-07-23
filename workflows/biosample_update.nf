@@ -68,8 +68,13 @@ workflow BIOSAMPLE_UPDATE {
     rebatch_ch = REBATCH_METADATA.out.rebatch_tuple
         .map { tsv_file, json_file ->
             def parsed = new groovy.json.JsonSlurper().parseText(json_file.text)
-            parsed.meta.batch_tsv = tsv_file.toString()  // path is guaranteed to exist
-            tuple(parsed.meta, parsed.samples, parsed.enabled)
+            parsed.meta.batch_tsv = tsv_file.toString()  // retained for backward compat; UPDATE_SUBMISSION now reads the staged path instead
+            // Emit tsv_file as a separate tuple item so UPDATE_SUBMISSION
+            // can declare it as `path(batch_tsv)` and Nextflow stages it
+            // into the container. The prior `meta.batch_tsv` (a raw
+            // workDir URI string) fails on cloud executors where the
+            // referenced path doesn't exist inside the task container.
+            tuple(parsed.meta, parsed.samples, parsed.enabled, tsv_file)
         }
 
     if (params.dry_run) {

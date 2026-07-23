@@ -25,15 +25,22 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
 def setup_logging(log_file="submission.log", level=logging.INFO):
-	if not logging.getLogger().handlers:
-		logging.basicConfig(
-			level=level,
-			format="[%(levelname)s] %(message)s",
-			handlers=[
-				logging.FileHandler(log_file, mode="a"),
-				logging.StreamHandler()
-			]
-		)
+	# force=True: reconfigure the root logger even if handlers already exist.
+	# The prior guard `if not logging.getLogger().handlers` silently no-op'd
+	# inside the staphb/tostadas container where an earlier import pre-
+	# registers a handler, so FileHandler was never attached and the log
+	# file the Nextflow module declares as an output was never created,
+	# causing PREP_SUBMISSION and UPDATE_SUBMISSION to fail on cloud
+	# executors when Nextflow tried to stage the (nonexistent) log file.
+	logging.basicConfig(
+		level=level,
+		format="[%(levelname)s] %(message)s",
+		handlers=[
+			logging.FileHandler(log_file, mode="a"),
+			logging.StreamHandler()
+		],
+		force=True
+	)
 
 def symlink_or_copy(src, dst, copy=False):
 	if not os.path.exists(dst):

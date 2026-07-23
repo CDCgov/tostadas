@@ -122,11 +122,25 @@ workflow BIOSAMPLE_AND_SRA {
 					batch_tsv: sample_maps[0].meta.batch_tsv
 				]
 
-				return tuple(meta, sample_maps, enabledDatabases as List)
+				// Emit files as separate list items so PREP_SUBMISSION can
+				// declare them as `path` inputs and Nextflow stages them
+				// into the container. See genbank.nf for the full rationale
+				// (cloud executors reject the raw workDir URI strings that
+				// come out of the val-typed samples map).
+				def batch_tsv_file = sample_maps[0].meta.batch_tsv
+				def fasta_files    = []
+				def gff_files      = []
+				def fq1_files      = sample_maps.collect { it.fq1 }.findAll { it != null }
+				def fq2_files      = sample_maps.collect { it.fq2 }.findAll { it != null }
+				def nnp_files      = sample_maps.collect { it.nanopore }.findAll { it != null }
+
+				return tuple(meta, sample_maps, enabledDatabases as List,
+				             batch_tsv_file, fasta_files, gff_files,
+				             fq1_files, fq2_files, nnp_files)
 			}
 
 		SUBMISSION(
-			submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
+			submission_batch_ch, // tuple(meta, samples, enabledDatabases, batch_tsv, fastas, gffs, fq1s, fq2s, nnps)
 			params.submission_config
 		)
 	}

@@ -16,7 +16,12 @@ process SUBMIT_SUBMISSION {
 
     output:
     tuple val(meta), path("${meta.batch_id}"), emit: submission_batch_folder
-    path("${meta.batch_id}/submission.log"), emit: submission_log, optional: true
+    // Removed: path("${meta.batch_id}/submission.log"), emit: submission_log, optional: true
+    // Same rationale as prep_submission/main.nf: Nextflow's Google Batch
+    // executor doesn't fully respect `optional: true` on path outputs;
+    // staging attempts `mv` on a nonexistent file and fails the task.
+    // The log (when produced) is still captured by the catch-all
+    // `path("${meta.batch_id}")` directory output above.
 
     script:
     def test_flag = params.prod_submission == false ? '--test' : ''
