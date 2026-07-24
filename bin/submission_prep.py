@@ -45,7 +45,7 @@ def main_prepare():
 	# load config & metadata
 	config = SubmissionConfigParser(params).load_config()
 	batch_id = os.path.splitext(os.path.basename(params['metadata_file']))[0]
-	metadata_df = pd.read_csv(params['metadata_file'], sep='\t')
+	metadata_df = pd.read_csv(params['metadata_file'], sep='\t', dtype=str)
 	identifier = params['identifier']
 	submission_dir = 'Test' if params['test'] else 'Production'
 	output_root = params['outdir']
@@ -87,6 +87,8 @@ def main_prepare():
 		bs.init_xml_root()
 		for s in samples:
 			md = metadata_df[metadata_df['sample_name'] == s.sample_id]
+			if md.empty:
+				raise ValueError(f"sample_name '{s.sample_id}' not found in metadata")
 			bs.add_sample(s, md)
 		bs.finalize_xml()
 		# write submit.ready
@@ -118,6 +120,8 @@ def main_prepare():
 			sra.init_xml_root()
 			for s in samp_list:
 				md = metadata_df[metadata_df['sample_name'] == s.sample_id]
+				if md.empty:
+					raise ValueError(f"sample_name '{s.sample_id}' not found in metadata")
 				sra.add_sample(s, md, platform)  # existing signature
 			sra.finalize_xml()
 			# write submit.ready
@@ -133,7 +137,7 @@ def main_prepare():
 			os.makedirs(submission_dir, exist_ok=True)
 			sample_metadata_df = metadata_df[metadata_df['sample_name'] == s.sample_id]
 			if sample_metadata_df.empty:
-				sample_metadata_df = metadata_df
+				raise ValueError(f"sample_name '{s.sample_id}' not found in metadata")
 			gb = GenbankSubmission(
 				parameters=params,
 				submission_config=config,
