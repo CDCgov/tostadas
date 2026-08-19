@@ -1297,7 +1297,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("  cit {\n")
 			f.write("    authors {\n")
 			f.write("      names std {\n")
-			authors_list = self.safe_text(self.genbank_metadata.get("authors")).split("; ")
+			authors_raw = self.safe_text(self.top_metadata.get("authors"))
+			authors_list = [a.strip() for a in authors_raw.split(";") if a.strip()]
 			if authors_list[0] not in ["Not Provided", ""]:
 				total_names = len(authors_list)
 				for index, author in enumerate(authors_list, start=1):
