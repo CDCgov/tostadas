@@ -474,7 +474,7 @@ class ValidateChecks:
 			cleaned = ''.join([char for char in raw_name if not char.isdigit()]).strip()
 
 			# Remove unwanted tokens/characters
-			for token in ['...', 'Name:', 'author', ',', 'dtype:', ':', 'object', '\\', '/']:
+			for token in ['...', 'Name:', 'author', 'dtype:', ':', 'object', '\\', '/']:
 				cleaned = cleaned.replace(token, '')
 			parts = cleaned.split()
 
@@ -482,6 +482,8 @@ class ValidateChecks:
 			if len(parts) == 3 and len(parts[0]) > 1:
 				new_name = f"{parts[0][0]}.{parts[1][0]}. {parts[2]}"
 				return new_name if (new_name.count('.') == 2 and len(new_name.split()) == 2) else cleaned
+			# Otherwise keep the name as-is instead of returning None
+			return cleaned
 
 		# Apply to the full dataframe
 		for idx, row in self.metadata_df.iterrows():

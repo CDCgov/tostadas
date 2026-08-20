@@ -12,6 +12,7 @@ import xml.dom.minidom as minidom  # Import minidom for pretty-printing
 import math  # Required for isnan check
 import time
 import shlex
+import re
 import subprocess
 from typing import Optional, List
 import pandas as pd
@@ -1321,7 +1322,7 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("  cit {\n")
 			f.write("    authors {\n")
 			f.write("      names std {\n")
-			authors_list = self.safe_text(self.genbank_metadata.get("authors")).split("; ")
+			authors_list = re.split(r'\s*;\s*', self.safe_text(self.genbank_metadata.get("authors")).strip())
 			if authors_list[0] not in ["Not Provided", ""]:
 				total_names = len(authors_list)
 				for index, author in enumerate(authors_list, start=1):
