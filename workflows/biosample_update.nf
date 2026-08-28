@@ -1,5 +1,4 @@
 #!/usr/bin/env nextflow
-nextflow.enable.dsl=2
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -31,7 +30,7 @@ workflow BIOSAMPLE_UPDATE {
 	log.info paramsSummaryLog(workflow)
 
 	// Run metadata validation process
-	METADATA_VALIDATION ( file(params.meta_path) )
+	METADATA_VALIDATION ( file(params.meta_path), file(params.submission_config) )
 
 	// Enforce error checking before anything else continues
     CHECK_VALIDATION_ERRORS(METADATA_VALIDATION.out.errors)
@@ -39,8 +38,8 @@ workflow BIOSAMPLE_UPDATE {
     // Get status from the check
 	CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
 		if (status == "ERROR") {
-			log.info "Validation failed. Please check ${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/error.txt"
-			workflow.abort()
+			log.info "Validation failed. Please check ${params.outdir}/${params.validation_outdir}/error.txt"
+			System.exit(1)
 		}
 	}
 
@@ -56,7 +55,7 @@ workflow BIOSAMPLE_UPDATE {
     def batch_summary = file("${params.original_submission_outdir}/../${params.validation_outdir}/batched_tsvs/batch_summary.json")
     if (!batch_summary.exists()) {
         log.error "Missing batch_summary.json at: ${batch_summary}"
-        workflow.abort()
+        System.exit(1)
     }
 
     // Step 4: rebatch new metadata to match original batch groupings
@@ -65,11 +64,21 @@ workflow BIOSAMPLE_UPDATE {
         batch_summary
     )
 
+    // Carry the TSV as a proper path element so Nextflow stages it into the
+    // task work directory.  Embedding .toString() in val(meta) would store an
+    // absolute path that is unreachable on cloud executors and defeats caching.
     rebatch_ch = REBATCH_METADATA.out.rebatch_tuple
-        .map { tsv_file, json_file ->
-            def parsed = new groovy.json.JsonSlurper().parseText(json_file.text)
-            parsed.meta.batch_tsv = tsv_file.toString()  // path is guaranteed to exist
-            tuple(parsed.meta, parsed.samples, parsed.enabled)
+        .flatMap { tsv_files, json_files ->
+            // REBATCH_METADATA emits all batch TSVs and JSONs as collected lists.
+            // Pair each JSON with its matching TSV by batch_id.
+            def tsv_list = tsv_files instanceof List ? tsv_files : [tsv_files]
+            def json_list = json_files instanceof List ? json_files : [json_files]
+            json_list.collect { json_file ->
+                def parsed = new groovy.json.JsonSlurper().parseText(json_file.text)
+                def batch_id = parsed.meta.batch_id
+                def matching_tsv = tsv_list.find { it.name == "${batch_id}.tsv" }
+                tuple(parsed.meta, parsed.samples, parsed.enabled, matching_tsv)
+            }
         }
 
     if (params.dry_run) {
@@ -80,10 +89,19 @@ workflow BIOSAMPLE_UPDATE {
 
 
     // Step 5: run update-submission on each rebatch
+    // Split the 4-element tuple into the channel arguments expected by the process
+    rebatch_meta_ch = rebatch_ch.map { meta, samples, enabled, batch_tsv ->
+        tuple(meta, samples, enabled)
+    }
+    rebatch_tsv_ch = rebatch_ch.map { meta, samples, enabled, batch_tsv ->
+        batch_tsv
+    }
+
     UPDATE_SUBMISSION(
-        rebatch_ch,
+        rebatch_meta_ch,
+        rebatch_tsv_ch,
         orig_submission_dir_ch,
-        params.submission_config
+        file(params.submission_config)
     )
 
     emit:

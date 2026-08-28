@@ -124,13 +124,12 @@ class MainUtility:
     def gff2tbl(samp_name, gff_loc, tbl_output):
         """ Converts the reformatted gff file to a table
         """
-        # read in the reformatted gff file from above
         gff_input = open(f"{gff_loc}", "r")
-        # specify the output tbl file path and open it up
-        out_name = f"{tbl_output}/{samp_name}.tbl"
+        safe_name = samp_name.replace('/', '_')
+        out_name = f"{tbl_output}/{safe_name}.tbl"
         tbl = open(out_name, "w")
 
-        # write fasta header for the sample name
+        # Feature ID preserves original name (WHO strain format uses slashes)
         tbl.write('>' + 'Feature' + ' ' + samp_name + '\n')
         # iterate and skip the first two header rows
         for line in gff_input:
@@ -160,15 +159,38 @@ class MainUtility:
                     except AssertionError:
                         raise AssertionError(f"Could not replace %3B or %2C from line")
 
-                for item in anns[0:-2]:
-                    item = item.split('=')
-                    tbl.write('\t' + '\t' + '\t' + item[0] + '\t' + item[1] + '\n')
-                    
-                item = anns[-1].split('=')
-                tbl.write('\t' + '\t' + '\t' + item[0] + '\t' + item[1])
+                for ann in anns:
+                    ann = ann.strip()
+                    if not ann:
+                        continue
+                    parts = ann.split('=', 1)
+                    if len(parts) != 2:
+                        continue
+                    key, val = parts[0], parts[1].strip()
+                    # Convert GFF3 ID back to protein_id for CDS features
+                    if key == 'ID':
+                        if _type in ('CDS', 'misc_feature'):
+                            key = 'protein_id'
+                            for prefix in ('cds-', 'gene-'):
+                                if val.startswith(prefix):
+                                    val = val[len(prefix):]
+                                    break
+                        else:
+                            continue
+                    # Skip invalid qualifier names (e.g. empty or numeric keys)
+                    if not key or key[0].isdigit():
+                        continue
+                    # Skip CDS-only qualifiers on gene features
+                    if _type == 'gene' and key in ('codon_start', 'product', 'protein_id', 'transl_except', 'transl_table'):
+                        continue
+                    tbl.write('\t\t\t' + key + '\t' + val + '\n')
 
             if not line:
                 break
+def coord_int(val):
+    """Extract numeric value from a coordinate that may have partial markers (<, >)."""
+    return int(re.sub(r'[^0-9]', '', str(val)))
+
 class GFFChecks:
     def __init__(self, parameters=None):
         self.parameters = parameters
@@ -196,7 +218,7 @@ class GFFChecks:
 
     def check_repeat_regions(self, line_dict, repeat_flag, sample, repeat_region_counter, check_second_repeat, index, second_itr_index):
         if repeat_region_counter == 1:
-            if int(line_dict['coord1']) != 1 and int(line_dict['coord2']) != 1:
+            if coord_int(line_dict['coord1']) != 1 and coord_int(line_dict['coord2']) != 1:
                 if line_dict['orientation'] == '+':
                     line_dict['coord1'] = 1
                 else:
@@ -208,9 +230,9 @@ class GFFChecks:
         return line_dict, repeat_flag, second_itr_index, check_second_repeat
 
     def check_second_itr(self, samp_lines, repeat_flag, sample, second_itr_index):
-        end_coord = max(int(samp_lines[-1][1]['coord1']), int(samp_lines[-1][1]['coord2']))
+        end_coord = max(coord_int(samp_lines[-1][1]['coord1']), coord_int(samp_lines[-1][1]['coord2']))
         target_line = samp_lines[second_itr_index][1]
-        if max(int(target_line['coord1']), int(target_line['coord2'])) < end_coord:
+        if max(coord_int(target_line['coord1']), coord_int(target_line['coord2'])) < end_coord:
             if target_line['orientation'] == '+':
                 target_line['coord2'] = end_coord
             else:
@@ -235,6 +257,7 @@ class MainVADRFuncs:
         self.stop_codon_flag = {}
         self.repeat_flag = {}
         self.table_fail_errors = {}
+        self.additional_cds = {}
         self.repeat_region_counter = 0
         self.check_second_repeat = False
         self.second_itr_index = None
@@ -297,10 +320,11 @@ class MainVADRFuncs:
             # else:
             #     raise ValueError(f"Did not find a second ITR in {sample}")
 
-            # write the sample information to gff 
+            # write the sample information to gff
             self.write_to_gff(sample)
+            self.new_gff.close()
 
-            # reset the repeat region counter 
+            # reset the repeat region counter
             self.repeat_region_counter = 0
             self.check_second_repeat = False
             self.second_itr_index = None
@@ -348,11 +372,18 @@ class MainVADRFuncs:
 
         # split the line up properly 
         for line_list, i in zip(self.raw_strings, range(len(self.raw_strings))):
-            # convert the line to dictionary 
+            # convert the line to dictionary
             self.store_line_to_dict(
                 line_list=line_list
             )
-            # get the orientation 
+            # store additional CDS entries for multi-CDS genes
+            if self.current_additional_cds:
+                if sample not in self.additional_cds:
+                    self.additional_cds[sample] = []
+                self.additional_cds[sample].append(
+                    (self.line_dict.get('gene', ''), self.current_additional_cds)
+                )
+            # get the orientation
             self.get_orientation()
             # check the stop codons 
             self.get_next_line, self.line_dict = self.gff_checks.check_stop_codon(
@@ -376,21 +407,27 @@ class MainVADRFuncs:
             self.final_samp_lines.append([self.get_next_line, self.line_dict])
 
     def store_line_to_dict(self, line_list):
-        # indices_to_loop = list(filter(lambda x: x != 2, [x for x in range(1, len(line_list))]))
         self.line_dict = {}
+        self.current_additional_cds = []
+        first_cds_done = False
         for i in range(len(line_list)):
+            if first_cds_done:
+                self.current_additional_cds.append(line_list[i])
+                continue
             if i == 0:
                 self.line_dict['coord1'], self.line_dict['coord2'] = line_list[i].split('\t')[0], line_list[i].split('\t')[1]
                 self.line_dict['type'] = line_list[i].split('\t')[-1]
-            elif i == 1: 
+            elif i == 1:
                 self.line_dict['gene'] = line_list[i].split('\t')[-1]
             elif line_list[i].split('\t')[0] == 'protein_id' or line_list[i].split('\t')[0] == 'ID':
-                self.line_dict['ID'] = str(line_list[i].split('\t')[-1])
+                if 'ID' not in self.line_dict:
+                    self.line_dict['ID'] = str(line_list[i].split('\t')[-1])
+                    first_cds_done = True
             else:
-                if line_list[i].split('\t')[0] != self.line_dict['coord1'] and line_list[i].split('\t')[0] != self.line_dict['coord2']:
-                    # fix up the individual line for the sample and write it 
-                    splitted = line_list[i].split('\t')
-                    self.line_dict[splitted[0]] = splitted[1]
+                parts = line_list[i].split('\t')
+                if parts[0] != self.line_dict['coord1'] and parts[0] != self.line_dict['coord2']:
+                    if parts[0] not in self.line_dict:
+                        self.line_dict[parts[0]] = parts[1]
     def format_attributes(self, line_dict, prefix):
         """
         Create GFF attribute string from line_dict, skipping coordinates and internal fields.
@@ -431,32 +468,30 @@ class MainVADRFuncs:
                 self.new_gff.write(f"{gene_line}{gene_attrs}\n")
                 self.new_gff.write(f"{cds_line}{cds_attrs}\n")
     
+    def safe_filename(self, name):
+        """Replace characters that are invalid in filenames."""
+        return name.replace('/', '_')
+
     def get_new_gff(self, sample):
-        self.new_gff = open(f"{self.parameters['output_path']}/gffs/{sample}_reformatted.gff", 'w', encoding='utf-8')
+        safe = self.safe_filename(sample)
+        self.new_gff = open(f"{self.parameters['output_path']}/gffs/{safe}_reformatted.gff", 'w', encoding='utf-8')
     
     def get_new_error_file(self):
         self.new_error_file = open(os.path.join(self.parameters['output_path'], 'errors/annotation_error.txt'), 'w', encoding='utf-8')
     
     def get_orientation(self):
-        # strip any non numerical characters
-        self.line_dict['coord1'] = re.sub(r'[^0-9]', '', self.line_dict['coord1'])
-        self.line_dict['coord2'] = re.sub(r'[^0-9]', '', self.line_dict['coord2'])
+        # Extract numeric values for comparison, preserving partial markers (<, >)
+        num1 = int(re.sub(r'[^0-9]', '', self.line_dict['coord1']))
+        num2 = int(re.sub(r'[^0-9]', '', self.line_dict['coord2']))
+        # Strip non-numeric chars from coords but keep < and > partial markers
+        self.line_dict['coord1'] = re.sub(r'[^0-9<>]', '', self.line_dict['coord1'])
+        self.line_dict['coord2'] = re.sub(r'[^0-9<>]', '', self.line_dict['coord2'])
 
-        # get the orientation based on coordinates 
-        if int(self.line_dict['coord1']) < int(self.line_dict['coord2']):
-            # then forward (+)
+        # get the orientation based on coordinates
+        if num1 < num2:
             self.line_dict['orientation'] = '+'
-            try: 
-                assert (int(self.line_dict['coord1']) - int(self.line_dict['coord2'])) < 0 
-            except AssertionError:
-                raise AssertionError(f"Found coordinate1 < coordinate2 but this is incorrect!")
-        elif int(self.line_dict['coord1']) > int(self.line_dict['coord2']):
-            # then reversed (-)
+        elif num1 > num2:
             self.line_dict['orientation'] = '-'
-            try: 
-                assert (int(self.line_dict['coord1']) - int(self.line_dict['coord2'])) > 0 
-            except AssertionError:
-                raise AssertionError(f"Found coordinate1 > coordinate2 but this is incorrect!")
             # switch it for the sake of consistency 
             # self.line_dict['coord1'], self.line_dict['coord2'] = self.line_dict['coord2'], self.line_dict['coord1']
         else: 
@@ -505,3 +540,77 @@ class MainVADRFuncs:
     @staticmethod
     def write_line(line_dict, sample, type):
         return f"{sample}\tVADR\t{type}\t{line_dict['coord1']}\t{line_dict['coord2']}\t.\t{line_dict['orientation']}\t.\t"
+
+    def insert_additional_cds(self, tbl_path, sample):
+        """Insert additional CDS entries for multi-CDS genes into the .tbl file."""
+        if sample not in self.additional_cds:
+            return
+
+        with open(tbl_path, 'r') as f:
+            tbl_lines = f.readlines()
+
+        for gene_name, raw_lines in self.additional_cds[sample]:
+            cds_blocks = self._parse_cds_blocks(raw_lines)
+            if not cds_blocks:
+                continue
+
+            # Find insertion point: after the primary CDS's protein_id line for this gene
+            insert_idx = None
+            for idx, line in enumerate(tbl_lines):
+                stripped = line.strip()
+                if stripped == f'gene\t{gene_name}':
+                    # Look ahead for the protein_id line within the same feature block
+                    for j in range(idx + 1, min(idx + 10, len(tbl_lines))):
+                        if 'protein_id' in tbl_lines[j]:
+                            insert_idx = j + 1
+                            break
+                    if insert_idx is not None:
+                        break
+
+            if insert_idx is None:
+                continue
+
+            # Build the lines to insert
+            new_lines = []
+            for block in cds_blocks:
+                for j, (start, end) in enumerate(block['coords']):
+                    if j == 0:
+                        new_lines.append(f"{start}\t{end}\tCDS\n")
+                    else:
+                        new_lines.append(f"{start}\t{end}\n")
+                for key, val in block['qualifiers']:
+                    new_lines.append(f"\t\t\t{key}\t{val}\n")
+
+            tbl_lines[insert_idx:insert_idx] = new_lines
+
+        with open(tbl_path, 'w') as f:
+            f.writelines(tbl_lines)
+
+    @staticmethod
+    def _parse_cds_blocks(raw_lines):
+        """Parse raw stripped .tbl lines into structured CDS blocks."""
+        blocks = []
+        current_block = None
+
+        for line in raw_lines:
+            parts = line.split('\t')
+            # CDS header line (e.g. "1807\t2498\tCDS")
+            if len(parts) >= 3 and parts[-1] == 'CDS':
+                if current_block is not None:
+                    blocks.append(current_block)
+                current_block = {
+                    'coords': [(parts[0], parts[1])],
+                    'qualifiers': []
+                }
+            elif current_block is not None:
+                # Continuation coordinate line (e.g. "2498\t2705")
+                if len(parts) >= 2 and parts[0].isdigit() and parts[1].rstrip().isdigit():
+                    current_block['coords'].append((parts[0], parts[1].rstrip()))
+                # Qualifier line (e.g. "product\tV protein")
+                elif len(parts) >= 2 and not parts[0][0].isdigit():
+                    current_block['qualifiers'].append((parts[0], parts[1].rstrip()))
+
+        if current_block is not None:
+            blocks.append(current_block)
+
+        return blocks

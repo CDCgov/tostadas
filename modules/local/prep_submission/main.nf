@@ -7,11 +7,15 @@
 process PREP_SUBMISSION {
 
     conda(params.env_yml)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
+    container 'docker.io/staphb/tostadas:latest'
+
+    // Only retry on OOM/signal kills, not script errors
+    errorStrategy { task.exitStatus in [137, 139, 140, 143] ? 'retry' : 'finish' }
+    maxRetries 2
 
     input:
     tuple val(meta), val(samples), val(enabledDatabases)
+    path(batch_tsv)
     path(submission_config)
     
     output:
@@ -28,7 +32,10 @@ process PREP_SUBMISSION {
     def biosample = "biosample" in enabledDatabases ? '--biosample' : ''
     def sra = "sra" in enabledDatabases ? '--sra' : ''
     def genbank = "genbank" in enabledDatabases ? '--genbank' : ''
-    def wastewater = params.biosample_pkg == 'wastewater' ? '--wastewater' : ''
+    def biosample_pkg_flag = params.biosample_pkg ? "--biosample_pkg ${params.biosample_pkg}" : ''
+    def strip_pub = params.strip_pub_block == true ? '--strip_pub_block' : ''
+    def sbt_flag = params.sbt ? "--sbt ${params.sbt}" : ''
+    def cmin = params.completeness_min_coverage != null ? "--completeness_min_coverage ${params.completeness_min_coverage}" : ''
 
     // Assemble per-sample arguments, quoting paths in case of spaces
     def sample_args_list = samples.collect { sample ->
@@ -38,7 +45,8 @@ process PREP_SUBMISSION {
             sample.get("fq2")      ? "fq2=${sample.fq2}"       : null,
             sample.get("nnp")      ? "nnp=${sample.nanopore}"  : null,
             sample.get("fasta")    ? "fasta=${sample.fasta}"   : null,
-            sample.get("gff")      ? "gff=${sample.gff}"       : null
+            sample.get("gff")      ? "gff=${sample.gff}"       : null,
+            sample.meta.get("vadr_dir") ? "vadr_dir=${sample.meta.vadr_dir}" : null
         ].findAll { it != null }
         .join(',')
         return "\"${s}\""
@@ -49,16 +57,22 @@ process PREP_SUBMISSION {
     submission_prep.py \
         --submission_name ${meta.batch_id} \
         --config_file $submission_config  \
-        --metadata_file ${meta.batch_tsv} \
+        --metadata_file ${batch_tsv} \
         --identifier ${params.metadata_basename} \
         --species $params.organism_type \
+        --mol_type '$params.mol_type' \
         --outdir  ${meta.batch_id} \
         ${sample_args} \
         --submission_mode $params.submission_mode \
         $test_flag \
         $send_submission_email \
         $sra $biosample $genbank \
-        $wastewater \
-        $dry_run
+        $biosample_pkg_flag \
+        $dry_run \
+        $strip_pub \
+        --genome_representation '$params.genome_representation' \
+        --expected_final_version '$params.expected_final_version' \
+        $sbt_flag \
+        $cmin
     """
 }

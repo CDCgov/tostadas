@@ -1,5 +1,4 @@
 #!/usr/bin/env nextflow
-nextflow.enable.dsl=2
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,7 +32,7 @@ workflow BIOSAMPLE_AND_SRA {
 	log.info paramsSummaryLog(workflow)
 
 	// Run metadata validation process
-	METADATA_VALIDATION ( file(params.meta_path) )
+	METADATA_VALIDATION ( file(params.meta_path), file(params.submission_config) )
 
 	// Enforce error checking before anything else continues
     CHECK_VALIDATION_ERRORS(METADATA_VALIDATION.out.errors)
@@ -41,8 +40,8 @@ workflow BIOSAMPLE_AND_SRA {
     // Get status from the check
 	CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
 		if (status == "ERROR") {
-			log.info "Validation failed. Please check ${params.outdir}/${params.metadata_basename}/${params.validation_outdir}/error.txt"
-			workflow.abort()
+			log.info "Validation failed. Please check ${params.outdir}/${params.validation_outdir}/error.txt"
+			System.exit(1)
 		}
 	}
 

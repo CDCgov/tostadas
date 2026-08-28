@@ -1,0 +1,22 @@
+{
+  "version": "1.2",
+  "dbname": "DQ227319.vadr.protein.fa",
+  "dbtype": "Protein",
+  "db-version": 5,
+  "description": "/data/vadr-models-mev/mev/DQ227319.vadr.protein.fa",
+  "number-of-letters": 6970,
+  "number-of-sequences": 11,
+  "last-updated": "2025-03-28T20:54:00",
+  "number-of-volumes": 1,
+  "bytes-total": 45272,
+  "bytes-to-cache": 7222,
+  "files": [
+    "DQ227319.vadr.protein.fa.pdb",
+    "DQ227319.vadr.protein.fa.phr",
+    "DQ227319.vadr.protein.fa.pin",
+    "DQ227319.vadr.protein.fa.pot",
+    "DQ227319.vadr.protein.fa.psq",
+    "DQ227319.vadr.protein.fa.ptf",
+    "DQ227319.vadr.protein.fa.pto"
+  ]
+}

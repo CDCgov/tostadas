@@ -12,6 +12,7 @@ import xml.dom.minidom as minidom  # Import minidom for pretty-printing
 import math  # Required for isnan check
 import time
 import shlex
+import re
 import subprocess
 from typing import Optional, List
 import pandas as pd
@@ -51,6 +52,66 @@ def get_compound_extension(filename):
 		return '.' + parts[-1]             # e.g., '.gz' or '.fq'
 	else:
 		return ''  # No extension
+
+def _read_sqc_mdl_cov(sqc_path):
+	"""[(seq_name, mdl_cov)] from a VADR .vadr.sqc file (col 2 name, col 12 mdl cov)."""
+	rows = []
+	with open(sqc_path) as f:
+		for line in f:
+			if line.startswith('#') or not line.strip():
+				continue
+			cols = line.split()
+			if len(cols) < 12:
+				continue
+			try:
+				rows.append((cols[1], float(cols[11])))
+			except ValueError:
+				continue
+	return rows
+
+def _read_sgm_trc(sgm_path):
+	"""{seq_name: [trc, ...]} from a VADR .vadr.sgm file (col 2 name, col 17 trc)."""
+	trc = {}
+	with open(sgm_path) as f:
+		for line in f:
+			if line.startswith('#') or not line.strip():
+				continue
+			cols = line.split()
+			if len(cols) < 17:
+				continue
+			trc.setdefault(cols[1], []).append(cols[16])
+	return trc
+
+def completeness_from_vadr(vadr_dir, seq_name, threshold):
+	"""Return 'complete' iff VADR model coverage >= threshold and the sequence is not
+	truncated, else ''. Coverage is the .sqc 'mdl cov' fraction (organism-agnostic, no
+	hardcoded bp); truncated iff any .sgm 'trc' value != 'no'. A single-sequence per-sample
+	dir resolves without a name match; a multi-sequence dir matches col 2 to seq_name."""
+	if not vadr_dir or threshold is None:
+		return ""
+	sqc = sorted(glob.glob(os.path.join(vadr_dir, "*.vadr.sqc")))
+	sgm = sorted(glob.glob(os.path.join(vadr_dir, "*.vadr.sgm")))
+	if not sqc or not sgm:
+		return ""
+	cov_rows = _read_sqc_mdl_cov(sqc[0])
+	if not cov_rows:
+		return ""
+	if len(cov_rows) == 1:
+		mdl_cov = cov_rows[0][1]
+		trc_key = None
+	else:
+		match = [c for c in cov_rows if c[0] == seq_name]
+		if not match:
+			return ""
+		mdl_cov = match[0][1]
+		trc_key = seq_name
+	trc_map = _read_sgm_trc(sgm[0])
+	if trc_key is None:
+		trc_vals = [v for vals in trc_map.values() for v in vals]
+	else:
+		trc_vals = trc_map.get(trc_key, [])
+	truncated = any(v != "no" for v in trc_vals)
+	return "complete" if (mdl_cov >= threshold and not truncated) else ""
 
 def sendemail(sample_id, config_dict, mode, submission_dir, dry_run=True):
 	# Get email addresses from config
@@ -134,14 +195,89 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 
 	for db in databases:
 		reports_fetched[db] = []
-		if db == "genbank":
-			continue # just totally skip genbank for now
+
+		if db == 'genbank':
+			# Determine GenBank submission style from local directory structure
+			genbank_dir = os.path.join(outdir, 'genbank')
+			if not os.path.isdir(genbank_dir):
+				logging.info("No genbank/ directory found; skipping GenBank fetch.")
+				continue
+
+			top_level_xml = os.path.join(genbank_dir, 'submission.xml')
+			subdirs_with_xml = [
+				d for d in os.listdir(genbank_dir)
+				if os.path.isdir(os.path.join(genbank_dir, d))
+				and os.path.isfile(os.path.join(genbank_dir, d, 'submission.xml'))
+			]
+
+			if os.path.isfile(top_level_xml):
+				# BankIt style (sars/flu): single submission.xml at genbank/ level
+				fetch_dirs = [(genbank_dir, None)]
+			elif subdirs_with_xml:
+				# WGS style (bacteria/eukaryote): per-sample submission.xml
+				fetch_dirs = [(os.path.join(genbank_dir, sd), sd) for sd in subdirs_with_xml]
+			else:
+				# Email style (virus): no submission.xml; accessions require manual retrieval
+				logging.info("No submission.xml found in genbank/; accessions must be fetched manually.")
+				continue
+
+			for local_output_path, sample_id in fetch_dirs:
+				report_local_path = os.path.join(local_output_path, "report.xml")
+				submission = Submission(
+					parameters=parameters,
+					submission_config=config_dict,
+					outdir=local_output_path,
+					submission_mode=submission_mode,
+					submission_dir=submission_dir,
+					type=db,
+					sample=None,
+					identifier=identifier
+				)
+				# Per-sample WGS uses sample_id suffix; BankIt uses base genbank dir
+				if sample_id:
+					remote_subdir = f"{get_remote_submission_dir(identifier, batch_id, db)}_{sample_id}"
+				else:
+					remote_subdir = get_remote_submission_dir(identifier, batch_id, db)
+				remote_dir = f"submit/{submission_dir}/{remote_subdir}"
+				logging.info(f'remote dir: {remote_dir}, report local path: {report_local_path}')
+
+				try:
+					submission.client.connect()
+					submission.client.change_dir(remote_dir)
+				except Exception as e:
+					logging.warning(f"GenBank folder not found on FTP: {remote_dir}. Skipping.")
+					try:
+						submission.client.close()
+					except Exception:
+						pass
+					continue
+
+				try:
+					sample_start = time.time()
+					success = False
+					while time.time() - sample_start < timeout:
+						report_path = submission.fetch_report(remote_dir, report_local_path)
+						if report_path:
+							logging.info(f"Fetched report.xml for genbank ({sample_id or 'batch'})")
+							reports_fetched[db].append(report_path)
+							success = True
+							break
+						else:
+							logging.info(f"Retrying fetch for genbank ({sample_id or 'batch'})...")
+							time.sleep(3)
+					if not success:
+						logging.error(f"Timeout fetching report for genbank ({sample_id or 'batch'})")
+				finally:
+					submission.client.close()
+			continue
+
 		if db == 'sra':
 			base_outdir = os.path.join(outdir, db)
 			has_both_platforms = all(os.path.isdir(os.path.join(base_outdir, p)) for p in ['illumina', 'nanopore'])
 			platforms = ['illumina', 'nanopore'] if has_both_platforms else [None]
 		else:
-			platforms = [None]  # only 1 path for biosample/genbank
+			platforms = [None]
+
 		for platform in platforms:
 			if db == 'sra' and platform:
 				local_output_path = os.path.join(outdir, db, platform)
@@ -166,12 +302,8 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 				submission.client.connect()
 				submission.client.change_dir(remote_dir)
 			except Exception as e:
-				if db == "genbank":
-					logging.warning(f"GenBank folder not found on FTP: {remote_dir}. Skipping.")
-					continue  # Don't raise; just skip genbank (genbank is not always ftp)
-				else:
-					logging.error(f"Critical: Failed to access {db} folder {remote_dir}. Error: {e}")
-					raise  # For biosample/sra, still crash
+				logging.error(f"Critical: Failed to access {db} folder {remote_dir}. Error: {e}")
+				raise
 
 			success = False
 			while time.time() - start_time < timeout:
@@ -187,6 +319,25 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 			if not success:
 				logging.error(f"Timeout occurred while trying to fetch report for {db} ({platform or 'default'})")
 	return reports_fetched
+
+def is_report_complete(report_path):
+	"""Check if report.xml has reached terminal status.
+	Returns (is_complete, status_summary)."""
+	try:
+		tree = ET.parse(report_path)
+		root = tree.getroot()
+		terminal = {'processed-ok', 'processed-error', 'deleted'}
+		statuses = []
+		for action in root.iter('Action'):
+			status = action.get('status', 'unknown')
+			statuses.append(status)
+		if not statuses:
+			root_status = root.get('status', 'unknown')
+			statuses.append(root_status)
+		all_terminal = all(s in terminal for s in statuses)
+		return all_terminal, ','.join(set(statuses))
+	except Exception as e:
+		return False, f"parse_error: {e}"
 
 def parse_report_xml_to_df(report_path):
 	"""
@@ -325,6 +476,16 @@ class GetParams:
 		"""
 		args = self.get_args().parse_args()
 		parameters = vars(args)
+		# Resolve backward-compatible --wastewater / --onehealth flags into biosample_pkg
+		if parameters.get('biosample_pkg') is None:
+			if parameters.get('wastewater'):
+				parameters['biosample_pkg'] = 'wastewater'
+			elif parameters.get('onehealth'):
+				parameters['biosample_pkg'] = 'onehealth'
+		# completeness_min_coverage: out-of-range or null => feature off
+		cmin = parameters.get('completeness_min_coverage')
+		if cmin is not None and not (0 < cmin <= 1):
+			parameters['completeness_min_coverage'] = None
 		return parameters
 
 	@staticmethod
@@ -341,6 +502,8 @@ class GetParams:
 		parser.add_argument("--identifier", help="Original metadaata file prefix as unique identifier for NCBI FTP site folder name", required=True)
 		parser.add_argument("--submission_report", help="Path to submission report csv file", required=False, default="submission_report.csv")
 		parser.add_argument("--species", help="Type of organism data", required=True)
+		parser.add_argument("--mol_type", help="Molecule type for table2asn (e.g. genomic, viral cRNA)", required=False, default="genomic")
+		parser.add_argument("--strip_pub_block", help="Remove pub citation and DBLink blocks from .sqn", required=False, action="store_const", default=False, const=True)
 		parser.add_argument('--sample', action='append', help='Comma-separated sample attributes')
 		# optional parameters
 		parser.add_argument("-o", "--outdir", type=str, default='submission_outputs',
@@ -351,8 +514,15 @@ class GetParams:
 		parser.add_argument("--genbank", help="Optional flag to run Genbank submission", action="store_const", default=False, const=True)
 		parser.add_argument("--biosample", help="Optional flag to run BioSample submission", action="store_const", default=False, const=True)
 		parser.add_argument("--sra", help="Optional flag to run SRA submission", action="store_const", default=False, const=True)
-		parser.add_argument("--wastewater", action="store_true", help="Prepare submission with wastewater specific metadata")
+		parser.add_argument("--wastewater", action="store_true", help="Deprecated: use --biosample_pkg wastewater instead")
+		parser.add_argument("--onehealth", action="store_true", help="Deprecated: use --biosample_pkg onehealth instead")
+		parser.add_argument("--biosample_pkg", type=str, default=None, help="BioSample package type (e.g. wastewater, onehealth)")
 		parser.add_argument("--dry_run", action="store_true", help="Print what would be uploaded but don't connect or transfer files")
+		parser.add_argument("--genome_representation", type=str, default="Full", help="WGS genome representation value (Full or Partial)")
+		parser.add_argument("--expected_final_version", type=str, default="Yes", help="WGS expected final version value (Yes or No)")
+		parser.add_argument("--sbt", type=str, default="", help="Path to .sbt template file (skips authorset generation)")
+		parser.add_argument("--completeness_min_coverage", type=float, default=None,
+							help="If set (0<x<=1), GenBank completeness is derived from VADR .sqc model coverage when the metadata completeness cell is blank")
 		return parser
 
 class SubmissionConfigParser:
@@ -374,16 +544,16 @@ class SubmissionConfigParser:
 			for k, v in config_dict.items():
 				if self.parameters.get("gisaid", False):
 					if k.startswith('GISAID') and not v:
-						logging.info("Error: There are missing GISAID values in the config file.", file=sys.stderr)
+						logging.error(f"Missing GISAID value in config file: {k}")
 						sys.exit(1)
 				else:
 					if k.startswith('NCBI') and not v:
-						logging.info("Error: There are missing NCBI values in the config file.", file=sys.stderr)
+						logging.error(f"Missing NCBI value in config file: {k}")
 						sys.exit(1)
 		return config_dict
 
 class Sample:
-	def __init__(self, sample_id, batch_id, species, databases, fastq1=None, fastq2=None, nanopore=None, fasta_file=None, annotation_file=None):
+	def __init__(self, sample_id, batch_id, species, databases, fastq1=None, fastq2=None, nanopore=None, fasta_file=None, annotation_file=None, vadr_dir=None):
 		self.sample_id = sample_id
 		self.batch_id = batch_id
 		self.fastq1 = fastq1
@@ -393,8 +563,9 @@ class Sample:
 		self.databases = databases
 		self.fasta_file = fasta_file
 		self.annotation_file = annotation_file
+		self.vadr_dir = vadr_dir
 		# ftp_upload is true if GenBank FTP submission is supported for that species, otherwise false
-		self.ftp_upload = species in {"flu", "sars", "bacteria"} # flu, sars, bacteria currently support ftp upload to GenBank
+		self.ftp_upload = species in {"flu", "sars", "bacteria", "eukaryote"} # species that support FTP upload to GenBank
 	def __repr__(self):
 		return (
 			f"Sample(sample_id={self.sample_id}, batch_id={self.batch_id}, "
@@ -427,13 +598,14 @@ class MetadataParser:
 			logging.info(f"Error loading custom metadata file: {e}")
 			return []
 	def extract_top_metadata(self):
-		columns = ['sequence_name', 'title', 'description', 'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra']  # Main columns
+		columns = ['sequence_name', 'title', 'description', 'design_description', 'hold_until_publish_date',
+				   'authors', 'ncbi-bioproject', 'ncbi-spuid', 'ncbi-spuid-sra', 'biosample_accession', 'completeness']
 		available_columns = [col for col in columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 	
 	def extract_biosample_metadata(self):
-		columns = ['strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','organism',
-				   'sample_type','collection_date','isolation_source','host_age','host_sex', 'race','ethnicity']  # BioSample specific columns
+		columns = ['strain','isolate','host_disease','host','collected_by','lat_lon','geo_loc_name','country','state','organism',
+				   'sample_type','collection_date','isolation_source','host_age','host_sex', 'race','ethnicity','note']  # BioSample specific columns
 		all_columns = columns + self.custom_columns # add custom columns to BioSample specific cols
 		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
 		return self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
@@ -453,7 +625,19 @@ class MetadataParser:
 		record = self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
 		# Filter out empty/NaN values
 		return {k: v for k, v in record.items() if pd.notna(v) and v != ""}
-	
+
+	def extract_onehealth_metadata(self):
+		# Columns for the NCBI One Health Enteric package (Pathogen.env.1.0 / Pathogen.cl.1.0)
+		columns = ["strain", "isolate", "isolation_source", "host", "organism", "collection_date",
+			"country", "state", "collected_by", "sample_type", "lat_lon", "host_sex", "host_age",
+			"host_disease", "race", "ethnicity", "purpose_of_sampling", "source_type", "animal_environment",
+			"description"]
+		all_columns = columns + self.custom_columns
+		available_columns = [col for col in all_columns if col in self.metadata_df.columns]
+		record = self.metadata_df[available_columns].to_dict(orient='records')[0] if available_columns else {}
+		# Filter out empty/NaN values
+		return {k: v for k, v in record.items() if pd.notna(v) and v != ""}
+
 	def extract_sra_metadata(self):
 		rename_fields = {
 			'sequencing_instrument': 'instrument_model',
@@ -589,6 +773,17 @@ class SFTPClient:
 			return True
 		except IOError:
 			return False
+	def dir_exists(self, dir_path):
+		try:
+			self.sftp.stat(dir_path)
+			return True
+		except IOError:
+			return False
+	def list_dir(self, dir_path):
+		try:
+			return self.sftp.listdir(dir_path)
+		except IOError:
+			return []
 	def download_file(self, remote_file, local_path):
 		try:
 			self.sftp.get(remote_file, local_path)
@@ -657,6 +852,19 @@ class FTPClient:
 			return True
 		else:
 			return False
+	def dir_exists(self, dir_path):
+		try:
+			current = self.ftp.pwd()
+			self.ftp.cwd(dir_path)
+			self.ftp.cwd(current)
+			return True
+		except ftplib.error_perm:
+			return False
+	def list_dir(self, dir_path):
+		try:
+			return self.ftp.nlst(dir_path)
+		except ftplib.error_perm:
+			return []
 	def download_file(self, remote_file, local_path):
 		with open(local_path, 'wb') as f:
 			self.ftp.retrbinary(f'RETR {remote_file}', f.write)
@@ -698,13 +906,18 @@ class XMLSubmission(ABC):
 		self.submission_root = ET.Element('Submission')
 		# Description
 		description = ET.SubElement(self.submission_root, 'Description')
+		submission_title = str(self.submission_config.get('Submission_Title') or '').strip()
+		submission_comment = str(self.submission_config.get('Submission_Comment') or '').strip()
+		if submission_title:
+			title = ET.SubElement(description, 'Title')
+			title.text = submission_title
 		if "Specified_Release_Date" in self.submission_config:
 			release_date_value = self.submission_config["Specified_Release_Date"]
 			if release_date_value and release_date_value != "Not Provided":
 				release_date = ET.SubElement(description, "Hold")
 				release_date.set("release_date", release_date_value)
 		comment = ET.SubElement(description, 'Comment')
-		comment.text = "Batch submission"  # Or use description from the batch
+		comment.text = submission_comment or submission_title or "Batch submission"
 		# Organization
 		organization_attributes = {
 			'role': self.submission_config['Role'],
@@ -737,6 +950,7 @@ class XMLSubmission(ABC):
 		self.top_metadata = parser.extract_top_metadata()
 		self.biosample_metadata = parser.extract_biosample_metadata()
 		self.wastewater_metadata = parser.extract_wastewater_metadata()
+		self.onehealth_metadata = parser.extract_onehealth_metadata()
 		all_platform_metadata = self.sra_metadata = parser.extract_sra_metadata()
 		# If illumina & nanopore, platform will be specified
 		if platform:
@@ -747,7 +961,8 @@ class XMLSubmission(ABC):
 		# Call subclass-specific methods to add the unique parts (guard the calls because GenbankSubmission doesn't use them)
 		if hasattr(self, "add_action_block") and hasattr(self, "add_attributes_block"):
 			anchor_element = self.add_action_block(self.submission_root)
-			self.add_attributes_block(anchor_element)
+			if anchor_element is not None:
+				self.add_attributes_block(anchor_element)
 		else:
 			logging.debug(f"{type(self).__name__} does not implement action/attributes block additions.")
 
@@ -766,14 +981,25 @@ class XMLSubmissionMixin(ABC):
 
 class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
-				 submission_dir, type, sample, accession_id=None, identifier=None, wastewater=False):
+				 submission_dir, type, sample, accession_id=None, identifier=None,
+				 wastewater=False, biosample_pkg=None):
 		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample)
 		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
-		self.wastewater = bool(wastewater)
+		# Support both the legacy wastewater flag and the newer biosample_pkg parameter
+		if biosample_pkg:
+			self.biosample_pkg = biosample_pkg
+		elif wastewater:
+			self.biosample_pkg = 'wastewater'
+		else:
+			self.biosample_pkg = None
 		os.makedirs(self.outdir, exist_ok=True)
 
 	def add_action_block(self, submission):
+		existing_samn = self.top_metadata.get('biosample_accession')
+		if existing_samn is not None and pd.notna(existing_samn) and str(existing_samn).strip() not in ("", "Not Provided"):
+			logging.info(f"Skipping BioSample creation for sample with existing accession {existing_samn}")
+			return None
 		action = ET.SubElement(submission, 'Action')
 		add_data = ET.SubElement(action, 'AddData', {'target_db': 'BioSample'})
 		data = ET.SubElement(add_data, 'Data', {'content_type': 'xml'})
@@ -815,10 +1041,15 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	
 	def add_attributes_block(self, biosample):
 		attributes = ET.SubElement(biosample, 'Attributes')
-		# Select the appropriate metadata source
-		metadata = self.wastewater_metadata if self.wastewater else self.biosample_metadata
+		# Select the appropriate metadata source based on BioSample package type
+		if self.biosample_pkg == 'wastewater':
+			metadata = self.wastewater_metadata
+		elif self.biosample_pkg == 'onehealth':
+			metadata = self.onehealth_metadata
+		else:
+			metadata = self.biosample_metadata
 		# Fields to ignore when adding attributes
-		ignored_fields = {'organism', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2'}
+		ignored_fields = {'organism', 'country', 'state', 'test_field_1', 'test_field_2', 'test_field_3', 'new_field_name', 'new_field_name2'}
 		
 		# Add attributes for all non-ignored fields
 		for attr_name, attr_value in metadata.items():
@@ -828,12 +1059,19 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 
 class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def __init__(self, parameters, submission_config, metadata_df, outdir, submission_mode,
-				 submission_dir, type, samples, sample, accession_id=None, identifier=None, wastewater=False):
+				 submission_dir, type, samples, sample, accession_id=None, identifier=None,
+				 wastewater=False, biosample_pkg=None):
 		XMLSubmission.__init__(self, submission_config, metadata_df, outdir, parameters, sample)
 		Submission.__init__(self, parameters, submission_config, outdir, submission_mode, submission_dir, type, sample, identifier)
 		self.accession_id = accession_id
 		self.samples = samples
-		self.wastewater = bool(wastewater)
+		# Support both the legacy wastewater flag and the newer biosample_pkg parameter
+		if biosample_pkg:
+			self.biosample_pkg = biosample_pkg
+		elif wastewater:
+			self.biosample_pkg = 'wastewater'
+		else:
+			self.biosample_pkg = None
 		os.makedirs(self.outdir, exist_ok=True)
 
 	def add_action_block(self, submission):
@@ -855,17 +1093,27 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		for attr_name, attr_value in self.sra_metadata.items():
 			attribute = ET.SubElement(add_files, 'Attribute', {'name': attr_name})
 			attribute.text = self.safe_text(attr_value)
+		for top_attr in ('title', 'design_description', 'hold_until_publish_date'):
+			v = self.top_metadata.get(top_attr)
+			if v is not None and pd.notna(v) and str(v).strip() not in ('', 'Not Provided'):
+				attribute = ET.SubElement(add_files, 'Attribute', {'name': top_attr})
+				attribute.text = self.safe_text(v)
 		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		# BioProject reference
 		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
 		refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
 		primaryid_bioproject = ET.SubElement(refid_bioproject, "PrimaryId")
 		primaryid_bioproject.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
-		# BioSample reference
+		# BioSample reference: prefer existing accession (SAMN…) when present, else fall back to SPUID
 		attribute_ref_id_biosample = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
 		refid_biosample = ET.SubElement(attribute_ref_id_biosample, "RefId")
-		spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
-		spuid_biosample.text = self.safe_text(self.top_metadata['ncbi-spuid'])
+		biosample_accession = self.top_metadata.get('biosample_accession')
+		if biosample_accession is not None and pd.notna(biosample_accession) and str(biosample_accession).strip() not in ("", "Not Provided"):
+			primaryid_biosample = ET.SubElement(refid_biosample, "PrimaryId", db="BioSample")
+			primaryid_biosample.text = self.safe_text(biosample_accession)
+		else:
+			spuid_biosample = ET.SubElement(refid_biosample, "SPUID", {'spuid_namespace': f"{spuid_namespace_value}"})
+			spuid_biosample.text = self.safe_text(self.top_metadata['ncbi-spuid'])
 		# Identifier
 		identifier = ET.SubElement(add_files, 'Identifier')
 		identifier_spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
@@ -885,14 +1133,12 @@ class GenbankSubmission(XMLSubmission, Submission):
 		self.genbank_metadata = parser.extract_genbank_metadata()
 		os.makedirs(self.outdir, exist_ok=True)
 
-		print("Top metadata:", self.top_metadata)
-		print("Biosample metadata:", self.biosample_metadata)
-		print("GenBank metadata:", self.genbank_metadata)
-
-	def xml_create_bankit(self, submission):
+	def xml_create_bankit(self):
 		"""
-		Prepares a submission for ftp upload via Bank-It
-		Used for SARS-CoV-2 and influenza submissions
+		Prepares a submission XML for FTP upload via Bank-It.
+		Used for SARS-CoV-2 and influenza submissions. When no annotation
+		file is provided, includes an auto_remove_failed_seqs attribute so
+		NCBI performs annotation server-side.
 		"""
 		# Create submission xml
 		self.submission_root = ET.Element('Submission')
@@ -927,16 +1173,23 @@ class GenbankSubmission(XMLSubmission, Submission):
 			attribute.text = 'BankIt_influenza_api'
 		else:
 			logging.error("Species must be one of: sras, flu")
-			raise ValueError("Species must be one of: sars, influenza") 
+			raise ValueError("Species must be one of: sars, influenza")
+		# When no annotation file is provided, signal NCBI to auto-annotate
+		if not self.sample.annotation_file:
+			auto_annotate = ET.SubElement(add_files, 'Attribute', {'name': 'auto_remove_failed_seqs'})
+			auto_annotate.text = 'yes'
 		# Identifier section
 		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		identifier = ET.SubElement(add_files, 'Identifier')
 		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(f'{self.top_metadata["ncbi-spuid"]}-GB')
-	
+		self.finalize_xml()
+
 	def xml_create_wgs(self):
-		# Create root Submission element
-		self.init_xml_root() # Write first part of submission.xml (Description)
+		"""Builds the WGS Action block onto the existing submission_root.
+		Callers are responsible for invoking init_xml_root() before and
+		finalize_xml() after, matching the BioSample/SRA pattern.
+		"""
 		# --- Action: AddFiles (WGS) ---
 		action1 = ET.SubElement(self.submission_root, "Action")
 		add_files = ET.SubElement(action1, "AddFiles", target_db="WGS")
@@ -949,9 +1202,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 		description = ET.SubElement(genome, "Description")
 		assembly_metadata_choice = ET.SubElement(description, "GenomeAssemblyMetadataChoice")
 		ET.SubElement(assembly_metadata_choice, "StructuredComment")
-		# todo: these need to be controlled variables
-		ET.SubElement(description, "GenomeRepresentation").text = "Full"
-		ET.SubElement(description, "ExpectedFinalVersion").text = "Yes"
+		ET.SubElement(description, "GenomeRepresentation").text = self.parameters.get("genome_representation", "Full")
+		ET.SubElement(description, "ExpectedFinalVersion").text = self.parameters.get("expected_final_version", "Yes")
 		# AttributeRefId for BioProject
 		attribute_ref = ET.SubElement(add_files, "AttributeRefId")
 		ref_id = ET.SubElement(attribute_ref, "RefId")
@@ -962,27 +1214,50 @@ class GenbankSubmission(XMLSubmission, Submission):
 		ref_id = ET.SubElement(attribute_ref, "RefId")
 		primary_id = ET.SubElement(ref_id, "PrimaryId", db="BioSample")
 		primary_id.text = self.safe_text(self.genbank_metadata["biosample_accession"])
+		# When no annotation file is provided, request NCBI PGAP annotation
+		if not self.sample.annotation_file:
+			annotate_attr = ET.SubElement(add_files, 'Attribute', {'name': 'annotate'})
+			annotate_attr.text = 'yes'
 		# Identifier with SPUID
 		identifier = ET.SubElement(add_files, "Identifier")
 		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		spuid = ET.SubElement(identifier, 'SPUID', {'spuid_namespace': f"{spuid_namespace_value}"})
 		spuid.text = self.safe_text(f'{self.top_metadata["ncbi-spuid"]}-GB')
-		self.finalize_xml()
-		# todo: the order & placement of these calls is different from BS and SRA, and this bothers me
 
 	# Functions for preparing files for table2asn
 	def create_source_file(self):
+		seq_id = self.sample.sample_id or self.biosample_metadata.get("strain")
+
+		# Fall back to country + state when geo_loc_name is absent
+		country = self.biosample_metadata.get("geo_loc_name")
+		if pd.isna(country) if isinstance(country, float) else not country:
+			country = self.biosample_metadata.get("country", "")
+			state = self.biosample_metadata.get("state", "")
+			if country and state:
+				country = f"{country}:{state}"
+
+		# Strip time component from pandas datetime strings
+		collection_date = self.biosample_metadata.get("collection_date")
+		if collection_date:
+			collection_date = str(collection_date).split(" ")[0]
+
+		bioproject = self.top_metadata.get("ncbi-bioproject")
 		source_data = {
-			"Sequence_ID": self.top_metadata.get("ncbi-spuid-sra"),
+			"Sequence_ID": seq_id,
 			"strain": self.biosample_metadata.get("strain"),
-			"BioProject": self.top_metadata.get("ncbi-bioproject"),
 			"organism": self.biosample_metadata.get("organism"),
-			"Collection_date": self.biosample_metadata.get("collection_date"),
-			"country": self.biosample_metadata.get("geo_loc_name"),
+			"Collection_date": collection_date,
+			"country": country,
 			"isolate": self.biosample_metadata.get("isolate"),
 			"host": self.biosample_metadata.get("host"),
-			"isolation_source": self.biosample_metadata.get("isolation_source")
+			"isolation_source": self.biosample_metadata.get("isolation_source"),
+			"note": self.biosample_metadata.get("note")
 		}
+		if bioproject and str(bioproject).strip() not in ("", "nan", "Not Provided"):
+			source_data["BioProject"] = bioproject
+		biosample_accession = self.genbank_metadata.get("biosample_accession") or self.biosample_metadata.get("biosample_accession") or self.top_metadata.get("biosample_accession")
+		if biosample_accession and str(biosample_accession).strip() not in ("", "nan", "Not Provided"):
+			source_data["BioSample"] = biosample_accession
 		source_df = pd.DataFrame([source_data])
 		source_df.to_csv(os.path.join(self.outdir, "source.src"), sep="\t", index=False)
 
@@ -1009,8 +1284,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 		alt_submitter_email = self.submission_config["Submitter"]["@alt_email"]
 		affil = self.submission_config["Submitting_Org"]
 		div = self.submission_config["Submitting_Org_Dept"]
-		publication_status = self.safe_text(self.genbank_metadata['publication_status'])
-		publication_title = self.safe_text(self.genbank_metadata['publication_title'])
+		publication_status = self.safe_text(self.genbank_metadata.get('publication_status', 'Unpublished'))
+		publication_title = self.safe_text(self.genbank_metadata.get('publication_title', 'Unpublished'))
 		street = self.submission_config["Street"]
 		city = self.submission_config["City"]
 		sub = self.submission_config["State"]
@@ -1047,7 +1322,8 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("  cit {\n")
 			f.write("    authors {\n")
 			f.write("      names std {\n")
-			authors_list = self.safe_text(self.genbank_metadata.get("authors")).split("; ")
+			authors_raw = self.safe_text(self.top_metadata.get("authors"))
+			authors_list = [a.strip() for a in authors_raw.split(";") if a.strip()]
 			if authors_list[0] not in ["Not Provided", ""]:
 				total_names = len(authors_list)
 				for index, author in enumerate(authors_list, start=1):
@@ -1085,42 +1361,6 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("  },\n")
 			f.write("  subtype new\n")
 			f.write("}\n")
-			f.write("Seqdesc ::= pub {\n")
-			f.write("  pub {\n")
-			f.write("    gen {\n")
-			f.write("      cit \"" + publication_status + "\",\n")
-			f.write("      authors {\n")
-			f.write("        names std {\n")
-			authors_list = self.safe_text(self.top_metadata.get("authors")).split("; ")
-			if authors_list[0] not in ["Not Provided", ""]:
-				total_names = len(authors_list)
-				for index, author in enumerate(authors_list, start=1):
-					# Parse the author name into first, middle, last, suffix, title
-					name = HumanName(author.strip())
-					f.write("        {\n")
-					f.write("          name name {\n")
-					f.write("            last \"" + self.safe_text(name.last) + "\",\n")
-					f.write("            first \"" + self.safe_text(name.first) + "\"")
-					middle_name = self.safe_text(name.middle)
-					if middle_name != "Not Provided":
-						f.write(",\n            middle \"" + middle_name + "\"")
-					suffix = self.safe_text(name.suffix)
-					if suffix != "Not Provided":
-						f.write(",\n            suffix \"" + suffix + "\"")
-					title = self.safe_text(name.title)
-					if title != "Not Provided":
-						f.write(",\n            title \"" + title + "\"")
-					f.write("\n          }\n")
-					if index == total_names:
-						f.write("        }\n")
-					else:
-						f.write("        },\n")
-			f.write("        }\n")
-			f.write("      },\n")
-			f.write("      title \"" + publication_title + "\"\n")
-			f.write("    }\n")
-			f.write("  }\n")
-			f.write("}\n")
 			if alt_submitter_email is not None and alt_submitter_email.strip() != "":
 				f.write("Seqdesc ::= user {\n")
 				f.write("  type str \"Submission\",\n")
@@ -1136,89 +1376,97 @@ class GenbankSubmission(XMLSubmission, Submission):
 			f.write("  data {\n")
 			f.write("    {\n")
 			f.write("      label str \"AdditionalComment\",\n")
-			f.write("      data str \"Submission Title: " + self.sample.sample_id + "\"\n")
+			# Use Submission_Title from config, or description from metadata, falling back to sample ID
+			submission_title = self.submission_config.get("Submission_Title", "").strip() if self.submission_config.get("Submission_Title") else ""
+			if not submission_title:
+				desc = self.top_metadata.get("description")
+				if desc and str(desc).strip() not in ("", "Not Provided"):
+					submission_title = str(desc).strip()
+				else:
+					submission_title = self.sample.sample_id
+			f.write("      data str \"Submission Title: " + submission_title + "\"\n")
 			f.write("    }\n")
 			f.write("  }\n")
 			f.write("}\n")
+
+	def _strip_sqn_blocks(self, content):
+		"""Remove pub citation block from .sqn ASN.1 text."""
+		lines = content.split('\n')
+		result = []
+		i = 0
+		while i < len(lines):
+			stripped = lines[i].strip()
+			if stripped == 'pub {' or stripped == 'pub {,':
+				depth = 0
+				while i < len(lines):
+					depth += lines[i].count('{') - lines[i].count('}')
+					i += 1
+					if depth <= 0:
+						break
+				continue
+			result.append(lines[i])
+			i += 1
+		return '\n'.join(result)
 
 	def prep_table2asn_files(self):
 		""" Creates authorset (sbt), comment (cmt), source (src) files
 			Runs table2asn on them
 		"""
-		# Create the source df
 		self.create_source_file()
-		# Create Structured Comment file
 		self.create_comment_file()
-		# Create authorset file
-		self.create_authorset_file()
-		# Rename and move the fasta for table2asn call
-		renamed_fasta = os.path.join(self.outdir, "sequence.fsa")
-		symlink_or_copy(self.sample.fasta_file, renamed_fasta)
-		# Run table2asn 
-		self.run_table2asn()
-		logging.info(f"Genbank files prepared for {self.sample.sample_id}")
-
-	def prep_zip_folder(self):
-		""" Prepare files for manual upload to GenBank because FTP support not available 
-			These files will be emailed to user and/or GenBank, and also zipped to output dir """
-		with ZipFile(os.path.join(self.outdir, self.sample.sample_id + ".zip"), 'w') as zip:
-			filelist = [f"{self.sample.sample_id}.sqn","authorset.sbt","sequence.fsa","source.src","comment.cmt"]
-			for file in filelist:
-				filepath = os.path.join(self.outdir, file)
-				if os.path.exists(filepath):
-					zip.write(filepath, file) 
-		# Delete all but the sqn file (because they're in the zip folder)
-		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff']:
-			pattern = os.path.join(self.outdir, p)
-			for f in glob.glob(pattern):
-				if os.path.isfile(f):
-					os.remove(f)
-
-	# Define internal workflow functions for the 3 different GenBank submission modalities
-	def _workflow_bankit(self):
-		# Prepare a Bank-It ftp submission
-		self.xml_create_bankit()
-		self.prep_table2asn_files()
-		self.prep_zip_folder()
-		submit_ready_file = os.path.join(self.outdir, 'submit.ready')
-		with open(submit_ready_file, 'w') as fh:
-			pass
-
-	def _workflow_bacteria_euk(self):
-		# Prepare a WGS ftp submission
-		self.xml_create_wgs()
-		self.prep_table2asn_files()
-		# Delete all but the sqn file 
-		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff', '*.fsa']:
-			pattern = os.path.join(self.outdir, p)
-			for f in glob.glob(pattern):
-				if os.path.isfile(f):
-					os.remove(f)
-		submit_ready_file = os.path.join(self.outdir, 'submit.ready')
-		with open(submit_ready_file, 'w') as fh:
-			pass
-
-	def _workflow_virus(self):
-		# Prepare a manual submission
-		self.prep_table2asn_files()
-		self.prep_zip_folder()
-
-	def genbank_submission_driver(self):
-		""" Runs the appropriate workflow to prepare the GenBank submission
-		"""
-		logging.info(f"Preparing GenBank submission of type: {self.sample.species}")
-		if self.sample.species in ['sars','flu']:
-			self._workflow_bankit()
-		elif self.sample.species in ['bacteria', 'eukaryote']:
-			self._workflow_bacteria_euk()
-		elif self.sample.species in ['virus','rsv','mpxv']:
-			self._workflow_virus()
+		sbt_file = self.parameters.get('sbt', '')
+		if sbt_file and os.path.isfile(sbt_file):
+			shutil.copy2(sbt_file, os.path.join(self.outdir, "authorset.sbt"))
+		elif sbt_file:
+			logging.warning(f"--sbt file not found: {sbt_file}. Generating authorset.sbt from config.")
+			self.create_authorset_file()
 		else:
-			logging.debug(f"{self.sample.species} must be one of: sars, flu, bacteria, eukaryote, virus")
+			self.create_authorset_file()
+		# Copy the fasta for table2asn
+		renamed_fasta = os.path.join(self.outdir, "sequence.fsa")
+		completeness = self.top_metadata.get('completeness')
+		completeness = '' if (isinstance(completeness, float) and pd.isna(completeness)) else str(completeness or '').strip()
+		# metadata override wins; otherwise derive from VADR coverage when the param is set
+		cmin = self.parameters.get('completeness_min_coverage')
+		if not completeness and cmin is not None and getattr(self.sample, 'vadr_dir', None):
+			completeness = completeness_from_vadr(self.sample.vadr_dir, self.sample.sample_id, cmin)
+		if completeness:
+			# append [completeness=<value>] to every defline; write a fresh real file so
+			# the symlink default never edits the source fasta in place
+			if os.path.islink(renamed_fasta) or os.path.exists(renamed_fasta):
+				os.remove(renamed_fasta)
+			with open(self.sample.fasta_file, 'r') as src, open(renamed_fasta, 'w') as dst:
+				for line in src:
+					if line.startswith('>'):
+						dst.write(f"{line.rstrip()} [completeness={completeness}]\n")
+					else:
+						dst.write(line)
+		else:
+			symlink_or_copy(self.sample.fasta_file, renamed_fasta)
+		# Run table2asn
+		self.run_table2asn()
+		# Post-process .sqn
+		sqn_file = os.path.join(self.outdir, f"{self.sample.sample_id}.sqn")
+		if os.path.isfile(sqn_file):
+			with open(sqn_file, 'r') as f:
+				content = f.read()
+			# Fix biomol for RNA viruses
+			mol_type = self.parameters.get('mol_type', 'genomic')
+			if mol_type != 'genomic':
+				content = content.replace('biomol genomic', 'biomol cRNA')
+				logging.info(f"Updated biomol to cRNA in {sqn_file}")
+			# Remove pub and DBLink blocks if requested
+			if self.parameters.get('strip_pub_block', False):
+				content = self._strip_sqn_blocks(content)
+				logging.info(f"Stripped pub block from {sqn_file}")
+			with open(sqn_file, 'w') as f:
+				f.write(content)
+		if not getattr(self, 'table2asn_failed', False):
+			logging.info(f"Genbank files prepared for {self.sample.sample_id}")
 
 	# Functions for running table2asn
 	def get_gff_locus_tag(self):
-		""" Read the locus lag from the GFF3 file for use in table2asn command"""
+		""" Read the locus tag from the GFF3 file for use in table2asn command"""
 		locus_tag = None
 		if not self.sample.annotation_file.endswith('.tbl'):
 			with open(self.sample.annotation_file, 'r') as file:
@@ -1254,25 +1502,37 @@ class GenbankSubmission(XMLSubmission, Submission):
 		Executes table2asn with appropriate flags and handles errors.
 		"""
 		logging.info("Running table2asn...")
-		# Check if table2asn executable exists in PATH
 		table2asn_path = shutil.which('table2asn')
 		if not table2asn_path:
 			raise FileNotFoundError("table2asn executable not found in PATH.")
-		# Check if a GFF file is supplied and extract the locus tag
-		# todo: the locus tag needs to be fetched (?) after BioSample is assigned (it appears under Manage Data for the BioProject)
-		locus_tag = self.get_gff_locus_tag()
-		gff_dest = os.path.join(self.outdir, os.path.basename(self.sample.annotation_file))
-		symlink_or_copy(self.sample.annotation_file, gff_dest)
+		# Check if a GFF file is supplied and extract the locus tag.
+		# The locus tag prefix is assigned by NCBI after BioProject registration and appears
+		# under "Manage Data" for the BioProject. It cannot be fetched programmatically via
+		# the NCBI API. If annotation was performed with Bakta, set --bakta_locus_tag so
+		# the prefix appears in the GFF and can be extracted here automatically.
+		if self.sample.annotation_file:
+			locus_tag = self.get_gff_locus_tag()
+			if not locus_tag:
+				logging.warning(
+					"No locus tag prefix found in the annotation file for sample '%s'. "
+					"For WGS submissions, NCBI requires a locus tag prefix registered under your BioProject. "
+					"Set --bakta_locus_tag to the prefix assigned by NCBI so it is embedded in the GFF output. "
+					"Without it, table2asn will run without -locus-tag-prefix and the submission may be rejected.",
+					self.sample.sample_id
+				)
+			gff_dest = os.path.join(self.outdir, os.path.basename(self.sample.annotation_file))
+			symlink_or_copy(self.sample.annotation_file, gff_dest)
 		# Construct the table2asn command
 		cmd = [
 			"table2asn",
 			"-i", f"{self.outdir}/sequence.fsa",
 			"-o", f"{self.outdir}/{self.sample.sample_id}.sqn",
-			"-t", f"{self.outdir}/authorset.sbt",
-			"-f", f"{self.outdir}/{os.path.basename(self.sample.annotation_file)}"
+			"-t", f"{self.outdir}/authorset.sbt"
 		]
-		if locus_tag:
-			cmd.extend(["-locus-tag-prefix", locus_tag])
+		if self.sample.annotation_file:
+			cmd.extend(["-f", gff_dest])
+			if locus_tag:
+				cmd.extend(["-locus-tag-prefix", locus_tag])
 		if self.is_multicontig_fasta(f"{self.outdir}/sequence.fsa"):
 			cmd.append("-M")
 			cmd.append("n")
@@ -1286,9 +1546,79 @@ class GenbankSubmission(XMLSubmission, Submission):
 			cmd.append(f"{self.outdir}/source.src")
 		# Run the command and capture errors
 		logging.info(f'table2asn command: {shlex.join(cmd)}')
-		try:
-			result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-			logging.info(f"table2asn output: {result.stdout}")
-		except subprocess.CalledProcessError as e:
-			logging.debug(f"Error running table2asn: {e.stderr}")
-			raise
+		result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+		if result.returncode != 0:
+			logging.error(
+				"table2asn failed for sample '%s' (exit code %d): %s",
+				self.sample.sample_id, result.returncode, result.stderr.strip()
+			)
+			self.table2asn_failed = True
+			return
+		self.table2asn_failed = False
+		logging.info(f"table2asn output: {result.stdout}")
+
+	def prep_zip_folder(self):
+		""" Prepare files for manual upload to GenBank because FTP support not available 
+			These files will be emailed to user and/or GenBank, and also zipped to output dir """
+		with ZipFile(os.path.join(self.outdir, self.sample.sample_id + ".zip"), 'w') as zip:
+			filelist = [f"{self.sample.sample_id}.sqn","authorset.sbt","sequence.fsa","source.src","comment.cmt"]
+			for file in filelist:
+				filepath = os.path.join(self.outdir, file)
+				if os.path.exists(filepath):
+					zip.write(filepath, file) 
+		# Delete all but the sqn file (because they're in the zip folder)
+		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff']:
+			pattern = os.path.join(self.outdir, p)
+			for f in glob.glob(pattern):
+				if os.path.isfile(f):
+					os.remove(f)
+
+	# Define internal workflow functions for the 3 different GenBank submission modalities
+	def _workflow_bankit(self):
+		# Prepare a Bank-It ftp submission
+		self.xml_create_bankit()
+		self.prep_table2asn_files()
+		if getattr(self, 'table2asn_failed', False):
+			return
+		self.prep_zip_folder()
+		submit_ready_file = os.path.join(self.outdir, 'submit.ready')
+		with open(submit_ready_file, 'w') as fh:
+			pass
+
+	def _workflow_bacteria_euk(self):
+		# Prepare a WGS ftp submission (init/finalize pattern matches BioSample/SRA)
+		self.init_xml_root()
+		self.xml_create_wgs()
+		self.finalize_xml()
+		self.prep_table2asn_files()
+		if getattr(self, 'table2asn_failed', False):
+			return
+		# Delete all but the sqn file
+		for p in ['*.cmt', '*.sbt', '*.src', '*.gff3', '*.gff', '*.fsa']:
+			pattern = os.path.join(self.outdir, p)
+			for f in glob.glob(pattern):
+				if os.path.isfile(f):
+					os.remove(f)
+		submit_ready_file = os.path.join(self.outdir, 'submit.ready')
+		with open(submit_ready_file, 'w') as fh:
+			pass
+
+	def _workflow_virus(self):
+		# Prepare a manual submission
+		self.prep_table2asn_files()
+		if getattr(self, 'table2asn_failed', False):
+			return
+		self.prep_zip_folder()
+
+	def genbank_submission_driver(self):
+		""" Runs the appropriate workflow to prepare the GenBank submission
+		"""
+		logging.info(f"Preparing GenBank submission of type: {self.sample.species}")
+		if self.sample.species in ['sars','flu']:
+			self._workflow_bankit()
+		elif self.sample.species in ['bacteria', 'eukaryote']:
+			self._workflow_bacteria_euk()
+		elif self.sample.species in ['virus','rsv','mpxv']:
+			self._workflow_virus()
+		else:
+			logging.debug(f"{self.sample.species} must be one of: sars, flu, bacteria, eukaryote, virus")

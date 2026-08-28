@@ -45,7 +45,7 @@ def main_prepare():
 	# load config & metadata
 	config = SubmissionConfigParser(params).load_config()
 	batch_id = os.path.splitext(os.path.basename(params['metadata_file']))[0]
-	metadata_df = pd.read_csv(params['metadata_file'], sep='\t')
+	metadata_df = pd.read_csv(params['metadata_file'], sep='\t', dtype=str)
 	identifier = params['identifier']
 	submission_dir = 'Test' if params['test'] else 'Production'
 	output_root = params['outdir']
@@ -63,7 +63,8 @@ def main_prepare():
 			species	 = params['species'],
 			databases   = [db for db in params if params[db] and db in ['biosample','sra','genbank']],
 			fasta_file  = d.get('fasta'),
-			annotation_file = d.get('gff')
+			annotation_file = d.get('gff'),
+			vadr_dir    = d.get('vadr_dir')
 		))
 
 	# 1) Prepare BioSample XML + submit.ready
@@ -81,11 +82,13 @@ def main_prepare():
 			sample=None,
 			accession_id=None,
 			identifier=identifier,
-			wastewater=params.get('wastewater', False)
+			biosample_pkg=params.get('biosample_pkg')
 		)
 		bs.init_xml_root()
 		for s in samples:
 			md = metadata_df[metadata_df['sample_name'] == s.sample_id]
+			if md.empty:
+				raise ValueError(f"sample_name '{s.sample_id}' not found in metadata")
 			bs.add_sample(s, md)
 		bs.finalize_xml()
 		# write submit.ready
@@ -112,11 +115,13 @@ def main_prepare():
 				sample=None,
 				accession_id=None,
 				identifier=identifier,
-				wastewater=params.get('wastewater', False)
+				biosample_pkg=params.get('biosample_pkg')
 			)
 			sra.init_xml_root()
 			for s in samp_list:
 				md = metadata_df[metadata_df['sample_name'] == s.sample_id]
+				if md.empty:
+					raise ValueError(f"sample_name '{s.sample_id}' not found in metadata")
 				sra.add_sample(s, md, platform)  # existing signature
 			sra.finalize_xml()
 			# write submit.ready
@@ -124,15 +129,19 @@ def main_prepare():
 			# copy/Symlink raw files to SRA folder
 			prepare_sra_fastqs(samp_list, submission_dir, copy=False)
 			
-	# 3) Prepare GenBank submission, per-sample
+	# 3) Prepare GenBank submission, per-sample under genbank/ parent directory
 	if params['genbank']:
+		failed_samples = []
 		for s in samples:
 			submission_dir = os.path.join(output_root, 'genbank', s.sample_id)
 			os.makedirs(submission_dir, exist_ok=True)
+			sample_metadata_df = metadata_df[metadata_df['sample_name'] == s.sample_id]
+			if sample_metadata_df.empty:
+				raise ValueError(f"sample_name '{s.sample_id}' not found in metadata")
 			gb = GenbankSubmission(
 				parameters=params,
 				submission_config=config,
-				metadata_df=metadata_df,
+				metadata_df=sample_metadata_df,
 				outdir=submission_dir,
 				submission_mode=params['submission_mode'],
 				submission_dir=submission_dir,
@@ -142,7 +151,17 @@ def main_prepare():
 				accession_id=None,
 				identifier=identifier
 			)
-			gb.genbank_submission_driver()
+			try:
+				gb.genbank_submission_driver()
+				if getattr(gb, 'table2asn_failed', False):
+					failed_samples.append(s.sample_id)
+					logging.warning("Skipping sample '%s' due to table2asn failure.", s.sample_id)
+			except Exception as e:
+				failed_samples.append(s.sample_id)
+				logging.error("Sample '%s' failed during GenBank prep: %s", s.sample_id, str(e))
+		if failed_samples:
+			logging.warning("The following %d sample(s) failed GenBank preparation: %s", len(failed_samples), ', '.join(failed_samples))
+		logging.info("GenBank preparation complete: %d succeeded, %d failed.", len(samples) - len(failed_samples), len(failed_samples))
 
 if __name__=="__main__":
 	main_prepare()

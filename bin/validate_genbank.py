@@ -108,6 +108,37 @@ def check_naming_conventions(header):
         elif re.search(r'\blg\b', name.lower()):
             logging.info(f"Chromosome '{name}' appears to represent a linkage group (LG): {header}")
 
+def check_sequence_ambiguity(seq, header, max_pct=40):
+    """Check for excessive ambiguous bases. table2asn rejects sequences where
+    the first data line exceeds 40% ambiguity, but we check the full sequence
+    and the first 60 characters (one FASTA line) separately."""
+    standard = set('ACGTacgt')
+    # Check first line (60 chars, matching table2asn behavior)
+    first_line = seq[:60]
+    if first_line:
+        ambig_count = sum(1 for c in first_line if c not in standard)
+        pct = (ambig_count * 100) // len(first_line)
+        if pct > max_pct:
+            msg = (
+                f"Ambiguity error: {header} has {pct}% ambiguous nucleotides in the "
+                f"first 60 bases (threshold: {max_pct}%). table2asn will reject this sequence. "
+                f"This typically indicates poor consensus quality at the sequence terminus."
+            )
+            logging.error(msg)
+            errors.append(msg)
+            return
+    # Check full sequence
+    if seq:
+        ambig_count = sum(1 for c in seq if c not in standard)
+        pct = (ambig_count * 100) // len(seq)
+        if pct > max_pct:
+            msg = (
+                f"Ambiguity error: {header} has {pct}% ambiguous nucleotides overall "
+                f"(threshold: {max_pct}%). This sequence may not be suitable for submission."
+            )
+            logging.error(msg)
+            errors.append(msg)
+
 def check_sequence_length(seq, header):
     cleaned_len = len(seq)
     if cleaned_len < MIN_SEQ_LENGTH:
@@ -138,6 +169,7 @@ def validate_and_clean_fasta(input_path, output_path):
 
             # Sequence cleaning and validation
             cleaned_seq = clean_sequence(raw_seq)
+            check_sequence_ambiguity(cleaned_seq, header)
             check_sequence_length(cleaned_seq, header)
 
             # Write cleaned sequence
@@ -168,8 +200,9 @@ if __name__ == "__main__":
     check_file_exists(input_fasta)
 
     base_fasta = os.path.splitext(os.path.basename(input_fasta))[0]
-    output_fasta = os.path.join(os.path.dirname(input_fasta), f"{base_fasta}_cleaned.fsa")
-
+    outdir = os.path.join(os.path.dirname(input_fasta), "genbank")
+    os.makedirs(outdir, exist_ok=True)
+    output_fasta = os.path.join(outdir, f"{base_fasta}_cleaned.fsa")
     validate_and_clean_fasta(input_fasta, output_fasta)
 
     if errors:

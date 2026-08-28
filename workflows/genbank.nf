@@ -1,5 +1,4 @@
 #!/usr/bin/env nextflow
-nextflow.enable.dsl=2
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -10,7 +9,8 @@ nextflow.enable.dsl=2
 include { validateParameters; paramsSummaryLog; samplesheetToList 	} from 'plugin/nf-schema'
 
 // get metadata validation processes
-include { CREATE_BATCH_TSVS                               			} from "../modules/local/create_batch_tsvs/main"
+include { METADATA_VALIDATION                               		} from "../modules/local/metadata_validation/main"
+include { CHECK_VALIDATION_ERRORS								} from "../modules/local/check_validation_errors/main"
 include { GENBANK_VALIDATION                               			} from "../modules/local/genbank_validation/main"
 
 // get viral annotation process/subworkflows
@@ -20,8 +20,14 @@ include { RUN_VADR                                          		} from "../subwork
 // get BAKTA subworkflow
 include { RUN_BAKTA                                         		} from "../subworkflows/local/bakta"
 
+// get summary report process
+include { SUMMARY                                           		} from "../modules/local/summary/main"
+
+// get QC report process
+include { QC_REPORT                                         		} from "../modules/local/qc_report/main"
+
 // get submission related process/subworkflows
-include { SUBMISSION		                                		} from "../subworkflows/local/submission"
+include { SUBMISSION_GENBANK                                		} from "../subworkflows/local/submission_genbank"
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 									MAIN WORKFLOW
@@ -41,10 +47,21 @@ workflow GENBANK {
 	validateParameters()
 	log.info paramsSummaryLog(workflow)
 
-    // Create batches from Excel
-    CREATE_BATCH_TSVS(accession_augmented_xlsx, params.batch_size)
+    // Validate metadata and create batches (replaces CREATE_BATCH_TSVS to ensure
+    // derived columns like geo_loc_name and structuredcomment are always present)
+    METADATA_VALIDATION(accession_augmented_xlsx, file(params.submission_config))
 
-    metadata_batch_ch = CREATE_BATCH_TSVS.out.tsv_files
+    // Enforce error checking before anything else continues
+    CHECK_VALIDATION_ERRORS(METADATA_VALIDATION.out.errors)
+
+    CHECK_VALIDATION_ERRORS.out.status.subscribe { status ->
+		if (status == "ERROR") {
+			log.error "Validation failed. Please check ${params.outdir}/${params.validation_outdir}/error.txt"
+			System.exit(1)
+		}
+	}
+
+    metadata_batch_ch = METADATA_VALIDATION.out.tsv_files
         .flatten()
             .map { batch_tsv ->
                 def meta = [
@@ -53,8 +70,6 @@ workflow GENBANK {
                 ]
                 [meta, batch_tsv]
             }
-
-    // Todo: We need to run GENBANK_VALIDATION per sample not per batch
 
     // Flatten metadata into per-sample tuples
     sample_ch = metadata_batch_ch.flatMap { meta, _batch_tsv ->
@@ -101,8 +116,12 @@ workflow GENBANK {
                 RUN_VADR(annotation_input_ch.map { meta, fasta, _gff -> [meta, fasta] })
                 annotation_input_ch = annotation_input_ch
                     .map { meta, fasta, _gff -> [meta.sample_id, meta, fasta] }
-                    .join(RUN_VADR.out.tbl.map { meta, tbl -> [meta.sample_id, tbl] })
-                    .map { _sample_id, meta, fasta, new_tbl -> [meta, fasta, new_tbl] }
+                    .join(RUN_VADR.out.tbl.map          { meta, tbl -> [meta.sample_id, tbl] })
+                    .join(RUN_VADR.out.vadr_outputs.map { meta, dir -> [meta.sample_id, dir] })
+                    .map { _sample_id, meta, fasta, new_tbl, vadr_dir -> [meta + [vadr_dir: vadr_dir], fasta, new_tbl] }
+
+                // Generate batch summary reports from VADR output
+                RUN_VADR.out.vadr_outputs.map { _meta, outputs -> outputs }.collect() | SUMMARY
             }
 
         } else if (params.organism_type == 'bacteria' && params.bakta) {
@@ -119,26 +138,38 @@ workflow GENBANK {
         sample_ch = validated_sample_ch
     }
 
-    // Build final batch-wise submission channel
-    submission_batch_ch = sample_ch
-        .map { meta, fasta, gff -> [meta.batch_id, [meta: meta, fasta: fasta, gff: gff]] }
-        .groupTuple()
-        .map { batch_id, samples ->
-            def missingFasta = samples.any { s ->
-                !s.fasta || !file(s.fasta).exists()
+    if (params.submission) {
+        // Build final batch-wise submission channel
+        submission_batch_ch = sample_ch
+            .map { meta, fasta, gff -> [meta.batch_id, [meta: meta, fasta: fasta, gff: gff]] }
+            .groupTuple()
+            .map { batch_id, samples ->
+                def missingFasta = samples.any { s ->
+                    !s.fasta || !file(s.fasta).exists()
+                }
+                def meta = [
+                    batch_id : batch_id,
+                    batch_tsv: samples[0].meta.batch_tsv
+                ]
+                def enabledDatabases = missingFasta ? [] : ['genbank'] 
+                return tuple(meta, samples, enabledDatabases)
             }
-            def meta = [
-                batch_id : batch_id,
-                batch_tsv: samples[0].meta.batch_tsv
-            ]
-            def enabledDatabases = missingFasta ? [] : ['genbank'] 
-            return tuple(meta, samples, enabledDatabases)
-        }
 
-	// Run submission using the batch channel
-	SUBMISSION(submission_batch_ch, 
-			   params.submission_config)
+        // Run submission using the batch channel
+        SUBMISSION_GENBANK(
+            submission_batch_ch, // meta: [sample_id, batch_id, batch_tsv], samples: [ [meta, fq1, fq2, nnp], ... ]), enabledDatabases (list)
+            params.submission_config
+        )
+    }
+
+    // Generate QC report sorting SQNs into pass/fail based on VADR results
+    if (params.submission && params.vadr) {
+        QC_REPORT(
+            SUMMARY.out.pass_fail,
+            SUBMISSION_GENBANK.out.submission_batch_folder.map { _meta, dir -> dir }.collect()
+        )
+    }
 
 	emit:
-    submission_batch_folder = SUBMISSION.out.submission_batch_folder
+    submission_batch_folder = params.submission ? SUBMISSION_GENBANK.out.submission_batch_folder : null
 }

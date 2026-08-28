@@ -4,6 +4,7 @@
 # Refactored and updated by J Rowell, AK Gupta, and KA O'Connell
 
 import os
+import logging
 import pandas as pd
 import warnings
 import re
@@ -161,7 +162,8 @@ class GetParams:
 		# initialize parser
 		parser = argparse.ArgumentParser(description="Parameters for Running Metadata Validation")
 		# required parameters (do not have default)
-		parser.add_argument("--meta_path", type=str, help="Path to excel spreadsheet for Metadata")
+		parser.add_argument("--meta_path", type=str, help="Path to metadata file (.xlsx, .csv, .tsv, .src)")
+		parser.add_argument("--fasta_dir", type=str, default="", help="Directory containing FASTA files. If provided, auto-populates fasta_path by matching sample_name to filenames.")
 		# optional parameters
 		parser.add_argument("--batch_size", type=int, default=1, 
 					  		help="Number of samples to process per batch")
@@ -172,17 +174,20 @@ class GetParams:
 		parser.add_argument("-k", "--remove_demographic_info", action="store_true", default=False,
 							help="Flag to remove potentially identifying demographic info if provided otherwise no change will be made " +
 								 "Applies to host_sex, host_age, race, ethnicity.")
-		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v'],
+		parser.add_argument("-d", "--date_format_flag", type=str, default="s", choices=['s', 'o', 'v', 'n'],
 							help="Flag to differ date output, s = default (YYYY-MM), " +
-								 "o = original(this skips date validation), v = verbose(YYYY-MM-DD)")
+								 "o = original (skips date validation), v = verbose (YYYY-MM-DD), " +
+								 "n = NCBI short month (Mon.YY)")
 		parser.add_argument("--custom_fields_file", type=str, 
 					  		help="File containing custom fields, datatypes, and which samples to check")
 		parser.add_argument("--validate_custom_fields", action="store_true", default=True, 
 					  		help="Flag for whether or not validate custom fields ")
 		parser.add_argument("--config_file", type=str, 
 					  		help="Path to submission config file with a valid BioSample_package key")
-		parser.add_argument("--biosample_fields_key", type=str, 
+		parser.add_argument("--biosample_fields_key", type=str,
 					  		help="Path to file with BioSample required fields information")
+		parser.add_argument("--genbank_only", action="store_true", default=False,
+							help="Skip BioSample/SRA-specific validation (for GenBank-only SQN generation)")
 		return parser
 
 	def get_restrictions(self):
@@ -223,11 +228,35 @@ class GetMetaAsDf:
 		self.df = self.load_meta()
 
 	def load_meta(self):
-		""" Loads the metadata file in as a dataframe from an Excel file (.xlsx)
+		""" Loads the metadata file as a dataframe. Supports Excel (.xlsx),
+		    CSV (.csv), and TSV (.tsv, .src, .txt) formats.
 		"""
-		df = pd.read_excel(self.parameters['meta_path'], header=[1], dtype = str, engine = "openpyxl", index_col=None, na_filter=False)
-		df = df.loc[:, ~df.columns.str.contains('^Unnamed')] # Remove "Unnamed" col that sometimes gets imported due to trailing commas
-		# Check for duplicate columns - pandas imports duplicate columns with .1, .2 endings so detect these and return an error if found
+		meta_path = self.parameters['meta_path']
+		if meta_path.endswith('.csv'):
+			df = pd.read_csv(meta_path, dtype=str, na_filter=False)
+		elif meta_path.endswith(('.tsv', '.src', '.txt')):
+			df = pd.read_csv(meta_path, sep='\t', dtype=str, na_filter=False)
+		else:
+			df = pd.read_excel(meta_path, header=[1], dtype=str, engine="openpyxl", index_col=None, na_filter=False)
+		df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+		# Map common NCBI source modifier column names to TOSTADAS names
+		column_aliases = {
+			'SeqId': 'sample_name',
+			'SeqID': 'sample_name',
+			'Strain': 'strain',
+			'Collection_date': 'collection_date',
+			'Host': 'host',
+			'Isolate': 'isolate',
+		}
+		df.rename(columns={k: v for k, v in column_aliases.items() if k in df.columns and v not in df.columns}, inplace=True)
+		# Split NCBI-style "USA:State" country field into country + state
+		if 'Country' in df.columns and 'country' not in df.columns:
+			split = df['Country'].str.split(':', n=1, expand=True)
+			df['country'] = split[0].str.strip()
+			if split.shape[1] > 1:
+				df['state'] = split[1].str.strip()
+			df.drop(columns=['Country'], inplace=True)
+		# Check for duplicate columns
 		duplicate_pattern = r"\.\d+$"  # Matches column names ending with .1, .2, etc.
 		mangled_columns = [re.sub(duplicate_pattern, "", col) for col in df.columns if any(re.match(rf"^{re.escape(base)}{duplicate_pattern}$", col) for base in df.columns if base != col)]
 		duplicate_bases = list(set(mangled_columns))
@@ -249,8 +278,24 @@ class GetMetaAsDf:
 		if df['sample_name'].isnull().any() or (df['sample_name'].str.strip() == "").any():
 			missing_indices = df[df['sample_name'].isnull() | (df['sample_name'].str.strip() == "")].index.tolist()
 			error_message = f"Error: The metadata file contains missing values in the 'sample_name' column at rows: {missing_indices}. Please provide valid sample names."
-			print(error_message, file=sys.stderr)  # Print the error message to stderr
+			print(error_message, file=sys.stderr)
 			sys.exit(1)
+
+		# Auto-populate fasta_path from --fasta_dir if fasta_path column is missing or empty
+		fasta_dir = self.parameters.get('fasta_dir', '')
+		if fasta_dir and ('fasta_path' not in df.columns or df['fasta_path'].eq('').all()):
+			fasta_extensions = ['.fasta', '.fa', '.fna', '.fas']
+			def find_fasta(sample_name):
+				for ext in fasta_extensions:
+					path = os.path.join(fasta_dir, f"{sample_name}{ext}")
+					if os.path.isfile(path):
+						return path
+				return ''
+			df['fasta_path'] = df['sample_name'].apply(find_fasta)
+			missing = df[df['fasta_path'] == '']['sample_name'].tolist()
+			if missing:
+				logging.warning(f"Skipping {len(missing)} samples with no FASTA in {fasta_dir}: {missing[:5]}{'...' if len(missing) > 5 else ''}")
+				df = df[df['fasta_path'] != '']
 
 		return df
 
@@ -278,32 +323,36 @@ class ValidateChecks:
 	def validate_main(self):
 		""" Main function that performs metadata validation
 		"""
-		# check ncbi-spuid uniqueness
-		self.check_unique_spuid()
+		genbank_only = self.parameters.get('genbank_only', False)
+
+		if not genbank_only:
+			# check ncbi-spuid uniqueness
+			self.check_unique_spuid()
 
 		# checks date
 		if self.parameters['date_format_flag'].lower() != 'o':
 			self.check_date()
 
-		# check authors
-		try:
-			self.check_authors()
-		except:
-			self.global_log.append("\n\t Invalid Author Name, please list as full names separated by ;")
-		
-		# checks required and optional BioSample package fields 
-		self.check_meta_core()
+		if not genbank_only:
+			# check authors
+			try:
+				self.check_authors()
+			except:
+				self.global_log.append("\n\t Invalid Author Name, please list as full names separated by ;")
 
-		# removes demographic data if user requested
-		if self.parameters['remove_demographic_info'] is True:
-			self.global_log.append(f"\n\t\t'remove_demographic_info' flag is True. Sample demographic data will be removed if present.")
-			self.check_meta_case()
+			# checks required and optional BioSample package fields
+			self.check_meta_core()
 
-		# check SRA data fields
-		self.check_illumina_nanopore()
+			# removes demographic data if user requested
+			if self.parameters['remove_demographic_info'] is True:
+				self.global_log.append(f"\n\t\t'remove_demographic_info' flag is True. Sample demographic data will be removed if present.")
+				self.check_meta_case()
 
-		# check custom data fields
-		self.check_custom_fields(self.parameters['custom_fields_file'])
+			# check SRA data fields
+			self.check_illumina_nanopore()
+
+			# check custom data fields
+			self.check_custom_fields(self.parameters['custom_fields_file'])
 
 		# write error file
 		self.report_errors()
@@ -364,31 +413,52 @@ class ValidateChecks:
 		""" Validates and reformats dates based on date_format_flag value
 		"""
 		flag = self.parameters.get("date_format_flag", "").lower()
-		if flag not in {"v", "s"}:
+		if flag not in {"v", "s", "n"}:
 			raise ValueError(f"Unknown date_format_flag: {flag}")
 
+		month_map = {'jan':'01','feb':'02','mar':'03','apr':'04','may':'05','jun':'06',
+					'jul':'07','aug':'08','sep':'09','oct':'10','nov':'11','dec':'12'}
+		reverse_month_map = {v: k.capitalize() for k, v in month_map.items()}
+
 		def validate_and_format(row):
-			date_str = str(row['collection_date'])
+			date_str = str(row['collection_date']).strip()
 			sample = row['sample_name']
 
-			if not date_str or date_str.strip() == "":
+			if not date_str:
 				self.sample_log[sample].append("ERROR: Missing collection_date.")
 				return date_str
 
-			match = re.match(r"^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?", date_str)
-			if not match:
-				self.sample_log[sample].append(f"ERROR: Invalid date format: '{date_str}'")
-				return date_str
+			# Standard YYYY-MM-DD or YYYY-MM or YYYY/MM/DD
+			match = re.match(r"^(\d{4})(?:[-/](\d{1,2}))?(?:[-/](\d{1,2}))?$", date_str)
+			if match:
+				year, month, day = match.groups()
+				if len(year) == 2:
+					self.sample_log[sample].append(f"ERROR: Year is two digits: '{year}'")
+					return date_str
+				month = month.zfill(2) if month else "01"
+				day = day.zfill(2) if day else "01"
+				if flag == "v":
+					return f"{year}-{month}-{day}"
+				elif flag == "n":
+					return f"{reverse_month_map.get(month, month)}.{year[2:]}"
+				else:
+					return f"{year}-{month}"
 
-			year, month, day = match.groups()
-			if len(year) == 2:
-				self.sample_log[sample].append(f"ERROR: Year is two digits: '{year}'")
-				return date_str
+			# NCBI source modifier formats: Mon-YYYY, Mon.YY, Mon-YY
+			match = re.match(r"^([A-Za-z]{3})[-.](\d{2,4})$", date_str)
+			if match:
+				mon, yr = match.group(1).lower(), match.group(2)
+				if mon in month_map:
+					year = f"20{yr}" if len(yr) == 2 else yr
+					if flag == "v":
+						return f"{year}-{month_map[mon]}-01"
+					elif flag == "n":
+						return f"{mon.capitalize()}.{year[2:]}"
+					else:
+						return f"{year}-{month_map[mon]}"
 
-			month = month.zfill(2) if month else "01"
-			day = day.zfill(2) if day else "01"
-
-			return f"{year}-{month}-{day}" if flag == "v" else f"{year}-{month}"
+			self.sample_log[sample].append(f"ERROR: Invalid date format: '{date_str}'")
+			return date_str
 
 		self.metadata_df["collection_date"] = self.metadata_df.apply(validate_and_format, axis=1)
 
@@ -404,7 +474,7 @@ class ValidateChecks:
 			cleaned = ''.join([char for char in raw_name if not char.isdigit()]).strip()
 
 			# Remove unwanted tokens/characters
-			for token in ['...', 'Name:', 'author', ',', 'dtype:', ':', 'object', '\\', '/']:
+			for token in ['...', 'Name:', 'author', 'dtype:', ':', 'object', '\\', '/']:
 				cleaned = cleaned.replace(token, '')
 			parts = cleaned.split()
 
@@ -412,6 +482,8 @@ class ValidateChecks:
 			if len(parts) == 3 and len(parts[0]) > 1:
 				new_name = f"{parts[0][0]}.{parts[1][0]}. {parts[2]}"
 				return new_name if (new_name.count('.') == 2 and len(new_name.split()) == 2) else cleaned
+			# Otherwise keep the name as-is instead of returning None
+			return cleaned
 
 		# Apply to the full dataframe
 		for idx, row in self.metadata_df.iterrows():
@@ -708,7 +780,7 @@ class HandleDfInserts:
 		"""
 		for i in range(len(self.list_of_country)):
 			if i < len(self.list_of_state) and self.list_of_state[i] not in ("", None):
-				self.new_combination_list.append(f'{self.list_of_country[i]}: {self.list_of_state[i]}')
+				self.new_combination_list.append(f'{self.list_of_country[i]}:{self.list_of_state[i]}')
 			else:
 				self.new_combination_list.append(str(self.list_of_country[i]))
 

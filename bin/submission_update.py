@@ -160,7 +160,7 @@ def main():
     setup_logging(log_file=log_file_path, level=logging.DEBUG)
     logging.info("Starting BioSample batch update.")
 
-    metadata_df = pd.read_csv(args.metadata_file, sep='\t')
+    metadata_df = pd.read_csv(args.metadata_file, sep='\t', dtype=str)
     config = SubmissionConfigParser(vars(args)).load_config()
     client = SFTPClient(config) if args.submission_mode == 'sftp' else FTPClient(config)
     mode = 'Test' if args.test else 'Production'

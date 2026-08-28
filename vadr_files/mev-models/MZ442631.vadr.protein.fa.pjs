@@ -1,0 +1,22 @@
+{
+  "version": "1.2",
+  "dbname": "MZ442631.vadr.protein.fa",
+  "dbtype": "Protein",
+  "db-version": 5,
+  "description": "./H1_MZ442631/MZ442631.vadr.protein.fa",
+  "number-of-letters": 5202,
+  "number-of-sequences": 8,
+  "last-updated": "2025-03-20T19:17:00",
+  "number-of-volumes": 1,
+  "bytes-total": 43116,
+  "bytes-to-cache": 5411,
+  "files": [
+    "MZ442631.vadr.protein.fa.pdb",
+    "MZ442631.vadr.protein.fa.phr",
+    "MZ442631.vadr.protein.fa.pin",
+    "MZ442631.vadr.protein.fa.pot",
+    "MZ442631.vadr.protein.fa.psq",
+    "MZ442631.vadr.protein.fa.ptf",
+    "MZ442631.vadr.protein.fa.pto"
+  ]
+}

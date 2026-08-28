@@ -1,0 +1,32 @@
+/* CDC Blue header and accents */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #005DAA;
+  --md-primary-fg-color--light: #1A6FBD;
+  --md-primary-fg-color--dark: #004080;
+  --md-accent-fg-color: #005DAA;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #005DAA;
+  --md-primary-fg-color--light: #1A6FBD;
+  --md-primary-fg-color--dark: #004080;
+  --md-accent-fg-color: #4DA3E8;
+}
+
+/* Make nav section titles more visually distinct */
+.md-nav__item--nested > .md-nav__link {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: var(--md-default-fg-color--light);
+}
+
+/* Pipeline flow arrows */
+.flow-arrow {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #005DAA;
+  margin: 0.5rem 0;
+  line-height: 1;
+}
