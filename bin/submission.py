@@ -33,6 +33,9 @@ def get_args():
 				   help="Whether to send the ASN.1 file after running table2asn", action="store_const", default=False, const=True)
 	parser.add_argument("--dry_run", action="store_true", 
 				   help="Print what would be uploaded but don't connect or transfer files")
+	parser.add_argument("--allow_dir_collision", action="store_true",
+				   help="Skip the pre-submission collision check and upload even if the remote "
+				   "submission directory already exists and is non-empty (a prior submission).")
 	return parser
 
 def is_fastq_file(filename):
@@ -110,6 +113,26 @@ def main_submit():
 					logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
 			else:
 				client.connect()
+				# Pre-submission collision check: base_folder is not run-unique, so re-running
+				# (especially with a different batch_size) can reshuffle samples into a
+				# submit/<mode>/<id>_<batch>_<db> dir a prior run already populated, which
+				# corrupts the submission at NCBI (mismatched sample counts / duplicate errors).
+				if client.dir_exists(remote_dir):
+					existing = [os.path.basename(f) for f in client.list_dir(remote_dir)]
+					existing = [f for f in existing if f not in ('', '.', '..')]
+					if existing:
+						msg = (f"Submission-directory collision: {remote_dir} already exists on "
+							f"{params['submission_mode'].upper()} and is not empty "
+							f"({len(existing)} file(s), e.g. {existing[:5]}). A prior submission "
+							f"populated it; uploading here can corrupt the submission at NCBI. "
+							f"Fix: use a run-unique --identifier, or clear/rename the remote dir, "
+							f"then re-run. To override and upload anyway, pass --allow_dir_collision.")
+						if params.get('allow_dir_collision'):
+							logging.warning(f"[COLLISION OVERRIDE] {msg}")
+						else:
+							logging.error(f"[COLLISION] {msg}")
+							client.close()
+							raise SystemExit(1)
 				client.make_dir(remote_dir)
 				client.change_dir(remote_dir)
 				for fname in files_to_upload:

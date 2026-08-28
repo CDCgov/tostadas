@@ -12,6 +12,7 @@ import xml.dom.minidom as minidom  # Import minidom for pretty-printing
 import math  # Required for isnan check
 import time
 import shlex
+import re
 import subprocess
 from typing import Optional, List
 import pandas as pd
@@ -772,6 +773,17 @@ class SFTPClient:
 			return True
 		except IOError:
 			return False
+	def dir_exists(self, dir_path):
+		try:
+			self.sftp.stat(dir_path)
+			return True
+		except IOError:
+			return False
+	def list_dir(self, dir_path):
+		try:
+			return self.sftp.listdir(dir_path)
+		except IOError:
+			return []
 	def download_file(self, remote_file, local_path):
 		try:
 			self.sftp.get(remote_file, local_path)
@@ -840,6 +852,19 @@ class FTPClient:
 			return True
 		else:
 			return False
+	def dir_exists(self, dir_path):
+		try:
+			current = self.ftp.pwd()
+			self.ftp.cwd(dir_path)
+			self.ftp.cwd(current)
+			return True
+		except ftplib.error_perm:
+			return False
+	def list_dir(self, dir_path):
+		try:
+			return self.ftp.nlst(dir_path)
+		except ftplib.error_perm:
+			return []
 	def download_file(self, remote_file, local_path):
 		with open(local_path, 'wb') as f:
 			self.ftp.retrbinary(f'RETR {remote_file}', f.write)
