@@ -5,6 +5,6 @@ mkdocs-minify-plugin==0.6.4
 #https://pypi.org/project/mkdocs-git-revision-date-plugin/
 mkdocs-git-revision-date-plugin==0.3.2
 #https://pypi.org/project/mkdocs-material/
-mkdocs-material==9.1.6
+mkdocs-material==9.7.7
 #https://pypi.org/project/mkdocs-material-extensions/
 mkdocs-material-extensions==1.1.1
