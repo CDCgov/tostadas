@@ -694,6 +694,22 @@ class XMLSubmission(ABC):
 		if value is None or (isinstance(value, float) and math.isnan(value)):
 			return "Not Provided"
 		return str(value)
+	def bioproject_id(self):
+		"""Return the BioProject accession from the metadata, or None if it is
+		blank, missing, or a placeholder.
+
+		NCBI rejects submissions that carry a placeholder value such as
+		"Not Provided" as a BioProject PrimaryId (and tostadas then hangs
+		waiting on the rejected submission), so callers must omit the
+		BioProject element entirely instead of writing the placeholder.
+		"""
+		value = self.top_metadata.get('ncbi-bioproject')
+		if value is None or (isinstance(value, float) and math.isnan(value)):
+			return None
+		value = str(value).strip()
+		if not value or value == "Not Provided":
+			return None
+		return value
 	def init_xml_root(self):
 		self.submission_root = ET.Element('Submission')
 		# Description
@@ -796,9 +812,15 @@ class BiosampleSubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 		organism_name = ET.SubElement(organism, 'OrganismName')
 		organism_name.text = self.safe_text(self.biosample_metadata['organism'])
 		# BioProject reference
-		bioproject = ET.SubElement(biosample, 'BioProject')
-		primary_id = ET.SubElement(bioproject, 'PrimaryId', {'db': 'BioProject'})
-		primary_id.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
+		# Omit the element entirely when no BioProject was provided: NCBI
+		# rejects submissions carrying a placeholder such as "Not Provided".
+		bioproject_id = self.bioproject_id()
+		if bioproject_id is not None:
+			bioproject = ET.SubElement(biosample, 'BioProject')
+			primary_id = ET.SubElement(bioproject, 'PrimaryId', {'db': 'BioProject'})
+			primary_id.text = bioproject_id
+		else:
+			logging.warning("ncbi-bioproject is blank; omitting the BioProject reference from the BioSample submission XML")
 		# Package
 		bs_package = ET.SubElement(biosample, 'Package')
 		bs_package.text = self.safe_text(self.submission_config['BioSample_package'])
@@ -857,10 +879,16 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 			attribute.text = self.safe_text(attr_value)
 		spuid_namespace_value = self.safe_text(self.submission_config['NCBI_Namespace'])
 		# BioProject reference
-		attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
-		refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
-		primaryid_bioproject = ET.SubElement(refid_bioproject, "PrimaryId")
-		primaryid_bioproject.text = self.safe_text(self.top_metadata['ncbi-bioproject'])
+		# Omit the element entirely when no BioProject was provided: NCBI
+		# rejects submissions carrying a placeholder such as "Not Provided".
+		bioproject_id = self.bioproject_id()
+		if bioproject_id is not None:
+			attribute_ref_id_bioproject = ET.SubElement(add_files, "AttributeRefId", name="BioProject")
+			refid_bioproject = ET.SubElement(attribute_ref_id_bioproject, "RefId")
+			primaryid_bioproject = ET.SubElement(refid_bioproject, "PrimaryId")
+			primaryid_bioproject.text = bioproject_id
+		else:
+			logging.warning("ncbi-bioproject is blank; omitting the BioProject reference from the SRA submission XML")
 		# BioSample reference
 		attribute_ref_id_biosample = ET.SubElement(add_files, "AttributeRefId", name="BioSample")
 		refid_biosample = ET.SubElement(attribute_ref_id_biosample, "RefId")
@@ -953,10 +981,16 @@ class GenbankSubmission(XMLSubmission, Submission):
 		ET.SubElement(description, "GenomeRepresentation").text = "Full"
 		ET.SubElement(description, "ExpectedFinalVersion").text = "Yes"
 		# AttributeRefId for BioProject
-		attribute_ref = ET.SubElement(add_files, "AttributeRefId")
-		ref_id = ET.SubElement(attribute_ref, "RefId")
-		primary_id = ET.SubElement(ref_id, "PrimaryId", db="BioProject")
-		primary_id.text = self.safe_text(self.top_metadata["ncbi-bioproject"])
+		# Omit the element entirely when no BioProject was provided: NCBI
+		# rejects submissions carrying a placeholder such as "Not Provided".
+		bioproject_id = self.bioproject_id()
+		if bioproject_id is not None:
+			attribute_ref = ET.SubElement(add_files, "AttributeRefId")
+			ref_id = ET.SubElement(attribute_ref, "RefId")
+			primary_id = ET.SubElement(ref_id, "PrimaryId", db="BioProject")
+			primary_id.text = bioproject_id
+		else:
+			logging.warning("ncbi-bioproject is blank; omitting the BioProject reference from the GenBank submission XML")
 		# AttributeRefId for BioSample
 		attribute_ref = ET.SubElement(add_files, "AttributeRefId")
 		ref_id = ET.SubElement(attribute_ref, "RefId")
