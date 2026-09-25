@@ -1,70 +1,92 @@
 # Installation
 
-## Table of Contents
-
-- [Environment Setup](#environment-setup)
-- [Run a test submission](#run-a-test-submission)
-- [Start submitting your own data](#start-submitting-your-own-data)
-
 ## Environment Setup
 
-### Dependencies:
+### Dependencies
 
-*   Nextflow v. 21.10.3 or newer
-*   Compute environment (docker, singularity or conda)
+- Nextflow v. 24.04.0 or newer (see [Nextflow Version Compatibility](#nextflow-version-compatibility) below)
+- Compute environment (docker, singularity or conda)
 
-❗ Note: If you are a CDC user, please follow the set-up instructions found on this page: [CDC User Guide](../user-guide/cdc-user-guide.md)
+### Nextflow Version Compatibility
 
-### (1) Clone the repository to your local machine:
+This pipeline uses the **nf-schema@2.3.0** plugin for parameter validation, which requires **Nextflow 23.10.0 or later**. The minimum supported version for TOSTADAS is **24.04.0**.
 
-*   `git clone https://github.com/CDCgov/tostadas.git`
+| Nextflow Version | Status                   |
+|------------------|--------------------------|
+| 25.10.4          | Tested on HPC            |
+| latest-edge      | Tested in CI             |
+| 24.04.0+         | Minimum supported version|
+| < 24.04.0        | Not supported            |
 
-❗ Note: If you already have Nextflow installed in your local environment, skip ahead to step 5.
+!!! note "nf-schema plugin"
+    Users running Nextflow v24 or later may see a warning that the nf-schema plugin must be installed. To resolve this, install the plugin manually by following the [Nextflow offline plugin usage instructions](https://www.nextflow.io/docs/latest/plugins.html#offline-usage).
 
-### (2) Install mamba and add it to your PATH
+!!! note
+    If you are a CDC user, please follow the set-up instructions found on this page: [CDC User Guide](../user-guide/cdc-user-guide.md)
 
-2a. Install mamba
+### Clone the Repository
 
-❗ Note: If you have mamba installed in your local environment, skip ahead to step 3.
+```bash
+git clone https://github.com/CDCgov/tostadas.git
+```
 
-`curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh`
+!!! note
+    If you already have Nextflow installed in your local environment, proceed to the [Run a test submission](#run-a-test-submission) section below.
 
-`bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge`
+### Install Mamba
 
-2b. Add mamba to PATH:
+**Install mamba:**
 
-`export PATH="$HOME/mambaforge/bin:$PATH"`
+!!! note
+    If you have mamba installed in your local environment, proceed to the [Install Nextflow](#install-nextflow) section below.
 
-### (3) Install Nextflow using mamba and the bioconda Channel
+```bash
+curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+```
 
-`mamba install -c bioconda nextflow`
+```bash
+bash Mambaforge-$(uname)-$(uname -m).sh -b -p $HOME/mambaforge
+```
+
+**Add mamba to PATH:**
+
+```bash
+export PATH="$HOME/mambaforge/bin:$PATH"
+```
+
+### Install Nextflow
+
+```bash
+mamba install -c bioconda nextflow
+```
 
 ## Run a test submission
 
-### (1) Update the default submissions config file with your NCBI username and password
+### Update the Submission Config
 
-`# update this config file (you don't have to use vim)`
+```bash
+# update this config file (use any text editor)
+vim conf/submission_config.yaml
+```
 
-`vim conf/submission_config.yaml`
+### Run the Test Workflow
 
-### (2) Run the workflow with default parameters and the local run environment
+```bash
+# test command for virus reads
+nextflow run main.nf -profile mpox,test,<singularity|docker|conda> --workflow biosample_and_sra
+```
 
-`# test command for virus reads`
-
-`nextflow run main.nf -profile mpox,test,<singularity|docker|conda> --workflow biosample_and_sra`
-
-The pipeline outputs appear in `tostadas/results`
+The pipeline outputs appear in `results/`
 
 ## Start submitting your own data
 
 Create an NCBI Center Account. See [NCBI Center Account](general_NCBI_submission_guide.md#ncbi-center-account)
 
-Choose a workflow and specify your profile or (optionally, for annotation and GenBank submission) an `organism_Type` and `virus_subtype`.  See: [Putting together the Nextflow command](submission_guide.md#putting-together-the-nextflow-command)
+Choose a workflow and specify your profile or (optionally, for annotation and GenBank submission) an `organism_type` and `virus_subtype`. See: [Putting together the Nextflow command](submission_guide.md#putting-together-the-nextflow-command)
 
-**Please read** the [Submission Guide](submission_guide.md) for important details about parameters you need to specify.  Please especially note the following:   
-* `prod_submission`: true/false (for submitting to Test vs. Production server). See [Other customizations](submission_guide.md#other-customizations)      
-* `batch_size`: for submitting large datasets in chunks. We **highly** recommend you submit using batches! See [Other customizations](submission_guide.md#other-customizations)    
-* `workflow`: read how to use TOSTADAS for different types of submissions. See [Submitting to Production](submission_guide.md#submitting-to-production)   
-* profiles: read about profile shortcuts in [Using specific profiles](submission_guide.md#using-specific-profiles)   
+Refer to the [Submission Guide](submission_guide.md) for important details about parameters to specify. Pay particular attention to the following:
 
-
+- `--prod_submission` -- true/false (for submitting to Test vs. Production server). See [Other customizations](submission_guide.md#other-customizations)
+- `--batch_size` -- for submitting large datasets in chunks. Batch submission is strongly recommended. See [Other customizations](submission_guide.md#other-customizations)
+- `--workflow` -- read how to use TOSTADAS for different types of submissions. See [Submitting to Production](submission_guide.md#submitting-to-production)
+- Profiles -- read about profile shortcuts in [Using specific profiles](submission_guide.md#using-specific-profiles)

@@ -1,0 +1,22 @@
+{
+  "version": "1.2",
+  "dbname": "OR290098.vadr.protein.fa",
+  "dbtype": "Protein",
+  "db-version": 5,
+  "description": "/data/vadr-models-mev/mev/OR290098.vadr.protein.fa",
+  "number-of-letters": 5823,
+  "number-of-sequences": 9,
+  "last-updated": "2025-03-28T20:43:00",
+  "number-of-volumes": 1,
+  "bytes-total": 43877,
+  "bytes-to-cache": 6057,
+  "files": [
+    "OR290098.vadr.protein.fa.pdb",
+    "OR290098.vadr.protein.fa.phr",
+    "OR290098.vadr.protein.fa.pin",
+    "OR290098.vadr.protein.fa.pot",
+    "OR290098.vadr.protein.fa.psq",
+    "OR290098.vadr.protein.fa.ptf",
+    "OR290098.vadr.protein.fa.pto"
+  ]
+}

@@ -8,16 +8,17 @@ nextflow_workflow {
 
         when {
             params {
-                vadr_models_dir  = "${projectDir}/vadr_files/mpxv-models/"
+                vadr_models_dir  = "${projectDir}/vadr_files/rsv-models/"
                 outdir           = "${outputDir}"
-                virus_subtype    = "mpxv"
-                prefix           = "NY0006"
+                virus_subtype    = "rsv"
+                vadr_opts        = "-r --xnocomp"
+                prefix           = "MZ568967"
             }
             workflow {
                 """
                 input[0] = Channel.of([
-                    [ batch_id: "batch_1", batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv"), sample_id: "NY0006" ],
-                    file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta")
+                    [ batch_id: "batch_1", batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv"), sample_id: "MZ568967" ],
+                    file("${projectDir}/assets/sample_fastas/rsv/MZ568967.fasta")
                 ])
                 """
             }

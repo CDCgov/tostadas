@@ -1,0 +1,88 @@
+nextflow_process {
+
+    name "Test Process UPDATE_SUBMISSION"
+    script "modules/local/update_submission/main.nf"
+    process "UPDATE_SUBMISSION"
+
+    test("Should produce updated submission XML in dry-run mode") {
+
+        when {
+            params {
+                // Submission params required by the process script
+                prod_submission = false
+                dry_run = true
+                submission_mode = "ftp"
+                metadata_basename = "mpxv_test_metadata"
+                overwrite_output = true
+
+                // publishDir params referenced by the process definition
+                output_dir = "${outputDir}"
+                submission_output_dir = "submission_outputs"
+            }
+
+            process {
+                """
+                // input[0]: tuple val(meta), val(samples), val(enabledDatabases)
+                input[0] = tuple(
+                    [batch_id: 'batch_1'],
+                    [[sample_id: 'IL0005'], [sample_id: 'NY0006']],
+                    ['biosample']
+                )
+                // input[1]: path(batch_tsv)
+                input[1] = file("${projectDir}/tests/modules/local/update_submission/batch_1.tsv")
+                // input[2]: path(original_submissions_dir) -- parent directory containing batch_1/biosample/submission.xml
+                input[2] = file("${projectDir}/tests/modules/local/update_submission/original_submissions/")
+                // input[3]: path(submission_config)
+                input[3] = file("${projectDir}/conf/submission_config.yaml")
+                """
+            }
+        }
+
+        then {
+            // Verify the process completed without error
+            assert process.success
+
+            // Verify the submission_batch_folder output was produced
+            assert process.out.submission_batch_folder.size() == 1
+
+            // The output tuple should contain the meta map and a directory path
+            def outMeta = process.out.submission_batch_folder[0][0]
+            assert outMeta.batch_id == 'batch_1'
+        }
+    }
+
+    test("Should not run when no enabled databases match the when guard") {
+
+        when {
+            params {
+                prod_submission = false
+                dry_run = true
+                submission_mode = "ftp"
+                metadata_basename = "mpxv_test_metadata"
+                overwrite_output = true
+                output_dir = "${outputDir}"
+                submission_output_dir = "submission_outputs"
+            }
+
+            process {
+                """
+                // Provide an empty enabled-databases list so the 'when' guard is false
+                input[0] = tuple(
+                    [batch_id: 'batch_1'],
+                    [[sample_id: 'IL0005']],
+                    []
+                )
+                input[1] = file("${projectDir}/tests/modules/local/update_submission/batch_1.tsv")
+                input[2] = file("${projectDir}/tests/modules/local/update_submission/original_submissions/")
+                input[3] = file("${projectDir}/conf/submission_config.yaml")
+                """
+            }
+        }
+
+        then {
+            // The process should succeed but produce no output because enabledDatabases is empty
+            assert process.success
+            assert process.out.submission_batch_folder.size() == 0
+        }
+    }
+}

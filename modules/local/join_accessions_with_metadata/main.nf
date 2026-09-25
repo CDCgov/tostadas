@@ -7,8 +7,7 @@
 process JOIN_ACCESSIONS_WITH_METADATA {
 
     conda(params.env_yml)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
+    container 'docker.io/staphb/tostadas:latest'
 
     input:
         path validated_metadata_tsv

@@ -27,6 +27,10 @@ process REBATCH_METADATA {
         full[full["sample_name"].isin(sample_list)].to_csv(batch_file, sep="\t", index=False)
         meta = {"batch_id": batch_id, "batch_tsv": batch_file}
         samples = [ {"sample_id": sid} for sid in sample_list ]
+        # LIMITATION: only BioSample updates are currently supported by the
+        # update_submission workflow. SRA and GenBank are not included here.
+        # Extending this to other databases would require changes to the
+        # UPDATE_SUBMISSION process and additional end-to-end testing.
         enabled = ["biosample"]
         
         with open(f"{batch_id}.json", "w") as f:

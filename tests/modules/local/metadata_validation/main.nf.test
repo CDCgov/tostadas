@@ -24,8 +24,8 @@ nextflow_process {
             }
             process {
                 """
-                // define inputs of the process here
                 input[0] = file("${projectDir}/assets/sample_metadata/mpxv_test_metadata.xlsx")
+                input[1] = file("${projectDir}/conf/submission_config.yaml")
                 """
             }
         }

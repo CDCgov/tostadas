@@ -6,8 +6,11 @@
 process FETCH_REPORTS {
 
     conda(params.env_yml)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker.io/staphb/tostadas:latest' : 'docker.io/staphb/tostadas:latest' }"
+    container 'docker.io/staphb/tostadas:latest'
+
+    // Read-only fetch; safe to retry on any failure
+    errorStrategy 'retry'
+    maxRetries 3
 
     input:
     tuple val(meta), path(submission_folder)

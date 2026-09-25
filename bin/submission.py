@@ -33,6 +33,9 @@ def get_args():
 				   help="Whether to send the ASN.1 file after running table2asn", action="store_const", default=False, const=True)
 	parser.add_argument("--dry_run", action="store_true", 
 				   help="Print what would be uploaded but don't connect or transfer files")
+	parser.add_argument("--allow_dir_collision", action="store_true",
+				   help="Skip the pre-submission collision check and upload even if the remote "
+				   "submission directory already exists and is non-empty (a prior submission).")
 	return parser
 
 def is_fastq_file(filename):
@@ -110,6 +113,26 @@ def main_submit():
 					logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
 			else:
 				client.connect()
+				# Pre-submission collision check: base_folder is not run-unique, so re-running
+				# (especially with a different batch_size) can reshuffle samples into a
+				# submit/<mode>/<id>_<batch>_<db> dir a prior run already populated, which
+				# corrupts the submission at NCBI (mismatched sample counts / duplicate errors).
+				if client.dir_exists(remote_dir):
+					existing = [os.path.basename(f) for f in client.list_dir(remote_dir)]
+					existing = [f for f in existing if f not in ('', '.', '..')]
+					if existing:
+						msg = (f"Submission-directory collision: {remote_dir} already exists on "
+							f"{params['submission_mode'].upper()} and is not empty "
+							f"({len(existing)} file(s), e.g. {existing[:5]}). A prior submission "
+							f"populated it; uploading here can corrupt the submission at NCBI. "
+							f"Fix: use a run-unique --identifier, or clear/rename the remote dir, "
+							f"then re-run. To override and upload anyway, pass --allow_dir_collision.")
+						if params.get('allow_dir_collision'):
+							logging.warning(f"[COLLISION OVERRIDE] {msg}")
+						else:
+							logging.error(f"[COLLISION] {msg}")
+							client.close()
+							raise SystemExit(1)
 				client.make_dir(remote_dir)
 				client.change_dir(remote_dir)
 				for fname in files_to_upload:
@@ -125,18 +148,19 @@ def main_submit():
 						except Exception as e:
 							logging.warning(f"Could not delete FASTQ file {local}: {e}")
 				client.close()
-
-		elif any(f.endswith('.zip') for f in files):
-			# Handle non-ftp submissions (directories with a zip file but without submission.xml and submit.ready)
-			rel = os.path.relpath(dirpath, root) # dirpath should be <batch_id>/genbank/<sample_id>
-			parts = rel.split(os.sep) # genbank/<sample_id>
-			database = parts[0].lower() # genbank
-			sample = parts[1] # genbank submission files are stored in a subfolder called <sample name>
-			if database == 'genbank':  # make sure we're only uploading the intended zip file
-				if params['dry_run']:
-					sendemail(sample, config, mode, dirpath)
-				elif params['send_email']:
-					sendemail(sample, config, mode, dirpath, dry_run=False)
+		elif any(f.endswith('.sqn') for f in files):
+			# Handle non-ftp submissions (directories with .sqn files but without submission.xml and submit.ready)
+			# Extract the sample_id from the leaf directory name; os.path.relpath would include
+			# parent dirs (e.g. "genbank/sample123") which is not a valid sample identifier.
+			sample = os.path.basename(dirpath)
+			database = 'genbank'
+			logging.info(f"Found sample {sample} to submit to {database} at {dirpath}")
+			if params['dry_run']:
+				sendemail(sample, config, mode, dirpath)
+			elif params['send_email']:
+				sendemail(sample, config, mode, dirpath, dry_run=False)
+			else:
+				logging.info(f"Submission will not be emailed because --send_email flag is set to {params['send_email']}.")
 		else:
 			print(f"[SKIP] {dirpath} does not contain both submission.xml and submit.ready")
 

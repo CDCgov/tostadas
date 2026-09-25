@@ -8,7 +8,7 @@ process WAIT {
     tag "wait ${wait_time}s"
 
     conda(params.env_yml)
-    container 'staphb/tostadas:latest'
+    container 'docker.io/staphb/tostadas:latest'
 
     input:
         val wait_time

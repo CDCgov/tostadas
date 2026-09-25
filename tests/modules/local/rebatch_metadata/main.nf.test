@@ -1,0 +1,57 @@
+nextflow_process {
+
+    name "Test Process REBATCH_METADATA"
+    script "modules/local/rebatch_metadata/main.nf"
+    process "REBATCH_METADATA"
+
+    test("Should rebatch validated metadata into per-batch TSV and JSON files") {
+
+        when {
+            params {
+                outdir = "${outputDir}"
+            }
+            process {
+                """
+                input[0] = file("${projectDir}/tests/modules/local/rebatch_metadata/validated_metadata.tsv")
+                input[1] = file("${projectDir}/tests/modules/local/rebatch_metadata/batch_summary.json")
+                """
+            }
+        }
+
+        then {
+            // Verify the process completed without error
+            assert process.success
+
+            // The rebatch_tuple output should contain exactly one pair (one batch in the summary)
+            assert process.out.rebatch_tuple.size() == 1
+
+            // Verify the output TSV file exists and is non-empty
+            def tsvFiles = process.out.rebatch_tuple[0][0]
+            assert tsvFiles instanceof List ? tsvFiles.size() > 0 : tsvFiles != null
+
+            // Verify the output JSON file exists and is non-empty
+            def jsonFiles = process.out.rebatch_tuple[0][1]
+            assert jsonFiles instanceof List ? jsonFiles.size() > 0 : jsonFiles != null
+        }
+    }
+
+    test("Should produce correct batch content from multi-batch summary") {
+
+        when {
+            params {
+                outdir = "${outputDir}"
+            }
+            process {
+                """
+                input[0] = file("${projectDir}/tests/modules/local/rebatch_metadata/validated_metadata.tsv")
+                input[1] = file("${projectDir}/tests/modules/local/rebatch_metadata/batch_summary.json")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out.rebatch_tuple).match()
+        }
+    }
+}

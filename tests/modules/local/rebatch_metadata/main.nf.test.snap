@@ -1,0 +1,17 @@
+{
+    "Should produce correct batch content from multi-batch summary": {
+        "content": [
+            [
+                [
+                    "batch_1.tsv:md5,da598b90a476b45add58cb9a28c1a19f",
+                    "batch_1.json:md5,9d05daefe59dfd320319314a94d86d98"
+                ]
+            ]
+        ],
+        "timestamp": "2026-03-18T11:24:39.971347722",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    }
+}

@@ -1,0 +1,22 @@
+{
+  "version": "1.2",
+  "dbname": "MG912589.vadr.protein.fa",
+  "dbtype": "Protein",
+  "db-version": 5,
+  "description": "./C2_MG912589/MG912589.vadr.protein.fa",
+  "number-of-letters": 5202,
+  "number-of-sequences": 8,
+  "last-updated": "2025-03-20T19:17:00",
+  "number-of-volumes": 1,
+  "bytes-total": 43116,
+  "bytes-to-cache": 5411,
+  "files": [
+    "MG912589.vadr.protein.fa.pdb",
+    "MG912589.vadr.protein.fa.phr",
+    "MG912589.vadr.protein.fa.pin",
+    "MG912589.vadr.protein.fa.pot",
+    "MG912589.vadr.protein.fa.psq",
+    "MG912589.vadr.protein.fa.ptf",
+    "MG912589.vadr.protein.fa.pto"
+  ]
+}

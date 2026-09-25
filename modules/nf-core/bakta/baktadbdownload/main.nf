@@ -6,6 +6,10 @@ process BAKTA_BAKTADBDOWNLOAD {
         'https://depot.galaxyproject.org/singularity/bakta:1.10.4--pyhdfd78af_0' :
         'biocontainers/bakta:1.10.4--pyhdfd78af_0' }"
 
+    // Network download; idempotent and safe to retry
+    errorStrategy 'retry'
+    maxRetries 3
+
     output:
     path "db*"              , emit: db
     path "versions.yml"     , emit: versions

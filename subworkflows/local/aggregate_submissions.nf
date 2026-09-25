@@ -1,4 +1,4 @@
-include { FETCH_REPORTS                              } from '../../modules/local/fetch_reports/main'
+include { POLL_AND_FETCH_REPORTS                    } from '../../modules/local/poll_and_fetch_reports/main'
 include { AGGREGATE_REPORTS                          } from '../../modules/local/aggregate_reports/main'
 include { JOIN_ACCESSIONS_WITH_METADATA              } from '../../modules/local/join_accessions_with_metadata/main'
 
@@ -7,13 +7,12 @@ workflow AGGREGATE_SUBMISSIONS {
       submission_dirs // works for one or more batch_dir(s)
       submission_config
       validated_metadata_tsv
-      wait_signal
 
     main:
-      FETCH_REPORTS(submission_dirs, file(submission_config))
+      POLL_AND_FETCH_REPORTS(submission_dirs, file(submission_config))
 
       // Collect the individual batch submission_reports
-      FETCH_REPORTS.out.submission_report
+      POLL_AND_FETCH_REPORTS.out.submission_report
                 .collect()
                 .set { all_report_csvs }
 

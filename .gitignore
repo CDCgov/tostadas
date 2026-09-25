@@ -97,3 +97,4 @@ bin/.DS_Store
 /test_main_workflow
 /validation_outputs/
 /test_*
+bin/__pycache__/

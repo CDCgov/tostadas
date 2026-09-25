@@ -17,7 +17,11 @@ workflow SUBMISSION {
     main:
         submission_config_file = file(submission_config)
 
-        PREP_SUBMISSION(submission_ch, submission_config_file)
+        // Extract batch_tsv as a separate path channel so Nextflow stages
+        // the file into the work directory (required for cloud executors)
+        batch_tsv_ch = submission_ch.map { meta, _samples, _dbs -> meta.batch_tsv }
+
+        PREP_SUBMISSION(submission_ch, batch_tsv_ch, submission_config_file)
 
         PREP_SUBMISSION.out.submission_files
             .set { submission_batch_folder }
