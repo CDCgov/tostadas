@@ -72,7 +72,7 @@ There are currently four properties:
     - Specifies the string to replace the existing field name with
     - Please note that the old field name will no longer exist in the final output
 
-A completed example of a JSON file can be found here: [JSON Example](../assets/custom_meta_fields/example_custom_fields.json). This is the same JSON used for a test profile run.
+A completed example of a JSON file can be found here: [JSON Example](https://github.com/CDCgov/tostadas/blob/master/assets/custom_meta_fields/example_custom_fields.json). This is the same JSON used for a test profile run.
 
 ## How To Run
 

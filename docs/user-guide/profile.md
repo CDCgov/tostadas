@@ -11,7 +11,7 @@
 |---|---|---|
 | fasta | .fasta | Single sample fasta sequence file(s) |
 | fastq | .fastq | Single sample fastq sequence file(s) |
-| metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
+| metadata | .xlsx or .csv | Multi-sample metadata matching the repository's metadata templates |
 | ref\_fasta | .fasta | Reference genome to use for the liftoff\_submission branch of the pipeline |
 | ref\_gff | .gff | Reference GFF3 file to use for the liftoff\_submission branch of the pipeline |
 | submission\_config | .yaml | Configuration file for submitting to NCBI, sample versions can be found in repo |
@@ -23,13 +23,13 @@ All annotation workflows require single sample fasta input files. Input fasta fi
 | Input files | File type | Description |
 |---|---|---|
 | fastq | .fastq | Single sample fastq sequence file(s) |
-| metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
+| metadata | .xlsx or .csv | Multi-sample metadata matching the repository's metadata templates |
 | submission\_config | .yaml | Configuration file for submitting to NCBI, sample versions can be found in repo |
 
 !!! note
     This pipeline has been tested with paired-end sequence data.
 
-Example metadata: [mpxv_test_metadata.xlsx](../assets/sample_metadata/mpxv_test_metadata.xlsx)
+Example metadata: [mpxv_test_metadata.xlsx](https://github.com/CDCgov/tostadas/blob/master/assets/sample_metadata/mpxv_test_metadata.xlsx)
 
 ## Understanding Profiles and Environments
 
@@ -55,7 +55,9 @@ Use the `--workflow biosample_and_sra` workflow option to submit to BioSample an
 
 ## Submitting to GenBank
 
-Use the `--workflow genbank` workflow option to submit to GenBank. Please note that a GenBank submission requires a BioSample accession ID assigned by NCBI. If you successfully ran `--workflow biosample_and_sra` previously, you can find your updated metadata file in the `accessions` folder by default. Check it to make sure your accession IDs were successfully assigned. Supply this file using `--updated_meta_path` (*NOT* `--meta_path`).
+Use the `--workflow genbank` workflow option to submit to GenBank. BioSample-linked submissions require a BioSample accession ID assigned by NCBI. If you successfully ran `--workflow biosample_and_sra` previously, you can find your updated metadata file in the `accessions` folder by default. Check it to make sure your accession IDs were successfully assigned. Supply this file using `--updated_meta_path` (*NOT* `--meta_path`).
+
+For SQN preparation without a prior BioSample/SRA run, use `--genbank_only --meta_path <metadata.xlsx>`. This mode reads `--meta_path` directly instead of the accession-augmented workbook.
 
 !!! note
     TOSTADAS will automatically search for `--updated_meta_path` in your `--outdir` if it is not explicitly provided.
@@ -65,10 +67,11 @@ Use the `--workflow genbank` workflow option to submit to GenBank. Please note t
 
 ## Fetching NCBI Accession IDs
 
-TOSTADAS will go search for and fetch report.xml files, aggregate the results into a csv file, and create an updated metadata Excel file including the validated metadata and accession IDs, if assigned.
+The `fetch_accessions` workflow retrieves current BioSample/SRA `report.xml` files, aggregates the results into a CSV file, and creates an updated metadata Excel file including the validated metadata and accession IDs, if assigned. It does not retrieve GenBank accessions or recover historical successful reports.
 This report CSV file and updated metadata Excel file are placed in the `accessions` folder by default.
 
 Run this workflow using `--workflow fetch_accessions`. Provide the same `--outdir` and `--meta_path` you provided for the original submission, as TOSTADAS uses these two parameters to find your submission folder and fetch the corresponding reports.
+Also match the original mode: `--prod_submission true` for Production or `--prod_submission false` for Test.
 If you change the naming of this folder structure, this workflow will not run.
 
 ## Running Update Submission

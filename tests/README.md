@@ -27,6 +27,8 @@ nf-test version
 
 ## Run Tests
 
+The nf-test configuration in `tests/nextflow.config` enables Singularity and uses the TOSTADAS container. Install Singularity before running these tests. The Python regression tests below do not require a container engine.
+
 Run all tests in the tests/ folder:
 
 ```bash
@@ -45,18 +47,35 @@ If the test output has intentionally changed, you'll need to update the saved
 snapshots so the tests will pass again:
 
 ```bash
-nf-test test --update-snapshots
+nf-test test --update-snapshot
 ```
 
 Commit and push the updated .snap files.
 
 ## Match the CI Environment
 
-Our CI workflow pins the Nextflow version it uses.
-To match it locally, set the same version before running tests:
+The CI workflow at [`.github/workflows/CI_main.yml`](../.github/workflows/CI_main.yml) selects the floating `latest-edge` Nextflow channel. To use that channel locally:
 
 ```bash
-export NXF_VER=<version_used_in_CI>
+export NXF_VER=latest-edge
 ```
 
-You can find this version in .github/workflows/CI.yml (look for NXF_VER=).
+To reproduce a particular CI run, read its resolved Nextflow version from the run log and set `NXF_VER` to that exact version instead.
+
+## Offline submission regression tests
+
+The portable tests use temporary files and simulated FTP/SFTP clients. They cover report parsing through Excel export, connection cleanup, collision handling, and platform preparation. No NCBI credentials are needed:
+
+```bash
+python3 -m pytest -q tests --ignore=tests/test_completeness.py
+```
+
+`tests/test_completeness.py` additionally uses an external `vadr_runs_bundle/` directory beside the repository, including `vadr_qc_20260422/batch1` and `staging_20260507/vadr_qc`. That bundle is not included in a normal clone. When it is available, run `python3 -m pytest -q tests/test_completeness.py` separately.
+
+The optional Nextflow tests run actual local preparation, upload, polling, aggregation, and metadata-join modules. Python network connections are blocked. They check Nanopore preparation, task caching on resume, and accession mappings in the final workbook. They require Nextflow and the scripts' Python dependencies, but no containers or NCBI credentials.
+
+```bash
+RUN_NEXTFLOW_TESTS=1 python3 -m pytest -q tests/test_submission_resume_workflow.py tests/test_accession_reporting_workflow.py tests/test_sra_platform_preparation.py
+```
+
+For an offline Nextflow installation, set `NXF_VER` to the installed version and `NXF_OFFLINE=true`.

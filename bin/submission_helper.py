@@ -1,4 +1,6 @@
 import os
+import errno
+import posixpath
 import sys
 import glob
 import shutil
@@ -24,6 +26,7 @@ from zipfile import ZipFile
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+from submission_layout import sra_platforms
 
 def setup_logging(log_file="submission.log", level=logging.INFO):
 	if not logging.getLogger().handlers:
@@ -52,6 +55,19 @@ def get_compound_extension(filename):
 		return '.' + parts[-1]             # e.g., '.gz' or '.fq'
 	else:
 		return ''  # No extension
+
+def sra_read_files(sample, platform=None):
+	"""Return source/name pairs shared by SRA XML generation and read staging."""
+	if platform is None:
+		platform = 'illumina' if sample.fastq1 and sample.fastq2 else 'nanopore'
+	if platform == 'illumina' and sample.fastq1 and sample.fastq2:
+		reads = [(sample.fastq1, 'R1'), (sample.fastq2, 'R2')]
+	elif platform == 'nanopore' and sample.nanopore:
+		reads = [(sample.nanopore, 'nanopore')]
+	else:
+		raise ValueError(f"Missing reads for {platform} sample '{sample.sample_id}'")
+	return [(source, f"{sample.sample_id}_{label}{get_compound_extension(source)}")
+			for source, label in reads]
 
 def _read_sqc_mdl_cov(sqc_path):
 	"""[(seq_name, mdl_cov)] from a VADR .vadr.sqc file (col 2 name, col 12 mdl cov)."""
@@ -272,9 +288,7 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 			continue
 
 		if db == 'sra':
-			base_outdir = os.path.join(outdir, db)
-			has_both_platforms = all(os.path.isdir(os.path.join(base_outdir, p)) for p in ['illumina', 'nanopore'])
-			platforms = ['illumina', 'nanopore'] if has_both_platforms else [None]
+			platforms = sra_platforms(outdir)
 		else:
 			platforms = [None]
 
@@ -299,25 +313,31 @@ def fetch_all_reports(databases, outdir, config_dict, parameters, submission_dir
 			logging.info(f'remote dir: {remote_dir}, report local path: {report_local_path}')
 
 			try:
-				submission.client.connect()
-				submission.client.change_dir(remote_dir)
-			except Exception as e:
-				logging.error(f"Critical: Failed to access {db} folder {remote_dir}. Error: {e}")
-				raise
+				try:
+					submission.client.connect()
+					submission.client.change_dir(remote_dir)
+				except Exception as e:
+					logging.error(f"Critical: Failed to access {db} folder {remote_dir}. Error: {e}")
+					raise
 
-			success = False
-			while time.time() - start_time < timeout:
-				report_path = submission.fetch_report(remote_dir, report_local_path)
-				if report_path:
-					logging.info(f"Fetched report.xml for {db} ({platform or 'default'})")
-					reports_fetched[db].append(report_path)
-					success = True
-					break
-				else:
-					logging.info(f"Retrying fetch for {db} ({platform or 'default'})...")
-					time.sleep(3)
-			if not success:
-				logging.error(f"Timeout occurred while trying to fetch report for {db} ({platform or 'default'})")
+				success = False
+				while time.time() - start_time < timeout:
+					report_path = submission.fetch_report(remote_dir, report_local_path)
+					if report_path:
+						logging.info(f"Fetched report.xml for {db} ({platform or 'default'})")
+						reports_fetched[db].append(report_path)
+						success = True
+						break
+					else:
+						logging.info(f"Retrying fetch for {db} ({platform or 'default'})...")
+						time.sleep(3)
+				if not success:
+					logging.error(f"Timeout occurred while trying to fetch report for {db} ({platform or 'default'})")
+			finally:
+				try:
+					submission.client.close()
+				except Exception as e:
+					logging.warning(f"Could not close report connection for {remote_dir}: {e}")
 	return reports_fetched
 
 def is_report_complete(report_path):
@@ -375,7 +395,7 @@ def parse_report_xml_to_df(report_path):
 			if response is not None:
 				message_tag = response.find("Message")
 				if message_tag is not None:
-					response_message = message_tag.text.strip()
+					response_message = (message_tag.text or '').strip()
 				else:
 					response_message = response.get("status", "").strip() or (response.text or "").strip()
 
@@ -694,25 +714,18 @@ class Submission:
 			raise ValueError("Invalid submission mode: must be 'sftp' or 'ftp'")
 		
 	def fetch_report(self, remote_dir, report_local_path):
+		"""Download current report.xml from the client's selected remote directory.
+
+		Replace the local copy when a current report is available. Numbered
+		historical reports require explicit reconciliation and are not selected.
 		"""
-		Fetch report.xml or the highest-numbered report.<n>.xml from the remote server.
-		Host site folder format is submit/<Test|Production>/submission_folder/
-		Keeps the original filename locally.
-		"""
-		# Check for report.xml first
 		if self.client.file_exists('report.xml'):
-			if os.path.exists(report_local_path):
-				logging.info(f"Report exists locally: {report_local_path}")
-				logging.info(f"Downloading latest report to: {report_local_path}")
-				self.client.download_file('report.xml', report_local_path)
-				return report_local_path
-			logging.info(f"Report found on server. Downloading to: {report_local_path}")
+			logging.info(f"Downloading current report to: {report_local_path}")
 			self.client.download_file('report.xml', report_local_path)
 			return report_local_path
-		# Nothing found
 		logging.info(f"No report found at {remote_dir}")
 		return False
- 
+
 	def submit_files(self, files, type):
 		""" Uploads a set of files to a host site at submit/<Test|Production>/sample_database/<files> """
 		remote_subdir = get_remote_submission_dir(self.identifier, self.sample.batch_id, type, getattr(self, 'platform', None))
@@ -777,13 +790,12 @@ class SFTPClient:
 		try:
 			self.sftp.stat(dir_path)
 			return True
-		except IOError:
-			return False
+		except IOError as e:
+			if e.errno == errno.ENOENT:
+				return False
+			raise
 	def list_dir(self, dir_path):
-		try:
-			return self.sftp.listdir(dir_path)
-		except IOError:
-			return []
+		return self.sftp.listdir(dir_path)
 	def download_file(self, remote_file, local_path):
 		try:
 			self.sftp.get(remote_file, local_path)
@@ -853,18 +865,11 @@ class FTPClient:
 		else:
 			return False
 	def dir_exists(self, dir_path):
-		try:
-			current = self.ftp.pwd()
-			self.ftp.cwd(dir_path)
-			self.ftp.cwd(current)
-			return True
-		except ftplib.error_perm:
-			return False
+		parent, name = posixpath.split(dir_path.rstrip('/'))
+		entries = self.list_dir(parent or '.')
+		return name in {posixpath.basename(entry.rstrip('/')) for entry in entries}
 	def list_dir(self, dir_path):
-		try:
-			return self.ftp.nlst(dir_path)
-		except ftplib.error_perm:
-			return []
+		return self.ftp.nlst(dir_path)
 	def download_file(self, remote_file, local_path):
 		with open(local_path, 'wb') as f:
 			self.ftp.retrbinary(f'RETR {remote_file}', f.write)
@@ -946,6 +951,7 @@ class XMLSubmission(ABC):
 	def add_sample(self, sample, metadata_df, platform=None):
 		# Support passing each sample object and its associated metadata (for the per-sample blocks)
 		self.sample = sample
+		self.platform = platform
 		self.metadata_df = metadata_df
 		parser = MetadataParser(self.metadata_df, self.parameters)
 		self.top_metadata = parser.extract_top_metadata()
@@ -1078,16 +1084,9 @@ class SRASubmission(XMLSubmission, XMLSubmissionMixin, Submission):
 	def add_action_block(self, submission):
 		action = ET.SubElement(submission, "Action")
 		add_files = ET.SubElement(action, "AddFiles", target_db="SRA")
-		ext1 = get_compound_extension(self.sample.fastq1)
-		ext2 = get_compound_extension(self.sample.fastq2)
-		fastq1 = f"{self.sample.sample_id}_R1{ext1}"
-		fastq2 = f"{self.sample.sample_id}_R2{ext2}"
-		file1 = ET.SubElement(add_files, "File", file_path=fastq1)
-		data_type1 = ET.SubElement(file1, "DataType")
-		data_type1.text = "generic-data"
-		file2 = ET.SubElement(add_files, "File", file_path=fastq2)
-		data_type2 = ET.SubElement(file2, "DataType")
-		data_type2.text = "generic-data"
+		for _, filename in sra_read_files(self.sample, getattr(self, 'platform', None)):
+			file_el = ET.SubElement(add_files, "File", file_path=filename)
+			ET.SubElement(file_el, "DataType").text = "generic-data"
 		return add_files
 	
 	def add_attributes_block(self, add_files):

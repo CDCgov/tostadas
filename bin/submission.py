@@ -113,41 +113,40 @@ def main_submit():
 					logging.info(f"[DRY-RUN] Would upload {local} → {remote_dir}/{fname}")
 			else:
 				client.connect()
-				# Pre-submission collision check: base_folder is not run-unique, so re-running
-				# (especially with a different batch_size) can reshuffle samples into a
-				# submit/<mode>/<id>_<batch>_<db> dir a prior run already populated, which
-				# corrupts the submission at NCBI (mismatched sample counts / duplicate errors).
-				if client.dir_exists(remote_dir):
-					existing = [os.path.basename(f) for f in client.list_dir(remote_dir)]
-					existing = [f for f in existing if f not in ('', '.', '..')]
-					if existing:
-						msg = (f"Submission-directory collision: {remote_dir} already exists on "
-							f"{params['submission_mode'].upper()} and is not empty "
-							f"({len(existing)} file(s), e.g. {existing[:5]}). A prior submission "
-							f"populated it; uploading here can corrupt the submission at NCBI. "
-							f"Fix: use a run-unique --identifier, or clear/rename the remote dir, "
-							f"then re-run. To override and upload anyway, pass --allow_dir_collision.")
-						if params.get('allow_dir_collision'):
-							logging.warning(f"[COLLISION OVERRIDE] {msg}")
-						else:
-							logging.error(f"[COLLISION] {msg}")
-							client.close()
-							raise SystemExit(1)
-				client.make_dir(remote_dir)
-				client.change_dir(remote_dir)
-				for fname in files_to_upload:
-					local = os.path.join(dirpath, fname)
-					client.upload_file(local, fname)
-					if is_fastq_file(fname):
-						try:
-							if os.path.islink(local):
-								os.remove(local)
-								logging.info(f"Deleted symlinked FASTQ file after upload: {local}")
+				try:
+					# A report cannot prove which payload a reused directory processed.
+					if client.dir_exists(remote_dir):
+						existing = [os.path.basename(f) for f in client.list_dir(remote_dir)]
+						existing = [f for f in existing if f not in ('', '.', '..')]
+						if existing:
+							msg = (f"Submission-directory collision: {remote_dir} already exists on "
+								f"{params['submission_mode'].upper()} and is not empty "
+								f"({len(existing)} file(s), e.g. {existing[:5]}). A prior submission "
+								f"populated it; uploading here can create duplicate submission attempts. "
+								f"Inspect the existing submission and reports before retrying. "
+								f"Do not rename the directory to bypass this check. "
+								f"To override and upload anyway, pass --allow_dir_collision.")
+							if params.get('allow_dir_collision'):
+								logging.warning(f"[COLLISION OVERRIDE] {msg}")
 							else:
-								logging.warning(f"FASTQ file {local} is not a symlink - skipping deletion for safety")
-						except Exception as e:
-							logging.warning(f"Could not delete FASTQ file {local}: {e}")
-				client.close()
+								logging.error(f"[COLLISION] {msg}")
+								raise SystemExit(1)
+					client.make_dir(remote_dir)
+					client.change_dir(remote_dir)
+					for fname in files_to_upload:
+						local = os.path.join(dirpath, fname)
+						client.upload_file(local, fname)
+						if is_fastq_file(fname):
+							try:
+								if os.path.islink(local):
+									os.remove(local)
+									logging.info(f"Deleted symlinked FASTQ file after upload: {local}")
+								else:
+									logging.warning(f"FASTQ file {local} is not a symlink - skipping deletion for safety")
+							except Exception as e:
+								logging.warning(f"Could not delete FASTQ file {local}: {e}")
+				finally:
+					client.close()
 		elif any(f.endswith('.sqn') for f in files):
 			# Handle non-ftp submissions (directories with .sqn files but without submission.xml and submit.ready)
 			# Extract the sample_id from the leaf directory name; os.path.relpath would include

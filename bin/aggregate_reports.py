@@ -1,65 +1,104 @@
 #!/usr/bin/env python3
-import pandas as pd
+"""Combine NCBI reports using the identifiers in validated metadata."""
+import argparse
 from pathlib import Path
-import sys
 
-# Usage: python aggregate_reports.py batch_*.csv
-# Output: submission_report.csv
+import pandas as pd
+
+DATABASES = ('biosample', 'sra', 'genbank')
+COLUMNS = ['batch_id', 'submission_id', 'spuid', 'spuid_namespace', 'submission_status'] + [
+    f'{db}_{field}' for db in DATABASES
+    for field in ('submission_id', 'status', 'accession', 'message')
+] + ['tracking_location']
+
+
+def value(raw):
+    return '' if pd.isna(raw) else str(raw).strip()
+
+
+def identifier_maps(metadata):
+    """SRA identifiers need not resemble their BioSample identifiers."""
+    if 'ncbi-spuid' not in metadata:
+        raise ValueError('Validated metadata is missing ncbi-spuid')
+    biosample = {}
+    sra = {}
+    for _, row in metadata.iterrows():
+        key = value(row['ncbi-spuid'])
+        if not key or key in biosample:
+            raise ValueError(f'Blank or duplicate BioSample identifier in metadata: {key!r}')
+        biosample[key] = key
+        sra_key = value(row.get('ncbi-spuid-sra', ''))
+        if sra_key:
+            if sra_key in sra:
+                raise ValueError(f'Duplicate SRA identifier in metadata: {sra_key!r}')
+            sra[sra_key] = key
+    # GenBank XML generation explicitly uses this suffix; SRA identifiers
+    # remain arbitrary and are mapped only from their metadata column.
+    genbank = {f'{key}-GB': key for key in biosample}
+    return {'biosample': biosample, 'sra': sra, 'genbank': genbank}
+
+
+def report_database(row):
+    # The parser supplies database-specific fields from Action.target_db. Paths
+    # include arbitrary user filenames and cannot identify the database safely.
+    matches = [db for db in DATABASES if any(
+        value(row.get(f'{db}_{field}', '')) for field in ('status', 'accession', 'message')
+    )]
+    if len(matches) != 1:
+        raise ValueError('Report row has no unambiguous database-specific status/accession')
+    return matches[0]
+
+
+def aggregate_reports(input_files, metadata):
+    maps = identifier_maps(metadata)
+    combined_rows = []
+    for filename in input_files:
+        frame = pd.read_csv(filename, dtype=str, keep_default_na=False)
+        groups = {}
+        for _, row in frame.iterrows():
+            db = report_database(row)
+            spuid = value(row.get('spuid', ''))
+            if spuid not in maps[db]:
+                raise ValueError(
+                    f'{filename}: {db} report identifier {spuid!r} has no unique metadata match; '
+                    'inspect the report before combining accessions'
+                )
+            key = maps[db][spuid]
+            group = groups.setdefault(key, {name: [] for name in DATABASES})
+            record = {name: value(raw) for name, raw in row.items()}
+            if record not in group[db]:
+                group[db].append(record)
+
+        for key, group in groups.items():
+            # More than one SRA run per sample is valid. Competing BioSample
+            # results must be reconciled explicitly instead of selecting a row.
+            for db in ('biosample', 'genbank'):
+                if len(group[db]) > 1:
+                    raise ValueError(f'{filename}: conflicting {db} reports for {key!r}')
+            biosample = group['biosample'][0] if group['biosample'] else {}
+            genbank = group['genbank'][0] if group['genbank'] else {}
+            for sra in group['sra'] or [{}]:
+                preferred = biosample or sra or genbank
+                combined = dict.fromkeys(COLUMNS, '')
+                combined.update(batch_id=Path(filename).stem, spuid=key)
+                for field in ('submission_id', 'spuid_namespace', 'submission_status', 'tracking_location'):
+                    combined[field] = preferred.get(field, '')
+                for db, record in (('biosample', biosample), ('sra', sra), ('genbank', genbank)):
+                    combined[f'{db}_submission_id'] = record.get('submission_id', '')
+                    for field in ('status', 'accession', 'message'):
+                        combined[f'{db}_{field}'] = record.get(f'{db}_{field}', '')
+                combined_rows.append(combined)
+    return pd.DataFrame(combined_rows, columns=COLUMNS)
+
 
 def main():
-    input_files = sys.argv[1:]
-    if not input_files:
-        print("Usage: python aggregate_reports.py <batch_*.csv>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--metadata_tsv', required=True)
+    parser.add_argument('report_csvs', nargs='*')
+    args = parser.parse_args()
+    metadata = pd.read_csv(args.metadata_tsv, sep='\t', dtype=str, keep_default_na=False)
+    aggregate_reports(args.report_csvs, metadata).to_csv('submission_report.csv', index=False)
 
-    all_rows = []
 
-    for f in input_files:
-        batch_path = Path(f)
-        batch_id = batch_path.stem  # e.g. "batch_3"
-        df = pd.read_csv(f, dtype=str).fillna("")
-
-        # Split into biosample and sra rows
-        biosample_df = df[df["tracking_location"].str.contains("biosample", case=False)]
-        sra_df = df[df["tracking_location"].str.contains("sra", case=False)]
-
-        # Merge by row order (assume they align one-to-one within the same batch file)
-        biosample_df = biosample_df.reset_index(drop=True)
-        sra_df = sra_df.reset_index(drop=True)
-
-        max_len = max(len(biosample_df), len(sra_df))
-        biosample_df = biosample_df.reindex(range(max_len)).fillna("")
-        sra_df = sra_df.reindex(range(max_len)).fillna("")
-
-        # Build combined rows
-        for i in range(max_len):
-            b = biosample_df.iloc[i]
-            s = sra_df.iloc[i]
-
-            combined = {
-                "batch_id": batch_id,
-                "submission_id": b.get("submission_id","") or s.get("submission_id",""),
-                "spuid": b.get("spuid",""),
-                "spuid_namespace": b.get("spuid_namespace",""),
-                "submission_status": b.get("submission_status","") or s.get("submission_status",""),
-                "biosample_submission_id": b.get("submission_id",""),
-                "biosample_status": b.get("biosample_status",""),
-                "biosample_accession": b.get("biosample_accession",""),
-                "biosample_message": b.get("biosample_message",""),
-                "sra_submission_id": s.get("submission_id",""),
-                "sra_status": s.get("sra_status",""),
-                "sra_accession": s.get("sra_accession",""),
-                "sra_message": s.get("sra_message",""),
-                "genbank_submission_id": b.get("genbank_submission_id","") or s.get("genbank_submission_id",""),
-                "genbank_status": b.get("genbank_status","") or s.get("genbank_status",""),
-                "genbank_accession": b.get("genbank_accession","") or s.get("genbank_accession",""),
-                "genbank_message": b.get("genbank_message","") or s.get("genbank_message",""),
-                "tracking_location": b.get("tracking_location","") or s.get("tracking_location","")
-            }
-            all_rows.append(combined)
-
-    final_df = pd.DataFrame(all_rows)
-    final_df.to_csv("submission_report.csv", index=False)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

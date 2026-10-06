@@ -26,12 +26,13 @@ nextflow_process {
             process {
                 """
                 // define inputs of the process here
-                input[0] = [ [batch_id: 'batch_1', batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv")], 
-                             [ [meta: [ sample_id: 'NY0006' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), nnp: null, gff: null], 
-                               [meta: [ sample_id: 'IL0005' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_2.mpx.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/IL0005.fasta"), nnp: null, gff: null]
-                             ], 
+                input[0] = [ [batch_id: 'batch_1', batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv")],
+                             [ [meta: [ sample_id: 'NY0006' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), nanopore: null, gff: null],
+                               [meta: [ sample_id: 'IL0005' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_2.mpx.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/IL0005.fasta"), nanopore: null, gff: null]
+                             ],
                              ["biosample"] ]
-                input[1] = file("${projectDir}/conf/submission_config.yaml")
+                input[1] = file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv")
+                input[2] = file("${projectDir}/conf/submission_config.yaml")
                 """
             }
         }
@@ -62,12 +63,13 @@ nextflow_process {
 
             process {
                 """
-                input[0] = [ [batch_id: 'batch_1', batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv")], 
-                             [ [meta: [ sample_id: 'NY0006' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), nnp: null, gff: null], 
-                               [meta: [ sample_id: 'IL0005' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_2.mpx.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/IL0005.fasta"), nnp: null, gff: null]
-                             ], 
+                input[0] = [ [batch_id: 'batch_1', batch_tsv: file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv")],
+                             [ [meta: [ sample_id: 'NY0006' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R1_001.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/2022-028-7666_S3_L001_R2_001.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/NY0006.fasta"), nanopore: null, gff: null],
+                               [meta: [ sample_id: 'IL0005' ], fq1: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_1.mpx.fastq.gz"), fq2: file("${projectDir}/assets/sample_fastqs/mpox/LIY15306A2_2022_054_3005007722.R_2.mpx.fastq.gz"), fasta: file("${projectDir}/assets/sample_fastas/mpox/IL0005.fasta"), nanopore: null, gff: null]
+                             ],
                              ["sra"] ]
-                input[1] = file("${projectDir}/conf/submission_config.yaml")
+                input[1] = file("${projectDir}/tests/modules/local/prep_submission/batch_1.tsv")
+                input[2] = file("${projectDir}/conf/submission_config.yaml")
                 """
             }
         }

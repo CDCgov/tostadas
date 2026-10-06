@@ -28,6 +28,7 @@ This pipeline uses the **nf-schema@2.3.0** plugin for parameter validation, whic
 
 ```bash
 git clone https://github.com/CDCgov/tostadas.git
+cd tostadas
 ```
 
 !!! note

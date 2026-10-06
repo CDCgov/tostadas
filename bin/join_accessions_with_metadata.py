@@ -3,7 +3,6 @@
 import argparse
 import logging
 import pandas as pd
-from submission_helper import setup_logging  # assuming you already have this helper
 
 def get_args():
     """Expected args from user for fetching reports"""
@@ -20,14 +19,15 @@ def read_and_clean(path, sep=None):
     Reads a CSV/TSV and removes repeated header rows.
     Automatically detects if rows are exact duplicates of the header row.
     """
-    df = pd.read_csv(path, sep=sep, dtype=str, skip_blank_lines=True)
+    df = pd.read_csv(path, sep=sep, dtype=str, skip_blank_lines=True, keep_default_na=False)
     df = df[~df.eq(df.columns).all(axis=1)]  # Drop repeated header rows
     return df
 
 def log_missing_accessions(df, logger):
     accession_cols = ['biosample_accession', 'sra_accession']
     for col in accession_cols:
-        missing_mask = df[col].isna() | ~df[col].astype(str).str.fullmatch(r'\w+')
+        pattern = r'\w+(;\w+)*' if col == 'sra_accession' else r'\w+'
+        missing_mask = df[col].isna() | ~df[col].astype(str).str.fullmatch(pattern)
         missing_spuids = df.loc[missing_mask, 'ncbi-spuid'].tolist()
         if missing_spuids:
             logger.info(
@@ -35,31 +35,79 @@ def log_missing_accessions(df, logger):
                 f"(spuids): {', '.join(missing_spuids)}"
             )
 
+def merge_accessions(metadata_df, report_df):
+    """Return one row per metadata sample, preserving identifiers and accessions.
+
+    Multiple SRA runs are stored as distinct, sorted, semicolon-separated
+    accessions. Detailed run/status rows remain in submission_report.csv.
+    Existing SRA accessions must be a subset of any nonempty reported set;
+    missing reports preserve prior values instead of erasing them.
+    """
+    metadata = metadata_df.copy()
+    reports = report_df.copy()
+    metadata['_accession_join_key'] = metadata['ncbi-spuid'].fillna('').str.strip()
+    reports['_accession_join_key'] = reports['spuid'].fillna('').str.strip()
+    keys = metadata['_accession_join_key']
+    if keys.eq('').any() or keys.duplicated().any():
+        raise ValueError('Metadata requires unique, nonblank ncbi-spuid values')
+    if reports['_accession_join_key'].eq('').any():
+        raise ValueError('Submission report contains an unidentified sample')
+    unknown = set(reports['_accession_join_key']) - set(keys)
+    if unknown:
+        raise ValueError(f'Submission report identifiers absent from metadata: {sorted(unknown)}')
+    accession_cols = ['biosample_accession', 'sra_accession']
+    for col in accession_cols:
+        if col not in metadata:
+            metadata[col] = ''
+    placeholders = {'', 'not provided', 'na', 'n/a', 'nan'}
+
+    def accession_set(raw):
+        if pd.isna(raw):
+            return set()
+        return {part.strip() for part in str(raw).split(';')
+                if part.strip().lower() not in placeholders}
+
+    # Collapse detailed report rows before merging: downstream GenBank
+    # validation requires one unique metadata row per BioSample identifier.
+    collapsed = []
+    for key, rows in reports.groupby('_accession_join_key', sort=False):
+        record = {'_accession_join_key': key}
+        for col in accession_cols:
+            values = set().union(*(accession_set(raw) for raw in rows[col]))
+            if col == 'biosample_accession' and len(values) > 1:
+                raise ValueError(f'Conflicting BioSample accessions for {key!r}: {sorted(values)}')
+            record[col] = ';'.join(sorted(values))
+        collapsed.append(record)
+    reports = pd.DataFrame(collapsed, columns=['_accession_join_key'] + accession_cols)
+    merged = metadata.merge(reports, how='left', on='_accession_join_key',
+                            suffixes=('', '_reported'), validate='one_to_one', sort=False)
+    for col in accession_cols:
+        reported = merged.pop(col + '_reported')
+        resolved = []
+        for index, raw in merged[col].items():
+            old = accession_set(raw)
+            new = accession_set(reported.loc[index])
+            if (col == 'biosample_accession' and len(old) > 1) or (old and new and not old.issubset(new)):
+                sample = merged.loc[index, 'ncbi-spuid']
+                raise ValueError(f'Existing {col} conflicts with report for: {sample!r}')
+            resolved.append(';'.join(sorted(new or old)))
+        merged[col] = resolved
+    return merged.drop(columns=['_accession_join_key'])
+
+
 def main():
     args = get_args().parse_args()
     params = vars(args)
 
     # Setup logging
-    setup_logging(log_file='join_accessions_with_metadata.log',
-                  level=logging.DEBUG)
+    logging.basicConfig(filename='join_accessions_with_metadata.log', level=logging.DEBUG)
     logger = logging.getLogger()
 
     # Load metadata TSV and submission report CSV, and clean both
     metadata_df = read_and_clean(params["metadata_tsv"], sep='\t')
     report_df = read_and_clean(params["submission_report"], sep=',')
 
-    # Normalize casing and strip whitespace on join keys
-    metadata_df['ncbi-spuid'] = metadata_df['ncbi-spuid'].str.strip().str.lower()
-    report_df['spuid'] = report_df['spuid'].str.strip().str.lower()
-
-    # Merge directly on spuid
-    merged_df = metadata_df.merge(
-        report_df[['spuid', 'biosample_accession', 'sra_accession']],
-        how='left', left_on='ncbi-spuid', right_on='spuid'
-    )
-
-    # Drop redundant spuid column from report
-    merged_df.drop(columns=['spuid'], inplace=True)
+    merged_df = merge_accessions(metadata_df, report_df)
 
     # Log missing accessions
     log_missing_accessions(merged_df, logger)

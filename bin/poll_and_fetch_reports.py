@@ -3,6 +3,7 @@ import os
 import argparse
 import logging
 import time
+from submission_layout import discover_databases, sra_platforms
 from submission_helper import (
     SubmissionConfigParser,
     Submission,
@@ -43,38 +44,14 @@ def get_args():
     return parser
 
 
-def discover_databases(submission_folder):
-    """Discover which databases have submission.xml files."""
-    databases = []
-    for db in ["biosample", "sra"]:
-        db_path = os.path.join(submission_folder, db)
-        if os.path.isfile(os.path.join(db_path, "submission.xml")):
-            databases.append(db)
-    genbank_path = os.path.join(submission_folder, "genbank")
-    if os.path.exists(genbank_path):
-        if os.path.isfile(os.path.join(genbank_path, "submission.xml")):
-            databases.append("genbank")
-        else:
-            for subdir in os.listdir(genbank_path):
-                full_subdir_path = os.path.join(genbank_path, subdir)
-                if os.path.isdir(full_subdir_path) and os.path.isfile(os.path.join(full_subdir_path, "submission.xml")):
-                    databases.append("genbank")
-                    break
-    return databases
-
-
 def resolve_db_targets(databases, submission_folder):
     """Return a list of (db, platform, local_output_path) tuples to poll."""
     targets = []
     for db in databases:
         if db == "genbank":
-            continue  # skip genbank for now (same as fetch_submission.py)
+            continue  # GenBank retrieval uses fetch_submission.py.
         if db == "sra":
-            base_outdir = os.path.join(submission_folder, db)
-            has_both = all(
-                os.path.isdir(os.path.join(base_outdir, p)) for p in ["illumina", "nanopore"]
-            )
-            platforms = ["illumina", "nanopore"] if has_both else [None]
+            platforms = sra_platforms(submission_folder)
         else:
             platforms = [None]
         for platform in platforms:

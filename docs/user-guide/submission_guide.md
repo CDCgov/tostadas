@@ -15,7 +15,7 @@ Your basic command starts like this: `nextflow run main.nf -profile <docker|sing
 |---|---|---|
 | fasta | .fasta | Single sample fasta sequence file(s) |
 | fastq | .fastq | Single sample fastq sequence file(s) |
-| metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
+| metadata | Excel or .csv | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
 | ref\_fasta | .fasta | Reference genome to use for the liftoff\_submission branch of the pipeline |
 | ref\_gff | .gff | Reference GFF3 file to use for the liftoff\_submission branch of the pipeline |
 | submission\_config | .yaml | Configuration file for submitting to NCBI, sample versions can be found in repo |
@@ -27,7 +27,7 @@ All annotation workflows require single sample fasta input files. Input fasta fi
 | Input files | File type | Description |
 |---|---|---|
 | fastq | .fastq | Single sample fastq sequence file(s) |
-| metadata | .xlsx, .csv, .tsv, or .src | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
+| metadata | Excel or .csv | Multi-sample metadata matching metadata spreadsheets provided in input\_files |
 | submission\_config | .yaml | Configuration file for submitting to NCBI, sample versions can be found in repo |
 
 !!! note
@@ -39,7 +39,7 @@ Choose how you want to run TOSTADAS using the `--workflow` parameter:
 
 - **biosample_and_sra** -- Runs a submission to BioSample and SRA. Add `--biosample false` or `--sra false` to toggle off submission to one or the other.
 - **genbank** -- Runs a GenBank submission. This requires an updated metadata file that includes `biosample_accession` as required by NCBI.
-- **fetch_accessions** -- Fetches reports and updates the metadata file.
+- **fetch_accessions** -- Downloads current BioSample and SRA reports and updates the metadata file. It does not currently retrieve GenBank accessions.
 - **full_submission** -- Executes BioSample and SRA submissions, polls NCBI for reports using exponential backoff (30s--120s intervals, 30min timeout), updates the metadata file with accession IDs, and then performs the GenBank submission. Polling parameters can be tuned with `--poll_initial_interval`, `--poll_max_interval`, and `--poll_timeout`.
 - **update_submission** -- Executes a BioSample submission using an updated metadata Excel file. **Note:** This workflow currently supports BioSample updates only. SRA and GenBank updates are not supported.
 
@@ -67,9 +67,11 @@ TOSTADAS supports some profiles to make submission easier. These are specified i
 
 ## Metadata input formats
 
-TOSTADAS accepts metadata in `.xlsx`, `.csv`, `.tsv`, and `.src` (NCBI source modifier) formats via the `--meta_path` parameter.
+Use Excel (`.xlsx`) or `.csv` metadata with `--meta_path` for normal workflow runs.
 
-When using `.src` files, column names are automatically mapped to TOSTADAS fields:
+The Python metadata reader also supports `.tsv` and `.src` (NCBI source modifier) files, but normal submission workflows currently reject those extensions before loading them. Convert these files to CSV or Excel before running the workflow.
+
+The metadata reader recognizes these source-modifier column aliases, including after conversion to CSV or Excel:
 
 | Source Modifier Column | TOSTADAS Field |
 |---|---|
@@ -228,7 +230,9 @@ These times are approximate and depend on NCBI queue depth. Production submissio
 
 ### Accession retrieval
 
-**FTP-submitted organisms** (bacteria, eukaryotes, and BankIt viruses): Accessions are available in `report.xml` on the NCBI FTP server. Use the `fetch_accessions` workflow to download and parse these reports automatically.
+**BioSample and SRA:** Use `fetch_accessions` with the original metadata path, output directory, and production/test setting. The workflow downloads current reports and combines them with `validation/validated_metadata_all_samples.tsv` from that output directory. Keep the validated metadata with the submission outputs.
+
+**FTP-submitted GenBank records** (bacteria, eukaryotes, and BankIt viruses): The `fetch_accessions` workflow currently skips GenBank reports, and its updated workbook does not add newly retrieved GenBank accessions. Retrieve and inspect the GenBank reports separately; do not treat a completed `fetch_accessions` run as confirmation that GenBank accessions were collected.
 
 **Email-submitted viruses** (mpox, RSV, and other non-BankIt viruses): Accessions are not available via FTP. Check the [NCBI Submission Portal](https://submit.ncbi.nlm.nih.gov/) manually for status and assigned accession numbers.
 
@@ -238,11 +242,11 @@ The fields and corresponding example values can be found here: [Submission Confi
 
 | Field Name             | Description                                                                      | Input Required |
 |------------------------|----------------------------------------------------------------------------------|----------------|
-| NCBI / username        | Your personal username credential for NCBI                                       | Yes (string)   |
-| NCBI / password        | Your personal password credential for NCBI                                       | Yes (string)   |
-| NCBI_ftp_host          | The FTP host name for NCBI                                                       | Yes (string)   |
-| NCBI_sftp_host         | The SFTP host name for NCBI                                                      | Yes (string)   |
-| NCBI_API_URL           | URL for the NCBI API                                                             | Yes (string)   |
+| NCBI_username         | Submission credentials for the configured FTP/SFTP endpoint                                       | Yes (string)   |
+| NCBI_password         | Password for the configured FTP/SFTP submission account                                       | Yes (string)   |
+| NCBI_ftp_host          | FTP submission endpoint                                                         | Required for FTP (string) |
+| NCBI_sftp_host         | SFTP submission endpoint                                                        | Required for SFTP (string) |
+| NCBI_API_URL           | Not used by the FTP/SFTP submission workflows                                    | No |
 | table2asn_email        | Email address for GenBank email submission                                       | No (string)    |
 | BioSample_package      | Name of BioSample package for submission                                         | Yes (string)   |
 | Role                   | Role of person submitting (should be "owner")                                    | Yes (string)   |

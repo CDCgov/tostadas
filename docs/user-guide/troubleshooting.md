@@ -24,9 +24,26 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 ### NCBI FTP Login Fails
 
-**Issue:** The FTP credentials in your submission config are rejected by NCBI. This usually means you are using a personal NCBI account instead of the center-level account required for FTP submissions.
+**Issue:** The credentials in your submission config are rejected by the configured FTP/SFTP endpoint.
 
-**Solution:** NCBI FTP submission requires a dedicated center account, not a regular NCBI login. See the [NCBI Center Account](general_NCBI_submission_guide.md#ncbi-center-account) section for instructions on requesting one. Verify that your `submission_config.yaml` contains the center account username and password, not your personal credentials.
+**Solution:** Verify that `NCBI_username` and `NCBI_password` contain the credentials issued for that submission endpoint, and that the host matches the selected `--submission_mode`. A portal login alone does not establish access to the file-transfer endpoint. See [NCBI Center Account](general_NCBI_submission_guide.md#ncbi-center-account) for account setup guidance.
+
+### Resuming an Interrupted Submission
+
+Keep the original Nextflow cache and work directories and use `-resume`. Upload and report-polling tasks work on separate copies of the batch directory so their logs and reports do not invalidate upstream task inputs.
+
+If an upload task executes again, any nonempty remote submission directory stops with a collision error, including directories containing successful reports. Current XML and matching identifiers cannot prove that an older report processed that exact payload. Directory-listing failures also stop the upload.
+
+An interrupted task may have finished one database upload before failing on another. In that case, resume stops for manual reconciliation of the existing remote submissions; it does not automatically re-upload or assume completion.
+Inspect the existing reports before retrying. Do not rename the metadata file or remote directory to bypass a collision: that can create another submission attempt for the same samples. Updating the pipeline does not repair reports from earlier duplicate attempts. The `fetch_accessions` workflow downloads the current remote reports; preserve historical successful reports separately for reconciliation.
+
+### Combining BioSample and SRA Accessions
+
+Report aggregation uses `ncbi-spuid` and `ncbi-spuid-sra` from `validated_metadata_all_samples.tsv` to associate results with samples. Keep this validated metadata with the original submission outputs. Row order and metadata filenames do not determine accession mappings.
+
+Existing accessions are retained when a report supplies none. Conflicting accessions or report identifiers without a unique metadata match stop aggregation for reconciliation. This reporting error does not mean the original NCBI submission failed; inspect the original reports before retrying any uploads.
+
+For samples with multiple SRA runs, the final Excel workbook keeps one metadata row per sample and lists distinct SRA accessions separated by semicolons. The combined CSV retains individual report records.
 
 ### VADR Model Download Fails
 
@@ -36,9 +53,9 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 ### Missing batch_summary.json
 
-**Issue:** The `update_submission` entry point expects output files from a prior `biosample_and_sra` submission run. If those files are missing or the output directory does not contain `batch_summary.json`, the process will fail.
+**Issue:** The `update_submission` entry point needs the original batch-to-sample mapping, `batch_summary.json`, produced during metadata validation. It looks under `<original_submission_outdir>/../<validation_outdir>/batched_tsvs/`; this file records batch membership, not NCBI submission status.
 
-**Solution:** Run the initial submission pipeline first to generate the required output, then point `update_submission` at the same output directory. The `batch_summary.json` file is produced during the BioSample/SRA submission step and is required for tracking submission status.
+**Solution:** An update requires an initial submission and its original outputs. If that submission already ran, check `--original_submission_outdir` and `--validation_outdir`, then locate or restore the original validation files from that run. Do not repeat uploads to recreate a missing local mapping. Preserve the original batch membership when recovering those files.
 
 ### Metadata Validation Errors
 
@@ -63,23 +80,29 @@ If you encounter issues while using the TOSTADAS pipeline, refer to the followin
 
 ## Resuming a Failed Run
 
-Nextflow supports resuming a pipeline from the point of failure. When a run fails partway through, completed tasks do not need to be re-executed.
+Nextflow can reuse completed tasks when their inputs and cached outputs remain valid.
 
-To resume, re-run the same command with the `-resume` flag:
+To resume, re-run the original command with `-resume`, preserving its workflow, profiles, configuration, metadata, output paths, protocol, and production/test setting. For example, if these were the original settings for a production run:
 
 ```bash
-nextflow run main.nf -resume -profile singularity,mpox --workflow full_submission --submission_config conf/submission_config.yaml
+nextflow run main.nf -resume -profile singularity,mpox \
+    --workflow full_submission \
+    --meta_path /path/to/original_metadata.xlsx \
+    --outdir /path/to/original_results \
+    --submission_config /path/to/original_submission_config.yaml \
+    --submission_mode ftp \
+    --prod_submission true
 ```
 
-All other parameters should match the original run. Nextflow uses the `work/` directory to cache completed task outputs and will only re-execute processes that did not finish successfully.
+Retain any additional original options, including batch size. For an original Test submission, use `--prod_submission false`; retain `--submission_mode sftp` if that was the original protocol. Changed inputs or missing cached outputs can cause completed tasks to execute again. See [Resuming an Interrupted Submission](#resuming-an-interrupted-submission) for the collision checks that apply to upload tasks.
 
 !!! warning
     If the `work/` directory has been deleted or moved, resume is not possible. Nextflow requires the cached intermediate files to determine which tasks completed.
 
 ### Common scenarios where resume is useful
 
-- **FTP timeout during submission upload.** A transient network interruption caused the FTP transfer to fail. Resuming retries only the failed upload step.
-- **VADR failure on a subset of samples.** One or more samples failed annotation. After investigating and correcting input data, resuming skips samples that already passed.
+- **FTP timeout during submission upload.** Resume may execute the batch upload task again. If any files reached its remote directory, the collision check stops for reconciliation instead of continuing the transfer automatically.
+- **VADR failure on a subset of samples.** After investigating and correcting input data, resume reuses completed tasks whose inputs and cached outputs remain valid.
 - **Container pull failure.** A registry timeout prevented the Singularity or Docker image from downloading. Resuming retries the image pull without repeating completed tasks.
 - **Scheduler-killed processes.** On HPC systems, a job may be killed due to walltime or memory limits. Adjusting resource requests and resuming avoids re-running successful processes.
 
@@ -88,24 +111,26 @@ All other parameters should match the original run. Nextflow uses the `work/` di
 
 ## Polling Timeout Recovery
 
-During `full_submission`, the pipeline polls NCBI for submission reports using exponential backoff. The default timeout is 30 minutes. If this timeout is reached, the pipeline logs a warning and continues.
+During `full_submission`, the pipeline polls for BioSample and SRA reports using exponential backoff. The default polling budget is 30 minutes. The deadline is checked between network operations, so a blocking connection or transfer can extend elapsed time beyond that budget. When the polling loop reaches its deadline, it logs a warning and saves any reports collected; downstream steps may still lack required accessions.
 
 !!! note
     A polling timeout does not mean the submission failed. The data was already sent to NCBI -- only the automated report retrieval timed out.
 
-To fetch reports after a timeout, run the `fetch_accessions` workflow:
+To fetch BioSample/SRA reports after a timeout, run `fetch_accessions` with the original output directory, metadata basename, configuration, and production/test setting. The metadata basename determines the remote directory prefix. For a production submission, replace these paths with the original values:
 
 ```bash
-nextflow run main.nf -profile singularity,mpox --workflow fetch_accessions --submission_config conf/submission_config.yaml
+nextflow run main.nf -profile singularity,mpox \
+    --workflow fetch_accessions \
+    --meta_path /path/to/original_metadata.xlsx \
+    --outdir /path/to/original_results \
+    --submission_config /path/to/original_submission_config.yaml \
+    --submission_mode ftp \
+    --prod_submission true
 ```
 
-To increase the polling timeout for future runs, use the `--poll_timeout` parameter (value in seconds):
+For a Test submission, use `--prod_submission false`. Preserve the original profiles and additional configuration files, use `sftp` if that was the original protocol, and keep any custom submission or validation directory settings. Keep `validated_metadata_all_samples.tsv` with the original outputs for accession matching.
 
-```bash
-nextflow run main.nf -profile singularity,mpox --workflow full_submission --poll_timeout 3600 --submission_config conf/submission_config.yaml
-```
-
-The example above sets the timeout to 1 hour (3600 seconds).
+To allow a longer polling budget, add `--poll_timeout 3600` to the fetch command above, or to a future submission command. This sets the budget to one hour without requiring another upload to retrieve existing reports.
 
 ### Expected NCBI processing times
 
@@ -118,7 +143,7 @@ NCBI processing time varies by submission type:
 | GenBank (virus via BankIt) | Minutes to days |
 | GenBank (WGS bacteria/eukaryote) | Days to weeks |
 
-Because GenBank WGS submissions can take days or weeks, the polling timeout is expected to expire for those submissions. Use `fetch_accessions` to retrieve reports once NCBI has finished processing.
+The current `fetch_accessions` workflow polls BioSample and SRA only; it skips GenBank. For GenBank status and accessions, inspect the submission's FTP reports or the Submission Portal as appropriate to its submission route. Increasing `--poll_timeout` does not enable GenBank polling.
 
 ## Error Message Reference
 

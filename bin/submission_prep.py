@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import shutil
 import logging
 import pandas as pd
 from submission_helper import (
@@ -10,27 +9,15 @@ from submission_helper import (
 	BiosampleSubmission,
 	SRASubmission,
 	GenbankSubmission,
-	get_compound_extension,
+	sra_read_files,
+	symlink_or_copy,
 	setup_logging
 )
 
-def prepare_sra_fastqs(samples, outdir, copy=False):
+def prepare_sra_fastqs(samples, outdir, copy=False, platform=None):
 	for sample in samples:
-		if sample.fastq1 and sample.fastq2:
-			ext1 = get_compound_extension(sample.fastq1)
-			ext2 = get_compound_extension(sample.fastq2)
-			dest_fq1 = os.path.join(outdir, f"{sample.sample_id}_R1{ext1}")
-			dest_fq2 = os.path.join(outdir, f"{sample.sample_id}_R2{ext2}")
-			if not os.path.exists(dest_fq1):
-				if copy:
-					shutil.copy(sample.fastq1, dest_fq1)
-				else:
-					os.symlink(sample.fastq1, dest_fq1)
-			if not os.path.exists(dest_fq2):
-				if copy:
-					shutil.copy(sample.fastq2, dest_fq2)
-				else:
-					os.symlink(sample.fastq2, dest_fq2)
+		for source, filename in sra_read_files(sample, platform):
+			symlink_or_copy(source, os.path.join(outdir, filename), copy=copy)
 
 def main_prepare():
 	# parse exactly the same CLI args you already have
@@ -98,10 +85,12 @@ def main_prepare():
 	if params['sra']:
 		illum = [s for s in samples if s.fastq1 and s.fastq2]
 		nano  = [s for s in samples if s.nanopore]
-		platforms = (('illumina', illum), ('nanopore', nano)) if illum and nano else [(None, illum or nano)]
+		platforms = [(name, group) for name, group in [('illumina', illum), ('nanopore', nano)] if group]
+		if not platforms:
+			raise ValueError('SRA submission requested but no paired Illumina or Nanopore reads were supplied')
 		for platform, samp_list in platforms:
 			# submission_dir needs to be unique if submitting both illumina and nanopore
-			submission_dir = os.path.join(output_root, 'sra', platform) if platform else os.path.join(output_root, 'sra')
+			submission_dir = os.path.join(output_root, 'sra', platform) if len(platforms) > 1 else os.path.join(output_root, 'sra')
 			os.makedirs(submission_dir, exist_ok=True)
 			sra = SRASubmission(
 				parameters=params,
@@ -127,7 +116,7 @@ def main_prepare():
 			# write submit.ready
 			open(os.path.join(submission_dir,'submit.ready'),'w').close()
 			# copy/Symlink raw files to SRA folder
-			prepare_sra_fastqs(samp_list, submission_dir, copy=False)
+			prepare_sra_fastqs(samp_list, submission_dir, copy=False, platform=platform)
 			
 	# 3) Prepare GenBank submission, per-sample under genbank/ parent directory
 	if params['genbank']:

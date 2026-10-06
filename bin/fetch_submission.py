@@ -2,6 +2,7 @@
 import os
 import argparse
 import logging
+from submission_layout import discover_databases
 from submission_helper import SubmissionConfigParser, fetch_all_reports, parse_and_save_reports, setup_logging
 
 def get_args():
@@ -42,25 +43,7 @@ def main_fetch():
     config = SubmissionConfigParser(params).load_config()
     mode = "Test" if params["test"] else "Production"
 
-    databases = []
-    # Check whether user submitted to BioSample/SRA
-    for db in ["biosample", "sra"]:
-        db_path = os.path.join(params["submission_folder"], db)
-        if os.path.isfile((os.path.join(db_path,"submission.xml"))):
-            databases.append(db)
-    # Check whether user submitted to Genbank (could be top level if SARS or flu, or in sample subdirs)
-    genbank_path = os.path.join(params["submission_folder"], "genbank")
-    if os.path.exists(genbank_path):
-        # Check if submission.xml is directly in genbank/ (i.e., for sars or flu)
-        if os.path.isfile(os.path.join(genbank_path, "submission.xml")):
-            databases.append("genbank")
-        else:
-            # Look for submission.xml in subdirectories
-            for subdir in os.listdir(genbank_path):
-                full_subdir_path = os.path.join(genbank_path, subdir)
-                if os.path.isdir(full_subdir_path) and os.path.isfile(os.path.join(full_subdir_path, "submission.xml")):
-                    databases.append("genbank")
-                    break # Assume for now all samples were submitted via ftp if one found
+    databases = discover_databases(params["submission_folder"])
 
     # Run a dry-run if asked
     if params["dry_run"]:

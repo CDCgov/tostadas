@@ -14,7 +14,7 @@ process SUBMIT_SUBMISSION {
     maxRetries 1
 
     input:
-    tuple val(meta), path(submission_files)
+    tuple val(meta), path(submission_files, stageAs: 'incoming/*')
     path(submission_config)
 
     output:
@@ -27,8 +27,10 @@ process SUBMIT_SUBMISSION {
     def dry_run = params.dry_run == true ? '--dry_run' : ''
 
     """
+    mkdir -p ${meta.batch_id}
+    cp -a ${submission_files}/. ${meta.batch_id}/
     submission.py \
-        --submission_folder ${submission_files} \
+        --submission_folder ${meta.batch_id} \
         --submission_name ${meta.batch_id} \
         --config_file ${submission_config}  \
         --identifier ${params.metadata_basename} \

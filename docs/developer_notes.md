@@ -11,7 +11,7 @@ The user options for `--workflow` are:
 - **`biosample_and_sra`** -- Runs BIOSAMPLE_AND_SRA, then runs the AGGREGATE_SUBMISSIONS subworkflow (fetches reports, aggregates them, updates metadata file).
 - **`genbank`** -- Runs GENBANK workflow. Expects `--updated_meta_path` to point to a validated metadata file (output of BIOSAMPLE_AND_SRA). Automatically looks for this in `$params.outdir/$params.accessions_outdir`.
 - **`fetch_accessions`** -- Runs AGGREGATE_SUBMISSIONS. Looks in `--outdir` for batch directories under `submission/`. Fetches report.xml files for biosample and SRA submissions. Requires NCBI Center credentials from `submission_config.yaml`.
-- **`full_submission`** -- Runs BIOSAMPLE_AND_SRA, then polls NCBI for reports using POLL_AND_FETCH_REPORTS (exponential backoff from `poll_initial_interval` to `poll_max_interval`, up to `poll_timeout`), then runs AGGREGATE_SUBMISSIONS, then runs GENBANK.
+- **`full_submission`** -- Runs BIOSAMPLE_AND_SRA, then AGGREGATE_SUBMISSIONS (including POLL_AND_FETCH_REPORTS with exponential backoff from `poll_initial_interval` to `poll_max_interval`, up to `poll_timeout`), then GENBANK.
 - **`update_submission`** -- Runs BIOSAMPLE_UPDATE workflow. Submits updates to biosample accessions. Requires a metadata file with `biosample_accession` column, such as the one output by BIOSAMPLE_AND_SRA in `$params.outdir/$params.accessions_outdir`.
 
 ## Workflow-Specific Details and Notes
@@ -40,10 +40,9 @@ The user can submit only to biosample by setting `$params.sra = false` or to bot
 
 ### Submitting to GenBank
 
-This requires `--updated_meta_path`. It can be specified in `nextflow.config`.
-If not specified, it looks for the output of JOIN_ACCESSIONS_WITH_METADATA (`$params.outdir/$params.accessions_outdir/<your_metadata_filename>_updated.xlsx`)
+The usual path reads `--updated_meta_path`, or defaults to the output of JOIN_ACCESSIONS_WITH_METADATA (`$params.outdir/$params.accessions_outdir/<your_metadata_filename>_updated.xlsx`). For SQN preparation without a prior BioSample/SRA run, `--genbank_only` reads `--meta_path` directly.
 
-GENBANK workflow does not validate metadata. It is assumed the user will run biosample_and_sra first (because GenBank submission requires a BioSample accession ID). 
+The usual GENBANK path expects accession-augmented metadata from a previous BioSample/SRA run or existing BioSample accessions. SQN preparation with `--genbank_only` does not require that prior run.
 It validates the fasta file.
 If `$params.annotation = true`, it performs annotation as follows.
 And it performs submission.  It does not fetch the accession IDs because at the time of development, many GenBank submissions are not done via ftp.
@@ -130,22 +129,23 @@ To add support for a new organism, follow this checklist:
     }
     ```
 
-- [ ] **Create test metadata** -- Add a test metadata Excel file and test FASTA file under `assets/sample_metadata/` so the profile can be validated with the `test` profile.
+- [ ] **Create test metadata** -- Add a test metadata Excel file and test FASTA file under `assets/sample_metadata/`. Include the FASTA path in the metadata so the profile can be validated with the `test` profile.
 
-- [ ] **Test the profile** -- Run the pipeline with the test profile to verify annotation and submission file generation:
+- [ ] **Test the profile** -- For SQN preparation without a previous BioSample/SRA run, use the test metadata directly:
 
     ```bash
-    nextflow run main.nf -profile test,neworganism,<docker|singularity> --workflow genbank --dry_run true
+    nextflow run main.nf -profile test,neworganism,<docker|singularity> --workflow genbank --genbank_only --meta_path assets/sample_metadata/neworg_test_metadata.xlsx --dry_run true
     ```
+
+    For a BioSample-linked GenBank submission, omit `--genbank_only` and provide `--updated_meta_path` containing existing BioSample accessions. The `test` profile does not create that workbook automatically.
 
 - [ ] **Update documentation** -- Add the new profile to the supported organisms table in `docs/user-guide/submission_guide.md`.
 
 ## Known Issues
 
-- GenBank accession fetching is enabled but may require additional handling for downstream report CSV and updated metadata file generation.
+- The `fetch_accessions` workflow retrieves BioSample/SRA accessions only; it does not retrieve GenBank accessions.
 - Additional testing is required for the `update_submission` workflow. More nf-tests should be created.
 - A specific annotation directive line may need to be added to the GenBank XML for FTP-based submissions when no GFF is provided. GenBank SQN files for SARS and flu have not been tested.
 - VADR model directory vs. virus subtype validation has been added as a pre-flight check, but additional robustness may be needed.
-- In `update_submission`, the metadata file is referenced from its work directory rather than being staged as a proper Nextflow input. This should be refactored.
 - The `update_submission` workflow only supports BioSample updates. The `enabled` list in `REBATCH_METADATA` is hardcoded to `["biosample"]`. Extending to SRA or GenBank updates requires changes to both `REBATCH_METADATA` and `UPDATE_SUBMISSION`.
 - In `submission_helper.py`, some GenBank validation values (in the GenBank validation constants) are hard-coded and should be made configurable. BioSample/SRA XML generation differs from GenBank XML generation (see `submission_prep.py`). The locus tag prefix issue (in the locus tag handling section) has been resolved with a logged warning.

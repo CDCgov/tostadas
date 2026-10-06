@@ -13,9 +13,10 @@ nextflow_process {
 
             process {
                 """
-                input[0] = [ 
+                input[0] = [
                     file("${projectDir}/tests/modules/local/aggregate_reports/batch_1.csv")
                 ]
+                input[1] = file("${projectDir}/tests/modules/local/aggregate_reports/metadata.tsv")
                 """
             }
         }
@@ -23,7 +24,10 @@ nextflow_process {
         then {
             assert process.success
             assert file("${process.out.submission_report[0]}").exists()
-            assert snapshot(file("${process.out.submission_report[0]}")).match()
+            def lines = file("${process.out.submission_report[0]}").readLines()
+            assert lines.size() == 2
+            assert lines[1].startsWith('batch_1,SUB993900,RSV_USA_DRR152972,POX,processed-error,SUB993900,processed-error,')
+            assert lines[1].contains(',SUB994146,processed-error,')
         }
     }
 }

@@ -11,13 +11,14 @@ process AGGREGATE_REPORTS {
 
     input:
     path(report_csvs)
+    path(metadata_tsv)
 
     output:
     path("submission_report.csv"), emit: submission_report
 
     script:
     """
-    aggregate_reports.py $report_csvs
+    aggregate_reports.py --metadata_tsv "${metadata_tsv}" $report_csvs
     
     """
 }

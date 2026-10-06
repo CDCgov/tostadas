@@ -43,7 +43,7 @@ process PREP_SUBMISSION {
             "sample_id=${sample.meta.sample_id}",
             sample.get("fq1")      ? "fq1=${sample.fq1}"       : null,
             sample.get("fq2")      ? "fq2=${sample.fq2}"       : null,
-            sample.get("nnp")      ? "nnp=${sample.nanopore}"  : null,
+            sample.get("nanopore") ? "nanopore=${sample.nanopore}" : null,
             sample.get("fasta")    ? "fasta=${sample.fasta}"   : null,
             sample.get("gff")      ? "gff=${sample.gff}"       : null,
             sample.meta.get("vadr_dir") ? "vadr_dir=${sample.meta.vadr_dir}" : null

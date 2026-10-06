@@ -10,7 +10,7 @@ Default parameters are given in the nextflow.config file. This table lists the p
 | Param | Description | Input Required |
 |---|---|---|
 | `--ref_fasta_path` | Reference Sequence file path | Yes (path as string) |
-| `--meta_path` | Metadata file path (.xlsx, .csv, .tsv, or .src) | Yes (path as string) |
+| `--meta_path` | Metadata file path (use .xlsx or .csv for normal workflow runs) | Yes (path as string) |
 | `--fasta_dir` | Directory of FASTA files; auto-populates `fasta_path` by matching `sample_name` to filenames (.fasta, .fa, .fna, .fas) | No (path as string) |
 | `--ref_gff_path` | Reference gff file path for annotation | Yes (path as string) |
 
@@ -31,12 +31,12 @@ The following workflows are available for the `--workflow` parameter:
 
 - **biosample_and_sra** -- Runs a submission to BioSample and SRA.
 - **genbank** -- Runs a GenBank submission.
-- **fetch_accessions** -- Fetches reports and updates the metadata file.
+- **fetch_accessions** -- Fetches current BioSample/SRA reports and updates the metadata file. GenBank report retrieval is not wired into this workflow.
 - **full_submission** -- Executes BioSample and SRA submissions, polls NCBI for reports using exponential backoff (30s--120s intervals, 30min timeout), updates the metadata file with accession IDs, and then performs the GenBank submission.
 - **update_submission** -- Executes a BioSample submission using an updated metadata Excel file.
 
 !!! note
-    The GenBank submission cannot complete without a BioSample accession ID.
+    The standard BioSample/SRA-to-GenBank workflow uses the BioSample accession in the updated metadata. For standalone SQN preparation without that prior workflow, use `--workflow genbank --genbank_only`; database requirements still depend on the submission type.
 
 ## General Settings
 
@@ -52,6 +52,7 @@ The following workflows are available for the `--workflow` parameter:
 | `--biosample_pkg` | BioSample package type (e.g., wastewater, onehealth) | No (string, default: null) |
 | `--genome_representation` | WGS genome representation. Accepted values are Full or Partial | No (string, default: "Full") |
 | `--expected_final_version` | WGS expected final version. Accepted values are Yes or No | No (string, default: "Yes") |
+| `--completeness_min_coverage` | When metadata completeness is blank, infer `complete` from VADR model coverage at or above this fraction and no reported truncation. Explicit metadata completeness takes precedence. | No (number, 0 < value <= 1; unset by default, 0.99 in the measles profile; 0 disables inference) |
 | `--strip_pub_block` | Removes publication citation and DBLink blocks from .sqn files per NCBI preference. Used by the measles profile | No (boolean, default: false) |
 
 ## General Output
@@ -62,7 +63,7 @@ The following workflows are available for the `--workflow` parameter:
 | `--overwrite_output` | Toggle to overwriting output files in directory | No (boolean, default: true) |
 | `--annotation_outdir` | Base directory name for annotation outputs (vadr, bakta, liftoff subdirectories) | No (folder name as string, default: "annotation") |
 | `--accessions_outdir` | Either name or relative/absolute path for the final outputs from submission report fetching | No (string or path, default: "accessions") |
-| `--updated_meta_path` | Path to accession-augmented metadata Excel from a prior BioSample/SRA run. Required for standalone genbank workflow; auto-detected in full_submission mode. | No (path, default: auto-detected) |
+| `--updated_meta_path` | Path to accession-augmented metadata Excel from a prior BioSample/SRA run. Used by standalone genbank unless --genbank_only selects --meta_path; otherwise falls back to the prior workbook in --outdir. Passed automatically in full_submission mode. | No (path, default: auto-detected) |
 
 ## Validation
 
@@ -145,8 +146,8 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | `--submission_wait_time` | **Deprecated.** Replaced by smart polling parameters below. Ignored if set | No (deprecated) |
 | `--poll_initial_interval` | Initial polling interval in seconds for fetching NCBI reports | No (integer, default: 30) |
 | `--poll_max_interval` | Maximum polling interval in seconds (backoff cap) | No (integer, default: 120) |
-| `--poll_timeout` | Maximum total time in seconds to poll before giving up | No (integer, default: 1800) |
-| `--send_submission_email` | Toggle email notification on/off | No (boolean, default: false) |
+| `--poll_timeout` | Polling time budget checked between network operations; does not interrupt a blocked transfer | No (integer, default: 1800) |
+| `--send_submission_email` | Send the generated GenBank .sqn by email for the virus pathway; not a status notification | No (boolean, default: false) |
 | `--submission_mode` | Transfer protocol for NCBI submission: ftp (default) or sftp | No (string, default: ftp) |
 
 ## Update Submission
@@ -156,4 +157,4 @@ Controlling Bakta within TOSTADAS uses parameters of the same name with prefix `
 | `--original_submission_outdir` | Either name or relative/absolute path for the outputs from original submission (the one being updated) | Yes (name or path as string) |
 
 !!! warning "About `--send_submission_email`"
-    Email submission is triggered when GenBank sequences are submitted via email (virus pathway). The recipient address is specified in `submission_config.yaml` as `table2asn_email`.
+    With `--dry_run false`, this flag sends the generated `.sqn` attachment through a local SMTP service. Production mode (`--prod_submission true`) sends to `table2asn_email`; Test mode sends to `Submitter.@email`. `--dry_run true` logs the intended email without sending it. Leave the flag false when preparing files for manual submission.

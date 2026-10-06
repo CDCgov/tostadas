@@ -4,7 +4,7 @@
 
 This guide covers the process of submitting measles (MeV) consensus sequences to NCBI GenBank using TOSTADAS. The measles profile automates VADR annotation, SQN file generation, and packaging for GenBank submission.
 
-GenBank submission for measles is handled via email rather than FTP. TOSTADAS prepares the submission files, but the final upload step requires manually sending the zip archive to NCBI.
+GenBank submission for measles is handled via email rather than FTP. By default, TOSTADAS prepares files for manual submission. The optional `--send_submission_email` flag sends individual `.sqn` attachments when email is configured; see [email submission settings](parameters.md#submission).
 
 ## Prerequisites
 
@@ -31,6 +31,7 @@ params {
     strip_pub_block     = true
     date_format_flag    = 'n'
     vadr                = true
+    completeness_min_coverage = 0.99
 }
 ```
 
@@ -41,9 +42,11 @@ params {
 | `strip_pub_block` | `true` | Removes publication citation and DBLink blocks from the SQN file, as preferred by NCBI for measles submissions |
 | `date_format_flag` | `n` | Formats collection dates in NCBI short month format (`Mon.YY`, e.g., `Jan.25`) |
 
+The profile also sets `completeness_min_coverage = 0.99`. When the metadata completeness field is blank, the pipeline marks a genome complete if VADR model coverage meets this threshold and no truncation is reported. An explicit metadata completeness value takes precedence; set `--completeness_min_coverage 0` to disable inference.
+
 ## Metadata Format
 
-Provide metadata as a TSV, CSV, or Excel file via `--meta_path`. The following columns are expected:
+Provide metadata as CSV or the supplied Excel template (`.xlsx`) via `--meta_path`. The Python metadata parser also reads TSV/SRC files, but the current Nextflow parameter schema rejects those extensions in normal workflow runs. Convert those inputs to CSV while preserving sample identifiers. The following columns are expected:
 
 | Column | Description | Example |
 |--------|-------------|---------|
@@ -58,7 +61,7 @@ Provide metadata as a TSV, CSV, or Excel file via `--meta_path`. The following c
 
 ### NCBI Column Aliasing
 
-When using `.src` (source modifier) files, TOSTADAS automatically maps NCBI column names to internal field names:
+TOSTADAS maps the following NCBI source-modifier column names to internal fields. These names can be retained when converting a `.src` file to CSV:
 
 | Source Modifier Column | TOSTADAS Field |
 |------------------------|----------------|
@@ -95,7 +98,7 @@ nextflow run main.nf \
     --workflow genbank \
     --genbank_only \
     --fasta_dir /path/to/fasta/directory \
-    --meta_path /path/to/metadata.tsv \
+    --meta_path /path/to/metadata.csv \
     --sbt /path/to/template.sbt \
     --submission_config conf/submission_config.yaml \
     --dry_run true
@@ -112,10 +115,10 @@ nextflow run main.nf \
 
 ## GenBank Submission
 
-GenBank submission for measles sequences is a manual process:
+For manual submission with `--send_submission_email false`:
 
 1. Run the pipeline to generate submission files.
-2. Locate the zip archives in `results/submission/batch_*/genbank/`.
+2. Locate the zip archives in `results/submission/genbank/batch_*/genbank/<sample>/`.
 3. Email the zip file(s) to **gb-sub@ncbi.nlm.nih.gov**.
 4. NCBI will process the submission and reply with accession numbers.
 
@@ -124,12 +127,7 @@ GenBank submission for measles sequences is a manual process:
 
 ### Batch Size Considerations
 
-When submitting large numbers of sequences, consider the following:
-
-- NCBI recommends batch submissions over individual sample submissions.
-- A batch size of 25--50 sequences per submission is generally appropriate.
-- Very large batches (hundreds of sequences) may take longer for NCBI to process and can complicate troubleshooting if individual sequences have issues.
-- Set `--batch_size` to control how many samples are grouped into each submission package.
+`--batch_size` controls how metadata is grouped for pipeline tasks. The measles preparation code still creates a separate directory and archive for each sample; increasing the batch size does not combine those archives into one submission package.
 
 ## Expected Output Files
 
@@ -137,8 +135,8 @@ After a successful run, the following files are produced:
 
 | Directory | Files | Description |
 |-----------|-------|-------------|
-| `results/validation/` | `batch_*.tsv`, `errors/` | Validated metadata and any validation errors |
+| `results/validation/` | `batched_tsvs/batch_*.tsv`, `error.txt` | Validated metadata and any validation errors |
 | `results/annotation/vadr/` | `batch_pass_fail.tsv`, `batch_alerts.tsv` | VADR annotation summary |
-| `results/annotation/vadr/gffs/` | `*.gff` | Annotation files per sample |
-| `results/annotation/vadr/tbl/` | `*.tbl` | Feature tables per sample |
-| `results/submission/batch_*/genbank/` | `*.sqn`, `*.zip` | SQN files and submission zip archives |
+| `results/annotation/vadr/<sample>/gffs/` | `*.gff` | Annotation files per sample |
+| `results/annotation/vadr/<sample>/tbl/` | `*.tbl` | Feature tables per sample |
+| `results/submission/genbank/batch_*/genbank/<sample>/` | `*.sqn`, `*.zip` | SQN files and submission zip archives |

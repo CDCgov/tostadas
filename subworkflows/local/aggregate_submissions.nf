@@ -17,7 +17,7 @@ workflow AGGREGATE_SUBMISSIONS {
                 .set { all_report_csvs }
 
       // Concatenate batch csvs for all samples
-      AGGREGATE_REPORTS(all_report_csvs)
+      AGGREGATE_REPORTS(all_report_csvs, validated_metadata_tsv)
 
       // Concatenate the batch TSVs, then add the (optional) accession IDs to them
       JOIN_ACCESSIONS_WITH_METADATA(validated_metadata_tsv, AGGREGATE_REPORTS.out.submission_report)
